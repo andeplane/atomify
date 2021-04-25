@@ -1,0 +1,70 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+html, body, #root, .App {
+  height: 100%;
+}
+
+.wrapper {
+	max-width: 50rem;
+	margin: 1rem auto;
+	padding: .2rem 1rem;
+	
+	border: 2px solid #444;
+	background: rgba(#444,.2);
+}
+
+.pen_info {
+	margin: 1rem 0;
+	padding: 0 1rem;
+	border: 2px solid #60a7dc;
+	border-radius: .4rem;
+	background: rgba(#60a7dc,.5);
+}
+
+.dropzone {
+	box-sizing: border-box;
+	display: none;
+	position: fixed;
+	width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  z-index: 99999;
+
+	background: rgba(#60a7dc,.8);
+	border: 11px dashed #60a7dc;
+}
+
+#components-layout-demo-side .logo {
+  height: 32px;
+  margin: 16px;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.site-layout .site-layout-background {
+  background: #000;
+	color: #fff;
+}
+
+.site-layout .site-layout-background h1 {
+	color: #fff;
+  margin-left: 2vh;
+}
+
+.site-layout .site-layout-background h2 {
+	color: #fff;
+  margin-left: 2vh;
+}

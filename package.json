@@ -1,0 +1,47 @@
+{
+  "name": "omovi-example",
+  "homepage": ".",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "craco eject"
+  },
+  "dependencies": {
+    "@craco/craco": "^5.9.0",
+    "@open-wc/webpack-import-meta-loader": "^0.4.7",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "@types/jest": "^25.1.4",
+    "@types/node": "^12.12.38",
+    "@types/react": "^16.9.27",
+    "@types/react-dom": "^16.9.7",
+    "@types/styled-components": "^5.1.9",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-scripts": "^3.4.1",
+    "styled-components": "^5.2.1",
+    "typescript": "^3.7.5"
+  },
+  "devDependencies": {
+    "@babel/plugin-syntax-object-rest-spread": "^7.8.3"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
