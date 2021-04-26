@@ -94,6 +94,11 @@ function App() {
   // useEffect(() => {
   //   setParticles(p)
   // }, [])
+
+  const onSelect = useCallback( (keys: React.Key[], info: any) => {
+    console.log('Trigger Select', keys, info);
+  }, []);
+
   return (
     <div className="App">
       <Container>
@@ -109,7 +114,7 @@ function App() {
           console.log(collapsed, type);
         }}
       >
-      <TreeView path={fullPath} files={fileNames} />
+      <TreeView path={fullPath} files={fileNames} onSelect={onSelect}/>
       </Sider>
       <Layout>
         <Content style={{ margin: '24px 16px 0' }}>
