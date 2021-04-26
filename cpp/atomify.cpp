@@ -1,5 +1,7 @@
 #include <lammps.h>
 #include <library.h>
+#include <modify.h>
+#include "fix_atomify.h"
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/bind.h>
@@ -12,18 +14,61 @@ public:
   Atomify();
   LAMMPS_NS::LAMMPS *lmp;
   long getPositionsPointer();
+  long getIdPointer();
+  long getTypePointer();
   void loadLJ();
   void step();
+  double getX(int n);
+  double getY(int n);
+  double getZ(int n);
+  void runCommand(std::string command);
+  int numAtoms();
 };
 
 Atomify::Atomify()
 {
   lmp = (LAMMPS_NS::LAMMPS *)lammps_open_no_mpi(0, 0, nullptr);
+  // lammps_command(lmp, "fix atomify all atomify");
+  // int ifix = lmp->modify->find_fix("atomify");
+  // LAMMPS_NS::FixAtomify *fix = static_cast<LAMMPS_NS::FixAtomify *>(lmp->modify->fix[ifix]);
+  // fix->set_callback(callback, nullptr);
 }
 
 long Atomify::getPositionsPointer()
 {
-  auto ptr = lammps_extract_atom((void *)lmp, "x");
+  double **ptr = reinterpret_cast<double **>(lammps_extract_atom((void *)lmp, "x"));
+
+  return reinterpret_cast<long>(ptr[0]);
+}
+
+double Atomify::getX(int n)
+{
+  double **ptr = reinterpret_cast<double **>(lammps_extract_atom((void *)lmp, "x"));
+  return ptr[n][0];
+}
+
+double Atomify::getY(int n)
+{
+  double **ptr = reinterpret_cast<double **>(lammps_extract_atom((void *)lmp, "x"));
+  return ptr[n][1];
+}
+
+double Atomify::getZ(int n)
+{
+  double **ptr = reinterpret_cast<double **>(lammps_extract_atom((void *)lmp, "x"));
+  return ptr[n][2];
+}
+
+long Atomify::getIdPointer()
+{
+  auto ptr = lammps_extract_atom((void *)lmp, "id");
+
+  return reinterpret_cast<long>(ptr);
+}
+
+long Atomify::getTypePointer()
+{
+  auto ptr = lammps_extract_atom((void *)lmp, "type");
 
   return reinterpret_cast<long>(ptr);
 }
@@ -35,9 +80,9 @@ void Atomify::loadLJ()
       "variable    x index 1\n"
       "variable    y index 1\n"
       "variable    z index 1\n"
-      "variable    xx equal 20*$x\n"
-      "variable    yy equal 20*$y\n"
-      "variable    zz equal 20*$z\n"
+      "variable    xx equal 10*$x\n"
+      "variable    yy equal 10*$y\n"
+      "variable    zz equal 10*$z\n"
       "units       lj\n"
       "atom_style  atomic\n"
       "lattice     fcc 0.8442\n"
@@ -56,18 +101,33 @@ void Atomify::loadLJ()
 
 void Atomify::step()
 {
-  const char *script = "run 1\n";
+  const char *script = "run 1 pre no post no\n";
   lammps_commands_string((void *)lmp, script);
 }
 
-#ifdef __EMSCRIPTEN__
+void Atomify::runCommand(std::string command)
+{
+  lammps_commands_string((void *)lmp, command.c_str());
+}
+
+int Atomify::numAtoms()
+{
+  return lammps_get_natoms((void *)lmp);
+}
+
 // Binding code
 EMSCRIPTEN_BINDINGS(Atomify)
 {
   class_<Atomify>("Atomify")
       .constructor<>()
       .function("getPositionsPointer", &Atomify::getPositionsPointer)
+      .function("runCommand", &Atomify::runCommand)
+      .function("getIdPointer", &Atomify::getIdPointer)
+      .function("getTypePointer", &Atomify::getTypePointer)
       .function("loadLJ", &Atomify::loadLJ)
-      .function("step", &Atomify::step);
+      .function("step", &Atomify::step)
+      .function("getX", &Atomify::getX)
+      .function("getY", &Atomify::getY)
+      .function("getZ", &Atomify::getZ)
+      .function("numAtoms", &Atomify::numAtoms);
 }
-#endif

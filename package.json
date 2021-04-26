@@ -20,10 +20,12 @@
     "@types/react": "^16.9.27",
     "@types/react-dom": "^16.9.7",
     "@types/styled-components": "^5.1.9",
+    "omovi": "0.0.7",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "^3.4.1",
     "styled-components": "^5.2.1",
+    "three": "^0.126.1",
     "typescript": "^3.7.5"
   },
   "devDependencies": {
