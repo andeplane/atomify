@@ -32,7 +32,6 @@ const TreeView = ({files, path, onSelect}: TreeViewProps) => {
       onSelect={onSelect}
       onExpand={onExpand}
       treeData={treeData}
-      
     />
   )
 }

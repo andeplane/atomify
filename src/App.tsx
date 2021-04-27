@@ -1,7 +1,9 @@
-import React, {useState, useEffect, useCallback} from 'react';
+import React, {useRef, useState, useEffect, useCallback} from 'react';
 import 'antd/dist/antd.css';
 import lammpsWasm from './wasm/lammps'
 import {OMOVIVisualizer, Particles} from 'omovi'
+import Terminal, { ColorMode, LineType } from 'react-terminal-ui';
+
 import {useListDirectory} from 'hooks/github'
 import styled from 'styled-components'
 
@@ -52,32 +54,53 @@ const getPositions = (lammps: any, wasm: any) => {
 }
 
 function App() {
+  const [wasmLoaded, setWasmLoaded] = useState(false)
   const [lammps, setLammps] = useState<any>()
   const [wasm, setWasm] = useState<any>()
   const [particles, setParticles] = useState<Particles>()
+  const [lammpsOutput, setLammpsOutput] = useState([
+    {type: LineType.Output, value: 'LAMMPS'}
+  ])
+  
   const user = 'lammps'
   const repository = 'lammps'
   const path = 'examples/melt'
-  const {loading, files} = useListDirectory(user, repository, path)
+  // const {loading, files} = useListDirectory(user, repository, path)
+  const files: string[] =  ['test']
   const fullPath = `${user}/${repository}/${path}`
   const fileNames = files.map(fileName => fileName.replace(path+'/', ''))
   
-  // useEffect(() => {
-  //   const wasm = lammpsWasm({
-  //     onRuntimeInitialized: async () => {
-  //       wasm.then(async (obj: any) => {
-  //         // @ts-ignore
-  //         const lmp = new obj.Atomify()
-  //         lmp.loadLJ()
-  //         lmp.step()
-
-  //         setWasm(obj)
-  //         setLammps(lmp)
-  //       })
-  //     },
-  //     locateFile: () => require("./wasm/lammps.wasm"),
-  //   });
-  // }, [])
+  const onPrint = useCallback( (text: string) => {
+    const newTerminalLineData = {
+      type: LineType.Output, value: text
+    }
+    setLammpsOutput(state => [...state, newTerminalLineData])
+  }, [])
+  
+  useEffect(() => {
+    if (!wasmLoaded) {
+      setWasmLoaded(true)
+      const wasm = lammpsWasm({
+        onRuntimeInitialized: async () => {
+          wasm.then(async (obj: any) => {
+            // @ts-ignore
+            const lmp = new obj.Atomify()
+            lmp.loadLJ()
+            lmp.step()
+            const particles = getPositions(lmp, obj)
+            setParticles(particles)
+  
+            setWasm(obj)
+            setLammps(lmp)
+            //@ts-ignore
+            window.lammps = lmp
+          })
+        },
+        print: onPrint,
+        locateFile: () => require("./wasm/lammps.wasm"),
+      });
+    }
+  }, [lammps, onPrint, wasmLoaded])
 
   // useEffect(() => {
   //   const interval = setInterval(() => {
@@ -98,7 +121,7 @@ function App() {
   const onSelect = useCallback( (keys: React.Key[], info: any) => {
     console.log('Trigger Select', keys, info);
   }, []);
-
+  
   return (
     <div className="App">
       <Container>
@@ -118,7 +141,7 @@ function App() {
       </Sider>
       <Layout>
         <Content style={{ margin: '24px 16px 0' }}>
-            <Editor />
+            <Editor particles={particles} lammpsOutput={lammpsOutput} onConsoleInput={input => lammps.runCommand(input)} />
         </Content>
       </Layout>
       </Layout>

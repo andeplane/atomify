@@ -1,3 +1,4 @@
+const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const path = require('path');
 const wasmExtensionRegExp = /\.wasm$/;
 
@@ -33,6 +34,14 @@ module.exports = {
 
       return webpackConfig;
     },
+    plugins: {
+      add: [
+        new MonacoWebpackPlugin({
+          // available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
+          languages: ['json', 'javascript']
+        })
+      ]
+    }
   },
   eslint: {
     configure: {
