@@ -3,6 +3,7 @@ import MonacoEditor from 'react-monaco-editor'
 import ConsoleTab from '../components/ConsoleTab'
 import { LineType } from 'react-terminal-ui';
 import {OMOVIVisualizer, Particles} from 'omovi'
+import ControlBar from 'components/ControlBar'
 import { Tabs } from 'antd';
 const { TabPane } = Tabs;
 
@@ -24,12 +25,11 @@ const initialPanes: Pane[] = [
 ];
 
 interface EditorProps {
-  onConsoleInput: (input: string) => void
   lammpsOutput: { type: LineType; value: string;}[]
   particles?: Particles
 }
 
-const Editor = ({onConsoleInput, lammpsOutput, particles}: EditorProps) => {
+const Editor = ({lammpsOutput, particles}: EditorProps) => {
   const [panes, setPanes] = useState<Pane[]>([])
   const [activeKey, setActiveKey] = useState<string>()
   const onChange = useCallback( (activeKey: string) => {
@@ -61,13 +61,16 @@ const Editor = ({onConsoleInput, lammpsOutput, particles}: EditorProps) => {
         style={{height: '100%'}}
       >
         <TabPane tab={"Console"} key={"console"} closable={false}>
-          <ConsoleTab lammpsOutput={lammpsOutput} onInput={onConsoleInput} />
+          <ControlBar />
+          <ConsoleTab lammpsOutput={lammpsOutput} />
         </TabPane>
         <TabPane tab={"3D"} key={"3d"} closable={false}>
+          <ControlBar />
           {particles && <OMOVIVisualizer particles={particles}/>}
         </TabPane>
         {panes.map(pane => (
           <TabPane tab={pane.title} key={pane.key} closable={pane.closable}>
+            <ControlBar />
             <MonacoEditor
               height="500px"
               language="javascript"

@@ -10,6 +10,7 @@
     "eject": "craco eject"
   },
   "dependencies": {
+    "@ant-design/icons": "^4.6.2",
     "@craco/craco": "^5.9.0",
     "@open-wc/webpack-import-meta-loader": "^0.4.7",
     "@testing-library/jest-dom": "^4.2.4",

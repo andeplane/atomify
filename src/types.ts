@@ -1,4 +1,6 @@
-export type LAMMPSWeb = {
+import { LineType } from 'react-terminal-ui';
+
+export type LammpsWeb = {
   getPositionsPointer: () => number
   getIdPointer: () => number
   getTypePointer: () => number
@@ -6,4 +8,9 @@ export type LAMMPSWeb = {
   step(): () => void
   runCommand: (command: string) => void
   numAtoms: () => number
+}
+
+export type LammpsOutput = {
+    type: LineType;
+    value: string;
 }

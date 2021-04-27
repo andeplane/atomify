@@ -3,7 +3,6 @@ import 'antd/dist/antd.css';
 import lammpsWasm from './wasm/lammps'
 import {OMOVIVisualizer, Particles} from 'omovi'
 import Terminal, { ColorMode, LineType } from 'react-terminal-ui';
-import {LAMMPSWeb} from 'types'
 import {useListDirectory} from 'hooks/github'
 import styled from 'styled-components'
 import {useStoreActions, useStoreState} from 'hooks'
@@ -55,14 +54,16 @@ const getPositions = (lammps: any, wasm: any) => {
 
 const App = () => {
   const [wasmLoaded, setWasmLoaded] = useState(false)
-  const [wasm, setWasm] =  useState<any>()
   const [particles, setParticles] = useState<Particles>()
   const [lammpsOutput, setLammpsOutput] = useState([
     {type: LineType.Output, value: 'LAMMPS'}
   ])
 
-  const setLammps = useStoreActions(actions => actions.lammps.setLammps)
-  const lammps = useStoreState(state => state.lammps.lammps)
+  const setWasm = useStoreActions(actions => actions.lammps.setWasm)
+  const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
+  const loadLJ = useStoreActions(actions => actions.lammps.loadLJ)
+  
+  const wasm = useStoreState(state => state.lammps.wasm)
   
   const user = 'lammps'
   const repository = 'lammps'
@@ -73,10 +74,10 @@ const App = () => {
   const fileNames = files.map(fileName => fileName.replace(path+'/', ''))
   
   const onPrint = useCallback( (text: string) => {
-    const newTerminalLineData = {
+    const output = {
       type: LineType.Output, value: text
     }
-    setLammpsOutput(state => [...state, newTerminalLineData])
+    setLammpsOutput(state => [...state, output])
   }, [])
   
   useEffect(() => {
@@ -86,21 +87,20 @@ const App = () => {
         onRuntimeInitialized: async () => {
           wasmLoader.then(async (wasm: any) => {
             setWasm(wasm)
-            
-            // @ts-ignore
-            const lammps = new wasm.LAMMPSWeb() as LAMMPSWeb
-            lammps.loadLJ()
-            lammps.step()
-            const particles = getPositions(lammps, wasm)
-            setParticles(particles)
-            setLammps(lammps)
           })
         },
         print: onPrint,
         locateFile: () => require("./wasm/lammps.wasm"),
       });
     }
-  }, [onPrint, setLammps, wasmLoaded])
+  }, [onPrint, setWasm, wasmLoaded])
+
+  useEffect(() => {
+    if (wasm) {
+      // resetLammps()
+      loadLJ()
+    }
+  }, [loadLJ, resetLammps, wasm])
 
   // useEffect(() => {
   //   const interval = setInterval(() => {
@@ -113,10 +113,6 @@ const App = () => {
   //   }, 16);
   //   return () => clearInterval(interval);
   // }, [lammps, wasm]);
-
-  // useEffect(() => {
-  //   setParticles(p)
-  // }, [])
 
   const onSelect = useCallback( (keys: React.Key[], info: any) => {
     console.log('Trigger Select', keys, info);
@@ -141,7 +137,7 @@ const App = () => {
       </Sider>
       <Layout>
         <Content style={{ margin: '24px 16px 0' }}>
-            <Editor particles={particles} lammpsOutput={lammpsOutput} onConsoleInput={input => lammps?.runCommand(input)} />
+            <Editor lammpsOutput={lammpsOutput} particles={particles} />
         </Content>
       </Layout>
       </Layout>
