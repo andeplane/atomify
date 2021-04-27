@@ -1,0 +1,27 @@
+{
+  "files": {
+    "main.css": "/atomify/static/css/main.f471d78e.chunk.css",
+    "main.js": "/atomify/static/js/main.d3ce9809.chunk.js",
+    "main.js.map": "/atomify/static/js/main.d3ce9809.chunk.js.map",
+    "runtime-main.js": "/atomify/static/js/runtime-main.87523317.js",
+    "runtime-main.js.map": "/atomify/static/js/runtime-main.87523317.js.map",
+    "static/css/2.b1ebb4fa.chunk.css": "/atomify/static/css/2.b1ebb4fa.chunk.css",
+    "static/js/2.41176535.chunk.js": "/atomify/static/js/2.41176535.chunk.js",
+    "static/js/2.41176535.chunk.js.map": "/atomify/static/js/2.41176535.chunk.js.map",
+    "index.html": "/atomify/index.html",
+    "lammps.wasm": "/atomify/lammps.dc97a34d.wasm",
+    "precache-manifest.58ce187c99c53eab029b4afc6726601e.js": "/atomify/precache-manifest.58ce187c99c53eab029b4afc6726601e.js",
+    "service-worker.js": "/atomify/service-worker.js",
+    "static/css/2.b1ebb4fa.chunk.css.map": "/atomify/static/css/2.b1ebb4fa.chunk.css.map",
+    "static/css/main.f471d78e.chunk.css.map": "/atomify/static/css/main.f471d78e.chunk.css.map",
+    "static/js/2.41176535.chunk.js.LICENSE.txt": "/atomify/static/js/2.41176535.chunk.js.LICENSE.txt",
+    "static/media/codicon.css": "/atomify/static/media/codicon.b13daaad.ttf"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.87523317.js",
+    "static/css/2.b1ebb4fa.chunk.css",
+    "static/js/2.41176535.chunk.js",
+    "static/css/main.f471d78e.chunk.css",
+    "static/js/main.d3ce9809.chunk.js"
+  ]
+}
