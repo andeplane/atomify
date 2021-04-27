@@ -3,10 +3,10 @@ import 'antd/dist/antd.css';
 import lammpsWasm from './wasm/lammps'
 import {OMOVIVisualizer, Particles} from 'omovi'
 import Terminal, { ColorMode, LineType } from 'react-terminal-ui';
-
+import {LAMMPSWeb} from 'types'
 import {useListDirectory} from 'hooks/github'
 import styled from 'styled-components'
-
+import {useStoreActions, useStoreState} from 'hooks'
 import { Layout, Menu } from 'antd';
 import TreeView from 'components/TreeView';
 import Editor from 'containers/Editor'
@@ -53,14 +53,16 @@ const getPositions = (lammps: any, wasm: any) => {
   return particles
 }
 
-function App() {
+const App = () => {
   const [wasmLoaded, setWasmLoaded] = useState(false)
-  const [lammps, setLammps] = useState<any>()
-  const [wasm, setWasm] = useState<any>()
+  const [wasm, setWasm] =  useState<any>()
   const [particles, setParticles] = useState<Particles>()
   const [lammpsOutput, setLammpsOutput] = useState([
     {type: LineType.Output, value: 'LAMMPS'}
   ])
+
+  const setLammps = useStoreActions(actions => actions.lammps.setLammps)
+  const lammps = useStoreState(state => state.lammps.lammps)
   
   const user = 'lammps'
   const repository = 'lammps'
@@ -80,27 +82,25 @@ function App() {
   useEffect(() => {
     if (!wasmLoaded) {
       setWasmLoaded(true)
-      const wasm = lammpsWasm({
+      const wasmLoader = lammpsWasm({
         onRuntimeInitialized: async () => {
-          wasm.then(async (obj: any) => {
+          wasmLoader.then(async (wasm: any) => {
+            setWasm(wasm)
+            
             // @ts-ignore
-            const lmp = new obj.Atomify()
-            lmp.loadLJ()
-            lmp.step()
-            const particles = getPositions(lmp, obj)
+            const lammps = new wasm.LAMMPSWeb() as LAMMPSWeb
+            lammps.loadLJ()
+            lammps.step()
+            const particles = getPositions(lammps, wasm)
             setParticles(particles)
-  
-            setWasm(obj)
-            setLammps(lmp)
-            //@ts-ignore
-            window.lammps = lmp
+            setLammps(lammps)
           })
         },
         print: onPrint,
         locateFile: () => require("./wasm/lammps.wasm"),
       });
     }
-  }, [lammps, onPrint, wasmLoaded])
+  }, [onPrint, setLammps, wasmLoaded])
 
   // useEffect(() => {
   //   const interval = setInterval(() => {
@@ -141,12 +141,11 @@ function App() {
       </Sider>
       <Layout>
         <Content style={{ margin: '24px 16px 0' }}>
-            <Editor particles={particles} lammpsOutput={lammpsOutput} onConsoleInput={input => lammps.runCommand(input)} />
+            <Editor particles={particles} lammpsOutput={lammpsOutput} onConsoleInput={input => lammps?.runCommand(input)} />
         </Content>
       </Layout>
       </Layout>
       </Container>
-      {/* {particles && <OMOVIVisualizer particles={particles}/>} */}
     </div>
   );
 }
