@@ -15,7 +15,7 @@ const ConsoleTab = ({lammpsOutput}: ConsoleTabProps) => {
   }, [lammps, setRunning])
   
   return (
-    <Terminal name='React Terminal Usage Example' colorMode={ ColorMode.Light }  lineData={ lammpsOutput } onInput={ onInput }/>
+    <Terminal name='LAMMPS console' colorMode={ ColorMode.Light }  lineData={ lammpsOutput } onInput={ onInput }/>
   )
 }
 
