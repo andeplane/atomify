@@ -1,16 +1,15 @@
-import React, {useRef, useState, useEffect, useCallback} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
+import {Particles} from 'omovi'
 import 'antd/dist/antd.css';
 import lammpsWasm from './wasm/lammps'
-import {OMOVIVisualizer, Particles} from 'omovi'
-import Terminal, { ColorMode, LineType } from 'react-terminal-ui';
+import { LineType } from 'react-terminal-ui';
 import {useListDirectory} from 'hooks/github'
 import styled from 'styled-components'
 import {useStoreActions, useStoreState} from 'hooks'
-import { Layout, Menu } from 'antd';
+import { Layout } from 'antd';
 import TreeView from 'components/TreeView';
 import Editor from 'containers/Editor'
-import { UploadOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons';
-const { Header, Content, Footer, Sider } = Layout;
+const { Content, Sider } = Layout;
 
 const Container = styled.div`
   #components-layout-demo-responsive .logo {
@@ -68,10 +67,10 @@ const App = () => {
   const user = 'lammps'
   const repository = 'lammps'
   const path = 'examples/melt'
-  // const {loading, files} = useListDirectory(user, repository, path)
-  const files: string[] =  ['test']
+  const {isLoading, files} = useListDirectory(user, repository, path)
+  // const files: string[] =  ['test']
   const fullPath = `${user}/${repository}/${path}`
-  const fileNames = files.map(fileName => fileName.replace(path+'/', ''))
+  const fileNames = files.map(file => file.name)
   
   const onPrint = useCallback( (text: string) => {
     const output = {
@@ -133,7 +132,7 @@ const App = () => {
           console.log(collapsed, type);
         }}
       >
-      <TreeView path={fullPath} files={fileNames} onSelect={onSelect}/>
+      <TreeView isLoading={isLoading} path={fullPath} files={fileNames} onSelect={onSelect}/>
       </Sider>
       <Layout>
         <Content style={{ margin: '24px 16px 0' }}>

@@ -11,6 +11,13 @@ export type LammpsWeb = {
 }
 
 export type LammpsOutput = {
-    type: LineType;
-    value: string;
+    type: LineType
+    value: string
+}
+
+export type GithubFile = {
+  name: string
+  path: string
+  download_url: string
+  size: number
 }

@@ -1,10 +1,11 @@
 import React from 'react';
-import { Tree } from 'antd';
+import { Tree, Spin } from 'antd';
 const { DirectoryTree } = Tree;
 
 interface TreeViewProps {
   files: string[],
   path: string
+  isLoading: boolean
   onSelect: (keys: React.Key[], info: any) => void
 }
 
@@ -12,7 +13,7 @@ const onExpand = () => {
   console.log('Trigger Expand');
 };
 
-const TreeView = ({files, path, onSelect}: TreeViewProps) => {
+const TreeView = ({files, path, isLoading, onSelect}: TreeViewProps) => {
   const treeData = [{
     title: path,
     key: `parent`,
@@ -26,13 +27,16 @@ const TreeView = ({files, path, onSelect}: TreeViewProps) => {
   }]
   
   return (
-    <DirectoryTree
+    <>
+    {isLoading && <Spin />}
+    {!isLoading && <DirectoryTree
       multiple
       defaultExpandAll
       onSelect={onSelect}
       onExpand={onExpand}
       treeData={treeData}
-    />
+    />}
+    </>
   )
 }
 export default TreeView
