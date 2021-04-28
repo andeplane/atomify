@@ -1,6 +1,6 @@
 import React, {useState, useCallback} from 'react'
 import {Button} from 'antd'
-import {CaretRightOutlined, StepForwardOutlined, RedoOutlined, PauseOutlined} from '@ant-design/icons'
+import {CaretRightOutlined, FileOutlined, StepForwardOutlined, RedoOutlined, PauseOutlined} from '@ant-design/icons'
 import {useStoreState, useStoreActions} from 'hooks'
 
 
@@ -16,9 +16,10 @@ const ControlBar = () => {
   }, [lammps])
 
   return <>
-    <Button onClick={() => setIsPlaying(!isPlaying)} icon={isPlaying ? <PauseOutlined /> : <CaretRightOutlined /> } />
-    <Button onClick={onStepClicked} icon={<StepForwardOutlined />} />
-    <Button onClick={() => resetLammps()} icon={<RedoOutlined />} />
+    <Button onClick={() => setIsPlaying(!isPlaying)} icon={isPlaying ? <PauseOutlined /> : <CaretRightOutlined /> }>{isPlaying ? "Pause" : "Play" }</Button>
+    <Button onClick={onStepClicked} icon={<StepForwardOutlined />}>Step</Button>
+    <Button onClick={() => resetLammps()} icon={<RedoOutlined />}> Reset</Button>
+    <Button onClick={() => lammps?.loadLJ()} icon={<FileOutlined />}>Load LJ demo</Button>
   </>
 }
 export default ControlBar
