@@ -1,13 +1,15 @@
 {
   "name": "omovi-example",
-  "homepage": ".",
+  "homepage": "http://andeplane.github.io/atomify",
   "version": "0.0.0",
   "private": true,
   "scripts": {
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
-    "eject": "craco eject"
+    "eject": "craco eject",
+    "predeploy": "craco build",
+    "deploy": "gh-pages -d build"
   },
   "dependencies": {
     "@ant-design/icons": "^4.6.2",
@@ -37,7 +39,8 @@
     "use-fetch": "^0.0.7"
   },
   "devDependencies": {
-    "@babel/plugin-syntax-object-rest-spread": "^7.8.3"
+    "@babel/plugin-syntax-object-rest-spread": "^7.8.3",
+    "gh-pages": "^3.1.0"
   },
   "eslintConfig": {
     "extends": "react-app"
