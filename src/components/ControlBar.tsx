@@ -15,6 +15,20 @@ const ControlBar = () => {
     lammps?.step()
   }, [lammps])
 
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (lammps != null) {
+  //       lammps.step()
+  //       const numAtoms = lammps.numAtoms()
+  //       const particles = getPositions(lammps, wasm)
+  //       setParticles(particles)
+  //     }
+  //   }, 16);
+  //   return () => clearInterval(interval);
+  // }, [lammps, wasm]);
+
+
   return <>
     <Button onClick={() => setIsPlaying(!isPlaying)} icon={isPlaying ? <PauseOutlined /> : <CaretRightOutlined /> }>{isPlaying ? "Pause" : "Play" }</Button>
     <Button onClick={onStepClicked} icon={<StepForwardOutlined />}>Step</Button>

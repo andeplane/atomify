@@ -37,7 +37,7 @@ const getPositions = (lammps: any, wasm: any) => {
   const numAtoms = lammps.numAtoms()
   const particles = new Particles(numAtoms);
   const positionsPtr = lammps.getPositionsPointer() / 8;
-  const typePtr = lammps.getTypePointer() / 4;
+  // const typePtr = lammps.getTypePointer() / 4;
   const idPtr = lammps.getIdPointer() / 4;
   const positionsSubarray = wasm.HEAPF64.subarray(positionsPtr, positionsPtr + 3 * numAtoms) as Float64Array
   // const typeSubarray = obj.HEAP32.subarray(typePtr, typePtr + numAtoms) as Int32Array
@@ -62,6 +62,7 @@ const App = () => {
   const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
   const loadLJ = useStoreActions(actions => actions.lammps.loadLJ)
   
+  const lammps = useStoreState(state => state.lammps.lammps)
   const wasm = useStoreState(state => state.lammps.wasm)
   
   const user = 'lammps'
@@ -101,17 +102,12 @@ const App = () => {
     }
   }, [loadLJ, resetLammps, wasm])
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (lammps != null) {
-  //       lammps.step()
-  //       const numAtoms = lammps.numAtoms()
-  //       const particles = getPositions(lammps, wasm)
-  //       setParticles(particles)
-  //     }
-  //   }, 16);
-  //   return () => clearInterval(interval);
-  // }, [lammps, wasm]);
+  useEffect(() => {
+    if (lammps) {
+      const particles = getPositions(lammps, wasm)
+      setParticles(particles)
+    }
+  }, [lammps, wasm])
 
   const onSelect = useCallback( (keys: React.Key[], info: any) => {
     console.log('Trigger Select', keys, info);

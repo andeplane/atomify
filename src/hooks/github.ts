@@ -1,5 +1,3 @@
-//@ts-ignore
-import listContent from 'list-github-dir-content'
 import useFetch from "react-fetch-hook";
 import {GithubFile} from 'types'
 
