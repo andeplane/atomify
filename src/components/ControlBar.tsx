@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {Button} from 'antd'
-import {CaretRightOutlined, FileOutlined, StepForwardOutlined, RedoOutlined, PauseOutlined} from '@ant-design/icons'
+import {CaretRightOutlined, ClearOutlined, FileOutlined, StepForwardOutlined, RedoOutlined, PauseOutlined} from '@ant-design/icons'
 import {useStoreState, useStoreActions} from 'hooks'
 
 
@@ -36,7 +36,7 @@ const ControlBar = ({onClearConsole}: ControlBarProps) => {
     <Button onClick={onStepClicked} icon={<StepForwardOutlined />}>Step</Button>
     <Button onClick={() => resetLammps()} icon={<RedoOutlined />}> Reset</Button>
     <Button onClick={() => lammps?.loadLJ()} icon={<FileOutlined />}>Load LJ demo</Button>
-    <Button onClick={onClearConsole} icon={<FileOutlined />}>Clear</Button>
+    <Button onClick={onClearConsole} icon={<ClearOutlined />}>Clear</Button>
     
   </>
 }
