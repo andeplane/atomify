@@ -26,10 +26,11 @@ const initialPanes: Pane[] = [
 
 interface EditorProps {
   lammpsOutput: { type: LineType; value: string;}[]
+  onClearConsole: () => void
   particles?: Particles
 }
 
-const Editor = ({lammpsOutput, particles}: EditorProps) => {
+const Editor = ({lammpsOutput, onClearConsole, particles}: EditorProps) => {
   const [panes, setPanes] = useState<Pane[]>([])
   const [activeKey, setActiveKey] = useState<string>()
   const onChange = useCallback( (activeKey: string) => {
@@ -61,16 +62,16 @@ const Editor = ({lammpsOutput, particles}: EditorProps) => {
         style={{height: '100%'}}
       >
         <TabPane tab={"Console"} key={"console"} closable={false}>
-          <ControlBar />
+          <ControlBar onClearConsole={onClearConsole} />
           <ConsoleTab lammpsOutput={lammpsOutput} />
         </TabPane>
         <TabPane tab={"3D"} key={"3d"} closable={false}>
-          <ControlBar />
+          <ControlBar onClearConsole={onClearConsole} />
           {particles && <OMOVIVisualizer particles={particles}/>}
         </TabPane>
         {panes.map(pane => (
           <TabPane tab={pane.title} key={pane.key} closable={pane.closable}>
-            <ControlBar />
+            <ControlBar onClearConsole={onClearConsole} />
             <MonacoEditor
               height="500px"
               language="javascript"

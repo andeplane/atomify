@@ -1,12 +1,13 @@
-import React, {useState, useCallback} from 'react'
+import React, {useState, useEffect, useCallback} from 'react'
 import {Button} from 'antd'
 import {CaretRightOutlined, FileOutlined, StepForwardOutlined, RedoOutlined, PauseOutlined} from '@ant-design/icons'
 import {useStoreState, useStoreActions} from 'hooks'
 
 
 interface ControlBarProps {
+  onClearConsole: () => void
 }
-const ControlBar = () => {
+const ControlBar = ({onClearConsole}: ControlBarProps) => {
   const [isPlaying, setIsPlaying] = useState(false)
   const lammps = useStoreState(state => state.lammps.lammps)
   const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
@@ -16,17 +17,18 @@ const ControlBar = () => {
   }, [lammps])
 
 
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (lammps != null) {
-  //       lammps.step()
-  //       const numAtoms = lammps.numAtoms()
-  //       const particles = getPositions(lammps, wasm)
-  //       setParticles(particles)
-  //     }
-  //   }, 16);
-  //   return () => clearInterval(interval);
-  // }, [lammps, wasm]);
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlaying) {
+      console.log("Yeah is playing")
+      interval = setInterval(() => {
+        if (lammps != null) {
+          lammps.step()
+        }
+      }, 16);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, lammps]);
 
 
   return <>
@@ -34,6 +36,8 @@ const ControlBar = () => {
     <Button onClick={onStepClicked} icon={<StepForwardOutlined />}>Step</Button>
     <Button onClick={() => resetLammps()} icon={<RedoOutlined />}> Reset</Button>
     <Button onClick={() => lammps?.loadLJ()} icon={<FileOutlined />}>Load LJ demo</Button>
+    <Button onClick={onClearConsole} icon={<FileOutlined />}>Clear</Button>
+    
   </>
 }
 export default ControlBar

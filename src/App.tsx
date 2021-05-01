@@ -69,7 +69,7 @@ const App = () => {
   const repository = 'lammps'
   const path = 'examples/melt'
   const {isLoading, files} = useListDirectory(user, repository, path)
-  // const files: string[] =  ['test']
+  
   const fullPath = `${user}/${repository}/${path}`
   const fileNames = files.map(file => file.name)
   
@@ -112,6 +112,10 @@ const App = () => {
   const onSelect = useCallback( (keys: React.Key[], info: any) => {
     console.log('Trigger Select', keys, info);
   }, []);
+
+  const onClearConsole = useCallback( () => {
+    setLammpsOutput([])
+  }, []);
   
   return (
     <div className="App">
@@ -132,7 +136,7 @@ const App = () => {
       </Sider>
       <Layout>
         <Content style={{ margin: '24px 16px 0' }}>
-            <Editor lammpsOutput={lammpsOutput} particles={particles} />
+            <Editor lammpsOutput={lammpsOutput} onClearConsole={onClearConsole} particles={particles} />
         </Content>
       </Layout>
       </Layout>
