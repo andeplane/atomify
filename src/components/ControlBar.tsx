@@ -20,7 +20,6 @@ const ControlBar = ({onClearConsole}: ControlBarProps) => {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isPlaying) {
-      console.log("Yeah is playing")
       interval = setInterval(() => {
         if (lammps != null) {
           lammps.step()

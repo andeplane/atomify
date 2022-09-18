@@ -61,9 +61,11 @@ const App = () => {
   const setWasm = useStoreActions(actions => actions.lammps.setWasm)
   const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
   const loadLJ = useStoreActions(actions => actions.lammps.loadLJ)
+  const setSynchronizationCounter = useStoreActions(actions => actions.lammps.setSynchronizationCounter)
   
   const lammps = useStoreState(state => state.lammps.lammps)
   const wasm = useStoreState(state => state.lammps.wasm)
+  const synchronizationCounter = useStoreState(state => state.lammps.synchronizationCounter)
   
   const user = 'lammps'
   const repository = 'lammps'
@@ -79,7 +81,7 @@ const App = () => {
     }
     setLammpsOutput(state => [...state, output])
   }, [])
-  
+
   useEffect(() => {
     if (!wasmLoaded) {
       setWasmLoaded(true)
@@ -104,6 +106,11 @@ const App = () => {
 
   useEffect(() => {
     if (lammps) {
+      //@ts-ignore
+      window.postStepCallback = () => {
+        const particles = getPositions(lammps, wasm)
+        setParticles(particles)
+      }
       const particles = getPositions(lammps, wasm)
       setParticles(particles)
     }
