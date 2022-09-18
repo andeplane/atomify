@@ -1,7 +1,7 @@
-#include <lammps.h>
+#include "lammps.h"
 #include <iostream>
-#include <library.h>
-#include <modify.h>
+#include "library.h"
+#include "modify.h"
 #include "fix_atomify.h"
 
 using namespace std;
