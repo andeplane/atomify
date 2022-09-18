@@ -61,8 +61,8 @@ void synchronizeLAMMPS_callback(void *caller, int mode)
 void LAMMPSWeb::synchronizeLAMMPS(int mode)
 {
     if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
-    std::cout << "Did synchronize yay" << std::endl;
     postStepCallback();
+    emscripten_sleep(1);
     // if(!system) {
     //     qDebug() << "Error, we dont have system object. Anders or Svenn-Arne did a horrible job here...";
     //     exit(1);
@@ -184,7 +184,6 @@ void LAMMPSWeb::start()
   }
   LAMMPS_NS::FixAtomify *fix = dynamic_cast<LAMMPS_NS::FixAtomify*>(originalFix);
   fix->set_callback(&synchronizeLAMMPS_callback, this);
-  // changeWorkingDirectoryToScriptLocation();
 }
 
 void LAMMPSWeb::stop()

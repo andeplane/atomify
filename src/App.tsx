@@ -61,11 +61,9 @@ const App = () => {
   const setWasm = useStoreActions(actions => actions.lammps.setWasm)
   const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
   const loadLJ = useStoreActions(actions => actions.lammps.loadLJ)
-  const setSynchronizationCounter = useStoreActions(actions => actions.lammps.setSynchronizationCounter)
   
   const lammps = useStoreState(state => state.lammps.lammps)
   const wasm = useStoreState(state => state.lammps.wasm)
-  const synchronizationCounter = useStoreState(state => state.lammps.synchronizationCounter)
   
   const user = 'lammps'
   const repository = 'lammps'
