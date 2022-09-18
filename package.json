@@ -27,7 +27,6 @@
     "easy-peasy": "^5.0.3",
     "monaco-editor-webpack-plugin": "^3.0.1",
     "omovi": "0.0.7",
-    "perf_hooks": "^0.0.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-fetch-hook": "^1.8.5",
@@ -36,7 +35,7 @@
     "react-terminal-ui": "^0.1.11",
     "styled-components": "^5.2.1",
     "three": "^0.126.1",
-    "typescript": "^4.2.4",
+    "typescript": "^4.8.3",
     "use-fetch": "^0.0.7"
   },
   "devDependencies": {
