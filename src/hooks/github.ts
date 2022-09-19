@@ -4,16 +4,16 @@ import {GithubFile} from 'types'
 export const useListDirectory = (user: string, repository: string, directory: string) => {
   const url = `https://api.github.com/repos/${user}/${repository}/contents/${directory}`
   const { isLoading, data } = useFetch(url, {formatter: (response) => response.json()})
-  let files: GithubFile[] = []
+  let files_metadata: GithubFile[] = []
   if (data) {
-    files = data.map( (file: any) => (
+    files_metadata = data.map( (file: any) => (
       {
         name: file.name, 
         path: file.path, 
-        downloadUrl: file.download_url, 
+        download_url: file.download_url, 
         size: file.size
       }
     ))
   }
-  return {isLoading, files}
+  return {isLoading, files_metadata}
 }

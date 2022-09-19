@@ -9,6 +9,7 @@ import {useStoreActions, useStoreState} from 'hooks'
 import { Layout } from 'antd';
 import TreeView from 'components/TreeView';
 import Editor from 'containers/Editor'
+import {File} from 'store/files'
 const { Content, Sider } = Layout;
 
 const Container = styled.div`
@@ -61,17 +62,20 @@ const App = () => {
   const setWasm = useStoreActions(actions => actions.lammps.setWasm)
   const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
   const loadLJ = useStoreActions(actions => actions.lammps.loadLJ)
+  const setFiles = useStoreActions(actions => actions.files.setFiles)
+  const setSelectedFile = useStoreActions(actions => actions.files.setSelectedFile)
   
+  const files = useStoreState(state => state.files.files)
   const lammps = useStoreState(state => state.lammps.lammps)
   const wasm = useStoreState(state => state.lammps.wasm)
   
   const user = 'lammps'
   const repository = 'lammps'
   const path = 'examples/melt'
-  const {isLoading, files} = useListDirectory(user, repository, path)
+  const {isLoading, files_metadata} = useListDirectory(user, repository, path)
   
   const fullPath = `${user}/${repository}/${path}`
-  const fileNames = files.map(file => file.name)
+  const fileNames = files_metadata.map(file => file.name)
   
   const onPrint = useCallback( (text: string) => {
     const output = {
@@ -115,8 +119,43 @@ const App = () => {
   }, [lammps, wasm])
 
   const onSelect = useCallback( (keys: React.Key[], info: any) => {
-    console.log('Trigger Select', keys, info);
-  }, []);
+    (async () => {
+      const downloadFile = async (fileName: string, url: string) => {
+        if (files[fileName] != null) {
+          return
+        }
+        const newFile: File = {
+          loading: true,
+          fileName: fileName,
+          content: ""
+        }
+        let newFiles = {
+          ...files
+        }
+        newFiles[fileName] = newFile
+        setFiles(newFiles)
+        const content = await fetch(url)
+        newFile.content = await content.text();
+        
+        newFiles = {
+          ...newFiles
+        }
+        newFiles[fileName] = newFile
+
+        setFiles(newFiles)
+        setSelectedFile(newFile)
+      }
+
+      const fileName = info.node.title;
+      if (files[fileName]) {
+        setSelectedFile(files[fileName])
+      } else {
+        const downloadUrl = files_metadata.filter(file => file.name===fileName)[0].download_url
+        await downloadFile(fileName, downloadUrl);
+      }
+    })()
+    
+  }, [files, setFiles, files_metadata, setSelectedFile]);
 
   const onClearConsole = useCallback( () => {
     setLammpsOutput([])
