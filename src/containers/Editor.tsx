@@ -62,7 +62,7 @@ const Editor = ({lammpsOutput, onClearConsole, particles}: EditorProps) => {
         }
       }
       console.log("Panes has length ", panes.length, " but newPanes has length ", newPanes.length)
-      if (newPanes.length == 0) {
+      if (newPanes.length === 0) {
         setSelectedFile(undefined)
         setActiveKey("console")
       } else {

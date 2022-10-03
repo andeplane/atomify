@@ -54,7 +54,6 @@ const getPositions = (lammps: any, wasm: any) => {
 }
 
 const App = () => {
-  const [wasmLoaded, setWasmLoaded] = useState(false)
   const [particles, setParticles] = useState<Particles>()
   const [lammpsOutput, setLammpsOutput] = useState<string[]>([])
 
@@ -63,12 +62,10 @@ const App = () => {
   const loadLJ = useStoreActions(actions => actions.lammps.loadLJ)
   const setFiles = useStoreActions(actions => actions.files.setFiles)
   const setSelectedFile = useStoreActions(actions => actions.files.setSelectedFile)
-  const setSyncFrequency = useStoreActions(actions => actions.lammps.setSyncFrequency)
   
   const files = useStoreState(state => state.files.files)
   const lammps = useStoreState(state => state.lammps.lammps)
   const wasm = useStoreState(state => state.lammps.wasm)
-  const syncFrequency = useStoreState(state => state.lammps.syncFrequency)
   
   const user = 'lammps'
   const repository = 'lammps'
@@ -85,11 +82,10 @@ const App = () => {
   useEffect(
     () => {
       createModule({print: onPrint, printErr: onPrint}).then((Module: any) => {
-        setWasmLoaded(true)
         setWasm(Module)
       });
     },
-    []
+    [setWasm, onPrint]
   );
 
   useEffect(() => {
