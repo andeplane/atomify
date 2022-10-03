@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useCallback} from 'react'
 import {Button} from 'antd'
 import {CaretRightOutlined, ClearOutlined, FileOutlined, StepForwardOutlined, RedoOutlined, PauseOutlined} from '@ant-design/icons'
-import {useStoreState, useStoreActions} from 'hooks'
+import {useStoreState, useStoreActions} from '../hooks'
 
 
 interface ControlBarProps {

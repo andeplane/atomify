@@ -1,10 +1,10 @@
 import React, {useState, useCallback, useEffect} from 'react'
 import MonacoEditor from 'react-monaco-editor'
 import ConsoleTab from '../components/ConsoleTab'
-import { LineType } from 'react-terminal-ui';
-import {useStoreActions, useStoreState} from 'hooks'
+// import { LineType } from 'react-terminal-ui';
+import {useStoreActions, useStoreState} from '../hooks'
 import {OMOVIVisualizer, Particles} from 'omovi'
-import ControlBar from 'components/ControlBar'
+import ControlBar from '../components/ControlBar'
 import { Tabs } from 'antd';
 const { TabPane } = Tabs;
 
@@ -26,7 +26,8 @@ const initialPanes: Pane[] = [
 ];
 
 interface EditorProps {
-  lammpsOutput: { type: LineType; value: string;}[]
+  // lammpsOutput: { type: LineType; value: string;}[]
+  lammpsOutput?: { type: string; value: string;}[]
   onClearConsole: () => void
   particles?: Particles
 }

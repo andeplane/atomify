@@ -1,15 +1,16 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {Particles} from 'omovi'
 import 'antd/dist/antd.css';
-import lammpsWasm from './wasm/lammps'
-import { LineType } from 'react-terminal-ui';
-import {useListDirectory} from 'hooks/github'
+// import lammpsWasm from './wasm/lammps.mjs'
+import createModule from "./wasm/lammps.mjs";
+// import { LineType } from 'react-terminal-ui';
+import {useListDirectory} from './hooks/github'
 import styled from 'styled-components'
-import {useStoreActions, useStoreState} from 'hooks'
+import {useStoreActions, useStoreState} from './hooks'
 import { Layout } from 'antd';
-import TreeView from 'components/TreeView';
-import Editor from 'containers/Editor'
-import {File} from 'store/files'
+import TreeView from './components/TreeView';
+import Editor from './containers/Editor'
+import {File} from './store/files'
 const { Content, Sider } = Layout;
 
 const Container = styled.div`
@@ -55,9 +56,9 @@ const getPositions = (lammps: any, wasm: any) => {
 const App = () => {
   const [wasmLoaded, setWasmLoaded] = useState(false)
   const [particles, setParticles] = useState<Particles>()
-  const [lammpsOutput, setLammpsOutput] = useState([
-    {type: LineType.Output, value: 'LAMMPS'}
-  ])
+  // const [lammpsOutput, setLammpsOutput] = useState([
+  //   {type: LineType.Output, value: 'LAMMPS'}
+  // ])
 
   const setWasm = useStoreActions(actions => actions.lammps.setWasm)
   const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
@@ -78,26 +79,24 @@ const App = () => {
   const fileNames = files_metadata.map(file => file.name)
   
   const onPrint = useCallback( (text: string) => {
-    const output = {
-      type: LineType.Output, value: text
-    }
-    setLammpsOutput(state => [...state, output])
+    // const output = {
+    //   type: LineType.Output, value: text
+    // }
+    // setLammpsOutput(state => [...state, output])
   }, [])
 
-  useEffect(() => {
-    if (!wasmLoaded) {
-      setWasmLoaded(true)
-      const wasmLoader = lammpsWasm({
-        onRuntimeInitialized: async () => {
-          wasmLoader.then(async (wasm: any) => {
-            setWasm(wasm)
-          })
-        },
-        print: onPrint,
-        locateFile: () => require("./wasm/lammps.wasm"),
+  useEffect(
+    // useEffect here is roughly equivalent to putting this in componentDidMount for a class component
+    () => {
+      createModule().then((Module: any) => {
+        setWasmLoaded(true)
+        setWasm(Module)
+        //@ts-ignore
+        window.lammps = Module
       });
-    }
-  }, [onPrint, setWasm, wasmLoaded])
+    },
+    []
+  );
 
   useEffect(() => {
     if (wasm) {
@@ -158,7 +157,7 @@ const App = () => {
   }, [files, setFiles, files_metadata, setSelectedFile]);
 
   const onClearConsole = useCallback( () => {
-    setLammpsOutput([])
+    // setLammpsOutput([])
   }, []);
   
   return (
@@ -180,7 +179,8 @@ const App = () => {
       </Sider>
       <Layout>
         <Content style={{ margin: '24px 16px 0' }}>
-            <Editor lammpsOutput={lammpsOutput} onClearConsole={onClearConsole} particles={particles} />
+            {/* <Editor lammpsOutput={lammpsOutput} onClearConsole={onClearConsole} particles={particles} /> */}
+            <Editor onClearConsole={onClearConsole} particles={particles} />
         </Content>
       </Layout>
       </Layout>

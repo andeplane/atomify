@@ -1,5 +1,5 @@
 import { action, Action } from 'easy-peasy';
-import {LammpsWeb} from 'types'
+import {LammpsWeb} from '../types'
 
 export interface LammpsModel {
   wasm?: any
