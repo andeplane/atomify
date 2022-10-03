@@ -1,16 +1,13 @@
 import './index.css'
 
 import React from 'react'
-import ReactDOM from 'react-dom/client'
+import ReactDOM from 'react-dom'
 import App from './App'
-import { StoreProvider } from 'easy-peasy'
-import store from './store'
+import { StoreProvider } from 'easy-peasy';
+import store from './store';
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
-
-root.render(
+ReactDOM.render(
   <StoreProvider store={store}>
     <App />
-  </StoreProvider>)
+  </StoreProvider>,
+document.getElementById('root'))
