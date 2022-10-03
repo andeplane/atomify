@@ -105,7 +105,7 @@ const App = () => {
         lammps.setSyncFrequency(window.syncFrequency)
       }
       // @ts-ignore
-      window.syncFrequency = 10
+      window.syncFrequency = 2
       const particles = getPositions(lammps, wasm)
       setParticles(particles)
     }

@@ -16,7 +16,7 @@ export interface LammpsModel {
 export const lammpsModel: LammpsModel = {
   lammps: undefined,
   running: false,
-  syncFrequency: 10,
+  syncFrequency: 2,
   // methods
   setRunning: action((state, running: boolean) => {
     state.running = running
@@ -25,7 +25,12 @@ export const lammpsModel: LammpsModel = {
     state.wasm = wasm
   }),
   resetLammps: action((state) => {
-    state.lammps = new state.wasm.LAMMPSWeb() as LammpsWeb
+    if (state.lammps == null) {
+      state.lammps = new state.wasm.LAMMPSWeb() as LammpsWeb
+      //@ts-ignore
+      window.lammps = state.lammps
+    } 
+    state.lammps.start()
     state.running = false
     state.lammps.setSyncFrequency(state.syncFrequency)
     //@ts-ignore
@@ -37,9 +42,11 @@ export const lammpsModel: LammpsModel = {
     state.syncFrequency = syncFrequency
   }),
   loadLJ: action((state) => {
-    state.lammps = new state.wasm.LAMMPSWeb() as LammpsWeb
-    //@ts-ignore
-    window.lammps = state.lammps
+    if (state.lammps == null) {
+      state.lammps = new state.wasm.LAMMPSWeb() as LammpsWeb
+      //@ts-ignore
+      window.lammps = state.lammps
+    }
     state.lammps.loadLJ()
   }),
 
