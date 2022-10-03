@@ -1,5 +1,3 @@
-// import { LineType } from 'react-terminal-ui';
-
 export type LammpsWeb = {
   getPositionsPointer: () => number
   getIdPointer: () => number

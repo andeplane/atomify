@@ -25,6 +25,7 @@ export const lammpsModel: LammpsModel = {
     state.wasm = wasm
   }),
   resetLammps: action((state) => {
+    console.log("Existing ", state.lammps)
     if (state.lammps == null) {
       state.lammps = new state.wasm.LAMMPSWeb() as LammpsWeb
       //@ts-ignore

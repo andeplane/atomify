@@ -69,7 +69,7 @@ const App = () => {
   
   const user = 'lammps'
   const repository = 'lammps'
-  const path = 'examples/melt'
+  const path = 'examples/flow'
   const {isLoading, files_metadata} = useListDirectory(user, repository, path)
   
   const fullPath = `${user}/${repository}/${path}`

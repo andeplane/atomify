@@ -36,15 +36,15 @@ const Editor = ({lammpsOutput, onClearConsole, particles}: EditorProps) => {
   const [panes, setPanes] = useState<Pane[]>([])
   const [activeKey, setActiveKey] = useState<string>()
   const files = useStoreState(state => state.files.files)
+  const lammps = useStoreState(state => state.lammps.lammps)
   const selectedFile = useStoreState(state => state.files.selectedFile)
   const setSelectedFile = useStoreActions(actions => actions.files.setSelectedFile)
-
+  const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
   const onChange = useCallback( (activeKey: string) => {
     setActiveKey(activeKey)
   }, [])
 
   const onEdit = useCallback( (e: React.MouseEvent | React.KeyboardEvent | string, action: 'add' | 'remove') => {
-    console.log("Will close ", e, action)
     const remove = (targetKey: String) => {
       let newActiveKey = activeKey;
       let lastIndex = -1;
@@ -122,6 +122,14 @@ const Editor = ({lammpsOutput, onClearConsole, particles}: EditorProps) => {
     console.log('onChange', newValue, e);
   }, [])
 
+  const onPlayClicked = useCallback( () => {
+    const activePane = panes.filter(pane => pane.key == activeKey)[0]
+    resetLammps()
+    lammps?.runCommand(activePane.content)
+    // activePane.content.split("\n").forEach(line => {
+    // })
+  }, [panes, lammps, resetLammps])
+
   const options = {
     selectOnLineNumbers: true
   };
@@ -144,7 +152,7 @@ const Editor = ({lammpsOutput, onClearConsole, particles}: EditorProps) => {
         </TabPane>
         {panes.map(pane => (
           <TabPane tab={pane.title} key={pane.key} closable={pane.closable}>
-            <ControlBar onClearConsole={onClearConsole} />
+            <ControlBar showPlayButton={true} onPlayClicked={onPlayClicked} onClearConsole={onClearConsole} />
             <MonacoEditor
               height="500px"
               language="javascript"
