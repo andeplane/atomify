@@ -56,9 +56,7 @@ const getPositions = (lammps: any, wasm: any) => {
 const App = () => {
   const [wasmLoaded, setWasmLoaded] = useState(false)
   const [particles, setParticles] = useState<Particles>()
-  // const [lammpsOutput, setLammpsOutput] = useState([
-  //   {type: LineType.Output, value: 'LAMMPS'}
-  // ])
+  const [lammpsOutput, setLammpsOutput] = useState<string[]>([])
 
   const setWasm = useStoreActions(actions => actions.lammps.setWasm)
   const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
@@ -79,20 +77,14 @@ const App = () => {
   const fileNames = files_metadata.map(file => file.name)
   
   const onPrint = useCallback( (text: string) => {
-    // const output = {
-    //   type: LineType.Output, value: text
-    // }
-    // setLammpsOutput(state => [...state, output])
+    setLammpsOutput(state => [...state, text])
   }, [])
 
   useEffect(
-    // useEffect here is roughly equivalent to putting this in componentDidMount for a class component
     () => {
-      createModule().then((Module: any) => {
+      createModule({print: onPrint, printErr: onPrint}).then((Module: any) => {
         setWasmLoaded(true)
         setWasm(Module)
-        //@ts-ignore
-        window.lammps = Module
       });
     },
     []
@@ -157,7 +149,7 @@ const App = () => {
   }, [files, setFiles, files_metadata, setSelectedFile]);
 
   const onClearConsole = useCallback( () => {
-    // setLammpsOutput([])
+    setLammpsOutput([])
   }, []);
   
   return (
@@ -179,8 +171,7 @@ const App = () => {
       </Sider>
       <Layout>
         <Content style={{ margin: '24px 16px 0' }}>
-            {/* <Editor lammpsOutput={lammpsOutput} onClearConsole={onClearConsole} particles={particles} /> */}
-            <Editor onClearConsole={onClearConsole} particles={particles} />
+            <Editor lammpsOutput={lammpsOutput} onClearConsole={onClearConsole} particles={particles} />
         </Content>
       </Layout>
       </Layout>

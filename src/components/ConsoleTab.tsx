@@ -3,7 +3,7 @@ import Terminal, { ColorMode, /*LineType*/ } from 'react-terminal-ui';
 import {useStoreState, useStoreActions} from '../hooks'
 
 interface ConsoleTabProps {
-  lammpsOutput?: { type: string; value: string;}[]
+  lammpsOutput: string[]
 }
 const ConsoleTab = ({lammpsOutput}: ConsoleTabProps) => {
   const lammps = useStoreState(state => state.lammps.lammps)
@@ -15,8 +15,9 @@ const ConsoleTab = ({lammpsOutput}: ConsoleTabProps) => {
   }, [lammps, setRunning])
   
   return (
-    // <Terminal name='LAMMPS console' colorMode={ ColorMode.Light }  lineData={ lammpsOutput } onInput={ onInput }/>
-    <Terminal name='LAMMPS console' colorMode={ ColorMode.Light }  onInput={ onInput }/>
+    <Terminal name='LAMMPS console' colorMode={ ColorMode.Light }  onInput={ onInput }> 
+      {lammpsOutput.map(output => <>{output}<br /></>)}
+    </Terminal>
   )
 }
 

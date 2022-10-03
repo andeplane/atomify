@@ -27,7 +27,7 @@ const initialPanes: Pane[] = [
 
 interface EditorProps {
   // lammpsOutput: { type: LineType; value: string;}[]
-  lammpsOutput?: { type: string; value: string;}[]
+  lammpsOutput: string[]
   onClearConsole: () => void
   particles?: Particles
 }
