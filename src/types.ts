@@ -8,6 +8,7 @@ export type LammpsWeb = {
   step(): () => void
   runCommand: (command: string) => void
   numAtoms: () => number
+  setSyncFrequency: (every: number) => void
 }
 
 export type LammpsOutput = {

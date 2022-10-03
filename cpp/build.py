@@ -33,5 +33,11 @@ print("Copying modified files ...")
 copy_files()
 subprocess.call("make -j8", shell=True)
 print("Copying compiled files into src directory ...")
-shutil.copyfile("lammps.wasm", "../src/wasm/lammps.wasm")
-shutil.copyfile("lammps.js", "../src/wasm/lammps.js")
+shutil.copyfile("lammps.wasm", "../public/lammps.wasm")
+# shutil.copyfile("lammps.mjs", "../src/wasm/lammps.mjs")
+with open('lammps.mjs') as f:
+  content = f.read()
+  with open("../src/wasm/lammps.mjs", "w") as g:
+    g.write("/* eslint-disable */\n")
+    g.write(content)
+  

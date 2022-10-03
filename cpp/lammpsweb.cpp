@@ -34,6 +34,7 @@ public:
   void runCommand(std::string command);
   int findFixIndex(std::string identifier);
   bool fixExists(std::string identifier);
+  void setSyncFrequency(int frequency);
   LAMMPS_NS::Fix* findFixByIdentifier(std::string identifier);
 };
 
@@ -58,54 +59,26 @@ void synchronizeLAMMPS_callback(void *caller, int mode)
     controller->synchronizeLAMMPS(mode);
 }
 
+void LAMMPSWeb::setSyncFrequency(int every) {
+  LAMMPS_NS::Fix *originalFix = findFixByIdentifier(std::string("atomify"));
+  if (!originalFix) {
+    return;
+  }
+  LAMMPS_NS::FixAtomify *fix = dynamic_cast<LAMMPS_NS::FixAtomify*>(originalFix);
+  fix->sync_frequency = every;
+}
+
 void LAMMPSWeb::synchronizeLAMMPS(int mode)
 {
+    if(mode == 1000) {
+      // Just a small sleep to not block UI
+      emscripten_sleep(1);
+      return;
+    }
+
     if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
     postStepCallback();
     emscripten_sleep(1);
-    // if(!system) {
-    //     qDebug() << "Error, we dont have system object. Anders or Svenn-Arne did a horrible job here...";
-    //     exit(1);
-    // }
-
-    // system->synchronize(this);
-    // m_synchronizationCount++;
-
-    // if(m_lammps->update->ntimestep - m_lastSynchronizationTimestep < simulationSpeed) return;
-    // m_lastSynchronizationTimestep = m_lammps->update->ntimestep;
-
-    // system->atoms()->processModifiers(system);
-    // system->atoms()->createRenderererData(this);
-    // worker->m_reprocessRenderingData = false;
-
-    // system->updateThreadOnDataObjects(qmlThread);
-
-    // worker->setNeedsSynchronization(true);
-    // while(worker->needsSynchronization()) {
-    //     if(QThread::currentThread()->isInterruptionRequested()) {
-    //         // Happens if main thread wants to exit application
-    //         throw Cancelled();
-    //     }
-
-    //     if(worker->m_reprocessRenderingData) {
-    //         system->atoms()->processModifiers(system);
-    //         if(worker->m_workerRenderingMutex.tryLock()) {
-    //             system->atoms()->createRenderererData(this);
-    //             worker->m_reprocessRenderingData = false;
-    //             worker->m_workerRenderingMutex.unlock();
-    //         }
-    //     }
-
-    //     if(m_paused) {
-    //         QThread::currentThread()->msleep(100); // Check fairly slow
-    //     } else {
-    //         QThread::currentThread()->msleep(1); // As fast as possible
-    //     }
-    // }
-
-    // if(worker->m_cancelPending) {
-    //     throw Cancelled();
-    // }
 }
 
 LAMMPSWeb::LAMMPSWeb() : lmp(nullptr)
@@ -250,5 +223,6 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("step", &LAMMPSWeb::step)
       .function("start", &LAMMPSWeb::start)
       .function("stop", &LAMMPSWeb::stop)
-      .function("numAtoms", &LAMMPSWeb::numAtoms);
+      .function("numAtoms", &LAMMPSWeb::numAtoms)
+      .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
 }

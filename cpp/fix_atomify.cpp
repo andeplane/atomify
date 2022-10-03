@@ -36,9 +36,11 @@ using namespace FixConst;
 FixAtomify::FixAtomify(LAMMPS *lmp, int narg, char **arg)
     : Fix(lmp, narg, arg)
     , list(NULL)
+    , step_count(0)
     , callback(NULL)
     , ptr_caller(NULL)
     , build_neighborlist(false)
+    , sync_frequency(10)
 {
 }
 
@@ -112,12 +114,19 @@ void FixAtomify::update_computes()
 
 void FixAtomify::end_of_step()
 {
+    step_count++;
     if(build_neighborlist) {
         neighbor->build_one(list);
     }
     lost_atoms();
-    (this->callback)(ptr_caller,END_OF_STEP);
-    update_computes();
+    bool should_sync = step_count % sync_frequency == 0;
+    if (should_sync) {
+        (this->callback)(ptr_caller,END_OF_STEP);
+        update_computes();
+    } else if (sync_frequency > 10 && step_count % 10 == 0) {
+        // We won't sync anything, but will do a small sleep to not freeze UI
+        (this->callback)(ptr_caller, 1000);
+    }
 }
 
 /* ---------------------------------------------------------------------- */

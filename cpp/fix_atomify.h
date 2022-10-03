@@ -34,14 +34,15 @@ class FixAtomify : public Fix {
   void update_compute(const char computeId[]);
   void update_computes();
   void init_list(int, class NeighList *);
-
   typedef void (*FnPtr)(void *, int);
   void set_callback(FnPtr, void *);
   
   class NeighList *list; // half neighbor list
   FnPtr callback;
+  int step_count;
   void *ptr_caller;
   bool build_neighborlist;
+  int sync_frequency; // how often to perform expensive sync of positions and computes
 };
 
 }

@@ -63,10 +63,12 @@ const App = () => {
   const loadLJ = useStoreActions(actions => actions.lammps.loadLJ)
   const setFiles = useStoreActions(actions => actions.files.setFiles)
   const setSelectedFile = useStoreActions(actions => actions.files.setSelectedFile)
+  const setSyncFrequency = useStoreActions(actions => actions.lammps.setSyncFrequency)
   
   const files = useStoreState(state => state.files.files)
   const lammps = useStoreState(state => state.lammps.lammps)
   const wasm = useStoreState(state => state.lammps.wasm)
+  const syncFrequency = useStoreState(state => state.lammps.syncFrequency)
   
   const user = 'lammps'
   const repository = 'lammps'
@@ -103,7 +105,11 @@ const App = () => {
       window.postStepCallback = () => {
         const particles = getPositions(lammps, wasm)
         setParticles(particles)
+        // @ts-ignore
+        lammps.setSyncFrequency(window.syncFrequency)
       }
+      // @ts-ignore
+      window.syncFrequency = 10
       const particles = getPositions(lammps, wasm)
       setParticles(particles)
     }
