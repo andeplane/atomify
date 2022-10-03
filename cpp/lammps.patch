@@ -1,0 +1,63 @@
+diff --git a/src/info.cpp b/src/info.cpp
+index 2261b1d..71e340e 100644
+--- a/src/info.cpp
++++ b/src/info.cpp
+@@ -1326,9 +1326,9 @@ void Info::get_memory_info(double *meminfo)
+ #endif
+     meminfo[1] = (double)mi.uordblks/1048576.0+(double)mi.hblkhd/1048576.0;
+ #endif
+-    struct rusage ru;
+-    if (getrusage(RUSAGE_SELF, &ru) == 0)
+-      meminfo[2] = (double)ru.ru_maxrss/1024.0;
++    // struct rusage ru;
++    // if (getrusage(RUSAGE_SELF, &ru) == 0)
++    //   meminfo[2] = (double)ru.ru_maxrss/1024.0;
+ #endif
+ }
+ 
+diff --git a/src/modify.cpp b/src/modify.cpp
+index 90b911b..8c462ba 100644
+--- a/src/modify.cpp
++++ b/src/modify.cpp
+@@ -807,7 +807,7 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix)
+   // nullptr must be last entry in this list
+ 
+   const char *exceptions[] = {"GPU",   "OMP", "INTEL",      "property/atom", "cmap",
+-                              "cmap3", "rx",  "deprecated", "STORE/KIM",     nullptr};
++                              "cmap3", "rx",  "deprecated", "STORE/KIM", "atomify",     nullptr};
+ 
+   if (domain->box_exist == 0) {
+     int m;
+diff --git a/src/neigh_request.h b/src/neigh_request.h
+index 71c5987..95ffa86 100644
+--- a/src/neigh_request.h
++++ b/src/neigh_request.h
+@@ -27,6 +27,7 @@ class NeighRequest : protected Pointers {
+   friend class NeighborKokkos;
+   friend class NPairSkipIntel;
+   friend class FixIntel;
++  friend class FixAtomify;
+ 
+  protected:
+   int index;                 // index of which neigh request this is
+diff --git a/src/platform.cpp b/src/platform.cpp
+index 667481b..85aee47 100644
+--- a/src/platform.cpp
++++ b/src/platform.cpp
+@@ -141,11 +141,11 @@ double platform::cputime()
+ 
+ #else /* ! _WIN32 */
+ 
+-  struct rusage ru;
+-  if (getrusage(RUSAGE_SELF, &ru) == 0) {
+-    rv = (double) ru.ru_utime.tv_sec;
+-    rv += (double) ru.ru_utime.tv_usec * 0.000001;
+-  }
++  // struct rusage ru;
++  // if (getrusage(RUSAGE_SELF, &ru) == 0) {
++  //   rv = (double) ru.ru_utime.tv_sec;
++  //   rv += (double) ru.ru_utime.tv_usec * 0.000001;
++  // }
+ 
+ #endif
+ 
