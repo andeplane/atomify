@@ -16,7 +16,7 @@ const ConsoleTab = ({lammpsOutput}: ConsoleTabProps) => {
   
   return (
     <Terminal name='LAMMPS console' colorMode={ ColorMode.Light }  onInput={ onInput }> 
-      {lammpsOutput.map(output => <>{output}<br /></>)}
+      {lammpsOutput.map( (output, i) => <div key={i}>{output}<br /></div>)}
     </Terminal>
   )
 }
