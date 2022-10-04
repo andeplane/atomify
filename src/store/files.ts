@@ -2,10 +2,8 @@ import { action, Action } from 'easy-peasy';
 import {GithubFile} from '../types'
 
 export type SimulationFile = {
-  loading: boolean,
   url: string,
   fileName: string,
-  path: string,
   content?: string
 }
 export type FilesList = {[key: string]: SimulationFile};

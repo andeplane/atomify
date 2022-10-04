@@ -41,20 +41,24 @@ const items: MenuItem[] = [
 
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedMenu, setSelectedMenu] = useState<string>("view")
+  const [selectedMenu, setSelectedMenu] = useState<string>("examples")
   const wasm = useStoreState(state => state.lammps.wasm)
   const loading = useStoreState(state => state.simulation.loading)
   const status = useStoreState(state => state.simulation.status)
-  console.log("Do we have wasm? ", wasm != null)
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={value => setCollapsed(value)}>
         <div className="logo" />
-        <Menu theme="dark" defaultSelectedKeys={['view']} mode="inline" items={items} onSelect={(info) => setSelectedMenu(info.key)} />
+        <Menu theme="dark" defaultSelectedKeys={['examples']} mode="inline" items={items} onSelect={(info) => setSelectedMenu(info.key)} />
       </Sider>
       <Layout className="site-layout">
         <Simulation />
-        <Header className="site-layout-background" style={{ padding: 0 }} />
+        <Header className="site-layout-background" style={{ fontSize: 25 }}>
+          {selectedMenu=="view" && "3D"}
+          {selectedMenu=="analyze" && "Analyze"}
+          {selectedMenu=="edit" && "Edit"}
+          {selectedMenu=="examples" && "Examples"}
+        </Header>
         <Content style={{ margin: '0 16px' }}>
           {selectedMenu=="view" && <View />}
           {selectedMenu=="analyze" && <Analyze />}

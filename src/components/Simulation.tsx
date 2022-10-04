@@ -33,24 +33,24 @@ const Simulation = () => {
   const setWasm = useStoreActions(actions => actions.lammps.setWasm)
   const setLammps = useStoreActions(actions => actions.lammps.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
-
-  const uploadFiles = async (folder: string, filePaths: string[]) => {
+  
+  const uploadFiles = async (folder: string, fileUrls: string[]) => {
     if (!wasm) {
       return
     }
-
+    
     wasm.FS.mkdir(`/${folder}`)
-    const fileObjects = filePaths.map(path => files[path])
+    const fileObjects = fileUrls.map(url => files[url])
     const filesToDownload = fileObjects.filter(file => file.content == null)
     for (let i = 0; i < filesToDownload.length; i++) {
       const file = filesToDownload[i]
       setStatus({
         title: `Downloading file (${i+1}/${filesToDownload.length})`,
-        text: file.path
+        text: file.fileName
       })
       const response = await fetch(file.url)
       const content = await response.text()
-      files[file.path].content = content
+      files[file.url].content = content
       wasm.FS.writeFile(`/${folder}/${file.fileName}`, content)
       setFiles({...files})
     }
@@ -65,23 +65,17 @@ const Simulation = () => {
   useEffect(
     () => {
       setFiles({
-        'examples/vashishta/SiO.1990.vashishta': {
+        'https://raw.githubusercontent.com/lammps/lammps/develop/potentials/SiO.1990.vashishta': {
           fileName: 'SiO.1990.vashishta',
-          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/potentials/SiO.1990.vashishta',
-          loading: false,
-          path: 'examples/vashishta/SiO.1990.vashishta'
+          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/potentials/SiO.1990.vashishta'
         },
-        'examples/vashishta/data.quartz': {
+        'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/data.quartz': {
           fileName: 'data.quartz',
-          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/data.quartz',
-          loading: false,
-          path: 'examples/vashishta/data.quartz'
+          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/data.quartz'
         },
-        'examples/vashishta/in.vashishta.sio2': {
+        'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/in.vashishta.sio2': {
           fileName: 'in.vashishta.sio2',
-          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/in.vashishta.sio2',
-          loading: false,
-          path: 'examples/vashishta/in.vashishta.sio2'
+          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/in.vashishta.sio2'
         }
       })
 
@@ -113,13 +107,13 @@ const Simulation = () => {
   useEffect(() => {
     (async() => {
       if (wasm && lammps) {
-        await uploadFiles('simulation', [
-          'examples/vashishta/SiO.1990.vashishta',
-          'examples/vashishta/data.quartz',
-          'examples/vashishta/in.vashishta.sio2'
-        ])
-        lammps.start()
-        lammps.load_local('/simulation/in.vashishta.sio2')
+        // await uploadFiles('simulation', [
+        //   'https://raw.githubusercontent.com/lammps/lammps/develop/potentials/SiO.1990.vashishta',
+        //   'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/data.quartz',
+        //   'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/in.vashishta.sio2'
+        // ])
+        // lammps.start()
+        // lammps.load_local('/simulation/in.vashishta.sio2')
       } else {
         console.log("No wasm yet...")
       }

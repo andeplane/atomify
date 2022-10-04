@@ -52,18 +52,16 @@ const GithubBrowser = ({user, repository, path}: GithubBrowserProps) => {
         return
       }
 
-      const downloadFile = async (path: string, fileName: string, url: string) => {
+      const downloadFile = async (fileName: string, url: string) => {
         const newFile: SimulationFile = {
-          loading: true,
           fileName: fileName,
           content: "",
-          url,
-          path
+          url
         }
         let newFiles = {
           ...files
         }
-        newFiles[path] = newFile
+        newFiles[url] = newFile
         setFiles(newFiles)
         const content = await fetch(url)
         newFile.content = await content.text();
@@ -76,8 +74,8 @@ const GithubBrowser = ({user, repository, path}: GithubBrowserProps) => {
         setFiles(newFiles)
       }
 
-      if (!files[node.path]) {
-        await downloadFile(node.path, node.title, node.download_url)
+      if (!files[node.download_url]) {
+        await downloadFile(node.title, node.download_url)
       }
       setSelectedFile(files[node.path])
   }, [files, setFiles, setSelectedFile]);
