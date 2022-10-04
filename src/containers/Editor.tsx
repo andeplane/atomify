@@ -1,7 +1,6 @@
 import React, {useState, useCallback, useEffect} from 'react'
 import MonacoEditor from 'react-monaco-editor'
 import ConsoleTab from '../components/ConsoleTab'
-// import { LineType } from 'react-terminal-ui';
 import {useStoreActions, useStoreState} from '../hooks'
 import {OMOVIVisualizer, Particles} from 'omovi'
 import ControlBar from '../components/ControlBar'
