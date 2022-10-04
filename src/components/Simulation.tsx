@@ -1,7 +1,7 @@
 import {useCallback, useEffect} from 'react'
 import {useStoreActions, useStoreState} from '../hooks'
 import createModule from "../wasm/lammps.mjs";
-import {SimulationFile} from '../store/files'
+// import {SimulationFile} from '../store/files'
 import { LammpsWeb } from '../types';
 import {Particles} from 'omovi'
 
@@ -26,37 +26,14 @@ const getPositions = (lammps: any, wasm: any) => {
 const Simulation = () => {
   const wasm = useStoreState(state => state.lammps.wasm)
   const lammps = useStoreState(state => state.lammps.lammps)
-  const files = useStoreState(state => state.files.files)
+  // const files = useStoreState(state => state.files.files)
   const particles = useStoreState(state => state.simulation.particles)
   const setParticles = useStoreActions(actions => actions.simulation.setParticles)
-  const setFiles = useStoreActions(actions => actions.files.setFiles)
+  // const setFiles = useStoreActions(actions => actions.files.setFiles)
   const setWasm = useStoreActions(actions => actions.lammps.setWasm)
   const setLammps = useStoreActions(actions => actions.lammps.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
   
-  const uploadFiles = async (folder: string, fileUrls: string[]) => {
-    if (!wasm) {
-      return
-    }
-    
-    wasm.FS.mkdir(`/${folder}`)
-    const fileObjects = fileUrls.map(url => files[url])
-    const filesToDownload = fileObjects.filter(file => file.content == null)
-    for (let i = 0; i < filesToDownload.length; i++) {
-      const file = filesToDownload[i]
-      setStatus({
-        title: `Downloading file (${i+1}/${filesToDownload.length})`,
-        text: file.fileName
-      })
-      const response = await fetch(file.url)
-      const content = await response.text()
-      files[file.url].content = content
-      wasm.FS.writeFile(`/${folder}/${file.fileName}`, content)
-      setFiles({...files})
-    }
-    wasm.FS.chdir(`/${folder}`)
-  }
-
   const onPrint = useCallback( (text: string) => {
     // setLammpsOutput(state => [...state, text])
     console.log(text)
@@ -64,21 +41,6 @@ const Simulation = () => {
 
   useEffect(
     () => {
-      setFiles({
-        'https://raw.githubusercontent.com/lammps/lammps/develop/potentials/SiO.1990.vashishta': {
-          fileName: 'SiO.1990.vashishta',
-          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/potentials/SiO.1990.vashishta'
-        },
-        'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/data.quartz': {
-          fileName: 'data.quartz',
-          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/data.quartz'
-        },
-        'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/in.vashishta.sio2': {
-          fileName: 'in.vashishta.sio2',
-          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/in.vashishta.sio2'
-        }
-      })
-
       createModule({
         print: onPrint, 
         printErr: onPrint,
@@ -104,21 +66,6 @@ const Simulation = () => {
     },
     [setWasm, onPrint]
   );
-  useEffect(() => {
-    (async() => {
-      if (wasm && lammps) {
-        // await uploadFiles('simulation', [
-        //   'https://raw.githubusercontent.com/lammps/lammps/develop/potentials/SiO.1990.vashishta',
-        //   'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/data.quartz',
-        //   'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/in.vashishta.sio2'
-        // ])
-        // lammps.start()
-        // lammps.load_local('/simulation/in.vashishta.sio2')
-      } else {
-        console.log("No wasm yet...")
-      }
-    })()
-  }, [wasm, lammps])
   return (<></>)
 }
 export default Simulation

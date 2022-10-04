@@ -1,6 +1,5 @@
 import {useCallback} from 'react'
-import {SimulationFile} from '../store/files'
-import {Simulation} from '../store/simulation'
+import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Card } from 'antd';
@@ -44,14 +43,20 @@ const Examples = () => {
     const simulation: Simulation = {
       files: example.files,
       id: example.id,
-      inputScript: example.inputScript
+      inputScript: example.inputScript,
+      start: true
     }
     newSimulation(simulation)
-    console.log("Playing ", example.id)
   }, [examples])
 
   const onEdit = useCallback((example: Example) => {
-    console.log("Editing ", example.id)
+    const simulation: Simulation = {
+      files: example.files,
+      id: example.id,
+      inputScript: example.inputScript,
+      start: false
+    }
+    newSimulation(simulation)
   }, [examples])
 
   return (<div style={{padding: 10}}>

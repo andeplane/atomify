@@ -32,139 +32,140 @@ interface EditorProps {
 }
 
 const Editor = ({lammpsOutput, onClearConsole, particles}: EditorProps) => {
-  const [panes, setPanes] = useState<Pane[]>([])
-  const [activeKey, setActiveKey] = useState<string>()
-  const files = useStoreState(state => state.files.files)
-  const lammps = useStoreState(state => state.lammps.lammps)
-  const selectedFile = useStoreState(state => state.files.selectedFile)
-  const setSelectedFile = useStoreActions(actions => actions.files.setSelectedFile)
-  const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
-  const onChange = useCallback( (activeKey: string) => {
-    setActiveKey(activeKey)
-  }, [])
+  return (<></>)
+  // const [panes, setPanes] = useState<Pane[]>([])
+  // const [activeKey, setActiveKey] = useState<string>()
+  // // const files = useStoreState(state => state.files.files)
+  // const lammps = useStoreState(state => state.lammps.lammps)
+  // const selectedFile = useStoreState(state => state.simulation.selectedFile)
+  // const setSelectedFile = useStoreActions(actions => actions.simulation.setSelectedFile)
+  // const resetLammps = useStoreActions(actions => actions.lammps.resetLammps)
+  // const onChange = useCallback( (activeKey: string) => {
+  //   setActiveKey(activeKey)
+  // }, [])
 
-  const onEdit = useCallback( (e: React.MouseEvent | React.KeyboardEvent | string, action: 'add' | 'remove') => {
-    const remove = (targetKey: String) => {
-      let newActiveKey = activeKey;
-      let lastIndex = -1;
-      panes.forEach((item, i) => {
-        if (item.key === targetKey) {
-          lastIndex = i - 1;
-        }
-      });
-      const newPanes = panes.filter(item => item.key !== targetKey);
-      if (newPanes.length && newActiveKey === targetKey) {
-        if (lastIndex >= 0) {
-          newActiveKey = newPanes[lastIndex].key;
-        } else {
-          newActiveKey = newPanes[0].key;
-        }
-      }
-      console.log("Panes has length ", panes.length, " but newPanes has length ", newPanes.length)
-      if (newPanes.length === 0) {
-        setSelectedFile(undefined)
-        setActiveKey("console")
-      } else {
-        const paneTitle = newPanes[newPanes.length-1].title
-        const file = files[paneTitle]
-        setSelectedFile(file)
-      }
-      setPanes(newPanes)
-    };
+  // const onEdit = useCallback( (e: React.MouseEvent | React.KeyboardEvent | string, action: 'add' | 'remove') => {
+  //   const remove = (targetKey: String) => {
+  //     let newActiveKey = activeKey;
+  //     let lastIndex = -1;
+  //     panes.forEach((item, i) => {
+  //       if (item.key === targetKey) {
+  //         lastIndex = i - 1;
+  //       }
+  //     });
+  //     const newPanes = panes.filter(item => item.key !== targetKey);
+  //     if (newPanes.length && newActiveKey === targetKey) {
+  //       if (lastIndex >= 0) {
+  //         newActiveKey = newPanes[lastIndex].key;
+  //       } else {
+  //         newActiveKey = newPanes[0].key;
+  //       }
+  //     }
+  //     console.log("Panes has length ", panes.length, " but newPanes has length ", newPanes.length)
+  //     if (newPanes.length === 0) {
+  //       // setSelectedFile(undefined)
+  //       setActiveKey("console")
+  //     } else {
+  //       const paneTitle = newPanes[newPanes.length-1].title
+  //       // const file = files[paneTitle]
+  //       // setSelectedFile(file)
+  //     }
+  //     setPanes(newPanes)
+  //   };
 
-    if (action === 'add') {
-      // add();
-    } else {
-      if (typeof e === 'string') {
-        remove(e);
-      }
-    }
-  }, [panes, activeKey])
+  //   if (action === 'add') {
+  //     // add();
+  //   } else {
+  //     if (typeof e === 'string') {
+  //       remove(e);
+  //     }
+  //   }
+  // }, [panes, activeKey])
 
-  useEffect(() => {
-    if (!selectedFile) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!selectedFile) {
+  //     return;
+  //   }
 
-    let hasPaneOpen = false
-    panes.forEach(pane => {
-      if (pane.title === selectedFile.fileName) {
-        hasPaneOpen = true
-      }
-    })
+  //   let hasPaneOpen = false
+  //   panes.forEach(pane => {
+  //     if (pane.title === selectedFile.fileName) {
+  //       hasPaneOpen = true
+  //     }
+  //   })
     
-    if (!hasPaneOpen) {
-      const newPanes = [
-        ...panes,
-        {
-          title: selectedFile.fileName,
-          content: selectedFile.content ? selectedFile.content : '',
-          key: selectedFile.fileName,
-          closeable: true
-        }
-      ]
+  //   if (!hasPaneOpen) {
+  //     const newPanes = [
+  //       ...panes,
+  //       {
+  //         title: selectedFile.fileName,
+  //         content: selectedFile.content ? selectedFile.content : '',
+  //         key: selectedFile.fileName,
+  //         closeable: true
+  //       }
+  //     ]
       
-      setPanes(newPanes)
-      setActiveKey(selectedFile.fileName)
-    }
-  }, [panes, selectedFile, files, setSelectedFile])
-  useEffect(() => {
-    setPanes(initialPanes)
-  }, [])
+  //     setPanes(newPanes)
+  //     setActiveKey(selectedFile.fileName)
+  //   }
+  // }, [panes, selectedFile, files, setSelectedFile])
+  // useEffect(() => {
+  //   setPanes(initialPanes)
+  // }, [])
 
-  const editorDidMount = useCallback( (editor: any, monaco: any) => {
-    console.log('editorDidMount', editor);
-    editor.focus();
-  }, [])
+  // const editorDidMount = useCallback( (editor: any, monaco: any) => {
+  //   console.log('editorDidMount', editor);
+  //   editor.focus();
+  // }, [])
 
-  const onEditorChange = useCallback( (newValue: string, e: any) => {
-    console.log('onChange', newValue, e);
-  }, [])
+  // const onEditorChange = useCallback( (newValue: string, e: any) => {
+  //   console.log('onChange', newValue, e);
+  // }, [])
 
-  const onPlayClicked = useCallback( () => {
-    const activePane = panes.filter(pane => pane.key == activeKey)[0]
-    resetLammps()
-    lammps?.runCommand(activePane.content)
-    // activePane.content.split("\n").forEach(line => {
-    // })
-  }, [panes, lammps, resetLammps])
+  // const onPlayClicked = useCallback( () => {
+  //   const activePane = panes.filter(pane => pane.key == activeKey)[0]
+  //   resetLammps()
+  //   lammps?.runCommand(activePane.content)
+  //   // activePane.content.split("\n").forEach(line => {
+  //   // })
+  // }, [panes, lammps, resetLammps])
 
-  const options = {
-    selectOnLineNumbers: true
-  };
+  // const options = {
+  //   selectOnLineNumbers: true
+  // };
 
-  return (
-      <Tabs
-        type="editable-card"
-        onChange={onChange}
-        onEdit={onEdit}
-        activeKey={activeKey}
-        style={{height: '100%'}}
-      >
-        <TabPane tab={"Console"} key={"console"} closable={false}>
-          <ControlBar onClearConsole={onClearConsole} />
-          <ConsoleTab lammpsOutput={lammpsOutput} />
-        </TabPane>
-        <TabPane tab={"3D"} key={"3d"} closable={false}>
-          <ControlBar onClearConsole={onClearConsole} />
-          {particles && <OMOVIVisualizer particles={particles}/>}
-        </TabPane>
-        {panes.map(pane => (
-          <TabPane tab={pane.title} key={pane.key} closable={pane.closable}>
-            <ControlBar showPlayButton={true} onPlayClicked={onPlayClicked} onClearConsole={onClearConsole} />
-            <MonacoEditor
-              height="500px"
-              language="javascript"
-              theme="vs-dark"
-              value={pane.content}
-              options={options}
-              onChange={onEditorChange}
-              editorDidMount={editorDidMount}
-            />
-          </TabPane>
-        ))}
-      </Tabs>
-  )
+  // return (
+  //     <Tabs
+  //       type="editable-card"
+  //       onChange={onChange}
+  //       onEdit={onEdit}
+  //       activeKey={activeKey}
+  //       style={{height: '100%'}}
+  //     >
+  //       <TabPane tab={"Console"} key={"console"} closable={false}>
+  //         <ControlBar onClearConsole={onClearConsole} />
+  //         <ConsoleTab lammpsOutput={lammpsOutput} />
+  //       </TabPane>
+  //       <TabPane tab={"3D"} key={"3d"} closable={false}>
+  //         <ControlBar onClearConsole={onClearConsole} />
+  //         {particles && <OMOVIVisualizer particles={particles}/>}
+  //       </TabPane>
+  //       {panes.map(pane => (
+  //         <TabPane tab={pane.title} key={pane.key} closable={pane.closable}>
+  //           <ControlBar showPlayButton={true} onPlayClicked={onPlayClicked} onClearConsole={onClearConsole} />
+  //           <MonacoEditor
+  //             height="500px"
+  //             language="javascript"
+  //             theme="vs-dark"
+  //             value={pane.content}
+  //             options={options}
+  //             onChange={onEditorChange}
+  //             editorDidMount={editorDidMount}
+  //           />
+  //         </TabPane>
+  //       ))}
+  //     </Tabs>
+  // )
 }
 
 export default Editor

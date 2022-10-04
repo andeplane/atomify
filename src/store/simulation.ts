@@ -1,24 +1,34 @@
 import { action, Action, thunk, Thunk } from 'easy-peasy';
 import {LammpsWeb} from '../types'
 import {Particles} from 'omovi'
-import { SimulationFile } from './files';
 
 interface Status {
   title: String
   text: String
 }
 
+export interface SimulationFile {
+  fileName: string
+  content?: string
+  url: string
+}
+
 export interface Simulation {
   id: string
   files: SimulationFile[]
   inputScript: string
+  start: boolean
 }
 
 export interface SimulationModel {
   loading: boolean
+  simulation?: Simulation
   status?: Status
   files: string[]
+  selectedFile?: SimulationFile
   particles?: Particles
+  setSelectedFile: Action<SimulationModel, SimulationFile>
+  setSimulation: Action<SimulationModel, Simulation>
   setLoading: Action<SimulationModel, boolean>
   setParticles: Action<SimulationModel, Particles>
   setFiles: Action<SimulationModel, string[]>
@@ -31,6 +41,12 @@ export interface SimulationModel {
 export const simulationModel: SimulationModel = {
   loading: false,
   files: [],
+  setSelectedFile: action((state, selectedFile?: SimulationFile) => {
+    state.selectedFile = selectedFile
+  }),
+  setSimulation: action((state, simulation: Simulation) => {
+    state.simulation = simulation
+  }),
   setLoading: action((state, loading: boolean) => {
     state.loading = loading
   }),
@@ -44,7 +60,10 @@ export const simulationModel: SimulationModel = {
     state.status = status
   }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
+    // @ts-ignore
+    window.simulation = simulation
     actions.setLoading(true)
+    actions.setSimulation(simulation)
     // @ts-ignore
     const wasm = getStoreState().lammps.wasm
     // @ts-ignore
@@ -53,7 +72,6 @@ export const simulationModel: SimulationModel = {
     wasm.FS.mkdir(`/${simulation.id}`)
     let counter = 0
     for (const file of simulation.files) {
-      console.log("Downloading ", file.fileName)
       await actions.setStatus({
         title: `Downloading file (${counter+1}/${simulation.files.length})`,
         text: file.fileName
@@ -61,12 +79,18 @@ export const simulationModel: SimulationModel = {
 
       const response = await fetch(file.url)
       const content = await response.text()
+      file.content = content
       wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, content)
-      console.log("Did write it")
     }
+    actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)
-    lammps.start()
-    lammps.load_local(`/${simulation.id}/${simulation.inputScript}`)
+    if (simulation.start) {
+      lammps.start()
+      lammps.load_local(`/${simulation.id}/${simulation.inputScript}`)
+    } else {
+      const inputScriptFile = simulation.files.filter(file => file.fileName==simulation.inputScript)[0]
+      actions.setSelectedFile(inputScriptFile)
+    }
     actions.setLoading(false)
   }),
   reset: action((state) => {
