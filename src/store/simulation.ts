@@ -33,7 +33,12 @@ export interface SimulationModel {
   setParticles: Action<SimulationModel, Particles>
   setFiles: Action<SimulationModel, string[]>
   setStatus: Action<SimulationModel, Status>
+  setLammps: Action<SimulationModel, LammpsWeb>
+  setWasm: Action<SimulationModel, any>
+  run: Action<SimulationModel>
+  syncFiles: Action<SimulationModel, string|undefined>
   newSimulation: Thunk<SimulationModel, Simulation>
+  wasm?: any
   lammps?: LammpsWeb
   reset: Action<SimulationModel, undefined>
 }
@@ -43,6 +48,12 @@ export const simulationModel: SimulationModel = {
   files: [],
   setSelectedFile: action((state, selectedFile?: SimulationFile) => {
     state.selectedFile = selectedFile
+  }),
+  setWasm: action((state, wasm: any) => {
+    state.wasm = wasm
+  }),
+  setLammps: action((state, lammps: LammpsWeb) => {
+    state.lammps = lammps
   }),
   setSimulation: action((state, simulation: Simulation) => {
     state.simulation = simulation
@@ -59,15 +70,33 @@ export const simulationModel: SimulationModel = {
   setStatus: action((state, status?: Status) => {
     state.status = status
   }),
+  syncFiles: action((state, fileName?: string) => {
+    if (!state.simulation) {
+      return
+    }
+    for (const file of state.simulation.files) {
+      if (file.fileName == fileName || !fileName) {
+        state.wasm.FS.writeFile(`/${state.simulation.id}/${file.fileName}`, file.content)
+        console.log("Synced file ", file.fileName)
+      }
+    }
+  }),
+  run: action((state) => {
+    if (!state.simulation) {
+      return
+    }
+    state.lammps?.start()
+    state.lammps?.load_local(`/${state.simulation.id}/${state.simulation.inputScript}`)
+  }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
     // @ts-ignore
     window.simulation = simulation
     actions.setLoading(true)
     actions.setSimulation(simulation)
     // @ts-ignore
-    const wasm = getStoreState().lammps.wasm
+    const wasm = getStoreState().simulation.wasm
     // @ts-ignore
-    const lammps = getStoreState().lammps.lammps
+    const lammps = getStoreState().simulation.lammps
 
     wasm.FS.mkdir(`/${simulation.id}`)
     let counter = 0
@@ -80,8 +109,8 @@ export const simulationModel: SimulationModel = {
       const response = await fetch(file.url)
       const content = await response.text()
       file.content = content
-      wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, content)
     }
+    actions.syncFiles(undefined)
     actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)
     if (simulation.start) {

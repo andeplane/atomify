@@ -6,19 +6,20 @@ interface ConsoleTabProps {
   lammpsOutput: string[]
 }
 const ConsoleTab = ({lammpsOutput}: ConsoleTabProps) => {
-  const lammps = useStoreState(state => state.lammps.lammps)
-  const setRunning = useStoreActions(actions => actions.lammps.setRunning)
-  const onInput = useCallback((command: string) => {
-    setRunning(true)
-    lammps?.runCommand(command)
-    setRunning(false)
-  }, [lammps, setRunning])
+  // const lammps = useStoreState(state => state.lammps.lammps)
+  // const setRunning = useStoreActions(actions => actions.lammps.setRunning)
+  // const onInput = useCallback((command: string) => {
+  //   setRunning(true)
+  //   lammps?.runCommand(command)
+  //   setRunning(false)
+  // }, [lammps, setRunning])
   
-  return (
-    <Terminal name='LAMMPS console' colorMode={ ColorMode.Light }  onInput={ onInput }> 
-      {lammpsOutput.map( (output, i) => <div key={i}>{output}<br /></div>)}
-    </Terminal>
-  )
+  // return (
+  //   <Terminal name='LAMMPS console' colorMode={ ColorMode.Light }  onInput={ onInput }> 
+  //     {lammpsOutput.map( (output, i) => <div key={i}>{output}<br /></div>)}
+  //   </Terminal>
+  // )
+  return (<></>)
 }
 
 export default ConsoleTab

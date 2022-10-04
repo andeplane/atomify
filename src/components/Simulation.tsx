@@ -24,14 +24,14 @@ const getPositions = (lammps: any, wasm: any) => {
 }
 
 const Simulation = () => {
-  const wasm = useStoreState(state => state.lammps.wasm)
-  const lammps = useStoreState(state => state.lammps.lammps)
+  const wasm = useStoreState(state => state.simulation.wasm)
+  const lammps = useStoreState(state => state.simulation.lammps)
   // const files = useStoreState(state => state.files.files)
   const particles = useStoreState(state => state.simulation.particles)
   const setParticles = useStoreActions(actions => actions.simulation.setParticles)
   // const setFiles = useStoreActions(actions => actions.files.setFiles)
-  const setWasm = useStoreActions(actions => actions.lammps.setWasm)
-  const setLammps = useStoreActions(actions => actions.lammps.setLammps)
+  const setWasm = useStoreActions(actions => actions.simulation.setWasm)
+  const setLammps = useStoreActions(actions => actions.simulation.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
   
   const onPrint = useCallback( (text: string) => {

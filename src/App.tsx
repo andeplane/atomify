@@ -36,7 +36,7 @@ function getItem(
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<string>("examples")
-  const wasm = useStoreState(state => state.lammps.wasm)
+  const wasm = useStoreState(state => state.simulation.wasm)
   const loading = useStoreState(state => state.simulation.loading)
   const status = useStoreState(state => state.simulation.status)
   const simulation = useStoreState(state => state.simulation.simulation)
