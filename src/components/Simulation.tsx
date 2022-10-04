@@ -3,16 +3,39 @@ import {useStoreActions, useStoreState} from '../hooks'
 import createModule from "../wasm/lammps.mjs";
 import {SimulationFile} from '../store/files'
 import { LammpsWeb } from '../types';
+import {Particles} from 'omovi'
+
+const getPositions = (lammps: any, wasm: any) => {
+  const numAtoms = lammps.numAtoms()
+  const particles = new Particles(numAtoms);
+  const positionsPtr = lammps.getPositionsPointer() / 8;
+  // const typePtr = lammps.getTypePointer() / 4;
+  const idPtr = lammps.getIdPointer() / 4;
+  const positionsSubarray = wasm.HEAPF64.subarray(positionsPtr, positionsPtr + 3 * numAtoms) as Float64Array
+  // const typeSubarray = obj.HEAP32.subarray(typePtr, typePtr + numAtoms) as Int32Array
+  const idSubarray = wasm.HEAP32.subarray(idPtr, idPtr + numAtoms) as Int32Array
+
+  particles.positions = Float32Array.from(positionsSubarray)
+  // particles.types = Float32Array.from(typeSubarray)
+  particles.indices = Float32Array.from(idSubarray)
+  particles.radii.fill(0.25)
+  particles.count = numAtoms
+  return particles
+}
+
 const Simulation = () => {
   const wasm = useStoreState(state => state.lammps.wasm)
+  const lammps = useStoreState(state => state.lammps.lammps)
   const files = useStoreState(state => state.files.files)
+  const particles = useStoreState(state => state.simulation.particles)
+  const setParticles = useStoreActions(actions => actions.simulation.setParticles)
   const setFiles = useStoreActions(actions => actions.files.setFiles)
   const setWasm = useStoreActions(actions => actions.lammps.setWasm)
+  const setLammps = useStoreActions(actions => actions.lammps.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
 
   const uploadFiles = async (folder: string, filePaths: string[]) => {
     if (!wasm) {
-      console.log("Nah")
       return
     }
 
@@ -30,7 +53,6 @@ const Simulation = () => {
       files[file.path].content = content
       wasm.FS.writeFile(`/${folder}/${file.fileName}`, content)
       setFiles({...files})
-      console.log(`Wrote /${folder}/${file.fileName}`)
     }
     wasm.FS.chdir(`/${folder}`)
   }
@@ -42,35 +64,6 @@ const Simulation = () => {
 
   useEffect(
     () => {
-      console.log("Omg...")
-      createModule({
-        print: onPrint, 
-        printErr: onPrint,
-      }).then((Module: any) => {
-        setWasm(Module)
-        // @ts-ignore
-        window.wasm = Module
-        const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
-        // @ts-ignore
-        window.lammps = lammps
-        // @ts-ignore
-        window.syncFrequency = 2
-        
-        //@ts-ignore
-        window.postStepCallback = () => {
-          console.log("Doing post step")
-          // const particles = getPositions(lammps, wasm)
-          // setParticles(particles)
-          // @ts-ignore
-          lammps.setSyncFrequency(window.syncFrequency)
-        }
-      });
-    },
-    [setWasm, onPrint]
-  );
-  useEffect(() => {
-    if (wasm) {
-      console.log("Yay, got wasm...")
       setFiles({
         'examples/vashishta/SiO.1990.vashishta': {
           fileName: 'SiO.1990.vashishta',
@@ -91,15 +84,49 @@ const Simulation = () => {
           path: 'examples/vashishta/in.vashishta.sio2'
         }
       })
-        uploadFiles('simulation', [
+
+      createModule({
+        print: onPrint, 
+        printErr: onPrint,
+      }).then((Module: any) => {
+        setWasm(Module)
+        const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
+        setLammps(lammps)
+        // @ts-ignore
+        // window.wasm = Module
+        // @ts-ignore
+        // window.lammps = lammps
+        // @ts-ignore
+        window.syncFrequency = 2
+        
+        //@ts-ignore
+        window.postStepCallback = () => {
+          const particles = getPositions(lammps, Module)
+          setParticles(particles)
+          // @ts-ignore
+          lammps.setSyncFrequency(window.syncFrequency)
+        }
+      });
+    },
+    [setWasm, onPrint]
+  );
+  useEffect(() => {
+    (async() => {
+      if (wasm && lammps) {
+        console.log("Yay, got wasm...")
+        await uploadFiles('simulation', [
           'examples/vashishta/SiO.1990.vashishta',
           'examples/vashishta/data.quartz',
           'examples/vashishta/in.vashishta.sio2'
         ])
-    } else {
-      console.log("No wasm yet...")
-    }
-  }, [wasm])
+        console.log("Will run it with lammps ", lammps)
+        lammps.start()
+        lammps.load_local('/simulation/in.vashishta.sio2')
+      } else {
+        console.log("No wasm yet...")
+      }
+    })()
+  }, [wasm, lammps])
   return (<></>)
 }
 export default Simulation

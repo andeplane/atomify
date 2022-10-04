@@ -3,18 +3,18 @@ import {LammpsWeb} from '../types'
 
 export interface LammpsModel {
   wasm?: any
-  running: boolean
   lammps?: LammpsWeb
+  running: boolean
   syncFrequency: number
   setSyncFrequency: Action<LammpsModel, number>, 
   setRunning: Action<LammpsModel, boolean>
   setWasm: Action<LammpsModel, any>
+  setLammps: Action<LammpsModel, LammpsWeb>
   resetLammps: Action<LammpsModel, void>
   loadLJ: Action<LammpsModel, void>
 }
 
 export const lammpsModel: LammpsModel = {
-  lammps: undefined,
   running: false,
   syncFrequency: 2,
   // methods
@@ -23,6 +23,9 @@ export const lammpsModel: LammpsModel = {
   }),
   setWasm: action((state, wasm: any) => {
     state.wasm = wasm
+  }),
+  setLammps: action((state, lammps: LammpsWeb) => {
+    state.lammps = lammps
   }),
   resetLammps: action((state) => {
     if (state.lammps == null) {

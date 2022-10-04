@@ -42,9 +42,10 @@ const items: MenuItem[] = [
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<string>("view")
+  const wasm = useStoreState(state => state.lammps.wasm)
   const loading = useStoreState(state => state.simulation.loading)
   const status = useStoreState(state => state.simulation.status)
-
+  console.log("Do we have wasm? ", wasm != null)
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={value => setCollapsed(value)}>
@@ -59,8 +60,11 @@ const App: React.FC = () => {
           {selectedMenu=="analyze" && <Analyze />}
           {selectedMenu=="edit" && <Edit />}
           {selectedMenu=="examples" && <Examples />}
-          {loading && <Modal title={status?.title} open={loading}>
+          {<Modal closable={false} title={status?.title} open={loading}>
             {status?.text}
+          </Modal>}
+            {<Modal closable={false}  title={"Compiling LAMMPS ..."} open={wasm==null} footer={null}>
+            {"This may take a few moments."}
           </Modal>}
         </Content>
         <Footer style={{ textAlign: 'center' }}>Atomify ©2022 Created by Henrik Sveinsson, Svenn-Arne Dragly and Anders Hafreager</Footer>
