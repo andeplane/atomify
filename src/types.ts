@@ -9,6 +9,7 @@ export type LammpsWeb = {
   runCommand: (command: string) => void
   numAtoms: () => number
   setSyncFrequency: (every: number) => void
+  load_local: () => void
 }
 
 export type LammpsOutput = {
@@ -17,8 +18,13 @@ export type LammpsOutput = {
 }
 
 export type GithubFile = {
-  name: string
+  title: string
   path: string
-  download_url: string
+  expanded: boolean
+  key: string
+  download_url?: string
   size: number
+  type: "dir" | "file"
+  isLeaf: boolean
+  children: GithubFile[]
 }

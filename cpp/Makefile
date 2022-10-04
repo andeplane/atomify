@@ -4,7 +4,7 @@ MAXMEMORY = 512MB
 LAMMPS_SOURCE := $(wildcard lammps/src/*.cpp)
 LAMMPS_OBJ_FILES := $(addprefix obj/,$(notdir $(LAMMPS_SOURCE:.cpp=.o)))
 
-LD_FLAGS := -O1 --pre-js locateFile.js --no-entry
+LD_FLAGS := -O1 --pre-js locateFile.js --no-entry 
 CC_FLAGS := -O1 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL # -DNDEBUG
 INCLUDE_FLAGS := -Ilammps/src
 SYMBOLS := --bind -s ENVIRONMENT='web' \
@@ -16,6 +16,7 @@ SYMBOLS := --bind -s ENVIRONMENT='web' \
 									-s EXPORTED_RUNTIME_METHODS="['getValue']" \
 									-s EXPORT_NAME='createModule' \
 									-s USE_ES6_IMPORT_META=0 \
+									-s FORCE_FILESYSTEM=1
 									# -s ASSERTIONS=1 
 
 default: wasm

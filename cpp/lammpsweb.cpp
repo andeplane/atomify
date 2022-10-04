@@ -27,6 +27,7 @@ public:
   void step();
   void start();
   void stop();
+  void load_local();
   double getX(int n);
   double getY(int n);
   double getZ(int n);
@@ -194,6 +195,11 @@ void LAMMPSWeb::loadLJ()
   lammps_commands_string((void *)lmp, script);
 }
 
+void LAMMPSWeb::load_local()
+{
+  lammps_file((void*)lmp, "/test.lj");
+}
+
 void LAMMPSWeb::step()
 {
   const char *script = "run 1 pre no post no\n";
@@ -224,5 +230,6 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("start", &LAMMPSWeb::start)
       .function("stop", &LAMMPSWeb::stop)
       .function("numAtoms", &LAMMPSWeb::numAtoms)
+      .function("load_local", &LAMMPSWeb::load_local)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
 }

@@ -1,14 +1,12 @@
 import React, {useState, useEffect, useCallback} from 'react';
 import {Particles} from 'omovi'
 import 'antd/dist/antd.css';
-// import lammpsWasm from './wasm/lammps.mjs'
 import createModule from "./wasm/lammps.mjs";
-// import { LineType } from 'react-terminal-ui';
-import {useListDirectory} from './hooks/github'
 import styled from 'styled-components'
 import {useStoreActions, useStoreState} from './hooks'
 import { Layout } from 'antd';
-import TreeView from './components/TreeView';
+import GithubBrowser from './components/GithubBrowser';
+
 import Editor from './containers/Editor'
 import {File} from './store/files'
 const { Content, Sider } = Layout;
@@ -63,17 +61,10 @@ const App = () => {
   const setFiles = useStoreActions(actions => actions.files.setFiles)
   const setSelectedFile = useStoreActions(actions => actions.files.setSelectedFile)
   
-  const files = useStoreState(state => state.files.files)
   const lammps = useStoreState(state => state.lammps.lammps)
   const wasm = useStoreState(state => state.lammps.wasm)
   
-  const user = 'lammps'
-  const repository = 'lammps'
-  const path = 'examples/flow'
-  const {isLoading, files_metadata} = useListDirectory(user, repository, path)
   
-  const fullPath = `${user}/${repository}/${path}`
-  const fileNames = files_metadata.map(file => file.name)
   
   const onPrint = useCallback( (text: string) => {
     setLammpsOutput(state => [...state, text])
@@ -90,6 +81,30 @@ const App = () => {
 
   useEffect(() => {
     if (wasm) {
+      // @ts-ignore
+      window.wasm = wasm
+      const lj = `# 3d Lennard-Jones melt
+      variable    x index 1
+      variable    y index 1
+      variable    z index 1
+      variable    xx equal 20*$x
+      variable    yy equal 20*$y
+      variable    zz equal 10*$z
+      units       lj
+      atom_style  atomic
+      lattice     fcc 0.8442
+      region      box block 0 \${xx} 0 \${yy} 0 \${zz}
+      create_box  1 box
+      create_atoms    1 box
+      mass        1 1.0
+      velocity    all create 1.44 87287 loop geom
+      pair_style  lj/cut 2.5
+      pair_coeff  1 1 1.0 1.0 2.5
+      neighbor    0.3 bin
+      neigh_modify    delay 0 every 20 check no
+      fix     1 all nve`
+      wasm.FS_createDataFile("/", "test.lj", lj, true, true, true)
+      console.log("Got lj: ", lj)
       // resetLammps()
       loadLJ()
     }
@@ -111,44 +126,7 @@ const App = () => {
     }
   }, [lammps, wasm])
 
-  const onSelect = useCallback( (keys: React.Key[], info: any) => {
-    (async () => {
-      const downloadFile = async (fileName: string, url: string) => {
-        if (files[fileName] != null) {
-          return
-        }
-        const newFile: File = {
-          loading: true,
-          fileName: fileName,
-          content: ""
-        }
-        let newFiles = {
-          ...files
-        }
-        newFiles[fileName] = newFile
-        setFiles(newFiles)
-        const content = await fetch(url)
-        newFile.content = await content.text();
-        
-        newFiles = {
-          ...newFiles
-        }
-        newFiles[fileName] = newFile
-
-        setFiles(newFiles)
-        setSelectedFile(newFile)
-      }
-
-      const fileName = info.node.title;
-      if (files[fileName]) {
-        setSelectedFile(files[fileName])
-      } else {
-        const downloadUrl = files_metadata.filter(file => file.name===fileName)[0].download_url
-        await downloadFile(fileName, downloadUrl);
-      }
-    })()
-    
-  }, [files, setFiles, files_metadata, setSelectedFile]);
+  
 
   const onClearConsole = useCallback( () => {
     setLammpsOutput([])
@@ -169,7 +147,7 @@ const App = () => {
           console.log(collapsed, type);
         }}
       >
-      <TreeView isLoading={isLoading} path={fullPath} files={fileNames} onSelect={onSelect}/>
+      <GithubBrowser user='lammps' repository='lammps' path='examples' />
       </Sider>
       <Layout>
         <Content style={{ margin: '24px 16px 0' }}>
