@@ -113,13 +113,11 @@ const Simulation = () => {
   useEffect(() => {
     (async() => {
       if (wasm && lammps) {
-        console.log("Yay, got wasm...")
         await uploadFiles('simulation', [
           'examples/vashishta/SiO.1990.vashishta',
           'examples/vashishta/data.quartz',
           'examples/vashishta/in.vashishta.sio2'
         ])
-        console.log("Will run it with lammps ", lammps)
         lammps.start()
         lammps.load_local('/simulation/in.vashishta.sio2')
       } else {
