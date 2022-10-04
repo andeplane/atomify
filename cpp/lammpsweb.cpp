@@ -27,7 +27,7 @@ public:
   void step();
   void start();
   void stop();
-  void load_local();
+  void load_local(std::string path);
   double getX(int n);
   double getY(int n);
   double getZ(int n);
@@ -195,9 +195,9 @@ void LAMMPSWeb::loadLJ()
   lammps_commands_string((void *)lmp, script);
 }
 
-void LAMMPSWeb::load_local()
+void LAMMPSWeb::load_local(std::string path)
 {
-  lammps_file((void*)lmp, "/test.lj");
+  lammps_file((void*)lmp, path.c_str());
 }
 
 void LAMMPSWeb::step()

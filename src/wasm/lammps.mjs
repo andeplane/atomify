@@ -6399,6 +6399,7 @@ function call_js_agrs() { postStepCallback(); }
 
 
 
+
   var FSNode = /** @constructor */ function(parent, name, mode, rdev) {
     if (!parent) {
       parent = this;  // root node sets parent to itself
@@ -6611,6 +6612,7 @@ var asmLibraryArg = {
   "invoke_vi": invoke_vi,
   "invoke_viddiiiii": invoke_viddiiiii,
   "invoke_vii": invoke_vii,
+  "invoke_viidd": invoke_viidd,
   "invoke_viidi": invoke_viidi,
   "invoke_viidii": invoke_viidii,
   "invoke_viii": invoke_viii,
@@ -6879,6 +6881,26 @@ var dynCall_idiii = Module["dynCall_idiii"] = function() {
 };
 
 /** @type {function(...*):?} */
+var dynCall_diiiiidddi = Module["dynCall_diiiiidddi"] = function() {
+  return (dynCall_diiiiidddi = Module["dynCall_diiiiidddi"] = Module["asm"]["dynCall_diiiiidddi"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_diiiiididdii = Module["dynCall_diiiiididdii"] = function() {
+  return (dynCall_diiiiididdii = Module["dynCall_diiiiididdii"] = Module["asm"]["dynCall_diiiiididdii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiidddii = Module["dynCall_viiiiidddii"] = function() {
+  return (dynCall_viiiiidddii = Module["dynCall_viiiiidddii"] = Module["asm"]["dynCall_viiiiidddii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_didd = Module["dynCall_didd"] = function() {
+  return (dynCall_didd = Module["dynCall_didd"] = Module["asm"]["dynCall_didd"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
 var dynCall_iiddd = Module["dynCall_iiddd"] = function() {
   return (dynCall_iiddd = Module["dynCall_iiddd"] = Module["asm"]["dynCall_iiddd"]).apply(null, arguments);
 };
@@ -6904,23 +6926,58 @@ var dynCall_iidi = Module["dynCall_iidi"] = function() {
 };
 
 /** @type {function(...*):?} */
-var dynCall_diiiiidddi = Module["dynCall_diiiiidddi"] = function() {
-  return (dynCall_diiiiidddi = Module["dynCall_diiiiidddi"] = Module["asm"]["dynCall_diiiiidddi"]).apply(null, arguments);
+var dynCall_viidiiidd = Module["dynCall_viidiiidd"] = function() {
+  return (dynCall_viidiiidd = Module["dynCall_viidiiidd"] = Module["asm"]["dynCall_viidiiidd"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
-var dynCall_diiiiididdii = Module["dynCall_diiiiididdii"] = function() {
-  return (dynCall_diiiiididdii = Module["dynCall_diiiiididdii"] = Module["asm"]["dynCall_diiiiididdii"]).apply(null, arguments);
+var dynCall_dididd = Module["dynCall_dididd"] = function() {
+  return (dynCall_dididd = Module["dynCall_dididd"] = Module["asm"]["dynCall_dididd"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
-var dynCall_viiiiidddii = Module["dynCall_viiiiidddii"] = function() {
-  return (dynCall_viiiiidddii = Module["dynCall_viiiiidddii"] = Module["asm"]["dynCall_viiiiidddii"]).apply(null, arguments);
+var dynCall_vidiiddii = Module["dynCall_vidiiddii"] = function() {
+  return (dynCall_vidiiddii = Module["dynCall_vidiiddii"] = Module["asm"]["dynCall_vidiiddii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
-var dynCall_didd = Module["dynCall_didd"] = function() {
-  return (dynCall_didd = Module["dynCall_didd"] = Module["asm"]["dynCall_didd"]).apply(null, arguments);
+var dynCall_viiidiiidd = Module["dynCall_viiidiiidd"] = function() {
+  return (dynCall_viiidiiidd = Module["dynCall_viiidiiidd"] = Module["asm"]["dynCall_viiidiiidd"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viidiii = Module["dynCall_viidiii"] = function() {
+  return (dynCall_viidiii = Module["dynCall_viidiii"] = Module["asm"]["dynCall_viidiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_diiddii = Module["dynCall_diiddii"] = function() {
+  return (dynCall_diiddii = Module["dynCall_diiddii"] = Module["asm"]["dynCall_diiddii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiddiiii = Module["dynCall_viiddiiii"] = function() {
+  return (dynCall_viiddiiii = Module["dynCall_viiddiiii"] = Module["asm"]["dynCall_viiddiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_didi = Module["dynCall_didi"] = function() {
+  return (dynCall_didi = Module["dynCall_didi"] = Module["asm"]["dynCall_didi"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_vidididiiii = Module["dynCall_vidididiiii"] = function() {
+  return (dynCall_vidididiiii = Module["dynCall_vidididiiii"] = Module["asm"]["dynCall_vidididiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viidd = Module["dynCall_viidd"] = function() {
+  return (dynCall_viidd = Module["dynCall_viidd"] = Module["asm"]["dynCall_viidd"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiddiiiiii = Module["dynCall_viiiiddiiiiii"] = function() {
+  return (dynCall_viiiiddiiiiii = Module["dynCall_viiiiddiiiiii"] = Module["asm"]["dynCall_viiiiddiiiiii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -6931,6 +6988,11 @@ var dynCall_viddiiiii = Module["dynCall_viddiiiii"] = function() {
 /** @type {function(...*):?} */
 var dynCall_viiiiiiiii = Module["dynCall_viiiiiiiii"] = function() {
   return (dynCall_viiiiiiiii = Module["dynCall_viiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_vididdiddiiii = Module["dynCall_vididdiddiiii"] = function() {
+  return (dynCall_vididdiddiiii = Module["dynCall_vididdiddiiii"] = Module["asm"]["dynCall_vididdiddiiii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -7048,8 +7110,8 @@ var _asyncify_stop_rewind = Module["_asyncify_stop_rewind"] = function() {
   return (_asyncify_stop_rewind = Module["_asyncify_stop_rewind"] = Module["asm"]["asyncify_stop_rewind"]).apply(null, arguments);
 };
 
-var ___start_em_js = Module['___start_em_js'] = 309560;
-var ___stop_em_js = Module['___stop_em_js'] = 309590;
+var ___start_em_js = Module['___start_em_js'] = 352656;
+var ___stop_em_js = Module['___stop_em_js'] = 352686;
 function invoke_vii(index,a1,a2) {
   var sp = stackSave();
   try {
@@ -7336,6 +7398,17 @@ function invoke_diii(index,a1,a2,a3) {
   }
 }
 
+function invoke_viidd(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    dynCall_viidd(index,a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_viddiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
   var sp = stackSave();
   try {
@@ -7526,6 +7599,7 @@ Module["FS_createLazyFile"] = FS.createLazyFile;
 Module["FS_createDevice"] = FS.createDevice;
 Module["FS_unlink"] = FS.unlink;
 Module["getValue"] = getValue;
+Module["FS"] = FS;
 
 
 var calledRun;

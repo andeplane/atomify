@@ -98,7 +98,7 @@ const Editor = ({lammpsOutput, onClearConsole, particles}: EditorProps) => {
         ...panes,
         {
           title: selectedFile.fileName,
-          content: selectedFile.content,
+          content: selectedFile.content ? selectedFile.content : '',
           key: selectedFile.fileName,
           closeable: true
         }

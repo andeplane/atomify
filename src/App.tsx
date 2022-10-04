@@ -5,13 +5,14 @@ import {
   InsertRowAboveOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu } from 'antd';
+import { Breadcrumb, Layout, Menu, Modal } from 'antd';
 import React, { useState } from 'react';
 import Simulation from './components/Simulation'
 import View from './containers/View'
 import Analyze from './containers/Analyze'
 import Edit from './containers/Edit'
 import Examples from './containers/Examples'
+import { useStoreState } from './hooks';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -41,6 +42,8 @@ const items: MenuItem[] = [
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<string>("view")
+  const loading = useStoreState(state => state.simulation.loading)
+  const status = useStoreState(state => state.simulation.status)
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -56,7 +59,10 @@ const App: React.FC = () => {
           {selectedMenu=="analyze" && <Analyze />}
           {selectedMenu=="edit" && <Edit />}
           {selectedMenu=="examples" && <Examples />}
-        </Content>  
+          {loading && <Modal title={status?.title} open={loading}>
+            {status?.text}
+          </Modal>}
+        </Content>
         <Footer style={{ textAlign: 'center' }}>Atomify ©2022 Created by Henrik Sveinsson, Svenn-Arne Dragly and Anders Hafreager</Footer>
       </Layout>
     </Layout>

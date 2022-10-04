@@ -9,7 +9,7 @@ export type LammpsWeb = {
   runCommand: (command: string) => void
   numAtoms: () => number
   setSyncFrequency: (every: number) => void
-  load_local: () => void
+  load_local: (path: string) => void
 }
 
 export type LammpsOutput = {

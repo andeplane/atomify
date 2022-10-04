@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useState} from 'react'
 import {useListDirectory, retrievePath} from '../hooks/github'
 import {useStoreActions, useStoreState} from '../hooks'
-import {File} from '../store/files'
+import {SimulationFile} from '../store/files'
 import {GithubFile} from '../types'
 import { Tree, Spin } from 'antd';
 import { EventDataNode } from "rc-tree/lib/interface";
@@ -53,10 +53,12 @@ const GithubBrowser = ({user, repository, path}: GithubBrowserProps) => {
       }
 
       const downloadFile = async (path: string, fileName: string, url: string) => {
-        const newFile: File = {
+        const newFile: SimulationFile = {
           loading: true,
           fileName: fileName,
-          content: ""
+          content: "",
+          url,
+          path
         }
         let newFiles = {
           ...files

@@ -1,19 +1,22 @@
 import { action, Action } from 'easy-peasy';
 import {GithubFile} from '../types'
-export type File = {
+
+export type SimulationFile = {
   loading: boolean,
+  url: string,
   fileName: string,
-  content: string
+  path: string,
+  content?: string
 }
-export type FilesList = {[key: string]: File};
+export type FilesList = {[key: string]: SimulationFile};
 
 export interface FilesModel {
   files: FilesList
   tree: GithubFile[]
-  selectedFile?: File
+  selectedFile?: SimulationFile
   setFiles: Action<FilesModel, FilesList>
   setTree: Action<FilesModel, GithubFile[]>
-  setSelectedFile: Action<FilesModel, File|undefined>
+  setSelectedFile: Action<FilesModel, SimulationFile|undefined>
 }
 
 export const filesModel: FilesModel = {
@@ -26,7 +29,7 @@ export const filesModel: FilesModel = {
   setTree: action((state, tree: GithubFile[]) => {
     state.tree = tree
   }),
-  setSelectedFile: action((state, selectedFile?: File) => {
+  setSelectedFile: action((state, selectedFile?: SimulationFile) => {
     state.selectedFile = selectedFile
   })
 };
