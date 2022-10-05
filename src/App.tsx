@@ -69,6 +69,7 @@ const App: React.FC = () => {
       });
     } else {
       run()
+      setPreferredView('view')
     }
   }, simulation == null))
 
