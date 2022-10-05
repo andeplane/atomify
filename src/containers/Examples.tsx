@@ -20,6 +20,19 @@ const Examples = () => {
 
   const examples: Example[] = [
     {
+      id: 'diffusion',
+      title: "Diffusion",
+      description: 'Diffusion using the Lennard Jones potential',
+      imageUrl: 'https://github.com/ovilab/atomify-lammps-examples/blob/master/examples/diffusion/diffusion/simple_diffusion.png?raw=true',
+      inputScript: 'simple_diffusion.in',
+      files: [
+        {
+          fileName: 'simple_diffusion.in',
+          url: 'https://raw.githubusercontent.com/ovilab/atomify-lammps-examples/master/examples/diffusion/diffusion/simple_diffusion.in'
+        }
+      ]
+    },
+    {
       id: 'vashishtasio2',
       title: "Vashishta SiO2",
       description: 'Silica quartz simulated using the Vashishta potential',
