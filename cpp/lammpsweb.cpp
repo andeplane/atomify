@@ -19,15 +19,17 @@ public:
   LAMMPSWeb();
   ~LAMMPSWeb();
   LAMMPS_NS::LAMMPS *lmp;
+  bool m_isRunning;
   long getPositionsPointer();
   long getIdPointer();
   long getTypePointer();
   int numAtoms();
+  bool isRunning();
   void loadLJ();
   void step();
   void start();
   void stop();
-  void load_local(std::string path);
+  void runFile(std::string path);
   double getX(int n);
   double getY(int n);
   double getZ(int n);
@@ -60,6 +62,20 @@ void synchronizeLAMMPS_callback(void *caller, int mode)
     controller->synchronizeLAMMPS(mode);
 }
 
+LAMMPSWeb::LAMMPSWeb() : lmp(nullptr), m_isRunning(false)
+{
+  
+}
+
+LAMMPSWeb::~LAMMPSWeb()
+{
+  stop();
+}
+
+bool LAMMPSWeb::isRunning() {
+  return m_isRunning;
+}
+
 void LAMMPSWeb::setSyncFrequency(int every) {
   LAMMPS_NS::Fix *originalFix = findFixByIdentifier(std::string("atomify"));
   if (!originalFix) {
@@ -80,16 +96,6 @@ void LAMMPSWeb::synchronizeLAMMPS(int mode)
     if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
     postStepCallback();
     emscripten_sleep(1);
-}
-
-LAMMPSWeb::LAMMPSWeb() : lmp(nullptr)
-{
-  
-}
-
-LAMMPSWeb::~LAMMPSWeb()
-{
-  stop();
 }
 
 long LAMMPSWeb::getPositionsPointer()
@@ -195,20 +201,26 @@ void LAMMPSWeb::loadLJ()
   lammps_commands_string((void *)lmp, script);
 }
 
-void LAMMPSWeb::load_local(std::string path)
+void LAMMPSWeb::runFile(std::string path)
 {
+  m_isRunning = true;
   lammps_file((void*)lmp, path.c_str());
+  m_isRunning = false;
 }
 
 void LAMMPSWeb::step()
 {
+  m_isRunning = true;
   const char *script = "run 1 pre no post no\n";
   lammps_commands_string((void *)lmp, script);
+  m_isRunning = false;
 }
 
 void LAMMPSWeb::runCommand(std::string command)
 {
+  m_isRunning = true;
   lammps_commands_string((void *)lmp, command.c_str());
+  m_isRunning = false;
 }
 
 int LAMMPSWeb::numAtoms()
@@ -227,9 +239,10 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("getTypePointer", &LAMMPSWeb::getTypePointer)
       .function("loadLJ", &LAMMPSWeb::loadLJ)
       .function("step", &LAMMPSWeb::step)
+      .function("isRunning", &LAMMPSWeb::isRunning)
       .function("start", &LAMMPSWeb::start)
       .function("stop", &LAMMPSWeb::stop)
       .function("numAtoms", &LAMMPSWeb::numAtoms)
-      .function("load_local", &LAMMPSWeb::load_local)
+      .function("runFile", &LAMMPSWeb::runFile)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
 }

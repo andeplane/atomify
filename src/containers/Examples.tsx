@@ -1,6 +1,6 @@
 import {useCallback} from 'react'
 import {Simulation, SimulationFile} from '../store/simulation'
-import {useStoreActions} from '../hooks'
+import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Card } from 'antd';
 const { Meta } = Card;
@@ -14,7 +14,10 @@ interface Example {
 }
 
 const Examples = () => {
-  const newSimulation = useStoreActions(actions => actions.simulation.newSimulation)
+  const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
+  const simulation = useStoreState(state => state.simulation.simulation)
+  const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
+
   const examples: Example[] = [
     {
       id: 'vashishtasio2',
@@ -40,23 +43,27 @@ const Examples = () => {
   ]
 
   const onPlay = useCallback((example: Example) => {
-    const simulation: Simulation = {
+    const newSimulation: Simulation = {
       files: example.files,
       id: example.id,
       inputScript: example.inputScript,
       start: true
     }
-    newSimulation(simulation)
+    setNewSimulation(newSimulation)
   }, [examples])
 
   const onEdit = useCallback((example: Example) => {
-    const simulation: Simulation = {
+    const newSimulation: Simulation = {
       files: example.files,
       id: example.id,
       inputScript: example.inputScript,
       start: false
     }
-    newSimulation(simulation)
+    if (simulation?.id != newSimulation.id) {
+      setNewSimulation(newSimulation)
+    } else {
+      setPreferredView('file'+newSimulation.inputScript)
+    }
   }, [examples])
 
   return (<div style={{padding: 10}}>

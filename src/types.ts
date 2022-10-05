@@ -3,13 +3,14 @@ export type LammpsWeb = {
   getIdPointer: () => number
   getTypePointer: () => number
   loadLJ: () => void
+  isRunning: () => boolean
   step: () => void
   stop: () => boolean
   start: () => boolean
   runCommand: (command: string) => void
   numAtoms: () => number
   setSyncFrequency: (every: number) => void
-  load_local: (path: string) => void
+  runFile: (path: string) => void
 }
 
 export type LammpsOutput = {

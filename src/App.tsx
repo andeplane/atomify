@@ -3,10 +3,11 @@ import {
   LineChartOutlined,
   EditOutlined,
   InsertRowAboveOutlined,
-  FileOutlined
+  FileOutlined,
+  CaretRightOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, Modal } from 'antd';
+import { Breadcrumb, Layout, Menu, Modal, Button, Tooltip } from 'antd';
 import React, { useState, useEffect, useCallback } from 'react';
 import Simulation from './components/Simulation'
 import View from './containers/View'
@@ -24,12 +25,16 @@ function getItem(
   key: React.Key,
   icon?: React.ReactNode,
   children?: MenuItem[],
+  onClick?: () => void,
+  disabled?: boolean
 ): MenuItem {
   return {
     key,    
     icon,
     children,
     label,
+    onClick,
+    disabled
   } as MenuItem;
 }
 
@@ -42,14 +47,28 @@ const App: React.FC = () => {
   const simulation = useStoreState(state => state.simulation.simulation)
   const selectedFile = useStoreState(state => state.simulation.selectedFile)
   const setSelectedFile = useStoreActions(actions => actions.simulation.setSelectedFile)
+  const preferredView = useStoreState(state => state.simulation.preferredView)
+  const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
+  const run = useStoreActions(actions => actions.simulation.run)
 
   const items: MenuItem[] = [
     getItem('View', 'view', <BorderOuterOutlined />),
     getItem('Analyze', 'analyze', <LineChartOutlined />),
-    getItem('Edit', 'edit', <EditOutlined />, simulation ? simulation.files.map(file => getItem(file.fileName, 'file'+file.fileName, <FileOutlined />)): []),
+    getItem('Edit', 'edit', <EditOutlined />, simulation ? simulation.files.map(file => {
+      return getItem(file.fileName, 'file'+file.fileName, <FileOutlined />)
+    }): []),
     getItem('Examples', 'examples', <InsertRowAboveOutlined />)
   ];
+  items.push({type: 'divider'})
+  items.push(getItem('Run', 'run', <CaretRightOutlined />, undefined, () => {run()}, simulation == null))
 
+  useEffect(() => {
+    if (preferredView) {
+      setSelectedMenu(preferredView)
+      setPreferredView(undefined)
+    }
+  }, [preferredView, setPreferredView])
+  
   useEffect(() => {
     if (selectedFile) {
       setSelectedMenu('file'+selectedFile.fileName)
@@ -57,6 +76,10 @@ const App: React.FC = () => {
   }, [selectedFile])
 
   const onMenuSelect = useCallback((selected: string) => {
+    if (selected === "run") {
+      return
+    }
+    
     setSelectedMenu(selected)
     if (selected.startsWith('file')) {
       // Oh god this is ugly
@@ -75,7 +98,13 @@ const App: React.FC = () => {
     <Layout style={{ minHeight: '100vh' }}>
       <Sider collapsible collapsed={collapsed} onCollapse={value => setCollapsed(value)}>
         <div className="logo" />
-        <Menu theme="dark" selectedKeys={[selectedMenu]} defaultOpenKeys={['edit']} defaultSelectedKeys={['examples']} mode="inline" items={items} onSelect={(info) => onMenuSelect(info.key)} />
+        <Menu theme="dark" 
+          selectedKeys={[selectedMenu]} 
+          defaultOpenKeys={['edit']} 
+          defaultSelectedKeys={['examples']} 
+          mode="inline" 
+          items={items}
+          onSelect={(info) => onMenuSelect(info.key)} />
       </Sider>
       <Layout className="site-layout">
         <Simulation />
@@ -92,7 +121,7 @@ const App: React.FC = () => {
           {selectedMenu=="edit" && <Edit />}
           {selectedMenu.startsWith("file") && <Edit />}
           {selectedMenu=="examples" && <Examples />}
-          {<Modal closable={false} title={status?.title} open={loading}>
+          {<Modal closable={false} title={status?.title} open={loading} footer={null}>
             {status?.text}
           </Modal>}
             {<Modal closable={false}  title={"Compiling LAMMPS ..."} open={wasm==null} footer={null}>

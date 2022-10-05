@@ -1,4 +1,4 @@
-import { action, Action, thunk, Thunk } from 'easy-peasy';
+import { action, Action, thunk, Thunk, computed, Computed } from 'easy-peasy';
 import {LammpsWeb} from '../types'
 import {Particles} from 'omovi'
 
@@ -24,9 +24,11 @@ export interface SimulationModel {
   loading: boolean
   simulation?: Simulation
   status?: Status
+  preferredView?: string
   files: string[]
   selectedFile?: SimulationFile
   particles?: Particles
+  setPreferredView: Action<SimulationModel, string|undefined>
   setSelectedFile: Action<SimulationModel, SimulationFile>
   setSimulation: Action<SimulationModel, Simulation>
   setLoading: Action<SimulationModel, boolean>
@@ -35,8 +37,8 @@ export interface SimulationModel {
   setStatus: Action<SimulationModel, Status>
   setLammps: Action<SimulationModel, LammpsWeb>
   setWasm: Action<SimulationModel, any>
-  run: Action<SimulationModel>
   syncFiles: Action<SimulationModel, string|undefined>
+  run: Thunk<SimulationModel>
   newSimulation: Thunk<SimulationModel, Simulation>
   wasm?: any
   lammps?: LammpsWeb
@@ -46,6 +48,9 @@ export interface SimulationModel {
 export const simulationModel: SimulationModel = {
   loading: false,
   files: [],
+  setPreferredView: action((state, preferredView?: string) => {
+    state.preferredView = preferredView
+  }),
   setSelectedFile: action((state, selectedFile?: SimulationFile) => {
     state.selectedFile = selectedFile
   }),
@@ -75,18 +80,28 @@ export const simulationModel: SimulationModel = {
       return
     }
     for (const file of state.simulation.files) {
+      // Update all files if no fileName is specified
       if (file.fileName == fileName || !fileName) {
         state.wasm.FS.writeFile(`/${state.simulation.id}/${file.fileName}`, file.content)
         console.log("Synced file ", file.fileName)
       }
     }
   }),
-  run: action((state) => {
-    if (!state.simulation) {
+  run: thunk(async (actions, payload, {getStoreState}) => {
+    // @ts-ignore
+    const simulation = getStoreState().simulation.simulation as Simulation
+    if (!simulation) {
       return
     }
-    state.lammps?.start()
-    state.lammps?.load_local(`/${state.simulation.id}/${state.simulation.inputScript}`)
+    // @ts-ignore
+    if (getStoreState().simulation.lammps.isRunning()) {
+      // We can't run while it is running
+      return
+    }
+    // @ts-ignore
+    getStoreState().simulation.lammps?.start()
+    // @ts-ignore
+    getStoreState().simulation.lammps?.runFile(`/${simulation.id}/${simulation.inputScript}`)
   }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
     // @ts-ignore
@@ -114,8 +129,7 @@ export const simulationModel: SimulationModel = {
     actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)
     if (simulation.start) {
-      lammps.start()
-      lammps.load_local(`/${simulation.id}/${simulation.inputScript}`)
+      actions.run()
     } else {
       const inputScriptFile = simulation.files.filter(file => file.fileName==simulation.inputScript)[0]
       actions.setSelectedFile(inputScriptFile)
