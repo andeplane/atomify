@@ -7,7 +7,7 @@ import {
   CaretRightOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, Modal, Button, Tooltip } from 'antd';
+import { Breadcrumb, Layout, Menu, Modal, Button, Tooltip, notification } from 'antd';
 import React, { useState, useEffect, useCallback } from 'react';
 import Simulation from './components/Simulation'
 import View from './containers/View'
@@ -42,6 +42,7 @@ const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<string>("examples")
   const wasm = useStoreState(state => state.simulation.wasm)
+  const lammps = useStoreState(state => state.simulation.lammps)
   const loading = useStoreState(state => state.simulation.loading)
   const status = useStoreState(state => state.simulation.status)
   const simulation = useStoreState(state => state.simulation.simulation)
@@ -60,7 +61,16 @@ const App: React.FC = () => {
     getItem('Examples', 'examples', <InsertRowAboveOutlined />)
   ];
   items.push({type: 'divider'})
-  items.push(getItem('Run', 'run', <CaretRightOutlined />, undefined, () => {run()}, simulation == null))
+  items.push(getItem('Run', 'run', <CaretRightOutlined />, undefined, () => {
+    if (lammps?.isRunning()) {
+      notification.info({
+        message: 'Simulation already running',
+        description: "You can't start a new simulation while another one is running.",
+      });
+    } else {
+      run()
+    }
+  }, simulation == null))
 
   useEffect(() => {
     if (preferredView) {

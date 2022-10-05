@@ -2,7 +2,7 @@ import {useCallback} from 'react'
 import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
-import { Card } from 'antd';
+import { Card, notification } from 'antd';
 const { Meta } = Card;
 interface Example {
   id: string
@@ -17,6 +17,7 @@ const Examples = () => {
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
   const simulation = useStoreState(state => state.simulation.simulation)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
+  const lammps = useStoreState(state => state.simulation.lammps)
 
   const examples: Example[] = [
     {
@@ -62,7 +63,15 @@ const Examples = () => {
       inputScript: example.inputScript,
       start: true
     }
-    setNewSimulation(newSimulation)
+    if (lammps?.isRunning()) {
+      notification.info({
+        message: 'Simulation already running',
+        description: "You can't start a new simulation while another one is running.",
+      });
+    } else {
+      setNewSimulation(newSimulation)
+      setPreferredView('view')
+    }
   }, [examples])
 
   const onEdit = useCallback((example: Example) => {
