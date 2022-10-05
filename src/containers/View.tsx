@@ -36,10 +36,12 @@ const View = () => {
   const prevColors = prevColorsRef.current
 
   useEffect(() => {
-    particleColors?.forEach((color, index) => {
-      visualizer.setColor(index, color)
-    })
-  }, [particleColors])
+    if (visualizer) {
+      particleColors?.forEach((color, index) => {
+        visualizer.setColor(index, color)
+      })
+    }
+  }, [particleColors, visualizer])
 
   // const prevBondsRef = useRef<Bonds>()
   // useEffect(() => {
