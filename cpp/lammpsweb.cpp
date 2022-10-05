@@ -1,6 +1,7 @@
 #include "lammps.h"
 #include <iostream>
 #include "library.h"
+#include "domain.h"
 #include "modify.h"
 #include "fix_atomify.h"
 
@@ -20,6 +21,8 @@ public:
   ~LAMMPSWeb();
   LAMMPS_NS::LAMMPS *lmp;
   bool m_isRunning;
+  double *m_cellMatrix;
+  double *m_origo;
   long getPositionsPointer();
   long getIdPointer();
   long getTypePointer();
@@ -38,6 +41,8 @@ public:
   int findFixIndex(std::string identifier);
   bool fixExists(std::string identifier);
   void setSyncFrequency(int frequency);
+  long getCellMatrixPointer();
+  long getOrigoPointer();
   LAMMPS_NS::Fix* findFixByIdentifier(std::string identifier);
 };
 
@@ -62,7 +67,7 @@ void synchronizeLAMMPS_callback(void *caller, int mode)
     controller->synchronizeLAMMPS(mode);
 }
 
-LAMMPSWeb::LAMMPSWeb() : lmp(nullptr), m_isRunning(false)
+LAMMPSWeb::LAMMPSWeb() : lmp(nullptr), m_isRunning(false), m_cellMatrix(new double[9]), m_origo(new double[3])
 {
   
 }
@@ -70,6 +75,36 @@ LAMMPSWeb::LAMMPSWeb() : lmp(nullptr), m_isRunning(false)
 LAMMPSWeb::~LAMMPSWeb()
 {
   stop();
+}
+
+long LAMMPSWeb::getCellMatrixPointer() {
+  LAMMPS_NS::Domain *domain = lmp->domain;
+  domain->box_corners();
+  double a[] = {domain->corners[1][0], domain->corners[1][1], domain->corners[1][2]};
+  double b[] = {domain->corners[2][0], domain->corners[2][1], domain->corners[2][2]};
+  double c[] = {domain->corners[4][0], domain->corners[4][1], domain->corners[4][2]};
+  double origo[] = {domain->corners[0][0], domain->corners[0][1], domain->corners[0][2]};
+
+  for (int i = 0; i < 3; i++) {
+    a[i] -= origo[i];
+    b[i] -= origo[i];
+    c[i] -= origo[i];
+    m_cellMatrix[i] = a[i];
+    m_cellMatrix[3+i] = b[i];
+    m_cellMatrix[6+i] = c[i];
+  }
+
+  return reinterpret_cast<long>(m_cellMatrix);
+}
+
+long LAMMPSWeb::getOrigoPointer() {
+  LAMMPS_NS::Domain *domain = lmp->domain;
+  domain->box_corners();
+  m_origo[0] = domain->corners[0][0];
+  m_origo[1] = domain->corners[0][1];
+  m_origo[2] = domain->corners[0][2];
+
+  return reinterpret_cast<long>(m_origo);
 }
 
 bool LAMMPSWeb::isRunning() {
@@ -244,5 +279,7 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("stop", &LAMMPSWeb::stop)
       .function("numAtoms", &LAMMPSWeb::numAtoms)
       .function("runFile", &LAMMPSWeb::runFile)
+      .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
+      .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
 }

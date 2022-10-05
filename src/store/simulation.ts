@@ -28,11 +28,15 @@ export interface SimulationModel {
   files: string[]
   selectedFile?: SimulationFile
   particles?: Particles
+  simulationBox?: THREE.Matrix3
+  simulationOrigo?: THREE.Vector3
   setPreferredView: Action<SimulationModel, string|undefined>
   setSelectedFile: Action<SimulationModel, SimulationFile>
   setSimulation: Action<SimulationModel, Simulation>
   setLoading: Action<SimulationModel, boolean>
   setParticles: Action<SimulationModel, Particles>
+  setSimulationBox: Action<SimulationModel, THREE.Matrix3>
+  setSimulationOrigo: Action<SimulationModel, THREE.Vector3>
   setFiles: Action<SimulationModel, string[]>
   setStatus: Action<SimulationModel, Status>
   setLammps: Action<SimulationModel, LammpsWeb>
@@ -53,6 +57,12 @@ export const simulationModel: SimulationModel = {
   }),
   setSelectedFile: action((state, selectedFile?: SimulationFile) => {
     state.selectedFile = selectedFile
+  }),
+  setSimulationBox: action((state, simulationBox: THREE.Matrix3) => {
+    state.simulationBox = simulationBox
+  }),
+  setSimulationOrigo: action((state, simulationOrigo: THREE.Vector3) => {
+    state.simulationOrigo = simulationOrigo
   }),
   setWasm: action((state, wasm: any) => {
     state.wasm = wasm

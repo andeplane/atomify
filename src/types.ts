@@ -10,6 +10,8 @@ export type LammpsWeb = {
   runCommand: (command: string) => void
   numAtoms: () => number
   setSyncFrequency: (every: number) => void
+  getCellMatrixPointer: () => number
+  getOrigoPointer: () => number
   runFile: (path: string) => void
 }
 
