@@ -49,9 +49,9 @@ const Simulation = () => {
         const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
         setLammps(lammps)
         // @ts-ignore
-        // window.wasm = Module
+        window.wasm = Module
         // @ts-ignore
-        // window.lammps = lammps
+        window.lammps = lammps
         // @ts-ignore
         window.syncFrequency = 2
         

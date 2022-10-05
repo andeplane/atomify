@@ -113,7 +113,10 @@ export const simulationModel: SimulationModel = {
     // @ts-ignore
     const lammps = getStoreState().simulation.lammps
 
-    wasm.FS.mkdir(`/${simulation.id}`)
+    if (!wasm.FS.analyzePath(`/${simulation.id}`).exists) {
+      wasm.FS.mkdir(`/${simulation.id}`)
+    }
+    
     let counter = 0
     for (const file of simulation.files) {
       await actions.setStatus({
