@@ -1,6 +1,7 @@
 #include "lammps.h"
 #include <iostream>
 #include "library.h"
+#include "domain.h"
 #include "modify.h"
 #include "fix_atomify.h"
 
@@ -19,15 +20,19 @@ public:
   LAMMPSWeb();
   ~LAMMPSWeb();
   LAMMPS_NS::LAMMPS *lmp;
+  bool m_isRunning;
+  double *m_cellMatrix;
+  double *m_origo;
   long getPositionsPointer();
   long getIdPointer();
   long getTypePointer();
   int numAtoms();
+  bool isRunning();
   void loadLJ();
   void step();
   void start();
   void stop();
-  void load_local();
+  void runFile(std::string path);
   double getX(int n);
   double getY(int n);
   double getZ(int n);
@@ -36,6 +41,8 @@ public:
   int findFixIndex(std::string identifier);
   bool fixExists(std::string identifier);
   void setSyncFrequency(int frequency);
+  long getCellMatrixPointer();
+  long getOrigoPointer();
   LAMMPS_NS::Fix* findFixByIdentifier(std::string identifier);
 };
 
@@ -60,6 +67,50 @@ void synchronizeLAMMPS_callback(void *caller, int mode)
     controller->synchronizeLAMMPS(mode);
 }
 
+LAMMPSWeb::LAMMPSWeb() : lmp(nullptr), m_isRunning(false), m_cellMatrix(new double[9]), m_origo(new double[3])
+{
+  
+}
+
+LAMMPSWeb::~LAMMPSWeb()
+{
+  stop();
+}
+
+long LAMMPSWeb::getCellMatrixPointer() {
+  LAMMPS_NS::Domain *domain = lmp->domain;
+  domain->box_corners();
+  double a[] = {domain->corners[1][0], domain->corners[1][1], domain->corners[1][2]};
+  double b[] = {domain->corners[2][0], domain->corners[2][1], domain->corners[2][2]};
+  double c[] = {domain->corners[4][0], domain->corners[4][1], domain->corners[4][2]};
+  double origo[] = {domain->corners[0][0], domain->corners[0][1], domain->corners[0][2]};
+
+  for (int i = 0; i < 3; i++) {
+    a[i] -= origo[i];
+    b[i] -= origo[i];
+    c[i] -= origo[i];
+    m_cellMatrix[i] = a[i];
+    m_cellMatrix[3+i] = b[i];
+    m_cellMatrix[6+i] = c[i];
+  }
+
+  return reinterpret_cast<long>(m_cellMatrix);
+}
+
+long LAMMPSWeb::getOrigoPointer() {
+  LAMMPS_NS::Domain *domain = lmp->domain;
+  domain->box_corners();
+  m_origo[0] = domain->corners[0][0];
+  m_origo[1] = domain->corners[0][1];
+  m_origo[2] = domain->corners[0][2];
+
+  return reinterpret_cast<long>(m_origo);
+}
+
+bool LAMMPSWeb::isRunning() {
+  return m_isRunning;
+}
+
 void LAMMPSWeb::setSyncFrequency(int every) {
   LAMMPS_NS::Fix *originalFix = findFixByIdentifier(std::string("atomify"));
   if (!originalFix) {
@@ -80,16 +131,6 @@ void LAMMPSWeb::synchronizeLAMMPS(int mode)
     if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
     postStepCallback();
     emscripten_sleep(1);
-}
-
-LAMMPSWeb::LAMMPSWeb() : lmp(nullptr)
-{
-  
-}
-
-LAMMPSWeb::~LAMMPSWeb()
-{
-  stop();
 }
 
 long LAMMPSWeb::getPositionsPointer()
@@ -195,20 +236,26 @@ void LAMMPSWeb::loadLJ()
   lammps_commands_string((void *)lmp, script);
 }
 
-void LAMMPSWeb::load_local()
+void LAMMPSWeb::runFile(std::string path)
 {
-  lammps_file((void*)lmp, "/test.lj");
+  m_isRunning = true;
+  lammps_file((void*)lmp, path.c_str());
+  m_isRunning = false;
 }
 
 void LAMMPSWeb::step()
 {
+  m_isRunning = true;
   const char *script = "run 1 pre no post no\n";
   lammps_commands_string((void *)lmp, script);
+  m_isRunning = false;
 }
 
 void LAMMPSWeb::runCommand(std::string command)
 {
+  m_isRunning = true;
   lammps_commands_string((void *)lmp, command.c_str());
+  m_isRunning = false;
 }
 
 int LAMMPSWeb::numAtoms()
@@ -227,9 +274,12 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("getTypePointer", &LAMMPSWeb::getTypePointer)
       .function("loadLJ", &LAMMPSWeb::loadLJ)
       .function("step", &LAMMPSWeb::step)
+      .function("isRunning", &LAMMPSWeb::isRunning)
       .function("start", &LAMMPSWeb::start)
       .function("stop", &LAMMPSWeb::stop)
       .function("numAtoms", &LAMMPSWeb::numAtoms)
-      .function("load_local", &LAMMPSWeb::load_local)
+      .function("runFile", &LAMMPSWeb::runFile)
+      .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
+      .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
 }

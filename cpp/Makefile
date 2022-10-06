@@ -13,7 +13,7 @@ SYMBOLS := --bind -s ENVIRONMENT='web' \
 									-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
 									-s ASYNCIFY \
 									-s MODULARIZE=1 \
-									-s EXPORTED_RUNTIME_METHODS="['getValue']" \
+									-s EXPORTED_RUNTIME_METHODS="['getValue', 'FS']" \
 									-s EXPORT_NAME='createModule' \
 									-s USE_ES6_IMPORT_META=0 \
 									-s FORCE_FILESYSTEM=1
