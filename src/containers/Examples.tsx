@@ -2,7 +2,7 @@ import {useCallback, useState, useEffect} from 'react'
 import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
-import { Card, Layout, Skeleton, notification } from 'antd';
+import { Card, Layout, Skeleton, Row, Col, notification } from 'antd';
 
 const { Header } = Layout;
 const { Meta } = Card;
@@ -66,14 +66,9 @@ const Examples = () => {
       setPreferredView('file'+newSimulation.inputScript)
     }
   }, [examples])
-  return (
-    <>
-    <Header className="site-layout-background" style={{ fontSize: 25 }}>
-      Examples
-    </Header>
-    <div style={{padding: 10, margin: 10}}>
-    {Object.values(examples).map(example => (
-      <Card
+
+  const renderCard = (example: Example) => (
+    <Card
       key={example.id}
       style={{ width: 300 }}
       cover={
@@ -92,7 +87,38 @@ const Examples = () => {
         description={example.description}
       />
     </Card>
-    ))}
+  )
+
+  const renderChunk = (chunk: Example[]) => (
+    <Row gutter={8}>
+      {chunk.map(example => (
+        <Col className="gutter-row" span={5}>
+          {renderCard(example)}
+        </Col>
+      ))}
+    </Row>
+  )
+
+  const chunkIt = (array: Example[], chunkSize: number) => {
+    const chunks: Example[][] = []
+
+    for (let i = 0; i < array.length; i += chunkSize) {
+        const chunk = array.slice(i, i + chunkSize);
+        chunks.push(chunk)
+    }
+    return chunks
+  }
+
+  const chunks = chunkIt(examples, 4)
+
+  return (
+    <>
+    <Header className="site-layout-background" style={{ fontSize: 25 }}>
+      Examples
+    </Header>
+    <div style={{padding: 10, margin: 10}}>
+    {/* {Object.values(examples).map(renderCard)} */}
+    {chunks.map(renderChunk)}
     {examples.length == 0 && <Skeleton active/>}
     </div>
     </>)
