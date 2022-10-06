@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/atomify/static/css/main.388c997d.css",
-    "main.js": "/atomify/static/js/main.37d82bc7.js",
+    "main.js": "/atomify/static/js/main.d0fd78e5.js",
     "static/media/codicon.ttf": "/atomify/static/media/codicon.b797181c93b3755f4fa1.ttf",
     "index.html": "/atomify/index.html",
     "main.388c997d.css.map": "/atomify/static/css/main.388c997d.css.map",
-    "main.37d82bc7.js.map": "/atomify/static/js/main.37d82bc7.js.map"
+    "main.d0fd78e5.js.map": "/atomify/static/js/main.d0fd78e5.js.map"
   },
   "entrypoints": [
     "static/css/main.388c997d.css",
-    "static/js/main.37d82bc7.js"
+    "static/js/main.d0fd78e5.js"
   ]
 }
