@@ -1,0 +1,30 @@
+    # -- Default styles (for solo "TIP3P_2004" water) --
+    units        real
+    atom_style   full
+
+    pair_style   hybrid lj/charmm/coul/long 10.0 10.5 10.5
+
+    # Note: in the LAMMPS "peptide" example, they use these parameters:
+    # pair_style   hybrid lj/charmm/coul/long 8.0 10.0 10.0
+
+    bond_style   hybrid harmonic
+    angle_style  hybrid harmonic
+    kspace_style pppm 0.0001
+    #pair_modify  mix arithmetic  # LEAVE THIS UNSPECIFIED!
+    # Default styles and settings for AMBER based force-fields:
+    units           real
+    atom_style      full
+    bond_style      hybrid harmonic
+    angle_style     hybrid harmonic
+    dihedral_style  hybrid fourier
+    improper_style  hybrid cvff
+    pair_style      hybrid lj/charmm/coul/long 9.0 10.0 10.0
+    kspace_style    pppm 0.0001
+
+    # NOTE: If you do not want to use long-range coulombic forces,
+    #       comment out the two lines above and uncomment this line:
+    # pair_style      hybrid lj/charmm/coul/charmm 9.0 10.0
+
+    pair_modify     mix arithmetic
+    special_bonds   amber
+    neigh_modify every 1 delay 0 check yes
