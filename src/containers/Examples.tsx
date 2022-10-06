@@ -1,8 +1,8 @@
-import {useCallback} from 'react'
+import {useCallback, useState, useEffect} from 'react'
 import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
-import { Card, Layout, notification } from 'antd';
+import { Card, Layout, Spin, notification } from 'antd';
 const { Header } = Layout;
 const { Meta } = Card;
 interface Example {
@@ -15,47 +15,24 @@ interface Example {
 }
 
 const Examples = () => {
+  const [examples, setExamples] = useState<Example[]>([])
+  const [loading, setLoading] = useState(false)
+
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
   const simulation = useStoreState(state => state.simulation.simulation)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   const lammps = useStoreState(state => state.simulation.lammps)
-
-  const examples: Example[] = [
-    {
-      id: 'diffusion',
-      title: "Diffusion",
-      description: 'Diffusion using the Lennard Jones potential',
-      imageUrl: 'https://github.com/ovilab/atomify-lammps-examples/blob/master/examples/diffusion/diffusion/simple_diffusion.png?raw=true',
-      inputScript: 'simple_diffusion.in',
-      files: [
-        {
-          fileName: 'simple_diffusion.in',
-          url: 'https://raw.githubusercontent.com/ovilab/atomify-lammps-examples/master/examples/diffusion/diffusion/simple_diffusion.in'
-        }
-      ]
-    },
-    {
-      id: 'vashishtasio2',
-      title: "Vashishta SiO2",
-      description: 'Silica quartz simulated using the Vashishta potential',
-      imageUrl: 'https://github.com/ovilab/atomify-lammps-examples/blob/master/examples/silica/betacristobalite/betacristobalite.png?raw=true',
-      inputScript: 'in.vashishta.sio2',
-      files: [
-        {
-          fileName: 'SiO.1990.vashishta',
-          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/potentials/SiO.1990.vashishta',
-        },
-        {
-          fileName: 'data.quartz',
-          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/data.quartz'
-        },
-        {
-          fileName: 'in.vashishta.sio2',
-          url: 'https://raw.githubusercontent.com/lammps/lammps/develop/examples/vashishta/in.vashishta.sio2'
-        }
-      ]
-    }
-  ]
+    
+  useEffect(() => {
+    (async () => {
+      const examplesUrl = 'examples/examples.json'
+      const response = await fetch(examplesUrl)
+      console.log("Got response: ", response)
+      const data = await response.json()
+      console.log("Got examples: ", data)
+      setExamples(data)
+    })()
+  })
 
   const onPlay = useCallback((example: Example) => {
     const newSimulation: Simulation = {
@@ -115,6 +92,7 @@ const Examples = () => {
       />
     </Card>
     ))}
+    {examples.length == 0 && <Spin size='large' />}
     </div>
     </>)
 }
