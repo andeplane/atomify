@@ -24,6 +24,7 @@ if not os.path.exists('lammps'):
   print("Applying patch ...")
   subprocess.call("git apply lammps.patch", shell=True)
   print("Compiling serial once to generate all files required for compilation ...")
+  subprocess.call("make yes-rigid yes-class2 yes-manybody yes-mc yes-molecule yes-granular yes-kspace yes-shock yes-misc yes-qeq yes-reax")
   subprocess.call("make -j8 serial", shell=True)
   print("Deleting main.cpp ...")
   os.remove("main.cpp")

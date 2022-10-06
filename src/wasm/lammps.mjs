@@ -6593,16 +6593,23 @@ var asmLibraryArg = {
   "invoke_i": invoke_i,
   "invoke_idiii": invoke_idiii,
   "invoke_ii": invoke_ii,
+  "invoke_iid": invoke_iid,
   "invoke_iiddd": invoke_iiddd,
   "invoke_iii": invoke_iii,
+  "invoke_iiiddi": invoke_iiiddi,
   "invoke_iiii": invoke_iiii,
   "invoke_iiiii": invoke_iiiii,
+  "invoke_iiiiid": invoke_iiiiid,
   "invoke_iiiiii": invoke_iiiiii,
   "invoke_iiiiiii": invoke_iiiiiii,
   "invoke_iiiiiiii": invoke_iiiiiiii,
   "invoke_iiiiiiiiiii": invoke_iiiiiiiiiii,
   "invoke_iiiiiiiiiiii": invoke_iiiiiiiiiiii,
   "invoke_iiiiiiiiiiiii": invoke_iiiiiiiiiiiii,
+  "invoke_iiiiiiiiiiiiiiiiiii": invoke_iiiiiiiiiiiiiiiiiii,
+  "invoke_iiiiiiiiiiiiiiiiiiiii": invoke_iiiiiiiiiiiiiiiiiiiii,
+  "invoke_iiiiiiiiiiiiiiiiiiiiiii": invoke_iiiiiiiiiiiiiiiiiiiiiii,
+  "invoke_iiiiiiiiiiiiiiiiiiiiiiiiii": invoke_iiiiiiiiiiiiiiiiiiiiiiiiii,
   "invoke_iijiii": invoke_iijiii,
   "invoke_iijjiii": invoke_iijjiii,
   "invoke_ijjiii": invoke_ijjiii,
@@ -6612,6 +6619,7 @@ var asmLibraryArg = {
   "invoke_vi": invoke_vi,
   "invoke_viddiiiii": invoke_viddiiiii,
   "invoke_vii": invoke_vii,
+  "invoke_viid": invoke_viid,
   "invoke_viidd": invoke_viidd,
   "invoke_viidi": invoke_viidi,
   "invoke_viidii": invoke_viidii,
@@ -6641,11 +6649,6 @@ var getTempRet0 = Module["getTempRet0"] = function() {
 };
 
 /** @type {function(...*):?} */
-var ___errno_location = Module["___errno_location"] = function() {
-  return (___errno_location = Module["___errno_location"] = Module["asm"]["__errno_location"]).apply(null, arguments);
-};
-
-/** @type {function(...*):?} */
 var _malloc = Module["_malloc"] = function() {
   return (_malloc = Module["_malloc"] = Module["asm"]["malloc"]).apply(null, arguments);
 };
@@ -6653,6 +6656,11 @@ var _malloc = Module["_malloc"] = function() {
 /** @type {function(...*):?} */
 var _free = Module["_free"] = function() {
   return (_free = Module["_free"] = Module["asm"]["free"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var ___errno_location = Module["___errno_location"] = function() {
+  return (___errno_location = Module["___errno_location"] = Module["asm"]["__errno_location"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -6766,13 +6774,13 @@ var dynCall_iiii = Module["dynCall_iiii"] = function() {
 };
 
 /** @type {function(...*):?} */
-var dynCall_iii = Module["dynCall_iii"] = function() {
-  return (dynCall_iii = Module["dynCall_iii"] = Module["asm"]["dynCall_iii"]).apply(null, arguments);
+var dynCall_viiiiiiii = Module["dynCall_viiiiiiii"] = function() {
+  return (dynCall_viiiiiiii = Module["dynCall_viiiiiiii"] = Module["asm"]["dynCall_viiiiiiii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
-var dynCall_iiiiii = Module["dynCall_iiiiii"] = function() {
-  return (dynCall_iiiiii = Module["dynCall_iiiiii"] = Module["asm"]["dynCall_iiiiii"]).apply(null, arguments);
+var dynCall_iii = Module["dynCall_iii"] = function() {
+  return (dynCall_iii = Module["dynCall_iii"] = Module["asm"]["dynCall_iii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -6786,6 +6794,11 @@ var dynCall_diiiii = Module["dynCall_diiiii"] = function() {
 };
 
 /** @type {function(...*):?} */
+var dynCall_iiiiii = Module["dynCall_iiiiii"] = function() {
+  return (dynCall_iiiiii = Module["dynCall_iiiiii"] = Module["asm"]["dynCall_iiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
 var dynCall_viiii = Module["dynCall_viiii"] = function() {
   return (dynCall_viiii = Module["dynCall_viiii"] = Module["asm"]["dynCall_viiii"]).apply(null, arguments);
 };
@@ -6796,8 +6809,8 @@ var dynCall_iiiii = Module["dynCall_iiiii"] = function() {
 };
 
 /** @type {function(...*):?} */
-var dynCall_viiiiiiii = Module["dynCall_viiiiiiii"] = function() {
-  return (dynCall_viiiiiiii = Module["dynCall_viiiiiiii"] = Module["asm"]["dynCall_viiiiiiii"]).apply(null, arguments);
+var dynCall_viiiiiiiii = Module["dynCall_viiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiii = Module["dynCall_viiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -6841,6 +6854,11 @@ var dynCall_diii = Module["dynCall_diii"] = function() {
 };
 
 /** @type {function(...*):?} */
+var dynCall_iid = Module["dynCall_iid"] = function() {
+  return (dynCall_iid = Module["dynCall_iid"] = Module["asm"]["dynCall_iid"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
 var dynCall_vidi = Module["dynCall_vidi"] = function() {
   return (dynCall_vidi = Module["dynCall_vidi"] = Module["asm"]["dynCall_vidi"]).apply(null, arguments);
 };
@@ -6856,8 +6874,43 @@ var dynCall_vid = Module["dynCall_vid"] = function() {
 };
 
 /** @type {function(...*):?} */
+var dynCall_diiii = Module["dynCall_diiii"] = function() {
+  return (dynCall_diiii = Module["dynCall_diiii"] = Module["asm"]["dynCall_diiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viididii = Module["dynCall_viididii"] = function() {
+  return (dynCall_viididii = Module["dynCall_viididii"] = Module["asm"]["dynCall_viididii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viidii = Module["dynCall_viidii"] = function() {
+  return (dynCall_viidii = Module["dynCall_viidii"] = Module["asm"]["dynCall_viidii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
 var dynCall_viiid = Module["dynCall_viiid"] = function() {
   return (dynCall_viiid = Module["dynCall_viiid"] = Module["asm"]["dynCall_viiid"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_iiiidd = Module["dynCall_iiiidd"] = function() {
+  return (dynCall_iiiidd = Module["dynCall_iiiidd"] = Module["asm"]["dynCall_iiiidd"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_iiiddi = Module["dynCall_iiiddi"] = function() {
+  return (dynCall_iiiddi = Module["dynCall_iiiddi"] = Module["asm"]["dynCall_iiiddi"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_iiddd = Module["dynCall_iiddd"] = function() {
+  return (dynCall_iiddd = Module["dynCall_iiddd"] = Module["asm"]["dynCall_iiddd"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_d = Module["dynCall_d"] = function() {
+  return (dynCall_d = Module["dynCall_d"] = Module["asm"]["dynCall_d"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -6901,11 +6954,6 @@ var dynCall_didd = Module["dynCall_didd"] = function() {
 };
 
 /** @type {function(...*):?} */
-var dynCall_iiddd = Module["dynCall_iiddd"] = function() {
-  return (dynCall_iiddd = Module["dynCall_iiddd"] = Module["asm"]["dynCall_iiddd"]).apply(null, arguments);
-};
-
-/** @type {function(...*):?} */
 var dynCall_i = Module["dynCall_i"] = function() {
   return (dynCall_i = Module["dynCall_i"] = Module["asm"]["dynCall_i"]).apply(null, arguments);
 };
@@ -6916,13 +6964,13 @@ var dynCall_viijii = Module["dynCall_viijii"] = function() {
 };
 
 /** @type {function(...*):?} */
-var dynCall_d = Module["dynCall_d"] = function() {
-  return (dynCall_d = Module["dynCall_d"] = Module["asm"]["dynCall_d"]).apply(null, arguments);
+var dynCall_iidi = Module["dynCall_iidi"] = function() {
+  return (dynCall_iidi = Module["dynCall_iidi"] = Module["asm"]["dynCall_iidi"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
-var dynCall_iidi = Module["dynCall_iidi"] = function() {
-  return (dynCall_iidi = Module["dynCall_iidi"] = Module["asm"]["dynCall_iidi"]).apply(null, arguments);
+var dynCall_iiiiiiiiiiiiiiiiiiiiiiiiii = Module["dynCall_iiiiiiiiiiiiiiiiiiiiiiiiii"] = function() {
+  return (dynCall_iiiiiiiiiiiiiiiiiiiiiiiiii = Module["dynCall_iiiiiiiiiiiiiiiiiiiiiiiiii"] = Module["asm"]["dynCall_iiiiiiiiiiiiiiiiiiiiiiiiii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -6986,13 +7034,73 @@ var dynCall_viddiiiii = Module["dynCall_viddiiiii"] = function() {
 };
 
 /** @type {function(...*):?} */
-var dynCall_viiiiiiiii = Module["dynCall_viiiiiiiii"] = function() {
-  return (dynCall_viiiiiiiii = Module["dynCall_viiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiii"]).apply(null, arguments);
+var dynCall_vididdiddiiii = Module["dynCall_vididdiddiiii"] = function() {
+  return (dynCall_vididdiddiiii = Module["dynCall_vididdiddiiii"] = Module["asm"]["dynCall_vididdiddiiii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
-var dynCall_vididdiddiiii = Module["dynCall_vididdiddiiii"] = function() {
-  return (dynCall_vididdiddiiii = Module["dynCall_vididdiddiiii"] = Module["asm"]["dynCall_vididdiddiiii"]).apply(null, arguments);
+var dynCall_iiiiiiiiiiiiiiiiiii = Module["dynCall_iiiiiiiiiiiiiiiiiii"] = function() {
+  return (dynCall_iiiiiiiiiiiiiiiiiii = Module["dynCall_iiiiiiiiiiiiiiiiiii"] = Module["asm"]["dynCall_iiiiiiiiiiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_iiiiiiiiiiiiiiiiiiiiiii = Module["dynCall_iiiiiiiiiiiiiiiiiiiiiii"] = function() {
+  return (dynCall_iiiiiiiiiiiiiiiiiiiiiii = Module["dynCall_iiiiiiiiiiiiiiiiiiiiiii"] = Module["asm"]["dynCall_iiiiiiiiiiiiiiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_iiiiiiiiiiiiiiiiiiiii = Module["dynCall_iiiiiiiiiiiiiiiiiiiii"] = function() {
+  return (dynCall_iiiiiiiiiiiiiiiiiiiii = Module["dynCall_iiiiiiiiiiiiiiiiiiiii"] = Module["asm"]["dynCall_iiiiiiiiiiiiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viddddiiiiiiiii = Module["dynCall_viddddiiiiiiiii"] = function() {
+  return (dynCall_viddddiiiiiiiii = Module["dynCall_viddddiiiiiiiii"] = Module["asm"]["dynCall_viddddiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiiiiiiii = Module["dynCall_viiiiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiiiii = Module["dynCall_viiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiiiiiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiiiiiiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiiiiiii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -7003,11 +7111,6 @@ var dynCall_iiiiiiiiiiiiiii = Module["dynCall_iiiiiiiiiiiiiii"] = function() {
 /** @type {function(...*):?} */
 var dynCall_iiid = Module["dynCall_iiid"] = function() {
   return (dynCall_iiid = Module["dynCall_iiid"] = Module["asm"]["dynCall_iiid"]).apply(null, arguments);
-};
-
-/** @type {function(...*):?} */
-var dynCall_viidii = Module["dynCall_viidii"] = function() {
-  return (dynCall_viidii = Module["dynCall_viidii"] = Module["asm"]["dynCall_viidii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -7036,6 +7139,11 @@ var dynCall_j = Module["dynCall_j"] = function() {
 };
 
 /** @type {function(...*):?} */
+var dynCall_iiiiid = Module["dynCall_iiiiid"] = function() {
+  return (dynCall_iiiiid = Module["dynCall_iiiiid"] = Module["asm"]["dynCall_iiiiid"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
 var dynCall_iiiiiiiiiii = Module["dynCall_iiiiiiiiiii"] = function() {
   return (dynCall_iiiiiiiiiii = Module["dynCall_iiiiiiiiiii"] = Module["asm"]["dynCall_iiiiiiiiiii"]).apply(null, arguments);
 };
@@ -7061,11 +7169,6 @@ var dynCall_iiiiiiiiiiii = Module["dynCall_iiiiiiiiiiii"] = function() {
 };
 
 /** @type {function(...*):?} */
-var dynCall_viiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiii"] = function() {
-  return (dynCall_viiiiiiiiiiiiiii = Module["dynCall_viiiiiiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiiiiiii"]).apply(null, arguments);
-};
-
-/** @type {function(...*):?} */
 var dynCall_iiiiiiiii = Module["dynCall_iiiiiiiii"] = function() {
   return (dynCall_iiiiiiiii = Module["dynCall_iiiiiiiii"] = Module["asm"]["dynCall_iiiiiiiii"]).apply(null, arguments);
 };
@@ -7076,11 +7179,6 @@ var dynCall_iiiiij = Module["dynCall_iiiiij"] = function() {
 };
 
 /** @type {function(...*):?} */
-var dynCall_iiiiid = Module["dynCall_iiiiid"] = function() {
-  return (dynCall_iiiiid = Module["dynCall_iiiiid"] = Module["asm"]["dynCall_iiiiid"]).apply(null, arguments);
-};
-
-/** @type {function(...*):?} */
 var dynCall_iiiiijj = Module["dynCall_iiiiijj"] = function() {
   return (dynCall_iiiiijj = Module["dynCall_iiiiijj"] = Module["asm"]["dynCall_iiiiijj"]).apply(null, arguments);
 };
@@ -7088,6 +7186,11 @@ var dynCall_iiiiijj = Module["dynCall_iiiiijj"] = function() {
 /** @type {function(...*):?} */
 var dynCall_iiiiiijj = Module["dynCall_iiiiiijj"] = function() {
   return (dynCall_iiiiiijj = Module["dynCall_iiiiiijj"] = Module["asm"]["dynCall_iiiiiijj"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
+var dynCall_viid = Module["dynCall_viid"] = function() {
+  return (dynCall_viid = Module["dynCall_viid"] = Module["asm"]["dynCall_viid"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -7110,8 +7213,8 @@ var _asyncify_stop_rewind = Module["_asyncify_stop_rewind"] = function() {
   return (_asyncify_stop_rewind = Module["_asyncify_stop_rewind"] = Module["asm"]["asyncify_stop_rewind"]).apply(null, arguments);
 };
 
-var ___start_em_js = Module['___start_em_js'] = 352704;
-var ___stop_em_js = Module['___stop_em_js'] = 352734;
+var ___start_em_js = Module['___start_em_js'] = 458624;
+var ___stop_em_js = Module['___stop_em_js'] = 458654;
 function invoke_vii(index,a1,a2) {
   var sp = stackSave();
   try {
@@ -7127,6 +7230,17 @@ function invoke_viiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
     dynCall_viiiii(index,a1,a2,a3,a4,a5);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
+  var sp = stackSave();
+  try {
+    dynCall_viiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -7211,10 +7325,32 @@ function invoke_iiii(index,a1,a2,a3) {
   }
 }
 
-function invoke_viiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
+function invoke_vi(index,a1) {
   var sp = stackSave();
   try {
-    dynCall_viiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8);
+    dynCall_vi(index,a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_di(index,a1) {
+  var sp = stackSave();
+  try {
+    return dynCall_di(index,a1);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9) {
+  var sp = stackSave();
+  try {
+    dynCall_viiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -7226,17 +7362,6 @@ function invoke_v(index) {
   var sp = stackSave();
   try {
     dynCall_v(index);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_vi(index,a1) {
-  var sp = stackSave();
-  try {
-    dynCall_vi(index,a1);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -7270,17 +7395,6 @@ function invoke_diiiii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
     return dynCall_diiiii(index,a1,a2,a3,a4,a5);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
-function invoke_di(index,a1) {
-  var sp = stackSave();
-  try {
-    return dynCall_di(index,a1);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -7332,6 +7446,17 @@ function invoke_iiiiiii(index,a1,a2,a3,a4,a5,a6) {
   }
 }
 
+function invoke_iid(index,a1,a2) {
+  var sp = stackSave();
+  try {
+    return dynCall_iid(index,a1,a2);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_viiid(index,a1,a2,a3,a4) {
   var sp = stackSave();
   try {
@@ -7343,10 +7468,10 @@ function invoke_viiid(index,a1,a2,a3,a4) {
   }
 }
 
-function invoke_idiii(index,a1,a2,a3,a4) {
+function invoke_iiiddi(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
-    return dynCall_idiii(index,a1,a2,a3,a4);
+    return dynCall_iiiddi(index,a1,a2,a3,a4,a5);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -7365,17 +7490,6 @@ function invoke_iiddd(index,a1,a2,a3,a4) {
   }
 }
 
-function invoke_i(index) {
-  var sp = stackSave();
-  try {
-    return dynCall_i(index);
-  } catch(e) {
-    stackRestore(sp);
-    if (e !== e+0) throw e;
-    _setThrew(1, 0);
-  }
-}
-
 function invoke_d(index) {
   var sp = stackSave();
   try {
@@ -7387,10 +7501,54 @@ function invoke_d(index) {
   }
 }
 
+function invoke_idiii(index,a1,a2,a3,a4) {
+  var sp = stackSave();
+  try {
+    return dynCall_idiii(index,a1,a2,a3,a4);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_i(index) {
+  var sp = stackSave();
+  try {
+    return dynCall_i(index);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
 function invoke_diii(index,a1,a2,a3) {
   var sp = stackSave();
   try {
     return dynCall_diii(index,a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_viid(index,a1,a2,a3) {
+  var sp = stackSave();
+  try {
+    dynCall_viid(index,a1,a2,a3);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiiiiiiiiiiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25) {
+  var sp = stackSave();
+  try {
+    return dynCall_iiiiiiiiiiiiiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -7420,10 +7578,32 @@ function invoke_viddiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8) {
   }
 }
 
-function invoke_viiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9) {
+function invoke_iiiiiiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18) {
   var sp = stackSave();
   try {
-    dynCall_viiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9);
+    return dynCall_iiiiiiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiiiiiiiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22) {
+  var sp = stackSave();
+  try {
+    return dynCall_iiiiiiiiiiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiiiiiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20) {
+  var sp = stackSave();
+  try {
+    return dynCall_iiiiiiiiiiiiiiiiiiiii(index,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
@@ -7457,6 +7637,17 @@ function invoke_diidii(index,a1,a2,a3,a4,a5) {
   var sp = stackSave();
   try {
     return dynCall_diidii(index,a1,a2,a3,a4,a5);
+  } catch(e) {
+    stackRestore(sp);
+    if (e !== e+0) throw e;
+    _setThrew(1, 0);
+  }
+}
+
+function invoke_iiiiid(index,a1,a2,a3,a4,a5) {
+  var sp = stackSave();
+  try {
+    return dynCall_iiiiid(index,a1,a2,a3,a4,a5);
   } catch(e) {
     stackRestore(sp);
     if (e !== e+0) throw e;
