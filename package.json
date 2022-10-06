@@ -1,6 +1,7 @@
 {
-  "name": "cra-wasm",
-  "version": "0.1.0",
+  "name": "atomify",
+  "homepage": "http://andeplane.github.io/atomify",
+  "version": "0.6.0",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
@@ -12,7 +13,7 @@
     "@types/react-dom": "^18.0.6",
     "antd": "^4.23.4",
     "easy-peasy": "^5.1.0",
-    "omovi": "^0.2.5",
+    "omovi": "^0.2.7",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-fetch-hook": "^1.9.5",
@@ -28,7 +29,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +52,7 @@
     ]
   },
   "devDependencies": {
-    "@types/styled-components": "^5.1.26"
+    "@types/styled-components": "^5.1.26",
+    "gh-pages": "^4.0.0"
   }
 }

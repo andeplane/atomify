@@ -8,9 +8,14 @@ import {Particles} from 'omovi'
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
 
-const getPositions = (lammps: LammpsWeb, wasm: any) => {
+const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles) => {
   const numAtoms = lammps.numAtoms()
-  const particles = new Particles(numAtoms);
+  let newParticles = particles
+  if (!particles || particles.count < numAtoms) {
+    newParticles = new Particles(numAtoms);
+    newParticles.types = new Float32Array(numAtoms)
+    newParticles.radii.fill(0.25)
+  }
   const positionsPtr = lammps.getPositionsPointer() / 8;
   const typePtr = lammps.getTypePointer() / 4;
   const idPtr = lammps.getIdPointer() / 4;
@@ -18,12 +23,15 @@ const getPositions = (lammps: LammpsWeb, wasm: any) => {
   const typeSubarray = wasm.HEAP32.subarray(typePtr, typePtr + numAtoms) as Int32Array
   const idSubarray = wasm.HEAP32.subarray(idPtr, idPtr + numAtoms) as Int32Array
   
-  particles.positions = Float32Array.from(positionsSubarray)
-  particles.types = Float32Array.from(typeSubarray)
-  particles.indices = Float32Array.from(idSubarray)
-  particles.radii.fill(0.25)
-  particles.count = numAtoms
-  return particles
+  newParticles.positions.set(positionsSubarray)
+  newParticles.types.set(typeSubarray)
+  newParticles.indices.set(idSubarray)
+  // particles.positions = Float32Array.from(positionsSubarray)
+  // particles.types = Float32Array.from(typeSubarray)
+  // particles.indices = Float32Array.from(idSubarray)
+  // particles.radii.fill(0.25)
+  newParticles.count = numAtoms
+  return newParticles
 }
 
 const getSimulationBox = (lammps: LammpsWeb, wasm: any) => {
@@ -58,6 +66,25 @@ const Simulation = () => {
     console.log(text)
   }, [])
 
+  useEffect(() => {
+    //@ts-ignore
+    window.postStepCallback = () => {
+      if (lammps && wasm) {
+        let newParticles = getPositions(lammps, wasm, particles)
+        newParticles.markNeedsUpdate()
+        const simulationBox = getSimulationBox(lammps, wasm)
+        const origo = getSimulationOrigo(lammps, wasm)
+        setSimulationBox(simulationBox)
+        setSimulationOrigo(origo)
+        if (newParticles !== particles) {
+          setParticles(newParticles)
+        }
+        // @ts-ignore
+        lammps.setSyncFrequency(window.syncFrequency)
+      }
+    }
+  }, [wasm, lammps, particles])
+
   useEffect(
     () => {
       createModule({
@@ -73,18 +100,6 @@ const Simulation = () => {
         window.lammps = lammps
         // @ts-ignore
         window.syncFrequency = 2
-        
-        //@ts-ignore
-        window.postStepCallback = () => {
-          const particles = getPositions(lammps, Module)
-          const simulationBox = getSimulationBox(lammps, Module)
-          const origo = getSimulationOrigo(lammps, Module)
-          setSimulationBox(simulationBox)
-          setSimulationOrigo(origo)
-          setParticles(particles)
-          // @ts-ignore
-          lammps.setSyncFrequency(window.syncFrequency)
-        }
       });
     },
     [setWasm, onPrint]

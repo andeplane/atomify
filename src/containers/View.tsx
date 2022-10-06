@@ -54,7 +54,9 @@ const View = () => {
     }
 
     if (prevParticles && prevParticles !== particles) {
+      console.log("Will dispose")
       visualizer.remove(prevParticles)
+      prevParticles.dispose()
     }
 
     if (particles) {
@@ -63,6 +65,7 @@ const View = () => {
 
     // if (prevBonds && prevBonds !== bonds) {
     //   visualizer.remove(prevBonds!)
+    //   prevBonds.dispose()
     // }
     // if (bonds) {
     //   visualizer.add(bonds!)
