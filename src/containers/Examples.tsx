@@ -28,12 +28,10 @@ const Examples = () => {
     (async () => {
       const examplesUrl = 'examples/examples.json'
       const response = await fetch(examplesUrl)
-      console.log("Got response: ", response)
       const data = await response.json()
-      console.log("Got examples: ", data)
       setExamples(data)
     })()
-  })
+  }, [])
 
   const onPlay = useCallback((example: Example) => {
     const newSimulation: Simulation = {
@@ -89,10 +87,10 @@ const Examples = () => {
     </Card>
   )
 
-  const renderChunk = (chunk: Example[]) => (
-    <Row gutter={8}>
-      {chunk.map(example => (
-        <Col className="gutter-row" span={5}>
+  const renderChunk = (chunk: Example[], index: number) => (
+    <Row key={index.toString()} gutter={8}>
+      {chunk.map((example, index2) => (
+        <Col key={index.toString()+index2.toString()}className="gutter-row" span={5}>
           {renderCard(example)}
         </Col>
       ))}
