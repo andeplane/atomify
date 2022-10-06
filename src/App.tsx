@@ -142,7 +142,7 @@ const App: React.FC = () => {
                 from: '#108ee9',
                 to: '#87d068',
               }}
-              percent={100 * (status ? status.progress : 0)}
+              percent={Math.ceil(100 * (status ? status.progress : 0))}
               status="active"
             />
           </Modal>}
