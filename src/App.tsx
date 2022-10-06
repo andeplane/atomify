@@ -7,7 +7,7 @@ import {
   CaretRightOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, Modal, Button, Tooltip, notification } from 'antd';
+import { Breadcrumb, Layout, Menu, Modal, Button, Tooltip, Tabs, notification } from 'antd';
 import React, { useState, useEffect, useCallback } from 'react';
 import Simulation from './components/Simulation'
 import View from './containers/View'
@@ -127,17 +127,28 @@ const App: React.FC = () => {
           {selectedMenu.startsWith('file') && selectedMenu.substring(4)}
         </Header>
         <Content style={{ margin: '0 16px' }}>
-          {selectedMenu=="view" && <View />}
-          {selectedMenu=="analyze" && <Analyze />}
-          {selectedMenu=="edit" && <Edit />}
-          {selectedMenu.startsWith("file") && <Edit />}
-          {selectedMenu=="examples" && <Examples />}
+          <>
+        <Tabs activeKey={selectedMenu.startsWith("file") ? "editfile" : selectedMenu}  renderTabBar={() => (<></>)}>
+          <Tabs.TabPane tab="View" key="view"> 
+            <View visible={selectedMenu==='view'} />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Analyze" key="analyze">
+            <Analyze />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Edit" key="editfile">
+            <Edit />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Examples" key="examples">
+            <Examples />
+          </Tabs.TabPane>
+        </Tabs>
           {<Modal closable={false} title={status?.title} open={loading} footer={null}>
             {status?.text}
           </Modal>}
             {<Modal closable={false}  title={"Compiling LAMMPS ..."} open={wasm==null} footer={null}>
             {"This may take a few moments."}
           </Modal>}
+          </>
         </Content>
         <Footer style={{ textAlign: 'center' }}>Atomify ©2022 Created by Henrik Sveinsson, Svenn-Arne Dragly and Anders Hafreager</Footer>
       </Layout>

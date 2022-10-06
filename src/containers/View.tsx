@@ -2,7 +2,10 @@ import { useEffect, useState, useRef } from 'react'
 import { useStoreState } from '../hooks';
 import {OMOVIVisualizer, Particles, Bonds, Visualizer} from 'omovi'
 
-const View = () => {
+interface ViewProps {
+  visible: boolean
+}
+const View = ({visible}: ViewProps) => {
   const [loading, setLoading] = useState(false)
   const particles = useStoreState(state => state.simulation.particles)
   const particleColors = useStoreState(state => state.simulation.particleColors)
@@ -22,6 +25,13 @@ const View = () => {
       setLoading(false)
     }
   }, [domElement, visualizer])
+
+  useEffect(() => {
+    if (visible && domElement.current) {
+      // There is a bug where the height is set to zero when going back to this view
+      domElement.current.style.height = '100vh'
+    }
+  }, [visible])
 
   const prevParticlesRef = useRef<Particles>()
   useEffect(() => {
@@ -73,17 +83,18 @@ const View = () => {
   }, [particles, visualizer])
 
   useEffect(() => {
-    // console.log('Will create visualizer')
+    console.log('Will create visualizer')
     return () => {
       if (visualizer) {
+        console.log('Will dispose visualizer')
         visualizer.dispose()
       }
     }
   }, [])
 
   return (
-    <div style={{ height: '100%', width: '100%' }}>
-      <div style={{ height: '100%', width: '100%' }} ref={domElement} />
+    <div style={{ height: '100vh', width: '100vh' }}>
+      <div style={{ height: '100vh', width: '100vh'  }} ref={domElement} />
     </div>
   )
 }
