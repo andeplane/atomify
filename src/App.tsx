@@ -119,14 +119,7 @@ const App: React.FC = () => {
       </Sider>
       <Layout className="site-layout">
         <Simulation />
-        <Header className="site-layout-background" style={{ fontSize: 25 }}>
-          {selectedMenu=="view" && "View"}
-          {selectedMenu=="analyze" && "Analyze"}
-          {selectedMenu=="edit" && "Edit"}
-          {selectedMenu=="examples" && "Examples"}
-          {selectedMenu.startsWith('file') && selectedMenu.substring(4)}
-        </Header>
-        <Content style={{ margin: '0 16px' }}>
+        <Content>
           <>
         <Tabs activeKey={selectedMenu.startsWith("file") ? "editfile" : selectedMenu}  renderTabBar={() => (<></>)}>
           <Tabs.TabPane tab="View" key="view"> 
@@ -150,7 +143,6 @@ const App: React.FC = () => {
           </Modal>}
           </>
         </Content>
-        <Footer style={{ textAlign: 'center' }}>Atomify ©2022 Created by Henrik Sveinsson, Svenn-Arne Dragly and Anders Hafreager</Footer>
       </Layout>
     </Layout>
   );

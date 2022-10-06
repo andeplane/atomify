@@ -2,7 +2,8 @@ import {useCallback} from 'react'
 import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
-import { Card, notification } from 'antd';
+import { Card, Layout, notification } from 'antd';
+const { Header } = Layout;
 const { Meta } = Card;
 interface Example {
   id: string
@@ -87,8 +88,12 @@ const Examples = () => {
       setPreferredView('file'+newSimulation.inputScript)
     }
   }, [examples])
-
-  return (<div style={{padding: 10}}>
+  return (
+    <>
+    <Header className="site-layout-background" style={{ fontSize: 25 }}>
+      Examples
+    </Header>
+    <div style={{padding: 10, margin: 10}}>
     {Object.values(examples).map(example => (
       <Card
       key={example.id}
@@ -110,6 +115,7 @@ const Examples = () => {
       />
     </Card>
     ))}
-    </div>)
+    </div>
+    </>)
 }
 export default Examples
