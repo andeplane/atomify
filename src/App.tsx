@@ -146,9 +146,6 @@ const App: React.FC = () => {
               status="active"
             />
           </Modal>}
-            {/* {<Modal closable={false}  title={"Compiling LAMMPS ..."} open={wasm==null} footer={null}>
-            {"This may take a few moments."}
-          </Modal>} */}
           </>
         </Content>
       </Layout>
