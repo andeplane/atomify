@@ -1,7 +1,8 @@
 
 import * as THREE from 'three'
 
-function hexToRgb(hex: string) {
+// It is INSANE that this is here. But quick and dirty baby
+export const hexToRgb = (hex: string) => {
   var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return [
     parseInt(result![1], 16),

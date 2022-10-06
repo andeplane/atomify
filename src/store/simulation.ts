@@ -1,7 +1,7 @@
 import { action, Action, thunk, Thunk, computed, Computed } from 'easy-peasy';
 import {LammpsWeb} from '../types'
 import {Particles} from 'omovi'
-import {AtomTypes, AtomType} from '../utils/atomtypes'
+import {AtomTypes, AtomType, hexToRgb} from '../utils/atomtypes'
 import * as THREE from 'three'
 
 const colors: THREE.Color[] = [
@@ -28,6 +28,18 @@ const parseAtomType = (line: string) => {
     return {
       'atomTypeIndex': parseInt(matches[1]),
       'atomType': matches[2],
+    }
+  }
+}
+
+const parseAtomSizeAndColor = (line: string) => {
+  const regex = /^(?:atom)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*.\d*)(?:\s*|\t*)(#[0-9a-fA-F]{6,6})$/
+  const matches = line.match(regex)
+  if (matches) {
+    return {
+      'atomTypeIndex': parseInt(matches[1]),
+      'radius': parseFloat(matches[2]),
+      'color': matches[3],
     }
   }
 }
@@ -145,7 +157,6 @@ export const simulationModel: SimulationModel = {
           const atomType = atomTypes[type]
           colors[realIndex] = atomType.color
           particles.radii[realIndex] = atomType.radius * 0.2
-          console.log(`Setting color and radius for ${type}: ${colors[realIndex]} ${atomType.radius}`)
         } else {
           colors[realIndex] = getColor(type)
         }
@@ -164,7 +175,7 @@ export const simulationModel: SimulationModel = {
     }
     for (const file of state.simulation.files) {
       // Update all files if no fileName is specified
-      if (file.fileName == fileName || !fileName) {
+      if (file.fileName === fileName || !fileName) {
         state.wasm.FS.writeFile(`/${state.simulation.id}/${file.fileName}`, file.content)
         console.log("Synced file ", file.fileName)
       }
@@ -240,10 +251,12 @@ export const simulationModel: SimulationModel = {
           // This is an atomify command
           line = line.substring(2)
           const atomType = parseAtomType(line)
-          console.log("Found atom type ", atomType)
           if (atomType) {
             newAtomTypes[atomType.atomTypeIndex] = AtomTypes.filter(at => at.fullname===atomType.atomType)[0]
-            console.log("Found atom type ", atomType,' setting ', newAtomTypes)
+          }
+          const atomSizeAndColor = parseAtomSizeAndColor(line)
+          if (atomSizeAndColor) {
+            colors[atomSizeAndColor.atomTypeIndex] = new THREE.Color(...hexToRgb(atomSizeAndColor.color))
           }
         }
       })
