@@ -7,7 +7,7 @@ import {
   CaretRightOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Breadcrumb, Layout, Menu, Modal, Button, Tooltip, Tabs, notification } from 'antd';
+import { Breadcrumb, Layout, Menu, Modal, Button, Tooltip, Tabs, Progress, notification } from 'antd';
 import React, { useState, useEffect, useCallback } from 'react';
 import Simulation from './components/Simulation'
 import View from './containers/View'
@@ -135,12 +135,20 @@ const App: React.FC = () => {
             <Examples />
           </Tabs.TabPane>
         </Tabs>
-          {<Modal closable={false} title={status?.title} open={loading} footer={null}>
+          {<Modal closable={false} title={status?.title} open={status != null || wasm == null} footer={null}>
             {status?.text}
+            <Progress
+              strokeColor={{
+                from: '#108ee9',
+                to: '#87d068',
+              }}
+              percent={100 * (status ? status.progress : 0)}
+              status="active"
+            />
           </Modal>}
-            {<Modal closable={false}  title={"Compiling LAMMPS ..."} open={wasm==null} footer={null}>
+            {/* {<Modal closable={false}  title={"Compiling LAMMPS ..."} open={wasm==null} footer={null}>
             {"This may take a few moments."}
-          </Modal>}
+          </Modal>} */}
           </>
         </Content>
       </Layout>

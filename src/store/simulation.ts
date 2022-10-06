@@ -23,6 +23,7 @@ const getColor = (particleType: number) => {
 interface Status {
   title: String
   text: String
+  progress: number
 }
 
 export interface SimulationFile {
@@ -61,7 +62,7 @@ export interface SimulationModel {
   setSimulationBox: Action<SimulationModel, THREE.Matrix3|undefined>
   setSimulationOrigo: Action<SimulationModel, THREE.Vector3|undefined>
   setFiles: Action<SimulationModel, string[]>
-  setStatus: Action<SimulationModel, Status>
+  setStatus: Action<SimulationModel, Status|undefined>
   setLammps: Action<SimulationModel, LammpsWeb>
   setWasm: Action<SimulationModel, any>
   syncFiles: Action<SimulationModel, string|undefined>
@@ -179,16 +180,25 @@ export const simulationModel: SimulationModel = {
     for (const file of simulation.files) {
       await actions.setStatus({
         title: `Downloading file (${counter+1}/${simulation.files.length})`,
-        text: file.fileName
+        text: file.fileName,
+        progress: 0.2 + 0.8 * counter / simulation.files.length
       })
-
+      
       const response = await fetch(file.url)
       const content = await response.text()
       file.content = content
+      counter += 1
     }
+    await actions.setStatus({
+      title: `Uploading files to VM ...`,
+      text: "",
+      progress: 0.9
+    })
+
     actions.syncFiles(undefined)
     actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)
+    await actions.setStatus(undefined)
     if (simulation.start) {
       actions.run()
     } else {

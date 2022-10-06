@@ -7,6 +7,8 @@ interface ViewProps {
 }
 const View = ({visible}: ViewProps) => {
   const [loading, setLoading] = useState(false)
+  const simulationBox = useStoreState(state => state.simulation.simulationBox)
+  const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const particles = useStoreState(state => state.simulation.particles)
   const particleColors = useStoreState(state => state.simulation.particleColors)
   const [visualizer, setVisualizer] = useState<Visualizer | undefined>(

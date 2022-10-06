@@ -87,10 +87,21 @@ const Simulation = () => {
 
   useEffect(
     () => {
+      setStatus({
+        title: 'Downloading LAMMPS ...',
+        text: '',
+        progress: 0.3
+      })
+
       createModule({
         print: onPrint, 
         printErr: onPrint,
       }).then((Module: any) => {
+        setStatus({
+          title: 'Downloading LAMMPS ...',
+          text: '',
+          progress: 0.6
+        })
         setWasm(Module)
         const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
         setLammps(lammps)
@@ -100,6 +111,7 @@ const Simulation = () => {
         window.lammps = lammps
         // @ts-ignore
         window.syncFrequency = 2
+        setStatus(undefined)
       });
     },
     [setWasm, onPrint]
