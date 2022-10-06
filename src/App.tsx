@@ -57,7 +57,7 @@ const App: React.FC = () => {
     getItem('Analyze', 'analyze', <LineChartOutlined />),
     getItem('Edit', 'edit', <EditOutlined />, simulation ? simulation.files.map(file => {
       return getItem(file.fileName, 'file'+file.fileName, <FileOutlined />)
-    }): []),
+    }): [], undefined, selectedFile==null),
     getItem('Examples', 'examples', <InsertRowAboveOutlined />)
   ];
   items.push({type: 'divider'})
