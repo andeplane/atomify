@@ -1,6 +1,7 @@
 import { action, Action, thunk, Thunk, computed, Computed } from 'easy-peasy';
 import {LammpsWeb} from '../types'
 import {Particles} from 'omovi'
+import {AtomTypes, AtomType} from '../utils/atomtypes'
 import * as THREE from 'three'
 
 const colors: THREE.Color[] = [
@@ -18,6 +19,17 @@ const colors: THREE.Color[] = [
 const getColor = (particleType: number) => {
   const index = particleType % colors.length
   return colors[index]
+}
+
+const parseAtomType = (line: string) => {
+  const regex = /^(?:atom)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\w*)$/
+  const matches = line.match(regex)
+  if (matches) {
+    return {
+      'atomTypeIndex': parseInt(matches[1]),
+      'atomType': matches[2],
+    }
+  }
 }
 
 interface Status {
@@ -50,8 +62,10 @@ export interface SimulationModel {
   particleColors?: THREE.Color[]
   simulationBox?: THREE.Matrix3
   simulationOrigo?: THREE.Vector3
+  atomTypes?: {[key: number]: AtomType}
   numAtoms?: number
   setNumAtoms: Action<SimulationModel, number|undefined>
+  setAtomTypes: Action<SimulationModel, {[key: number]: AtomType}|undefined>
   setPreferredView: Action<SimulationModel, string|undefined>
   setParticleColors: Action<SimulationModel, THREE.Color[]|undefined>
   setSelectedFile: Action<SimulationModel, SimulationFile>
@@ -94,6 +108,9 @@ export const simulationModel: SimulationModel = {
   setSimulationOrigo: action((state, simulationOrigo: THREE.Vector3) => {
     state.simulationOrigo = simulationOrigo
   }),
+  setAtomTypes: action((state, atomTypes: {[key: number]: AtomType}) => {
+    state.atomTypes = atomTypes
+  }),
   setWasm: action((state, wasm: any) => {
     state.wasm = wasm
   }),
@@ -114,12 +131,24 @@ export const simulationModel: SimulationModel = {
   }),
   updateParticles: thunk((actions, particles: Particles, {getStoreState}) => {
     // @ts-ignore
+    window.THREE = THREE
+    // @ts-ignore
     if (!getStoreState().simulation.particleColors && particles) {
+      // @ts-ignore
+      const atomTypes = getStoreState().simulation.atomTypes
       // We need to compute colors
       const colors: THREE.Color[] = []
       particles.types.forEach( (type: number, index: number) => {
         const realIndex = particles.indices[index]
-        colors[realIndex] = getColor(type)
+
+        if (atomTypes && atomTypes[type]) {
+          const atomType = atomTypes[type]
+          colors[realIndex] = atomType.color
+          particles.radii[realIndex] = atomType.radius * 0.2
+          console.log(`Setting color and radius for ${type}: ${colors[realIndex]} ${atomType.radius}`)
+        } else {
+          colors[realIndex] = getColor(type)
+        }
       })
       actions.setParticleColors(colors)
     }
@@ -165,12 +194,14 @@ export const simulationModel: SimulationModel = {
     actions.setSimulationBox(undefined)
     actions.setSimulationOrigo(undefined)
     actions.setParticles(undefined)
-
+    actions.setAtomTypes(undefined)
     actions.setSimulation(simulation)
     // @ts-ignore
     const wasm = getStoreState().simulation.wasm
     // @ts-ignore
     const lammps = getStoreState().simulation.lammps
+    // @ts-ignore
+    const atomTypes = getStoreState().simulation.atomTypes
 
     if (!wasm.FS.analyzePath(`/${simulation.id}`).exists) {
       wasm.FS.mkdir(`/${simulation.id}`)
@@ -195,6 +226,33 @@ export const simulationModel: SimulationModel = {
       progress: 0.9
     })
 
+    const extractAtomifyCommands = (inputScript?: string) => {
+      if (!inputScript) {
+        return
+      }
+
+      const newAtomTypes: {[key: number]: AtomType} = {}
+
+      const lines = inputScript.split("\n")
+      lines.forEach(line => {
+        line = line.trim()
+        if (line.startsWith("#/")) {
+          // This is an atomify command
+          line = line.substring(2)
+          const atomType = parseAtomType(line)
+          console.log("Found atom type ", atomType)
+          if (atomType) {
+            newAtomTypes[atomType.atomTypeIndex] = AtomTypes.filter(at => at.fullname===atomType.atomType)[0]
+            console.log("Found atom type ", atomType,' setting ', newAtomTypes)
+          }
+        }
+      })
+      actions.setAtomTypes(newAtomTypes)
+    }
+
+    const inputScriptFile = simulation.files.filter(file => file.fileName===simulation.inputScript)[0]
+    extractAtomifyCommands(inputScriptFile?.content)
+    
     actions.syncFiles(undefined)
     actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)
