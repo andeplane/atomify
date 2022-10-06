@@ -2,7 +2,8 @@ import {useCallback, useState, useEffect} from 'react'
 import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
-import { Card, Layout, Spin, notification } from 'antd';
+import { Card, Layout, Skeleton, notification } from 'antd';
+
 const { Header } = Layout;
 const { Meta } = Card;
 interface Example {
@@ -92,7 +93,7 @@ const Examples = () => {
       />
     </Card>
     ))}
-    {examples.length == 0 && <Spin size='large' />}
+    {examples.length == 0 && <Skeleton active/>}
     </div>
     </>)
 }
