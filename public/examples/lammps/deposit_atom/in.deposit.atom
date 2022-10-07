@@ -1,6 +1,6 @@
 # sample surface deposition script for atoms
 #/camera position 4 27 18
-#/camera viewcenter 4 4 8
+#/camera target 4 4 8
 
 units		lj
 atom_style      atomic

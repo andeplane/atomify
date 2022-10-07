@@ -1,6 +1,6 @@
 # Pour 2d granular particles into container
 #/camera position 52 -80 100
-#/camera viewcenter 50 25 0
+#/camera target 50 25 0
 
 dimension	2
 atom_style	sphere

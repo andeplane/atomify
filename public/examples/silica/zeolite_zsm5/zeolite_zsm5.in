@@ -1,6 +1,6 @@
 # Tell Atomify where initial camera position should be
 #/camera position 30 157 20
-#/camera viewcenter 30 30 20
+#/camera target 30 30 20
 # Information about atoms for coloring and bonds
 #/atom 1 silicon
 #/atom 2 oxygen

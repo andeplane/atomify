@@ -2,7 +2,7 @@
 #/atom 2 hydrogen
 #/bond 1 2 2.0
 #/camera position 8 43 7
-#/camera viewcenter 6.8 7.8 7.4
+#/camera target 6.8 7.8 7.4
 
 # You can run LAMMPS this way
 #   lmp_linux -i run.in.npt

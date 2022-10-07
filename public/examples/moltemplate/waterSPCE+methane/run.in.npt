@@ -4,7 +4,7 @@
 #/atom 87 hydrogen
 
 #/camera position -33 70 60
-#/camera viewcenter 21 21 21
+#/camera target 21 21 21
 # PREREQUISITES:
 #
 #     You must use moltemplate.sh to create 3 files:

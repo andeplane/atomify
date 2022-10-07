@@ -1,6 +1,6 @@
 # 2-d LJ flow simulation
 #/camera position 13 37 45
-#/camera viewcenter 13 11 0
+#/camera target 13 11 0
 dimension 2
 boundary p s p
 

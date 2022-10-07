@@ -1,6 +1,6 @@
 # 2d micelle simulation
 #/camera position 18 57 45
-#/camera viewcenter 18 18 0
+#/camera target 18 18 0
 dimension	2
 
 neighbor	0.3 bin

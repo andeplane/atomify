@@ -1,6 +1,6 @@
 # 2d friction simulation
 #/camera position 28 67 73
-#/camera viewcenter 28 21 0
+#/camera target 28 21 0
 dimension 2
 boundary p s p
 
