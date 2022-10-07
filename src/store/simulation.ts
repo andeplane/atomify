@@ -142,7 +142,7 @@ export const simulationModel: SimulationModel = {
     // @ts-ignore
     if (!getStoreState().simulation.particleColors && particles) {
       // @ts-ignore
-      let atomTypes = {...defaultAtomTypes}
+      let atomTypes = getStoreState().simulation.atomTypes
       
       // We need to compute colors
       const colors: THREE.Color[] = []
