@@ -16,6 +16,26 @@ const defaultAtomTypes: {[key:string]: AtomType} = {
   '9': { shortname: "9", fullname: "9", radius: 1.20, color: new THREE.Color(247, 247, 247)},
 }
 
+const parseCameraPosition = (line: string) => {
+  const splitted = line.split(" ")
+  if (splitted[0] === 'camera' && splitted[1] === 'position' && splitted.length === 5) {
+    const x = parseFloat(splitted[2])
+    const y = parseFloat(splitted[3])
+    const z = parseFloat(splitted[4])
+    return new THREE.Vector3(x,y,z)
+  }
+}
+
+const parseCameraTarget = (line: string) => {
+  const splitted = line.split(" ")
+  if (splitted[0] === 'camera' && splitted[1] === 'target' && splitted.length === 5) {
+    const x = parseFloat(splitted[2])
+    const y = parseFloat(splitted[3])
+    const z = parseFloat(splitted[4])
+    return new THREE.Vector3(x,y,z)
+  }
+}
+
 const parseAtomType = (line: string) => {
   const regex = /^(?:atom)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\w*)$/
   const matches = line.match(regex)
@@ -69,9 +89,13 @@ export interface SimulationModel {
   particleColors?: THREE.Color[]
   simulationBox?: THREE.Matrix3
   simulationOrigo?: THREE.Vector3
+  cameraPosition?: THREE.Vector3
+  cameraTarget?: THREE.Vector3
   atomTypes?: {[key: number]: AtomType}
   numAtoms?: number
   setNumAtoms: Action<SimulationModel, number|undefined>
+  setCameraPosition: Action<SimulationModel, THREE.Vector3|undefined>
+  setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
   setAtomTypes: Action<SimulationModel, {[key: number]: AtomType}|undefined>
   setPreferredView: Action<SimulationModel, string|undefined>
   setParticleColors: Action<SimulationModel, THREE.Color[]|undefined>
@@ -114,6 +138,12 @@ export const simulationModel: SimulationModel = {
   }),
   setSimulationOrigo: action((state, simulationOrigo: THREE.Vector3) => {
     state.simulationOrigo = simulationOrigo
+  }),
+  setCameraPosition: action((state, cameraPosition: THREE.Vector3) => {
+    state.cameraPosition = cameraPosition
+  }),
+  setCameraTarget: action((state, cameraTarget: THREE.Vector3) => {
+    state.cameraTarget = cameraTarget
   }),
   setAtomTypes: action((state, atomTypes: {[key: number]: AtomType}) => {
     state.atomTypes = atomTypes
@@ -248,6 +278,15 @@ export const simulationModel: SimulationModel = {
           if (atomSizeAndColor) {
             newAtomTypes[atomSizeAndColor.atomTypeIndex].color = new THREE.Color(...hexToRgb(atomSizeAndColor.color))
             newAtomTypes[atomSizeAndColor.atomTypeIndex].radius = atomSizeAndColor.radius
+          }
+          const cameraPosition = parseCameraPosition(line)
+          if (cameraPosition) {
+            actions.setCameraPosition(cameraPosition)
+          }
+
+          const cameraTarget = parseCameraTarget(line)
+          if (cameraTarget) {
+            actions.setCameraTarget(cameraTarget)
           }
         }
       })
