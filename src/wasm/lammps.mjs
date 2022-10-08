@@ -921,6 +921,10 @@ function call_js_agrs() { postStepCallback(); }
       HEAP8.set(array, buffer);
     }
 
+  function ___assert_fail(condition, filename, line, func) {
+      abort('Assertion failed: ' + UTF8ToString(condition) + ', at: ' + [filename ? UTF8ToString(filename) : 'unknown filename', line, func ? UTF8ToString(func) : 'unknown function']);
+    }
+
   function ___cxa_allocate_exception(size) {
       // Thrown object is prepended by exception metadata block
       return _malloc(size + 24) + 24;
@@ -6525,6 +6529,7 @@ function tryParseAsDataURI(filename) {
 
 
 var asmLibraryArg = {
+  "__assert_fail": ___assert_fail,
   "__cxa_allocate_exception": ___cxa_allocate_exception,
   "__cxa_begin_catch": ___cxa_begin_catch,
   "__cxa_end_catch": ___cxa_end_catch,
@@ -7019,6 +7024,11 @@ var dynCall_vidididiiii = Module["dynCall_vidididiiii"] = function() {
 };
 
 /** @type {function(...*):?} */
+var dynCall_viiiiiiiiiii = Module["dynCall_viiiiiiiiiii"] = function() {
+  return (dynCall_viiiiiiiiiii = Module["dynCall_viiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiii"]).apply(null, arguments);
+};
+
+/** @type {function(...*):?} */
 var dynCall_viidd = Module["dynCall_viidd"] = function() {
   return (dynCall_viidd = Module["dynCall_viidd"] = Module["asm"]["dynCall_viidd"]).apply(null, arguments);
 };
@@ -7056,11 +7066,6 @@ var dynCall_iiiiiiiiiiiiiiiiiiiii = Module["dynCall_iiiiiiiiiiiiiiiiiiiii"] = fu
 /** @type {function(...*):?} */
 var dynCall_viddddiiiiiiiii = Module["dynCall_viddddiiiiiiiii"] = function() {
   return (dynCall_viddddiiiiiiiii = Module["dynCall_viddddiiiiiiiii"] = Module["asm"]["dynCall_viddddiiiiiiiii"]).apply(null, arguments);
-};
-
-/** @type {function(...*):?} */
-var dynCall_viiiiiiiiiii = Module["dynCall_viiiiiiiiiii"] = function() {
-  return (dynCall_viiiiiiiiiii = Module["dynCall_viiiiiiiiiii"] = Module["asm"]["dynCall_viiiiiiiiiii"]).apply(null, arguments);
 };
 
 /** @type {function(...*):?} */
@@ -7213,8 +7218,8 @@ var _asyncify_stop_rewind = Module["_asyncify_stop_rewind"] = function() {
   return (_asyncify_stop_rewind = Module["_asyncify_stop_rewind"] = Module["asm"]["asyncify_stop_rewind"]).apply(null, arguments);
 };
 
-var ___start_em_js = Module['___start_em_js'] = 458624;
-var ___stop_em_js = Module['___stop_em_js'] = 458654;
+var ___start_em_js = Module['___start_em_js'] = 469312;
+var ___stop_em_js = Module['___stop_em_js'] = 469342;
 function invoke_vii(index,a1,a2) {
   var sp = stackSave();
   try {
