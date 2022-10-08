@@ -3,14 +3,21 @@ import subprocess
 import shutil
 
 def copy_files(include_lammpsweb=True):
-  shutil.copyfile("mpi.cpp", "lammps/src/mpi.cpp")
   if include_lammpsweb:
     shutil.copyfile("lammpsweb.cpp", "lammps/src/lammpsweb.cpp")
+  shutil.copyfile("mpi.cpp", "lammps/src/mpi.cpp")
   shutil.copyfile("fix_atomify.cpp", "lammps/src/fix_atomify.cpp")
   shutil.copyfile("fix_atomify.h", "lammps/src/fix_atomify.h")
   shutil.copyfile("lammps/src/STUBS/mpi.h", "lammps/src/mpi.h")
   shutil.copyfile("lammps.patch", "lammps/src/lammps.patch")
-
+  shutil.copyfile("lammps/src/STUBS/mpi.h", "lammps/src/mpi.h")
+  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_charmm_coul_charmm_inter.cpp", "lammps/src/pair_lj_charmm_coul_charmm_inter.cpp")
+  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_charmm_coul_charmm_inter.h", "lammps/src/pair_lj_charmm_coul_charmm_inter.h")
+  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_remix.cpp", "lammps/src/pair_lj_remix.cpp")
+  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_remix.h", "lammps/src/pair_lj_remix.h")
+  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_softcore2.cpp", "lammps/src/pair_lj_softcore2.cpp")
+  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_softcore2.h", "lammps/src/pair_lj_softcore2.h")
+  
 if not os.path.exists('lammps'):
   # First clone lammps
   print("Could not find local clone of LAMMPS, cloning ...")
@@ -23,8 +30,9 @@ if not os.path.exists('lammps'):
   os.chdir('lammps/src')
   print("Applying patch ...")
   subprocess.call("git apply lammps.patch", shell=True)
+  print("Installing LAMMPS packages ...")
+  subprocess.call("make yes-rigid yes-class2 yes-manybody yes-mc yes-molecule yes-granular yes-kspace yes-shock yes-misc yes-qeq yes-reaxff yes-extra-molecule", shell=True)
   print("Compiling serial once to generate all files required for compilation ...")
-  subprocess.call("make yes-rigid yes-class2 yes-manybody yes-mc yes-molecule yes-granular yes-kspace yes-shock yes-misc yes-qeq yes-reax")
   subprocess.call("make -j8 serial", shell=True)
   print("Deleting main.cpp ...")
   os.remove("main.cpp")
