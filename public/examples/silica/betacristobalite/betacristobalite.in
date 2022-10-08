@@ -1,5 +1,5 @@
 # Tell Atomify where initial camera position should be
-#/camera position 35 90 40
+#/camera position 18 40 90
 #/camera target 18 18 18
 # Information about atoms for coloring and bonds
 #/atom 1 silicon

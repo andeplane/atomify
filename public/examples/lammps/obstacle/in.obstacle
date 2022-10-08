@@ -1,5 +1,5 @@
 # 2d LJ obstacle flow
-#/camera position 26 57 48
+#/camera position 26 13 48
 #/camera target 26 13 0
 dimension	2
 boundary	p s p

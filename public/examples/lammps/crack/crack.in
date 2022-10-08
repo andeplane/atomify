@@ -1,5 +1,5 @@
 # 2d LJ crack simulation
-#/camera position 55 -80 145
+#/camera position 55 40 115
 #/camera target 55 40 0
 dimension 2
 boundary s s p

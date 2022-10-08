@@ -1,5 +1,5 @@
 # Tell Atomify where initial camera position should be
-#/camera position 90 490 90
+#/camera position -61 119 40
 #/camera target 100 100 100
 # Information about atoms for coloring and bonds
 #/atom 1 oxygen
