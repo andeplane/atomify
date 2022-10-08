@@ -178,6 +178,10 @@ export const simulationModel: SimulationModel = {
       const colors: THREE.Color[] = []
       particles.types.forEach( (type: number, index: number) => {
         const realIndex = particles.indices[index]
+        if (type > Object.keys(atomTypes).length) {
+          type = (type % Object.keys(atomTypes).length) + 1
+        }
+        
         let atomType = atomTypes[type]
         colors[realIndex] = atomType.color
         particles.radii[realIndex] = atomType.radius * 0.2
