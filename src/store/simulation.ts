@@ -168,21 +168,24 @@ export const simulationModel: SimulationModel = {
   }),
   updateParticles: thunk((actions, particles: Particles, {getStoreState}) => {
     // @ts-ignore
-    window.THREE = THREE
-    // @ts-ignore
     if (!getStoreState().simulation.particleColors && particles) {
       // @ts-ignore
       let atomTypes = getStoreState().simulation.atomTypes
-      
       // We need to compute colors
       const colors: THREE.Color[] = []
       particles.types.forEach( (type: number, index: number) => {
         const realIndex = particles.indices[index]
+        // @ts-ignore
         if (type > Object.keys(atomTypes).length) {
+          // If we have lots of atom types, just wrap around
           type = (type % Object.keys(atomTypes).length) + 1
         }
         
         let atomType = atomTypes[type]
+        if (atomType == null) {
+          // Fallback to default
+          atomType = atomTypes[1]
+        }
         colors[realIndex] = atomType.color
         particles.radii[realIndex] = atomType.radius * 0.2
       })
