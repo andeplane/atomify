@@ -12,6 +12,7 @@ export type LammpsWeb = {
   setSyncFrequency: (every: number) => void
   getCellMatrixPointer: () => number
   getOrigoPointer: () => number
+  getBondListData: () => number
   runFile: (path: string) => void
 }
 

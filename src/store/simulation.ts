@@ -1,6 +1,6 @@
 import { action, Action, thunk, Thunk } from 'easy-peasy';
 import {LammpsWeb} from '../types'
-import {Particles} from 'omovi'
+import {Particles, Bonds} from 'omovi'
 import {AtomTypes, AtomType, hexToRgb} from '../utils/atomtypes'
 import * as THREE from 'three'
 
@@ -86,6 +86,7 @@ export interface SimulationModel {
   files: string[]
   selectedFile?: SimulationFile
   particles?: Particles
+  bonds?: Particles
   particleColors?: THREE.Color[]
   simulationBox?: THREE.Matrix3
   simulationOrigo?: THREE.Vector3
@@ -103,6 +104,7 @@ export interface SimulationModel {
   setSimulation: Action<SimulationModel, Simulation>
   setLoading: Action<SimulationModel, boolean>
   setParticles: Action<SimulationModel, Particles>
+  setBonds: Action<SimulationModel, Bonds>
   updateParticles: Thunk<SimulationModel, Particles>
   setSimulationBox: Action<SimulationModel, THREE.Matrix3|undefined>
   setSimulationOrigo: Action<SimulationModel, THREE.Vector3|undefined>
@@ -165,6 +167,9 @@ export const simulationModel: SimulationModel = {
   }),
   setParticles: action((state, particles: Particles) => {
     state.particles = particles
+  }),
+  setBonds: action((state, bonds: Bonds) => {
+    state.bonds = bonds
   }),
   updateParticles: thunk((actions, particles: Particles, {getStoreState}) => {
     // @ts-ignore

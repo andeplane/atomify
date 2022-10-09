@@ -103,7 +103,7 @@ const App: React.FC = () => {
       }
     }
 
-  }, [simulation])
+  }, [simulation, setSelectedFile])
   
   return (
     <Layout style={{ minHeight: '100vh' }}>

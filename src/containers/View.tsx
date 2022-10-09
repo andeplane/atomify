@@ -12,6 +12,7 @@ const View = ({visible}: ViewProps) => {
   const cameraPosition = useStoreState(state => state.simulation.cameraPosition)
   const cameraTarget = useStoreState(state => state.simulation.cameraTarget)
   const particles = useStoreState(state => state.simulation.particles)
+  const bonds = useStoreState(state => state.simulation.bonds)
   const particleColors = useStoreState(state => state.simulation.particleColors)
   const [visualizer, setVisualizer] = useState<Visualizer | undefined>(
     undefined
@@ -71,11 +72,12 @@ const View = ({visible}: ViewProps) => {
     }
   }, [cameraTarget, visualizer])
 
-  // const prevBondsRef = useRef<Bonds>()
-  // useEffect(() => {
-  //   prevBondsRef.current = bonds
-  // })
-  // const prevBonds = prevBondsRef.current
+  const prevBondsRef = useRef<Bonds>()
+  useEffect(() => {
+    prevBondsRef.current = bonds
+  })
+  const prevBonds = prevBondsRef.current
+
   useEffect(() => {
     if (!visualizer) {
       return

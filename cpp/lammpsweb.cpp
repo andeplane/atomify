@@ -2,6 +2,8 @@
 #include <iostream>
 #include "library.h"
 #include "domain.h"
+#include "atom.h"
+#include "force.h"
 #include "modify.h"
 #include "fix_atomify.h"
 
@@ -23,10 +25,15 @@ public:
   bool m_isRunning;
   double *m_cellMatrix;
   double *m_origo;
+  float *m_bondData;
+  int m_bondDataCapacity;
+  int m_numBonds;
   long getPositionsPointer();
   long getIdPointer();
   long getTypePointer();
+  long getBondListData();
   int numAtoms();
+  int numBonds();
   bool isRunning();
   void loadLJ();
   void step();
@@ -67,7 +74,14 @@ void synchronizeLAMMPS_callback(void *caller, int mode)
     controller->synchronizeLAMMPS(mode);
 }
 
-LAMMPSWeb::LAMMPSWeb() : lmp(nullptr), m_isRunning(false), m_cellMatrix(new double[9]), m_origo(new double[3])
+LAMMPSWeb::LAMMPSWeb() : 
+  lmp(nullptr),
+  m_isRunning(false),
+  m_cellMatrix(new double[9]),
+  m_origo(new double[3]),
+  m_numBonds(0),
+  m_bondDataCapacity(0),
+  m_bondData(nullptr)
 {
   
 }
@@ -75,6 +89,76 @@ LAMMPSWeb::LAMMPSWeb() : lmp(nullptr), m_isRunning(false), m_cellMatrix(new doub
 LAMMPSWeb::~LAMMPSWeb()
 {
   stop();
+}
+
+long LAMMPSWeb::getBondListData() {
+  LAMMPS_NS::Atom *atom = lmp->atom;
+  LAMMPS_NS::Domain *domain = lmp->domain;
+  m_numBonds = 0;
+  if(atom->nbonds==0) return 0;
+  
+  double xSize = lmp->domain->prd[0];
+  double ySize = lmp->domain->prd[1];
+  double zSize = lmp->domain->prd[2];  
+  int numAtoms = int(atom->natoms);
+  std::cout << "I have num atoms " << atom->natoms << std::endl;
+  std::cout << "Num atoms from this thing is " << numAtoms << std::endl;
+  std::cout << "But local is " << atom->nlocal << std::endl;
+  
+  for(int idx=0; idx<numAtoms; idx++) {
+    // std::cout << "This is atom " << i << " of " << numAtoms << " and condition " << (i<numAtoms) << std::endl;
+    std::cout << "Condition " << idx << " < " << numAtoms << ": " << (idx<numAtoms) << std::endl;
+    if (idx >= numAtoms) {
+      std::cout << "WTF this is weird" << std::endl;
+    }
+
+    double x = atom->x[idx][0];
+    double y = atom->x[idx][1];
+    double z = atom->x[idx][2];
+    
+    for(int jj=0; jj<atom->num_bond[idx]; jj++) {
+      std::cout << "  This is bond count " << jj << std::endl;
+      int j = atom->map(atom->bond_atom[idx][jj]);
+      std::cout << "  Found bond between " << idx << " and " << j << std::endl;
+      if(j < 0 || j>=numAtoms) {
+        continue;
+      }
+      if (!lmp->force->newton_bond && idx<j) {
+        continue;
+      }
+    }
+
+    //   double xx = atom->x[j][0];
+    //   double yy = atom->x[j][1];
+    //   double zz = atom->x[j][2];
+
+    //   float dx = x-xx;
+    //   float dy = y-yy;
+    //   float dz = z-zz;
+    //   double dr2 = dx*dx + dy*dy + dz*dz;
+    //   double dr2max = 40; // arbitrary units. TODO!
+
+    //   if(dr2 > dr2max || dx > 0.5*xSize || dy > 0.5*ySize || dz > 0.5*zSize ) {
+    //       // Periodic image
+    //       continue;
+    //   }
+    //   std::cout << "Found bond between " << i << j << std::endl;
+
+    //   // BondVBOData bond;
+    //   // bond.vertex1[0] = position_i[0];
+    //   // bond.vertex1[1] = position_i[1];
+    //   // bond.vertex1[2] = position_i[2];
+    //   // bond.vertex2[0] = position_j[0];
+    //   // bond.vertex2[1] = position_j[1];
+    //   // bond.vertex2[2] = position_j[2];
+    //   // float bondRadius = 0.1*m_bondScale;
+    //   // bond.radius1 = bondRadius;
+    //   // bond.radius2 = bondRadius;
+    //   // bond.sphereRadius1 = atomData.radii[i]*m_sphereScale;
+    //   // bond.sphereRadius2 = atomData.radii[j]*m_sphereScale;
+    //   // bondsDataRaw.push_back(bond);
+    // }
+  }
 }
 
 long LAMMPSWeb::getCellMatrixPointer() {
@@ -263,6 +347,11 @@ int LAMMPSWeb::numAtoms()
   return lammps_get_natoms((void *)lmp);
 }
 
+int LAMMPSWeb::numBonds()
+{
+  return m_numBonds;
+}
+
 // Binding code
 EMSCRIPTEN_BINDINGS(LAMMPSWeb)
 {
@@ -278,8 +367,10 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("start", &LAMMPSWeb::start)
       .function("stop", &LAMMPSWeb::stop)
       .function("numAtoms", &LAMMPSWeb::numAtoms)
+      .function("numBonds", &LAMMPSWeb::numBonds)
       .function("runFile", &LAMMPSWeb::runFile)
       .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
       .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
+      .function("getBondListData", &LAMMPSWeb::getBondListData)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
 }

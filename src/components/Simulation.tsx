@@ -3,10 +3,16 @@ import {useStoreActions, useStoreState} from '../hooks'
 import * as THREE from 'three'
 import createModule from "../wasm/lammps.mjs";
 import { LammpsWeb } from '../types';
-import {Particles} from 'omovi'
+import {Particles, Bonds} from 'omovi'
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
+
+const getBonds = (lammps: LammpsWeb, wasm: any) => {
+  const bondsPtr = lammps.getBondListData()
+  const bonds = new Bonds(10)
+  return bonds
+}
 
 const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles) => {
   const numAtoms = lammps.numAtoms()
@@ -70,6 +76,7 @@ const Simulation = () => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm) {
+        let bonds = getBonds(lammps, wasm)
         let newParticles = getPositions(lammps, wasm, particles)
         newParticles.markNeedsUpdate()
         const simulationBox = getSimulationBox(lammps, wasm)
