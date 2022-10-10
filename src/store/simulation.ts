@@ -251,14 +251,14 @@ export const simulationModel: SimulationModel = {
     actions.setSimulationOrigo(undefined)
     actions.setParticles(undefined)
     actions.setBonds(undefined)
+    actions.setParticleColors(undefined)
     actions.setSimulation(simulation)
+    
     // @ts-ignore
     const wasm = getStoreState().simulation.wasm
     // @ts-ignore
     const lammps = getStoreState().simulation.lammps
-    // @ts-ignore
-    const atomTypes = getStoreState().simulation.atomTypes
-
+    
     if (!wasm.FS.analyzePath(`/${simulation.id}`).exists) {
       wasm.FS.mkdir(`/${simulation.id}`)
     }
@@ -326,6 +326,7 @@ export const simulationModel: SimulationModel = {
           }
         }
       })
+      console.log("Setting atom types", newAtomTypes)
       actions.setAtomTypes(newAtomTypes)
     }
 
