@@ -112,8 +112,8 @@ const View = ({visible}: ViewProps) => {
   }, [])
 
   return (
-    <div style={{ height: '100vh', width: '100vh' }}>
-      <div style={{ height: '100vh', width: '100vh'  }} ref={domElement} />
+    <div style={{ height: '100%', width: '100%' }}>
+      <div style={{ height: '100%', width: '100%'  }} ref={domElement} />
     </div>
   )
 }
