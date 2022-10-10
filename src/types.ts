@@ -10,11 +10,13 @@ export type LammpsWeb = {
   runCommand: (command: string) => void
   numAtoms: () => number
   setSyncFrequency: (every: number) => void
+  setBuildNeighborlist: (buildNeighborlist: boolean) => void
   getCellMatrixPointer: () => number
   getOrigoPointer: () => number
   getBondsPosition1: () => number
   getBondsPosition2: () => number
-  computeBondsFromBondList: () => void
+  getBondsDistanceMapPointer: () => number
+  computeBonds: () => number
   numBonds: () => number
   runFile: (path: string) => void
 }

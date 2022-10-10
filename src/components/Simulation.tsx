@@ -9,9 +9,8 @@ const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
 
 const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
-  lammps.computeBondsFromBondList()
+  const numBonds = lammps.computeBonds()
 
-  const numBonds = lammps.numBonds()
   let newBonds = bonds
   if (!bonds || bonds.capacity < numBonds) {
     let newCapacity = numBonds
@@ -22,7 +21,7 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
 
     newBonds = new Bonds(newCapacity);
     newBonds.indices.set(Array.from(Array(newCapacity).keys()))
-    newBonds.radii.fill(0.25/4)
+    newBonds.radii.fill(0.35/4)
   }
   
   if (numBonds === 0) {
