@@ -1,5 +1,5 @@
 #/camera position 100 0 0
-#/camera viewcenter 7 12 15
+#/camera target 7 12 15
 #/atom 1 silicon
 #/atom 2 aluminium
 #/atom 3 oxygen

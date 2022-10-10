@@ -1,5 +1,5 @@
 #/camera position -35 155 100
-#/camera viewcenter 40 40 40
+#/camera target 40 40 40
 # PREREQUISITES:
 #
 #     You must use moltemplate.sh to create 3 files:

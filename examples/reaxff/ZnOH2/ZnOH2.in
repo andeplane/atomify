@@ -1,7 +1,7 @@
 # REAX potential for ZnOH2 system
 # .....
 #/camera position 0 -20 50
-#/camera viewcenter 12.5 12.5 12.5
+#/camera target 12.5 12.5 12.5
 #/atom 1 hydrogen
 #/atom 2 oxygen
 #/atom 3 zinc

@@ -1,4 +1,6 @@
 # 3d metal shear simulation
+#/camera position 37 21 91
+#/camera target 40 17 5
 
 units		metal
 boundary	s s p

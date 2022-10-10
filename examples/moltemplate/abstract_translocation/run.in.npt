@@ -1,5 +1,5 @@
 #/camera position 37 05 30
-#/camera viewcenter 18 18 0
+#/camera target 18 18 0
 #/atom 2 5.0 #ff0000
 #/atom 1 0.5 #ffccdd
 

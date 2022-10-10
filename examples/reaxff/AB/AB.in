@@ -1,7 +1,7 @@
 # REAX potential for Nitroamines system
 # .....
 #/camera position 10 47 26
-#/camera viewcenter 12.5 12.5 12.5
+#/camera target 12.5 12.5 12.5
 #/atom 1 hydrogen
 #/atom 2 boron
 #/atom 3 nitrogen

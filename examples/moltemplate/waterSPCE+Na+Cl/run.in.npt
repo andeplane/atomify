@@ -4,7 +4,7 @@
 #/atom 2 hydrogen
 
 #/camera position 67 65 50
-#/camera viewcenter 17 17 17
+#/camera target 17 17 17
 
 # PREREQUISITES:
 #
