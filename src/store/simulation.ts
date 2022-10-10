@@ -86,7 +86,7 @@ export interface SimulationModel {
   files: string[]
   selectedFile?: SimulationFile
   particles?: Particles
-  bonds?: Particles
+  bonds?: Bonds
   particleColors?: THREE.Color[]
   simulationBox?: THREE.Matrix3
   simulationOrigo?: THREE.Vector3

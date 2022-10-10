@@ -25,10 +25,12 @@ const View = ({visible}: ViewProps) => {
       const newVisualizer = new Visualizer({
         domElement: domElement.current,
         initialColors: particleColors,
-        onCameraChanged: (position: THREE.Vector3, target: THREE.Vector3) => {console.log(position, target)}
+        // onCameraChanged: (position: THREE.Vector3, target: THREE.Vector3) => {console.log(position, target)}
       })
       setVisualizer(newVisualizer)
       setLoading(false)
+      // @ts-ignore
+      window.visualizer = newVisualizer
     }
   }, [domElement, visualizer, loading, particleColors])
 
@@ -67,7 +69,6 @@ const View = ({visible}: ViewProps) => {
 
   useEffect(() => {
     if (cameraTarget) {
-      console.log("Setting camera target")
       visualizer.setCameraTarget(cameraTarget)
     }
   }, [cameraTarget, visualizer])
@@ -84,7 +85,6 @@ const View = ({visible}: ViewProps) => {
     }
 
     if (prevParticles && prevParticles !== particles) {
-      console.log("Will dispose")
       visualizer.remove(prevParticles)
       prevParticles.dispose()
     }
@@ -93,20 +93,19 @@ const View = ({visible}: ViewProps) => {
       visualizer.add(particles)
     }
 
-    // if (prevBonds && prevBonds !== bonds) {
-    //   visualizer.remove(prevBonds!)
-    //   prevBonds.dispose()
-    // }
-    // if (bonds) {
-    //   visualizer.add(bonds!)
-    // }
-  }, [particles, visualizer])
+    if (prevBonds && prevBonds !== bonds) {
+      visualizer.remove(prevBonds!)
+      prevBonds.dispose()
+    }
+
+    if (bonds) {
+      visualizer.add(bonds)
+    }
+  }, [particles, prevParticles, prevBonds, bonds, visualizer])
 
   useEffect(() => {
-    console.log('Will create visualizer')
     return () => {
       if (visualizer) {
-        console.log('Will dispose visualizer')
         visualizer.dispose()
       }
     }

@@ -43,7 +43,6 @@ const App: React.FC = () => {
   const [selectedMenu, setSelectedMenu] = useState<string>("examples")
   const wasm = useStoreState(state => state.simulation.wasm)
   const lammps = useStoreState(state => state.simulation.lammps)
-  const loading = useStoreState(state => state.simulation.loading)
   const status = useStoreState(state => state.simulation.status)
   const simulation = useStoreState(state => state.simulation.simulation)
   const selectedFile = useStoreState(state => state.simulation.selectedFile)

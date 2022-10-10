@@ -9,8 +9,29 @@ const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
 
 const getBonds = (lammps: LammpsWeb, wasm: any) => {
-  const bondsPtr = lammps.getBondListData()
-  const bonds = new Bonds(10)
+  lammps.computeBondsFromBondList()
+  const numBonds = lammps.numBonds()
+  if (numBonds === 0) {
+    return undefined
+  }
+
+  const bonds1Ptr = lammps.getBondsPosition1() / 4
+  const bonds2Ptr = lammps.getBondsPosition2() / 4
+  const positions1Subarray = wasm.HEAPF32.subarray(bonds1Ptr, bonds1Ptr + 3 * numBonds) as Float32Array
+  const positions2Subarray = wasm.HEAPF32.subarray(bonds2Ptr, bonds2Ptr + 3 * numBonds) as Float32Array
+  
+  const bonds = new Bonds(numBonds)
+  for (let i = 0; i < numBonds; i++) {
+    bonds.add(
+      positions1Subarray[i * 3 + 0],
+      positions1Subarray[i * 3 + 1],
+      positions1Subarray[i * 3 + 2],
+      positions2Subarray[i * 3 + 0],
+      positions2Subarray[i * 3 + 1],
+      positions2Subarray[i * 3 + 2],
+      0.25
+    )
+  }
   return bonds
 }
 
@@ -61,6 +82,7 @@ const Simulation = () => {
   const lammps = useStoreState(state => state.simulation.lammps)
   const particles = useStoreState(state => state.simulation.particles)
   const setParticles = useStoreActions(actions => actions.simulation.updateParticles)
+  const setBonds = useStoreActions(actions => actions.simulation.setBonds)
   const setWasm = useStoreActions(actions => actions.simulation.setWasm)
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
@@ -77,6 +99,7 @@ const Simulation = () => {
     window.postStepCallback = () => {
       if (lammps && wasm) {
         let bonds = getBonds(lammps, wasm)
+        setBonds(bonds)
         let newParticles = getPositions(lammps, wasm, particles)
         newParticles.markNeedsUpdate()
         const simulationBox = getSimulationBox(lammps, wasm)
