@@ -14,7 +14,6 @@ using namespace std;
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 using namespace emscripten;
-#endif
 
 class LAMMPSWeb
 {
@@ -25,13 +24,16 @@ public:
   bool m_isRunning;
   double *m_cellMatrix;
   double *m_origo;
-  float *m_bondData;
+  float *m_bondsDataPosition1;
+  float *m_bondsDataPosition2;
   int m_bondDataCapacity;
   int m_numBonds;
   long getPositionsPointer();
   long getIdPointer();
   long getTypePointer();
-  long getBondListData();
+  long getBondsPosition1();
+  long getBondsPosition2();
+  void computeBondsFromBondList();
   int numAtoms();
   int numBonds();
   bool isRunning();
@@ -81,7 +83,8 @@ LAMMPSWeb::LAMMPSWeb() :
   m_origo(new double[3]),
   m_numBonds(0),
   m_bondDataCapacity(0),
-  m_bondData(nullptr)
+  m_bondsDataPosition1(nullptr),
+  m_bondsDataPosition2(nullptr)
 {
   
 }
@@ -91,74 +94,82 @@ LAMMPSWeb::~LAMMPSWeb()
   stop();
 }
 
-long LAMMPSWeb::getBondListData() {
+void LAMMPSWeb::computeBondsFromBondList() {
   LAMMPS_NS::Atom *atom = lmp->atom;
   LAMMPS_NS::Domain *domain = lmp->domain;
   m_numBonds = 0;
-  if(atom->nbonds==0) return 0;
+  if(atom->nbonds==0) return;
   
   double xSize = lmp->domain->prd[0];
   double ySize = lmp->domain->prd[1];
   double zSize = lmp->domain->prd[2];  
-  int numAtoms = int(atom->natoms);
-  std::cout << "I have num atoms " << atom->natoms << std::endl;
-  std::cout << "Num atoms from this thing is " << numAtoms << std::endl;
-  std::cout << "But local is " << atom->nlocal << std::endl;
   
-  for(int idx=0; idx<numAtoms; idx++) {
-    // std::cout << "This is atom " << i << " of " << numAtoms << " and condition " << (i<numAtoms) << std::endl;
-    std::cout << "Condition " << idx << " < " << numAtoms << ": " << (idx<numAtoms) << std::endl;
-    if (idx >= numAtoms) {
-      std::cout << "WTF this is weird" << std::endl;
-    }
-
-    double x = atom->x[idx][0];
-    double y = atom->x[idx][1];
-    double z = atom->x[idx][2];
+  for (int i = 0; i < atom->natoms; i++) {
+    double x = atom->x[i][0];
+    double y = atom->x[i][1];
+    double z = atom->x[i][2];
     
-    for(int jj=0; jj<atom->num_bond[idx]; jj++) {
-      std::cout << "  This is bond count " << jj << std::endl;
-      int j = atom->map(atom->bond_atom[idx][jj]);
-      std::cout << "  Found bond between " << idx << " and " << j << std::endl;
-      if(j < 0 || j>=numAtoms) {
+    for(int jj=0; jj<atom->num_bond[i]; jj++) {
+      int j = atom->map(atom->bond_atom[i][jj]);
+      if(j < 0 || j>=atom->natoms) {
         continue;
       }
-      if (!lmp->force->newton_bond && idx<j) {
+      if (!lmp->force->newton_bond && i<j) {
         continue;
       }
+    
+      double xx = atom->x[j][0];
+      double yy = atom->x[j][1];
+      double zz = atom->x[j][2];
+
+      float dx = x-xx;
+      float dy = y-yy;
+      float dz = z-zz;
+      double dr2 = dx*dx + dy*dy + dz*dz;
+      double dr2max = 40; // arbitrary units. TODO!
+
+      if(dr2 > dr2max || dx > 0.5*xSize || dy > 0.5*ySize || dz > 0.5*zSize ) {
+          // Periodic image
+          continue;
+      }
+      
+      if (m_numBonds+1 > m_bondDataCapacity ) {
+        bool copyData = m_bondDataCapacity > 0;
+
+        // Increase size of data
+        if (m_bondDataCapacity == 0) {
+          m_bondDataCapacity = 1000;
+        } else {
+          m_bondDataCapacity *= 2;
+        }
+        float *newBondsDataPosition1 = new float[3 * m_bondDataCapacity];
+        float *newBondsDataPosition2 = new float[3 * m_bondDataCapacity];
+        if (copyData) {
+          std::memcpy(m_bondsDataPosition1, newBondsDataPosition1, m_numBonds*3 * sizeof(float));
+          std::memcpy(m_bondsDataPosition2, newBondsDataPosition2, m_numBonds*3 * sizeof(float));
+          delete m_bondsDataPosition1;
+          delete m_bondsDataPosition2;
+        }
+        m_bondsDataPosition1 = newBondsDataPosition1;
+        m_bondsDataPosition2 = newBondsDataPosition2;
+      }
+      m_bondsDataPosition1[m_numBonds * 3 + 0] = x;
+      m_bondsDataPosition1[m_numBonds * 3 + 1] = y;
+      m_bondsDataPosition1[m_numBonds * 3 + 2] = z;
+      m_bondsDataPosition2[m_numBonds * 3 + 0] = xx;
+      m_bondsDataPosition2[m_numBonds * 3 + 1] = yy;
+      m_bondsDataPosition2[m_numBonds * 3 + 2] = zz;
+      m_numBonds++;
     }
-
-    //   double xx = atom->x[j][0];
-    //   double yy = atom->x[j][1];
-    //   double zz = atom->x[j][2];
-
-    //   float dx = x-xx;
-    //   float dy = y-yy;
-    //   float dz = z-zz;
-    //   double dr2 = dx*dx + dy*dy + dz*dz;
-    //   double dr2max = 40; // arbitrary units. TODO!
-
-    //   if(dr2 > dr2max || dx > 0.5*xSize || dy > 0.5*ySize || dz > 0.5*zSize ) {
-    //       // Periodic image
-    //       continue;
-    //   }
-    //   std::cout << "Found bond between " << i << j << std::endl;
-
-    //   // BondVBOData bond;
-    //   // bond.vertex1[0] = position_i[0];
-    //   // bond.vertex1[1] = position_i[1];
-    //   // bond.vertex1[2] = position_i[2];
-    //   // bond.vertex2[0] = position_j[0];
-    //   // bond.vertex2[1] = position_j[1];
-    //   // bond.vertex2[2] = position_j[2];
-    //   // float bondRadius = 0.1*m_bondScale;
-    //   // bond.radius1 = bondRadius;
-    //   // bond.radius2 = bondRadius;
-    //   // bond.sphereRadius1 = atomData.radii[i]*m_sphereScale;
-    //   // bond.sphereRadius2 = atomData.radii[j]*m_sphereScale;
-    //   // bondsDataRaw.push_back(bond);
-    // }
   }
+}
+
+long LAMMPSWeb::getBondsPosition1() {
+  return reinterpret_cast<long>(m_bondsDataPosition1);
+}
+
+long LAMMPSWeb::getBondsPosition2() {
+  return reinterpret_cast<long>(m_bondsDataPosition2);
 }
 
 long LAMMPSWeb::getCellMatrixPointer() {
@@ -371,6 +382,9 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("runFile", &LAMMPSWeb::runFile)
       .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
       .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
-      .function("getBondListData", &LAMMPSWeb::getBondListData)
+      .function("computeBondsFromBondList", &LAMMPSWeb::computeBondsFromBondList)
+      .function("getBondsPosition1", &LAMMPSWeb::getBondsPosition1)
+      .function("getBondsPosition2", &LAMMPSWeb::getBondsPosition2)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
 }
+#endif

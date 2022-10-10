@@ -2,6 +2,7 @@ CXX = emcc
 MAXMEMORY = 512MB
 
 LAMMPS_SOURCE := $(wildcard lammps/src/*.cpp)
+LAMMPS_SOURCE := $(filter-out lammps/src/main.cpp, $(LAMMPS_SOURCE))
 LAMMPS_OBJ_FILES := $(addprefix obj/,$(notdir $(LAMMPS_SOURCE:.cpp=.o)))
 
 LD_FLAGS := -O1 --pre-js locateFile.js --no-entry 

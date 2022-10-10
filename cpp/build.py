@@ -32,10 +32,12 @@ if not os.path.exists('lammps'):
   subprocess.call("git apply lammps.patch", shell=True)
   print("Installing LAMMPS packages ...")
   subprocess.call("make yes-rigid yes-class2 yes-manybody yes-mc yes-molecule yes-granular yes-kspace yes-shock yes-misc yes-qeq yes-reaxff yes-extra-molecule", shell=True)
+  if os.path.isfile('fix_imd.cpp'):
+    print("Deleting non-functioning files fix_imd ...")
+    os.remove('fix_imd.cpp')
+    os.remove('fix_imd.h')
   print("Compiling serial once to generate all files required for compilation ...")
   subprocess.call("make -j8 serial", shell=True)
-  print("Deleting main.cpp ...")
-  os.remove("main.cpp")
   os.chdir(cwd)
 
 print("Copying modified files ...")
