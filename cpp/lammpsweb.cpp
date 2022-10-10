@@ -26,10 +26,12 @@ public:
   bool m_isRunning;
   double *m_cellMatrix;
   double *m_origo;
-  float *m_bondsDataPosition1;
-  float *m_bondsDataPosition2;
+  float *m_bondsPosition1;
+  float *m_bondsPosition2;
   float *m_bondsDistanceMap;
-  int m_bondDataCapacity;
+  float *m_particlesPosition;
+  int m_bondsCapacity;
+  int m_particlesCapacity;
   int m_numBonds;
   bool m_buildNeighborlist;
   long getBondsDistanceMapPointer();
@@ -40,6 +42,7 @@ public:
   long getBondsPosition1();
   long getBondsPosition2();
   int computeBonds();
+  int computeParticles();
   void computeBondsFromBondList();
   void computeBondsFromNeighborlist();
   int numAtoms();
@@ -90,9 +93,11 @@ LAMMPSWeb::LAMMPSWeb() :
   m_cellMatrix(new double[9]),
   m_origo(new double[3]),
   m_numBonds(0),
-  m_bondDataCapacity(0),
-  m_bondsDataPosition1(nullptr),
-  m_bondsDataPosition2(nullptr),
+  m_bondsCapacity(0),
+  m_particlesCapacity(0),
+  m_bondsPosition1(nullptr),
+  m_bondsPosition2(nullptr),
+  m_particlesPosition(nullptr),
   m_bondsDistanceMap(new float[100 * 100])
 {
   for (int i = 0; i < 100000; i++) {
@@ -106,20 +111,51 @@ LAMMPSWeb::~LAMMPSWeb()
 }
 
 void LAMMPSWeb::reallocateBondsData(int newCapacity) {
-  bool copyData = m_bondDataCapacity > 0;
-  int oldCapacity = m_bondDataCapacity;
-  m_bondDataCapacity = newCapacity;
+  bool copyData = m_bondsCapacity > 0;
+  int oldCapacity = m_bondsCapacity;
+  m_bondsCapacity = newCapacity;
   
-  float *newBondsDataPosition1 = new float[3 * m_bondDataCapacity];
-  float *newBondsDataPosition2 = new float[3 * m_bondDataCapacity];
+  float *newBondsDataPosition1 = new float[3 * m_bondsCapacity];
+  float *newBondsDataPosition2 = new float[3 * m_bondsCapacity];
   if (copyData) {
-    std::memcpy(m_bondsDataPosition1, newBondsDataPosition1, oldCapacity*3 * sizeof(float));
-    std::memcpy(m_bondsDataPosition2, newBondsDataPosition2, oldCapacity*3 * sizeof(float));
-    delete m_bondsDataPosition1;
-    delete m_bondsDataPosition2;
+    std::memcpy(m_bondsPosition1, newBondsDataPosition1, oldCapacity*3 * sizeof(float));
+    std::memcpy(m_bondsPosition2, newBondsDataPosition2, oldCapacity*3 * sizeof(float));
+    delete m_bondsPosition1;
+    delete m_bondsPosition2;
   }
-  m_bondsDataPosition1 = newBondsDataPosition1;
-  m_bondsDataPosition2 = newBondsDataPosition2;
+  m_bondsPosition1 = newBondsDataPosition1;
+  m_bondsPosition2 = newBondsDataPosition2;
+}
+
+int LAMMPSWeb::computeParticles() {
+  LAMMPS_NS::Atom *atom = lmp->atom;
+  LAMMPS_NS::Domain *domain = lmp->domain;
+
+  int m_numParticles = atom->natoms;
+  
+  if (m_numParticles > m_particlesCapacity) {
+    m_particlesCapacity = 2 * m_numParticles;
+    if (m_particlesCapacity == 0) {
+      m_particlesCapacity = m_numParticles;
+    }
+    
+    delete m_particlesPosition;
+    m_particlesPosition = new float[3 * m_particlesCapacity];
+  }
+  
+  for(int i=0; i<m_numParticles; i++) {
+    double position[3];
+    position[0] = atom->x[i][0];
+    position[1] = atom->x[i][1];
+    position[2] = atom->x[i][2];
+    
+    domain->remap(position); // remap into system boundaries with PBC
+    m_particlesPosition[3 * i + 0] = position[0];
+    m_particlesPosition[3 * i + 1] = position[1];
+    m_particlesPosition[3 * i + 2] = position[2];
+  }
+  
+  return m_numParticles;
 }
 
 int LAMMPSWeb::computeBonds() {
@@ -167,20 +203,20 @@ void LAMMPSWeb::computeBondsFromBondList() {
           continue;
       }
       
-      if (m_numBonds+1 > m_bondDataCapacity ) {
-        int newCapacity = 2 * m_bondDataCapacity;
+      if (m_numBonds+1 > m_bondsCapacity ) {
+        int newCapacity = 2 * m_bondsCapacity;
         if (newCapacity == 0) {
           newCapacity = 1000;
         }
         reallocateBondsData(newCapacity);
       }
 
-      m_bondsDataPosition1[m_numBonds * 3 + 0] = x;
-      m_bondsDataPosition1[m_numBonds * 3 + 1] = y;
-      m_bondsDataPosition1[m_numBonds * 3 + 2] = z;
-      m_bondsDataPosition2[m_numBonds * 3 + 0] = xx;
-      m_bondsDataPosition2[m_numBonds * 3 + 1] = yy;
-      m_bondsDataPosition2[m_numBonds * 3 + 2] = zz;
+      m_bondsPosition1[m_numBonds * 3 + 0] = x;
+      m_bondsPosition1[m_numBonds * 3 + 1] = y;
+      m_bondsPosition1[m_numBonds * 3 + 2] = z;
+      m_bondsPosition2[m_numBonds * 3 + 0] = xx;
+      m_bondsPosition2[m_numBonds * 3 + 1] = yy;
+      m_bondsPosition2[m_numBonds * 3 + 2] = zz;
       m_numBonds++;
     }
   }
@@ -196,6 +232,7 @@ void LAMMPSWeb::computeBondsFromNeighborlist() {
       return;
   }
 
+  LAMMPS_NS::Domain *domain = lmp->domain;
   LAMMPS_NS::Atom *atom = lmp->atom;
   LAMMPS_NS::NeighList *list = fixAtomify->list;
   const int inum = list->inum;
@@ -203,9 +240,12 @@ void LAMMPSWeb::computeBondsFromNeighborlist() {
   int **firstneigh = list->firstneigh;
   
   for(int i=0; i<atom->natoms; i++) {
-    float x = atom->x[i][0];
-    float y = atom->x[i][1];
-    float z = atom->x[i][2];
+    double position1[3];
+    position1[0] = atom->x[i][0];
+    position1[1] = atom->x[i][1];
+    position1[2] = atom->x[i][2];
+    domain->remap(position1); // remap into system boundaries with PBC
+
     int type_i = atom->type[i];
     
     int *jlist = firstneigh[i];
@@ -216,31 +256,33 @@ void LAMMPSWeb::computeBondsFromNeighborlist() {
       if(j >= atom->natoms) continue; // Probably a ghost atom from LAMMPS
       
       int type_j = atom->type[j];
-      float xx = atom->x[j][0];
-      float yy = atom->x[j][1];
-      float zz = atom->x[j][2];
-      float dx = xx-x;
-      float dy = yy-y;
-      float dz = zz-z;
+      double position2[3];
+      position2[0] = atom->x[j][0];
+      position2[1] = atom->x[j][1];
+      position2[2] = atom->x[j][2];
+      domain->remap(position2); // remap into system boundaries with PBC
+      float dx = position2[0]-position1[0];
+      float dy = position2[1]-position1[1];
+      float dz = position2[2]-position1[2];
       
       float rsq = dx*dx + dy*dy + dz*dz;
       float bondLength = m_bondsDistanceMap[100 * type_i + type_j];
 
       if(rsq < bondLength*bondLength) {
-        if (m_numBonds+1 > m_bondDataCapacity ) {
-          int newCapacity = 2 * m_bondDataCapacity;
+        if (m_numBonds+1 > m_bondsCapacity ) {
+          int newCapacity = 2 * m_bondsCapacity;
           if (newCapacity == 0) {
             newCapacity = 1000;
           }
           reallocateBondsData(newCapacity);
         }
 
-        m_bondsDataPosition1[m_numBonds * 3 + 0] = x;
-        m_bondsDataPosition1[m_numBonds * 3 + 1] = y;
-        m_bondsDataPosition1[m_numBonds * 3 + 2] = z;
-        m_bondsDataPosition2[m_numBonds * 3 + 0] = xx;
-        m_bondsDataPosition2[m_numBonds * 3 + 1] = yy;
-        m_bondsDataPosition2[m_numBonds * 3 + 2] = zz;
+        m_bondsPosition1[m_numBonds * 3 + 0] = position1[0];
+        m_bondsPosition1[m_numBonds * 3 + 1] = position1[1];
+        m_bondsPosition1[m_numBonds * 3 + 2] = position1[2];
+        m_bondsPosition2[m_numBonds * 3 + 0] = position2[0];
+        m_bondsPosition2[m_numBonds * 3 + 1] = position2[1];
+        m_bondsPosition2[m_numBonds * 3 + 2] = position2[2];
         m_numBonds++;
       }
     }
@@ -248,11 +290,11 @@ void LAMMPSWeb::computeBondsFromNeighborlist() {
 }
 
 long LAMMPSWeb::getBondsPosition1() {
-  return reinterpret_cast<long>(m_bondsDataPosition1);
+  return reinterpret_cast<long>(m_bondsPosition1);
 }
 
 long LAMMPSWeb::getBondsPosition2() {
-  return reinterpret_cast<long>(m_bondsDataPosition2);
+  return reinterpret_cast<long>(m_bondsPosition2);
 }
 
 long LAMMPSWeb::getCellMatrixPointer() {
@@ -322,9 +364,7 @@ long LAMMPSWeb::getBondsDistanceMapPointer()
 
 long LAMMPSWeb::getPositionsPointer()
 {
-  double **ptr = reinterpret_cast<double **>(lammps_extract_atom((void *)lmp, "x"));
-
-  return reinterpret_cast<long>(ptr[0]);
+  return reinterpret_cast<long>(m_particlesPosition);
 }
 
 long LAMMPSWeb::getIdPointer()
@@ -470,6 +510,7 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
       .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
       .function("computeBonds", &LAMMPSWeb::computeBonds)
+      .function("computeParticles", &LAMMPSWeb::computeParticles)
       .function("setBuildNeighborlist", &LAMMPSWeb::setBuildNeighborlist)
       .function("getBondsPosition1", &LAMMPSWeb::getBondsPosition1)
       .function("getBondsPosition2", &LAMMPSWeb::getBondsPosition2)

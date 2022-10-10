@@ -41,7 +41,7 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
 }
 
 const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles) => {
-  const numParticles = lammps.numAtoms()
+  const numParticles = lammps.computeParticles()
   let newParticles = particles
   if (!particles || particles.capacity < numParticles) {
     let newCapacity = numParticles
@@ -54,10 +54,10 @@ const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles) => {
     newParticles.types = new Float32Array(newCapacity)
     newParticles.radii.fill(0.25)
   }
-  const positionsPtr = lammps.getPositionsPointer() / 8;
+  const positionsPtr = lammps.getPositionsPointer() / 4;
   const typePtr = lammps.getTypePointer() / 4;
   const idPtr = lammps.getIdPointer() / 4;
-  const positionsSubarray = wasm.HEAPF64.subarray(positionsPtr, positionsPtr + 3 * numParticles) as Float64Array
+  const positionsSubarray = wasm.HEAPF32.subarray(positionsPtr, positionsPtr + 3 * numParticles) as Float32Array
   const typeSubarray = wasm.HEAP32.subarray(typePtr, typePtr + numParticles) as Int32Array
   const idSubarray = wasm.HEAP32.subarray(idPtr, idPtr + numParticles) as Int32Array
   

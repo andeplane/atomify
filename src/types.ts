@@ -17,6 +17,7 @@ export type LammpsWeb = {
   getBondsPosition2: () => number
   getBondsDistanceMapPointer: () => number
   computeBonds: () => number
+  computeParticles: () => number
   numBonds: () => number
   runFile: (path: string) => void
 }
