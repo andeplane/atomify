@@ -8,11 +8,20 @@ import {Particles, Bonds} from 'omovi'
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
 
-const getBonds = (lammps: LammpsWeb, wasm: any) => {
+const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
   lammps.computeBondsFromBondList()
+
   const numBonds = lammps.numBonds()
+  let newBonds = bonds
+  if (!bonds || bonds.count < numBonds) {
+    newBonds = new Bonds(numBonds);
+    newBonds.indices.set(Array.from(Array(numBonds).keys()))
+    newBonds.radii.fill(0.25/4)
+  }
+  
   if (numBonds === 0) {
-    return undefined
+    newBonds.count = 0
+    return newBonds
   }
 
   const bonds1Ptr = lammps.getBondsPosition1() / 4
@@ -20,19 +29,12 @@ const getBonds = (lammps: LammpsWeb, wasm: any) => {
   const positions1Subarray = wasm.HEAPF32.subarray(bonds1Ptr, bonds1Ptr + 3 * numBonds) as Float32Array
   const positions2Subarray = wasm.HEAPF32.subarray(bonds2Ptr, bonds2Ptr + 3 * numBonds) as Float32Array
   
-  const bonds = new Bonds(numBonds)
   for (let i = 0; i < numBonds; i++) {
-    bonds.add(
-      positions1Subarray[i * 3 + 0],
-      positions1Subarray[i * 3 + 1],
-      positions1Subarray[i * 3 + 2],
-      positions2Subarray[i * 3 + 0],
-      positions2Subarray[i * 3 + 1],
-      positions2Subarray[i * 3 + 2],
-      0.25
-    )
+    newBonds.positions1.set(positions1Subarray)
+    newBonds.positions2.set(positions2Subarray)
   }
-  return bonds
+  newBonds.count = numBonds
+  return newBonds
 }
 
 const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles) => {
@@ -81,6 +83,7 @@ const Simulation = () => {
   const wasm = useStoreState(state => state.simulation.wasm)
   const lammps = useStoreState(state => state.simulation.lammps)
   const particles = useStoreState(state => state.simulation.particles)
+  const bonds = useStoreState(state => state.simulation.bonds)
   const setParticles = useStoreActions(actions => actions.simulation.updateParticles)
   const setBonds = useStoreActions(actions => actions.simulation.setBonds)
   const setWasm = useStoreActions(actions => actions.simulation.setWasm)
@@ -98,17 +101,22 @@ const Simulation = () => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm) {
-        let bonds = getBonds(lammps, wasm)
-        setBonds(bonds)
+        let newBonds = getBonds(lammps, wasm, bonds)
+        newBonds.markNeedsUpdate()
+        if (newBonds !== bonds) {
+          setBonds(newBonds)
+        }
+
         let newParticles = getPositions(lammps, wasm, particles)
         newParticles.markNeedsUpdate()
+        if (newParticles !== particles) {
+          setParticles(newParticles)
+        }
+
         const simulationBox = getSimulationBox(lammps, wasm)
         const origo = getSimulationOrigo(lammps, wasm)
         setSimulationBox(simulationBox)
         setSimulationOrigo(origo)
-        if (newParticles !== particles) {
-          setParticles(newParticles)
-        }
         // @ts-ignore
         lammps.setSyncFrequency(window.syncFrequency)
       }
