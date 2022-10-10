@@ -29,10 +29,9 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
   const positions1Subarray = wasm.HEAPF32.subarray(bonds1Ptr, bonds1Ptr + 3 * numBonds) as Float32Array
   const positions2Subarray = wasm.HEAPF32.subarray(bonds2Ptr, bonds2Ptr + 3 * numBonds) as Float32Array
   
-  for (let i = 0; i < numBonds; i++) {
-    newBonds.positions1.set(positions1Subarray)
-    newBonds.positions2.set(positions2Subarray)
-  }
+  newBonds.positions1.set(positions1Subarray)
+  newBonds.positions2.set(positions2Subarray)
+  
   newBonds.count = numBonds
   return newBonds
 }
