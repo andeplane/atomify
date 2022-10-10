@@ -5,8 +5,8 @@ LAMMPS_SOURCE := $(wildcard lammps/src/*.cpp)
 LAMMPS_SOURCE := $(filter-out lammps/src/main.cpp, $(LAMMPS_SOURCE))
 LAMMPS_OBJ_FILES := $(addprefix obj/,$(notdir $(LAMMPS_SOURCE:.cpp=.o)))
 
-LD_FLAGS := -O1 --pre-js locateFile.js --no-entry 
-CC_FLAGS := -O1 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL # -DNDEBUG
+LD_FLAGS := -O2 --pre-js locateFile.js --no-entry 
+CC_FLAGS := -O2 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL # -DNDEBUG
 INCLUDE_FLAGS := -Ilammps/src
 SYMBOLS := --bind -s ENVIRONMENT='web' \
                   -s NO_DISABLE_EXCEPTION_CATCHING \
