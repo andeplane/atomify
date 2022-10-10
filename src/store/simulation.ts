@@ -250,6 +250,7 @@ export const simulationModel: SimulationModel = {
     actions.setSimulationBox(undefined)
     actions.setSimulationOrigo(undefined)
     actions.setParticles(undefined)
+    actions.setBonds(undefined)
     actions.setSimulation(simulation)
     // @ts-ignore
     const wasm = getStoreState().simulation.wasm
