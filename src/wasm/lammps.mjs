@@ -7218,8 +7218,8 @@ var _asyncify_stop_rewind = Module["_asyncify_stop_rewind"] = function() {
   return (_asyncify_stop_rewind = Module["_asyncify_stop_rewind"] = Module["asm"]["asyncify_stop_rewind"]).apply(null, arguments);
 };
 
-var ___start_em_js = Module['___start_em_js'] = 469408;
-var ___stop_em_js = Module['___stop_em_js'] = 469438;
+var ___start_em_js = Module['___start_em_js'] = 469392;
+var ___stop_em_js = Module['___stop_em_js'] = 469422;
 function invoke_vii(index,a1,a2) {
   var sp = stackSave();
   try {
