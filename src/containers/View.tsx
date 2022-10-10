@@ -62,13 +62,13 @@ const View = ({visible}: ViewProps) => {
   }, [particleColors, visualizer])
 
   useEffect(() => {
-    if (cameraPosition) {
+    if (cameraPosition && visualizer) {
       visualizer.setCameraPosition(cameraPosition)
     }
   }, [cameraPosition, visualizer])
 
   useEffect(() => {
-    if (cameraTarget) {
+    if (cameraTarget && visualizer) {
       visualizer.setCameraTarget(cameraTarget)
     }
   }, [cameraTarget, visualizer])

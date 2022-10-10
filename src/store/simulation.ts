@@ -41,8 +41,20 @@ const parseAtomType = (line: string) => {
   const matches = line.match(regex)
   if (matches) {
     return {
-      'atomTypeIndex': parseInt(matches[1]),
-      'atomType': matches[2],
+      atomType: parseInt(matches[1]),
+      atomName: matches[2],
+    }
+  }
+}
+
+const parseBond = (line: string) => {
+  const regex = /^(?:bond)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*.\d*)$/
+  const matches = line.match(regex)
+  if (matches) {
+    return {
+      atomType1: parseInt(matches[1]),
+      atomType2: parseInt(matches[2]),
+      distance: parseFloat(matches[3])
     }
   }
 }
@@ -238,17 +250,24 @@ export const simulationModel: SimulationModel = {
     actions.setSimulationBox(undefined)
     actions.setSimulationOrigo(undefined)
     actions.setParticles(undefined)
+    actions.setBonds(undefined)
+    actions.setParticleColors(undefined)
     actions.setSimulation(simulation)
+    
     // @ts-ignore
     const wasm = getStoreState().simulation.wasm
     // @ts-ignore
     const lammps = getStoreState().simulation.lammps
-    // @ts-ignore
-    const atomTypes = getStoreState().simulation.atomTypes
-
+    
     if (!wasm.FS.analyzePath(`/${simulation.id}`).exists) {
       wasm.FS.mkdir(`/${simulation.id}`)
     }
+    
+    // Reset all settings for dynamic bonds
+    const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
+    const bondsDistanceMapSubarray = wasm.HEAPF32.subarray(bondsDistanceMapPointer, bondsDistanceMapPointer + 10000) as Float32Array
+    bondsDistanceMapSubarray.fill(0)
+    lammps.setBuildNeighborlist(false)
     
     let counter = 0
     for (const file of simulation.files) {
@@ -284,24 +303,30 @@ export const simulationModel: SimulationModel = {
           line = line.substring(2)
           const atomType = parseAtomType(line)
           if (atomType) {
-            newAtomTypes[atomType.atomTypeIndex] = AtomTypes.filter(at => at.fullname===atomType.atomType)[0]
+            newAtomTypes[atomType.atomType] = AtomTypes.filter(at => at.fullname===atomType.atomName)[0]
           }
           const atomSizeAndColor = parseAtomSizeAndColor(line)
           if (atomSizeAndColor) {
             newAtomTypes[atomSizeAndColor.atomTypeIndex].color = new THREE.Color(...hexToRgb(atomSizeAndColor.color))
             newAtomTypes[atomSizeAndColor.atomTypeIndex].radius = atomSizeAndColor.radius
           }
+          const bond = parseBond(line);
+          if (bond) {
+            bondsDistanceMapSubarray[100 * bond.atomType1 + bond.atomType2] = bond.distance
+            bondsDistanceMapSubarray[100 * bond.atomType2 + bond.atomType1] = bond.distance
+            lammps.setBuildNeighborlist(true)
+          }
           const cameraPosition = parseCameraPosition(line)
           if (cameraPosition) {
             actions.setCameraPosition(cameraPosition)
           }
-
           const cameraTarget = parseCameraTarget(line)
           if (cameraTarget) {
             actions.setCameraTarget(cameraTarget)
           }
         }
       })
+      console.log("Setting atom types", newAtomTypes)
       actions.setAtomTypes(newAtomTypes)
     }
 
