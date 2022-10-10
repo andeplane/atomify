@@ -1,5 +1,5 @@
 #/camera position 0 240 0
-#/camera viewcenter 0 0 0
+#/camera target 0 0 0
 
 # PREREQUISITES:  You must run LAMMPS using "run.in.min" beforehand.
 #             (This will create the "system_after_min0.data" file needed below.)

@@ -1,6 +1,6 @@
 # Solvated 5-mer peptide
 #/camera position 2 40 43
-#/camera viewcenter 50 55 43
+#/camera target 50 55 43
 #/atom 1 carbon
 #/atom 2 carbon
 #/atom 6 carbon

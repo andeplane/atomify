@@ -1,5 +1,5 @@
 #/camera position 0 93 32
-#/camera viewcenter 0 0 0
+#/camera target 0 0 0
 
 # PREREQUISITES:
 #

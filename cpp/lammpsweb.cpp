@@ -2,6 +2,8 @@
 #include <iostream>
 #include "library.h"
 #include "domain.h"
+#include "atom.h"
+#include "force.h"
 #include "modify.h"
 #include "fix_atomify.h"
 
@@ -12,7 +14,6 @@ using namespace std;
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 using namespace emscripten;
-#endif
 
 class LAMMPSWeb
 {
@@ -23,10 +24,18 @@ public:
   bool m_isRunning;
   double *m_cellMatrix;
   double *m_origo;
+  float *m_bondsDataPosition1;
+  float *m_bondsDataPosition2;
+  int m_bondDataCapacity;
+  int m_numBonds;
   long getPositionsPointer();
   long getIdPointer();
   long getTypePointer();
+  long getBondsPosition1();
+  long getBondsPosition2();
+  void computeBondsFromBondList();
   int numAtoms();
+  int numBonds();
   bool isRunning();
   void loadLJ();
   void step();
@@ -67,7 +76,15 @@ void synchronizeLAMMPS_callback(void *caller, int mode)
     controller->synchronizeLAMMPS(mode);
 }
 
-LAMMPSWeb::LAMMPSWeb() : lmp(nullptr), m_isRunning(false), m_cellMatrix(new double[9]), m_origo(new double[3])
+LAMMPSWeb::LAMMPSWeb() : 
+  lmp(nullptr),
+  m_isRunning(false),
+  m_cellMatrix(new double[9]),
+  m_origo(new double[3]),
+  m_numBonds(0),
+  m_bondDataCapacity(0),
+  m_bondsDataPosition1(nullptr),
+  m_bondsDataPosition2(nullptr)
 {
   
 }
@@ -75,6 +92,84 @@ LAMMPSWeb::LAMMPSWeb() : lmp(nullptr), m_isRunning(false), m_cellMatrix(new doub
 LAMMPSWeb::~LAMMPSWeb()
 {
   stop();
+}
+
+void LAMMPSWeb::computeBondsFromBondList() {
+  LAMMPS_NS::Atom *atom = lmp->atom;
+  LAMMPS_NS::Domain *domain = lmp->domain;
+  m_numBonds = 0;
+  if(atom->nbonds==0) return;
+  
+  double xSize = lmp->domain->prd[0];
+  double ySize = lmp->domain->prd[1];
+  double zSize = lmp->domain->prd[2];  
+  
+  for (int i = 0; i < atom->natoms; i++) {
+    double x = atom->x[i][0];
+    double y = atom->x[i][1];
+    double z = atom->x[i][2];
+    
+    for(int jj=0; jj<atom->num_bond[i]; jj++) {
+      int j = atom->map(atom->bond_atom[i][jj]);
+      if(j < 0 || j>=atom->natoms) {
+        continue;
+      }
+      if (!lmp->force->newton_bond && i<j) {
+        continue;
+      }
+    
+      double xx = atom->x[j][0];
+      double yy = atom->x[j][1];
+      double zz = atom->x[j][2];
+
+      float dx = x-xx;
+      float dy = y-yy;
+      float dz = z-zz;
+      double dr2 = dx*dx + dy*dy + dz*dz;
+      double dr2max = 40; // arbitrary units. TODO!
+
+      if(dr2 > dr2max || dx > 0.5*xSize || dy > 0.5*ySize || dz > 0.5*zSize ) {
+          // Periodic image
+          continue;
+      }
+      
+      if (m_numBonds+1 > m_bondDataCapacity ) {
+        bool copyData = m_bondDataCapacity > 0;
+
+        // Increase size of data
+        if (m_bondDataCapacity == 0) {
+          m_bondDataCapacity = 1000;
+        } else {
+          m_bondDataCapacity *= 2;
+        }
+        float *newBondsDataPosition1 = new float[3 * m_bondDataCapacity];
+        float *newBondsDataPosition2 = new float[3 * m_bondDataCapacity];
+        if (copyData) {
+          std::memcpy(m_bondsDataPosition1, newBondsDataPosition1, m_numBonds*3 * sizeof(float));
+          std::memcpy(m_bondsDataPosition2, newBondsDataPosition2, m_numBonds*3 * sizeof(float));
+          delete m_bondsDataPosition1;
+          delete m_bondsDataPosition2;
+        }
+        m_bondsDataPosition1 = newBondsDataPosition1;
+        m_bondsDataPosition2 = newBondsDataPosition2;
+      }
+      m_bondsDataPosition1[m_numBonds * 3 + 0] = x;
+      m_bondsDataPosition1[m_numBonds * 3 + 1] = y;
+      m_bondsDataPosition1[m_numBonds * 3 + 2] = z;
+      m_bondsDataPosition2[m_numBonds * 3 + 0] = xx;
+      m_bondsDataPosition2[m_numBonds * 3 + 1] = yy;
+      m_bondsDataPosition2[m_numBonds * 3 + 2] = zz;
+      m_numBonds++;
+    }
+  }
+}
+
+long LAMMPSWeb::getBondsPosition1() {
+  return reinterpret_cast<long>(m_bondsDataPosition1);
+}
+
+long LAMMPSWeb::getBondsPosition2() {
+  return reinterpret_cast<long>(m_bondsDataPosition2);
 }
 
 long LAMMPSWeb::getCellMatrixPointer() {
@@ -263,6 +358,11 @@ int LAMMPSWeb::numAtoms()
   return lammps_get_natoms((void *)lmp);
 }
 
+int LAMMPSWeb::numBonds()
+{
+  return m_numBonds;
+}
+
 // Binding code
 EMSCRIPTEN_BINDINGS(LAMMPSWeb)
 {
@@ -278,8 +378,13 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("start", &LAMMPSWeb::start)
       .function("stop", &LAMMPSWeb::stop)
       .function("numAtoms", &LAMMPSWeb::numAtoms)
+      .function("numBonds", &LAMMPSWeb::numBonds)
       .function("runFile", &LAMMPSWeb::runFile)
       .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
       .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
+      .function("computeBondsFromBondList", &LAMMPSWeb::computeBondsFromBondList)
+      .function("getBondsPosition1", &LAMMPSWeb::getBondsPosition1)
+      .function("getBondsPosition2", &LAMMPSWeb::getBondsPosition2)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
 }
+#endif

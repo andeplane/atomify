@@ -1,5 +1,5 @@
 #/camera position -8 23 6
-#/camera viewcenter 0 0 0
+#/camera target 0 0 0
 # -- Init Section --
 
 include system.in.init
