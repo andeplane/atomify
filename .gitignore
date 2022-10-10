@@ -1,1 +1,8 @@
 node_modules
+cpp/lammps
+cpp/obj
+build
+.DS_Store
+cpp/lammps.mjs
+cpp/lammps.wasm
+cpp/lammps.worker.js

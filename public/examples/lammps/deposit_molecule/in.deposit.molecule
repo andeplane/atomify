@@ -1,6 +1,6 @@
 # sample surface deposition script for molecules
-#/camera position 4 27 18
-#/camera viewcenter 4 4 8
+#/camera position 4 4 30
+#/camera target 4 4 8
 
 units		lj
 atom_style      bond

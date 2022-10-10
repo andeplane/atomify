@@ -1,7 +1,7 @@
 # REAX potential for VOH system
 # .....
 #/camera position 38 50 7
-#/camera viewcenter 12.5 12.5 12.5
+#/camera target 12.5 12.5 12.5
 #/atom 1 hydrogen
 #/atom 2 carbon
 #/atom 3 oxygen

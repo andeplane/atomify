@@ -2,7 +2,7 @@
 
 # Tell Atomify where initial camera position should be
 #/camera position 11 -20 30
-#/camera viewcenter 5.6 3.9 0.7
+#/camera target 5.6 3.9 0.7
 
 units           real
 neigh_modify    delay 2 every 1
