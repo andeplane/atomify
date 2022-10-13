@@ -118,6 +118,18 @@ const Simulation = () => {
   }, [])
 
   useEffect(() => {
+    window.onkeydown = (ev) => {
+      const value = parseInt(ev.key)
+      if (value > 0) {
+        //@ts-ignore
+        window.syncFrequency = value
+      }
+      if (ev.key === " ") {
+        //@ts-ignore
+        window.lammps.step()
+      }
+    }
+
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm) {
