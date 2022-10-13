@@ -26,6 +26,10 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
   
   if (numBonds === 0) {
     newBonds.count = 0
+    if (newBonds.mesh) {
+      newBonds.mesh.count = numBonds
+      newBonds.geometry.setDrawRange(0, 0)
+    }
     return newBonds
   }
 
@@ -37,6 +41,11 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
   newBonds.positions2.set(positions2Subarray)
   
   newBonds.count = numBonds
+  if (newBonds.mesh) {
+    newBonds.mesh.count = numBonds
+    newBonds.geometry.setDrawRange(0, numBonds)
+  }
+
   return newBonds
 }
 
@@ -65,6 +74,12 @@ const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles) => {
   newParticles.types.set(typeSubarray)
   newParticles.indices.set(idSubarray)
   newParticles.count = numParticles
+  
+  if (newParticles.mesh) {
+    newParticles.mesh.count = numParticles
+    newParticles.geometry.setDrawRange(0, numParticles)
+  }
+
   return newParticles
 }
 
