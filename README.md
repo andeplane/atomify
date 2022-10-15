@@ -1,5 +1,6 @@
 # Atomify - a real time LAMMPS visualizer on the web
-[![Build](https://github.com/andeplane/atomify/actions/workflows/deploy.yaml/badge.svg?branch=main)](https://github.com/andeplane/atomify/actions/workflows/deploy.yaml)
+[![Build](https://github.com/andeplane/atomify/actions/workflows/build.yaml/badge.svg?branch=main)](https://github.com/andeplane/atomify/actions/workflows/build.yaml)
+[![Deploy](https://github.com/andeplane/atomify/actions/workflows/deploy.yaml/badge.svg?branch=main)](https://github.com/andeplane/atomify/actions/workflows/deploy.yaml)
 
 [Try it out now.](https://andeplane.github.io/atomify/)
 
