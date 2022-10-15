@@ -109,7 +109,7 @@ const View = ({visible}: ViewProps) => {
         visualizer.dispose()
       }
     }
-  })
+  }, [visualizer])
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
