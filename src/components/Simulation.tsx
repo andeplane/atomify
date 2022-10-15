@@ -27,7 +27,6 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
     newBonds.count = 0
     if (newBonds.mesh) {
       newBonds.mesh.count = numBonds
-      newBonds.geometry.setDrawRange(0, 0)
     }
     return newBonds
   }
