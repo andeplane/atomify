@@ -119,11 +119,22 @@ const Simulation = () => {
 
   useEffect(() => {
     window.onkeydown = (ev) => {
-      const value = parseInt(ev.key)
-      if (value > 0) {
-        //@ts-ignore
-        window.syncFrequency = value
+      const syncFrequencyMap = {
+        '1': 1,
+        '2': 2,
+        '3': 4,
+        '4': 6,
+        '5': 10,
+        '6': 20,
+        '7': 50,
+        '8': 100,
+        '9': 200,
       }
+      if (Object.keys(syncFrequencyMap).indexOf(ev.key) >= 0) {
+        //@ts-ignore
+        window.syncFrequency = syncFrequencyMap[ev.key]
+      }
+
       if (ev.key === " ") {
         //@ts-ignore
         // window.lammps.step()
