@@ -29,6 +29,7 @@ class FixAtomify : public Fix {
   void lost_atoms();
   int setmask();
   void init();
+  void cancel();
   void end_of_step();
   void min_post_force(int);
   void update_compute(const char computeId[]);
@@ -42,6 +43,7 @@ class FixAtomify : public Fix {
   int step_count;
   void *ptr_caller;
   bool build_neighborlist;
+  bool m_cancel;
   int sync_frequency; // how often to perform expensive sync of positions and computes
 };
 

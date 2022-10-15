@@ -4,6 +4,7 @@
 #include "domain.h"
 #include "atom.h"
 #include "force.h"
+#include "update.h"
 #include "modify.h"
 #include "neigh_list.h"
 #include "fix_atomify.h"
@@ -23,7 +24,6 @@ public:
   LAMMPSWeb();
   ~LAMMPSWeb();
   LAMMPS_NS::LAMMPS *lmp;
-  bool m_isRunning;
   double *m_cellMatrix;
   double *m_origo;
   float *m_bondsPosition1;
@@ -49,6 +49,7 @@ public:
   int numAtoms();
   bool isRunning();
   void loadLJ();
+  void cancel();
   void step();
   void start();
   void stop();
@@ -90,7 +91,6 @@ void synchronizeLAMMPS_callback(void *caller, int mode)
 
 LAMMPSWeb::LAMMPSWeb() : 
   lmp(nullptr),
-  m_isRunning(false),
   m_cellMatrix(new double[9]),
   m_origo(new double[3]),
   m_numBonds(0),
@@ -107,6 +107,14 @@ LAMMPSWeb::LAMMPSWeb() :
 LAMMPSWeb::~LAMMPSWeb()
 {
   stop();
+}
+
+void LAMMPSWeb::cancel() {
+  LAMMPS_NS::FixAtomify *fixAtomify = dynamic_cast<LAMMPS_NS::FixAtomify*>(findFixByIdentifier("atomify"));
+  if(!fixAtomify) {
+      return;
+  }
+  fixAtomify->cancel();
 }
 
 void LAMMPSWeb::reallocateBondsData(int newCapacity) {
@@ -328,7 +336,7 @@ long LAMMPSWeb::getOrigoPointer() {
 }
 
 bool LAMMPSWeb::isRunning() {
-  return m_isRunning;
+  return lmp->update->whichflag!=0;
 }
 
 void LAMMPSWeb::setSyncFrequency(int every) {
@@ -464,24 +472,18 @@ void LAMMPSWeb::loadLJ()
 
 void LAMMPSWeb::runFile(std::string path)
 {
-  m_isRunning = true;
   lammps_file((void*)lmp, path.c_str());
-  m_isRunning = false;
 }
 
 void LAMMPSWeb::step()
 {
-  m_isRunning = true;
   const char *script = "run 1 pre no post no\n";
   lammps_commands_string((void *)lmp, script);
-  m_isRunning = false;
 }
 
 void LAMMPSWeb::runCommand(std::string command)
 {
-  m_isRunning = true;
   lammps_commands_string((void *)lmp, command.c_str());
-  m_isRunning = false;
 }
 
 int LAMMPSWeb::numAtoms()
@@ -520,5 +522,6 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("getExceptionMessage", &LAMMPSWeb::getExceptionMessage)
       .function("cancel", &LAMMPSWeb::cancel)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
+
 }
 #endif

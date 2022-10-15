@@ -4,7 +4,8 @@ import {
   EditOutlined,
   InsertRowAboveOutlined,
   FileOutlined,
-  CaretRightOutlined
+  PlaySquareOutlined,
+  BorderOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Breadcrumb, Layout, Menu, Modal, Button, Tooltip, Tabs, Progress, notification } from 'antd';
@@ -43,6 +44,7 @@ const App: React.FC = () => {
   const [selectedMenu, setSelectedMenu] = useState<string>("examples")
   const wasm = useStoreState(state => state.simulation.wasm)
   const lammps = useStoreState(state => state.simulation.lammps)
+  const running = useStoreState(state => state.simulation.running)
   const status = useStoreState(state => state.simulation.status)
   const simulation = useStoreState(state => state.simulation.simulation)
   const selectedFile = useStoreState(state => state.simulation.selectedFile)
@@ -59,13 +61,13 @@ const App: React.FC = () => {
     }): [], undefined, selectedFile==null),
     getItem('Examples', 'examples', <InsertRowAboveOutlined />)
   ];
+  const runStopButtonTitle = running ? "Stop" : "Run"
+
   items.push({type: 'divider'})
-  items.push(getItem('Run', 'run', <CaretRightOutlined />, undefined, () => {
-    if (lammps?.isRunning()) {
-      notification.info({
-        message: 'Simulation already running',
-        description: "You can't start a new simulation while another one is running.",
-      });
+  items.push(getItem(runStopButtonTitle, 'run', running ? <BorderOutlined /> : <PlaySquareOutlined />, undefined, () => {
+    if (running) {
+      // @ts-ignore
+      window.cancel = true
     } else {
       run()
       setPreferredView('view')

@@ -27,6 +27,7 @@
 #include "update.h"
 #include "compute_pe_atom.h"
 #include "compute_stress_atom.h"
+#include "exceptions.h"
 
 using namespace LAMMPS_NS;
 using namespace FixConst;
@@ -41,6 +42,7 @@ FixAtomify::FixAtomify(LAMMPS *lmp, int narg, char **arg)
     , ptr_caller(NULL)
     , build_neighborlist(false)
     , sync_frequency(10)
+    , m_cancel(false)
 {
 }
 
@@ -111,9 +113,13 @@ void FixAtomify::update_computes()
         }
     }
 }
-
+#include <iostream>
 void FixAtomify::end_of_step()
 {
+    if (m_cancel) {
+        error->all(FLERR, "Atomify::canceled");
+    }
+    
     step_count++;
     if(build_neighborlist) {
         neighbor->build_one(list);
@@ -127,6 +133,11 @@ void FixAtomify::end_of_step()
         // We won't sync anything, but will do a small sleep to not freeze UI
         (this->callback)(ptr_caller, 1000);
     }
+}
+
+void FixAtomify::cancel()
+{
+    m_cancel = true;
 }
 
 /* ---------------------------------------------------------------------- */

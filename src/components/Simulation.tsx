@@ -149,6 +149,13 @@ const Simulation = () => {
         setSimulationOrigo(origo)
         // @ts-ignore
         lammps.setSyncFrequency(window.syncFrequency)
+        // @ts-ignore
+        if (window.cancel) {
+          console.log("It is absolutely going to be canceled!")
+          lammps.cancel()
+          // @ts-ignore
+          window.cancel = false;
+        }
       }
     }
   }, [wasm, lammps, particles, bonds, setBonds, setParticles, setSimulationBox, setSimulationOrigo])
