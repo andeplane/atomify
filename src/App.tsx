@@ -5,7 +5,8 @@ import {
   InsertRowAboveOutlined,
   FileOutlined,
   PlaySquareOutlined,
-  BorderOutlined
+  BorderOutlined,
+  AlignLeftOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, Modal, Tabs, Progress } from 'antd';
@@ -14,6 +15,7 @@ import Simulation from './components/Simulation'
 import View from './containers/View'
 import Analyze from './containers/Analyze'
 import Edit from './containers/Edit'
+import Console from './containers/Console'
 import Examples from './containers/Examples'
 import { useStoreActions, useStoreState } from './hooks';
 
@@ -53,7 +55,8 @@ const App: React.FC = () => {
   const run = useStoreActions(actions => actions.simulation.run)
 
   const items: MenuItem[] = [
-    getItem('View', 'view', <BorderOuterOutlined />),
+    getItem('View', 'view', <AlignLeftOutlined />),
+    getItem('Console', 'console', <BorderOuterOutlined />),
     getItem('Analyze', 'analyze', <LineChartOutlined />),
     getItem('Edit', 'edit', <EditOutlined />, simulation ? simulation.files.map(file => {
       return getItem(file.fileName, 'file'+file.fileName, <FileOutlined />)
@@ -72,7 +75,7 @@ const App: React.FC = () => {
       setPreferredView('view')
     }
   }, simulation == null))
-
+  
   useEffect(() => {
     if (preferredView) {
       setSelectedMenu(preferredView)
@@ -124,6 +127,9 @@ const App: React.FC = () => {
         <Tabs activeKey={selectedMenu.startsWith("file") ? "editfile" : selectedMenu}  renderTabBar={() => (<></>)}>
           <Tabs.TabPane tab="View" key="view"> 
             <View visible={selectedMenu==='view'} />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Console" key="console"> 
+            <Console/>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Analyze" key="analyze">
             <Analyze />

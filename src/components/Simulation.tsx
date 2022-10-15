@@ -108,11 +108,14 @@ const Simulation = () => {
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
   const setSimulationBox = useStoreActions(actions => actions.simulation.setSimulationBox)
   const setSimulationOrigo = useStoreActions(actions => actions.simulation.setSimulationOrigo)
+  const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
+  
   
   const onPrint = useCallback( (text: string) => {
-    // setLammpsOutput(state => [...state, text])
+    //@ts-ignore
+    addLammpsOutput(text)
     console.log(text)
-  }, [])
+  }, [addLammpsOutput])
 
   useEffect(() => {
     window.onkeydown = (ev) => {

@@ -97,6 +97,7 @@ export interface SimulationModel {
   status?: Status
   preferredView?: string
   files: string[]
+  lammpsOutput: string[]
   selectedFile?: SimulationFile
   particles?: Particles
   bonds?: Bonds
@@ -107,6 +108,8 @@ export interface SimulationModel {
   cameraTarget?: THREE.Vector3
   atomTypes?: {[key: number]: AtomType}
   numAtoms?: number
+  resetLammpsOutput: Action<SimulationModel, void>
+  addLammpsOutput: Action<SimulationModel, string>
   setNumAtoms: Action<SimulationModel, number|undefined>
   setCameraPosition: Action<SimulationModel, THREE.Vector3|undefined>
   setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
@@ -136,6 +139,14 @@ export interface SimulationModel {
 export const simulationModel: SimulationModel = {
   running: false,
   files: [],
+  lammpsOutput: [],
+  resetLammpsOutput: action((state) => {
+    state.lammpsOutput = []
+  }),
+  addLammpsOutput: action((state, output: string) => {
+    state.lammpsOutput = [...state.lammpsOutput, output]
+    console.log("Output is now ", state.lammpsOutput.length)
+  }),
   setPreferredView: action((state, preferredView?: string) => {
     state.preferredView = preferredView
   }),
@@ -272,7 +283,8 @@ export const simulationModel: SimulationModel = {
     actions.setBonds(undefined)
     actions.setParticleColors(undefined)
     actions.setSimulation(simulation)
-    
+    actions.resetLammpsOutput()
+
     // @ts-ignore
     const wasm = getStoreState().simulation.wasm
     // @ts-ignore
