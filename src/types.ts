@@ -19,6 +19,8 @@ export type LammpsWeb = {
   computeBonds: () => number
   computeParticles: () => number
   numBonds: () => number
+  cancel: () => void
+  getExceptionMessage: (exceptionPtr: number) => string
   runFile: (path: string) => void
 }
 

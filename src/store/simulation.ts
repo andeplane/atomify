@@ -1,6 +1,7 @@
 import { action, Action, thunk, Thunk } from 'easy-peasy';
 import {LammpsWeb} from '../types'
 import {Particles, Bonds} from 'omovi'
+import {notification} from 'antd'
 import {AtomTypes, AtomType, hexToRgb} from '../utils/atomtypes'
 import * as THREE from 'three'
 
@@ -91,7 +92,7 @@ export interface Simulation {
 }
 
 export interface SimulationModel {
-  loading: boolean
+  running: boolean
   simulation?: Simulation
   status?: Status
   preferredView?: string
@@ -114,7 +115,7 @@ export interface SimulationModel {
   setParticleColors: Action<SimulationModel, THREE.Color[]|undefined>
   setSelectedFile: Action<SimulationModel, SimulationFile>
   setSimulation: Action<SimulationModel, Simulation>
-  setLoading: Action<SimulationModel, boolean>
+  setRunning: Action<SimulationModel, boolean>
   setParticles: Action<SimulationModel, Particles>
   setBonds: Action<SimulationModel, Bonds>
   updateParticles: Thunk<SimulationModel, Particles>
@@ -133,7 +134,7 @@ export interface SimulationModel {
 }
 
 export const simulationModel: SimulationModel = {
-  loading: false,
+  running: false,
   files: [],
   setPreferredView: action((state, preferredView?: string) => {
     state.preferredView = preferredView
@@ -171,8 +172,8 @@ export const simulationModel: SimulationModel = {
   setSimulation: action((state, simulation: Simulation) => {
     state.simulation = simulation
   }),
-  setLoading: action((state, loading: boolean) => {
-    state.loading = loading
+  setRunning: action((state, running: boolean) => {
+    state.running = running
   }),
   setFiles: action((state, files: string[]) => {
     state.files = files
@@ -237,19 +238,33 @@ export const simulationModel: SimulationModel = {
       return
     }
     // @ts-ignore
-    if (getStoreState().simulation.lammps.isRunning()) {
-      // We can't run while it is running
+    const lammps = getStoreState().simulation.lammps as LammpsWeb
+    if (!lammps || lammps.isRunning()) {
       return
     }
-    // @ts-ignore
-    getStoreState().simulation.lammps?.start()
-    // @ts-ignore
-    getStoreState().simulation.lammps?.runFile(`/${simulation.id}/${simulation.inputScript}`)
+    
+    lammps.start()
+    try {
+      actions.setRunning(true)
+      await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
+    } catch(e) {
+      console.log("Exception: ", e)
+      // @ts-ignore
+      const errorMessage = lammps.getExceptionMessage(e);
+      if (errorMessage.includes("Atomify::canceled")) {
+        // Simulation got canceled.
+      } else {
+        notification.error({
+          message: errorMessage,
+          duration: 5
+        })
+      }
+      actions.setRunning(false)
+    }
   }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
     // @ts-ignore
     window.simulation = simulation
-    actions.setLoading(true)
     actions.setNumAtoms(undefined)
     actions.setSimulationBox(undefined)
     actions.setSimulationOrigo(undefined)
@@ -345,7 +360,6 @@ export const simulationModel: SimulationModel = {
       const inputScriptFile = simulation.files.filter(file => file.fileName==simulation.inputScript)[0]
       actions.setSelectedFile(inputScriptFile)
     }
-    actions.setLoading(false)
   }),
   reset: action((state) => {
     state.files = []

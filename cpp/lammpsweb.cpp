@@ -34,6 +34,7 @@ public:
   int m_particlesCapacity;
   int m_numBonds;
   bool m_buildNeighborlist;
+  std::string getExceptionMessage(intptr_t exceptionPtr);
   long getBondsDistanceMapPointer();
   long getPositionsPointer();
   long getIdPointer();
@@ -488,6 +489,10 @@ int LAMMPSWeb::numAtoms()
   return lammps_get_natoms((void *)lmp);
 }
 
+std::string LAMMPSWeb::getExceptionMessage(intptr_t exceptionPtr) {
+  return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what());
+}
+
 // Binding code
 EMSCRIPTEN_BINDINGS(LAMMPSWeb)
 {
@@ -512,6 +517,8 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("setBuildNeighborlist", &LAMMPSWeb::setBuildNeighborlist)
       .function("getBondsPosition1", &LAMMPSWeb::getBondsPosition1)
       .function("getBondsPosition2", &LAMMPSWeb::getBondsPosition2)
+      .function("getExceptionMessage", &LAMMPSWeb::getExceptionMessage)
+      .function("cancel", &LAMMPSWeb::cancel)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
 }
 #endif
