@@ -15,7 +15,6 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
   if (!bonds || bonds.capacity < numBonds) {
     let newCapacity = numBonds
     if (bonds) {
-      newCapacity = Math.max(numBonds, 2 * bonds.capacity)
       bonds.dispose()
     }
 
@@ -43,7 +42,6 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
   newBonds.count = numBonds
   if (newBonds.mesh) {
     newBonds.mesh.count = numBonds
-    newBonds.geometry.setDrawRange(0, numBonds)
   }
 
   return newBonds
