@@ -124,7 +124,7 @@ export interface SimulationModel {
   setStatus: Action<SimulationModel, Status|undefined>
   setLammps: Action<SimulationModel, LammpsWeb>
   setWasm: Action<SimulationModel, any>
-  syncFiles: Action<SimulationModel, string|undefined>
+  syncFiles: Thunk<SimulationModel, string|undefined>
   run: Thunk<SimulationModel>
   newSimulation: Thunk<SimulationModel, Simulation>
   wasm?: any
@@ -214,14 +214,18 @@ export const simulationModel: SimulationModel = {
   setStatus: action((state, status?: Status) => {
     state.status = status
   }),
-  syncFiles: action((state, fileName?: string) => {
-    if (!state.simulation) {
+  syncFiles: thunk(async (actions, fileName: string|undefined, {getStoreState}) => {
+    //@ts-ignore
+    const simulation = getStoreState().simulation.simulation as Simulation
+    if (!simulation) {
       return
     }
-    for (const file of state.simulation.files) {
+    // @ts-ignore
+    const wasm = getStoreState().simulation.wasm
+    for (const file of simulation.files) {
       // Update all files if no fileName is specified
       if (file.fileName === fileName || !fileName) {
-        state.wasm.FS.writeFile(`/${state.simulation.id}/${file.fileName}`, file.content)
+        wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content)
         console.log("Synced file ", file.fileName)
       }
     }
@@ -326,13 +330,11 @@ export const simulationModel: SimulationModel = {
           }
         }
       })
-      console.log("Setting atom types", newAtomTypes)
       actions.setAtomTypes(newAtomTypes)
     }
 
     const inputScriptFile = simulation.files.filter(file => file.fileName===simulation.inputScript)[0]
     extractAtomifyCommands(inputScriptFile?.content)
-    
     actions.syncFiles(undefined)
     actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)
