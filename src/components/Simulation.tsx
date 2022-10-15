@@ -15,7 +15,6 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
   if (!bonds || bonds.capacity < numBonds) {
     let newCapacity = numBonds
     if (bonds) {
-      newCapacity = Math.max(numBonds, 2 * bonds.capacity)
       bonds.dispose()
     }
 
@@ -26,6 +25,10 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
   
   if (numBonds === 0) {
     newBonds.count = 0
+    if (newBonds.mesh) {
+      newBonds.mesh.count = numBonds
+      newBonds.geometry.setDrawRange(0, 0)
+    }
     return newBonds
   }
 
@@ -37,6 +40,10 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
   newBonds.positions2.set(positions2Subarray)
   
   newBonds.count = numBonds
+  if (newBonds.mesh) {
+    newBonds.mesh.count = numBonds
+  }
+
   return newBonds
 }
 
@@ -65,6 +72,12 @@ const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles) => {
   newParticles.types.set(typeSubarray)
   newParticles.indices.set(idSubarray)
   newParticles.count = numParticles
+  
+  if (newParticles.mesh) {
+    newParticles.mesh.count = numParticles
+    newParticles.geometry.setDrawRange(0, numParticles)
+  }
+
   return newParticles
 }
 
@@ -103,19 +116,31 @@ const Simulation = () => {
   }, [])
 
   useEffect(() => {
+    window.onkeydown = (ev) => {
+      const value = parseInt(ev.key)
+      if (value > 0) {
+        //@ts-ignore
+        window.syncFrequency = value
+      }
+      if (ev.key === " ") {
+        //@ts-ignore
+        window.lammps.step()
+      }
+    }
+
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm) {
-        let newBonds = getBonds(lammps, wasm, bonds)
-        newBonds.markNeedsUpdate()
-        if (newBonds !== bonds) {
-          setBonds(newBonds)
-        }
-
         let newParticles = getPositions(lammps, wasm, particles)
         newParticles.markNeedsUpdate()
         if (newParticles !== particles) {
           setParticles(newParticles)
+        }
+
+        let newBonds = getBonds(lammps, wasm, bonds)
+        newBonds.markNeedsUpdate()
+        if (newBonds !== bonds) {
+          setBonds(newBonds)
         }
 
         const simulationBox = getSimulationBox(lammps, wasm)

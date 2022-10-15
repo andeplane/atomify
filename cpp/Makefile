@@ -5,19 +5,22 @@ LAMMPS_SOURCE := $(wildcard lammps/src/*.cpp)
 LAMMPS_SOURCE := $(filter-out lammps/src/main.cpp, $(LAMMPS_SOURCE))
 LAMMPS_OBJ_FILES := $(addprefix obj/,$(notdir $(LAMMPS_SOURCE:.cpp=.o)))
 
-LD_FLAGS := -O2 --pre-js locateFile.js --no-entry 
-CC_FLAGS := -O2 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL # -DNDEBUG
+#LD_FLAGS := -O1 --pre-js locateFile.js --no-entry -gsource-map --source-map-base="http://localhost:3000/atomify/"
+#CC_FLAGS := -O0 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -gsource-map # -DNDEBUG
+LD_FLAGS := -O2 --pre-js locateFile.js --no-entry -lembind
+CC_FLAGS := -O2 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL
 INCLUDE_FLAGS := -Ilammps/src
-SYMBOLS := --bind -s ENVIRONMENT='web' \
+SYMBOLS :=        -s ENVIRONMENT='web' \
                   -s NO_DISABLE_EXCEPTION_CATCHING \
 									-s ALLOW_MEMORY_GROWTH=1 \
-									-s ERROR_ON_UNDEFINED_SYMBOLS=0 \
 									-s ASYNCIFY \
 									-s MODULARIZE=1 \
 									-s EXPORTED_RUNTIME_METHODS="['getValue', 'FS']" \
 									-s EXPORT_NAME='createModule' \
 									-s USE_ES6_IMPORT_META=0 \
 									-s FORCE_FILESYSTEM=1
+									# -s SAFE_HEAP=1 \
+									# -s STACK_OVERFLOW_CHECK=1
 									# -s ASSERTIONS=1 
 
 default: wasm
@@ -30,7 +33,7 @@ obj:
 	mkdir -p obj
 
 obj/%.o: lammps/src/%.cpp
-	$(CXX) $(SYMBOLS) $(CC_FLAGS) $(INCLUDE_FLAGS) -c -o $@ $<
+	$(CXX) $(CC_FLAGS) $(INCLUDE_FLAGS) -c -o $@ $<
 
 clean:
 	rm lammps.mjs; rm lammps.wasm; rm obj/*

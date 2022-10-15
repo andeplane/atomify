@@ -133,11 +133,11 @@ void FixAtomify::end_of_step()
 
 void FixAtomify::min_post_force(int vflag)
 {
-    if(build_neighborlist) {
-        neighbor->build_one(list);
-    }
-    lost_atoms();
-    (this->callback)(ptr_caller,MIN_POST_FORCE);
+    // if(build_neighborlist) {
+    //     neighbor->build_one(list);
+    // }
+    // lost_atoms();
+    // (this->callback)(ptr_caller,MIN_POST_FORCE);
 }
 
 /* ---------------------------------------------------------------------- */
