@@ -357,7 +357,7 @@ export const simulationModel: SimulationModel = {
     if (simulation.start) {
       actions.run()
     } else {
-      const inputScriptFile = simulation.files.filter(file => file.fileName==simulation.inputScript)[0]
+      const inputScriptFile = simulation.files.filter(file => file.fileName  === simulation.inputScript)[0]
       actions.setSelectedFile(inputScriptFile)
     }
   }),
