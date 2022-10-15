@@ -131,16 +131,16 @@ const Simulation = () => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm) {
-        let newBonds = getBonds(lammps, wasm, bonds)
-        newBonds.markNeedsUpdate()
-        if (newBonds !== bonds) {
-          setBonds(newBonds)
-        }
-
         let newParticles = getPositions(lammps, wasm, particles)
         newParticles.markNeedsUpdate()
         if (newParticles !== particles) {
           setParticles(newParticles)
+        }
+
+        let newBonds = getBonds(lammps, wasm, bonds)
+        newBonds.markNeedsUpdate()
+        if (newBonds !== bonds) {
+          setBonds(newBonds)
         }
 
         const simulationBox = getSimulationBox(lammps, wasm)
