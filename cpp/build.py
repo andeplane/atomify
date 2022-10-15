@@ -2,7 +2,7 @@ import os
 import subprocess
 import shutil
 
-def copy_files(include_lammpsweb=True):
+def copy_files(include_lammpsweb=True, include_moltemplate=True):
   if include_lammpsweb:
     shutil.copyfile("lammpsweb.cpp", "lammps/src/lammpsweb.cpp")
   shutil.copyfile("mpi.cpp", "lammps/src/mpi.cpp")
@@ -11,12 +11,13 @@ def copy_files(include_lammpsweb=True):
   shutil.copyfile("lammps/src/STUBS/mpi.h", "lammps/src/mpi.h")
   shutil.copyfile("lammps.patch", "lammps/src/lammps.patch")
   shutil.copyfile("lammps/src/STUBS/mpi.h", "lammps/src/mpi.h")
-  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_charmm_coul_charmm_inter.cpp", "lammps/src/pair_lj_charmm_coul_charmm_inter.cpp")
-  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_charmm_coul_charmm_inter.h", "lammps/src/pair_lj_charmm_coul_charmm_inter.h")
-  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_remix.cpp", "lammps/src/pair_lj_remix.cpp")
-  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_remix.h", "lammps/src/pair_lj_remix.h")
-  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_softcore2.cpp", "lammps/src/pair_lj_softcore2.cpp")
-  shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_softcore2.h", "lammps/src/pair_lj_softcore2.h")
+  if include_moltemplate:
+    shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_charmm_coul_charmm_inter.cpp", "lammps/src/pair_lj_charmm_coul_charmm_inter.cpp")
+    shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_charmm_coul_charmm_inter.h", "lammps/src/pair_lj_charmm_coul_charmm_inter.h")
+    shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_remix.cpp", "lammps/src/pair_lj_remix.cpp")
+    shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_remix.h", "lammps/src/pair_lj_remix.h")
+    shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_softcore2.cpp", "lammps/src/pair_lj_softcore2.cpp")
+    shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_softcore2.h", "lammps/src/pair_lj_softcore2.h")
   
 if not os.path.exists('lammps'):
   # First clone lammps
