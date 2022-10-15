@@ -100,9 +100,7 @@ LAMMPSWeb::LAMMPSWeb() :
   m_particlesPosition(nullptr),
   m_bondsDistanceMap(new float[100 * 100])
 {
-  for (int i = 0; i < 100000; i++) {
-    m_bondsDistanceMap[i] = 0;
-  }
+  
 }
 
 LAMMPSWeb::~LAMMPSWeb()
@@ -227,18 +225,19 @@ void LAMMPSWeb::computeBondsFromNeighborlist() {
   if(!fixAtomify) {
       return;
   }
+  bool fixWillBuildNeighborlist = fixAtomify->build_neighborlist;
   fixAtomify->build_neighborlist = m_buildNeighborlist;
-  if(!m_buildNeighborlist) {
+  if(!m_buildNeighborlist || !fixWillBuildNeighborlist) {
       return;
   }
 
   LAMMPS_NS::Domain *domain = lmp->domain;
+  domain->box_corners();
   LAMMPS_NS::Atom *atom = lmp->atom;
   LAMMPS_NS::NeighList *list = fixAtomify->list;
   const int inum = list->inum;
   int *numneigh = list->numneigh;
   int **firstneigh = list->firstneigh;
-  
   for(int i=0; i<atom->natoms; i++) {
     double position1[3];
     position1[0] = atom->x[i][0];
@@ -403,7 +402,6 @@ long LAMMPSWeb::getTypePointer()
 
 void LAMMPSWeb::start()
 {
-  std::cout << "Will start LAMMPS session" << std::endl;
   if(lmp) {
       stop();
   }
