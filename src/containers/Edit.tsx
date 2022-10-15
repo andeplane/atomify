@@ -16,12 +16,12 @@ const Edit = () => {
 
   const onEditorChange = useCallback( (newValue: string, e: any) => {
     // console.log('onChange', newValue, e);
-    const file = simulation?.files.filter(file => file.fileName == selectedFile?.fileName)[0]
+    const file = simulation?.files.filter(file => file.fileName === selectedFile?.fileName)[0]
     if (file) {
       file.content=newValue
       syncFiles(file.fileName)
     }
-  }, [])
+  }, [selectedFile?.fileName, simulation?.files, syncFiles])
 
   if (!selectedFile) {
     return (<>No file selected</>)

@@ -1,14 +1,14 @@
 import { useEffect, useState, useRef } from 'react'
-import { useStoreState, useStoreActions } from '../hooks';
-import {OMOVIVisualizer, Particles, Bonds, Visualizer} from 'omovi'
+import { useStoreState } from '../hooks';
+import {Particles, Bonds, Visualizer} from 'omovi'
 
 interface ViewProps {
   visible: boolean
 }
 const View = ({visible}: ViewProps) => {
   const [loading, setLoading] = useState(false)
-  const simulationBox = useStoreState(state => state.simulation.simulationBox)
-  const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
+  // const simulationBox = useStoreState(state => state.simulation.simulationBox)
+  // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(state => state.simulation.cameraPosition)
   const cameraTarget = useStoreState(state => state.simulation.cameraTarget)
   const particles = useStoreState(state => state.simulation.particles)
@@ -51,7 +51,7 @@ const View = ({visible}: ViewProps) => {
   useEffect(() => {
     prevColorsRef.current = particleColors
   })
-  const prevColors = prevColorsRef.current
+  // const prevColors = prevColorsRef.current
 
   useEffect(() => {
     if (visualizer) {
@@ -109,7 +109,7 @@ const View = ({visible}: ViewProps) => {
         visualizer.dispose()
       }
     }
-  }, [])
+  })
 
   return (
     <div style={{ height: '100%', width: '100%' }}>
