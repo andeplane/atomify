@@ -6,7 +6,7 @@ const Console = () => {
   const lammpsOutput = useStoreState(state => state.simulation.lammpsOutput)
   const options = {
     selectOnLineNumbers: true,
-    domReadOnly: true
+    readOnly: true
   };
   return (
     <MonacoEditor
