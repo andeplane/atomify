@@ -124,7 +124,7 @@ const Simulation = () => {
       }
       if (ev.key === " ") {
         //@ts-ignore
-        window.lammps.step()
+        // window.lammps.step()
       }
     }
 
