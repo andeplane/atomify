@@ -145,7 +145,6 @@ export const simulationModel: SimulationModel = {
   }),
   addLammpsOutput: action((state, output: string) => {
     state.lammpsOutput = [...state.lammpsOutput, output]
-    console.log("Output is now ", state.lammpsOutput.length)
   }),
   setPreferredView: action((state, preferredView?: string) => {
     state.preferredView = preferredView
