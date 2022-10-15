@@ -8,7 +8,7 @@ import {
   BorderOutlined
 } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
-import { Layout, Menu, Modal, Tabs, Progress } from 'antd';
+import { Breadcrumb, Layout, Menu, Modal, Button, Tooltip, Tabs, Progress, notification } from 'antd';
 import React, { useState, useEffect, useCallback } from 'react';
 import Simulation from './components/Simulation'
 import View from './containers/View'
@@ -17,7 +17,7 @@ import Edit from './containers/Edit'
 import Examples from './containers/Examples'
 import { useStoreActions, useStoreState } from './hooks';
 
-const { Content, Sider } = Layout;
+const { Header, Content, Footer, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -43,6 +43,7 @@ const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<string>("examples")
   const wasm = useStoreState(state => state.simulation.wasm)
+  const lammps = useStoreState(state => state.simulation.lammps)
   const running = useStoreState(state => state.simulation.running)
   const status = useStoreState(state => state.simulation.status)
   const simulation = useStoreState(state => state.simulation.simulation)
@@ -96,7 +97,7 @@ const App: React.FC = () => {
       // Oh god this is ugly
       const fileName = selected.substring(4)
       const files = simulation?.files
-      const selectedFile = files?.filter(file => file.fileName===fileName)[0]
+      const selectedFile = files?.filter(file => file.fileName==fileName)[0]
 
       if (selectedFile) {
         setSelectedFile(selectedFile)

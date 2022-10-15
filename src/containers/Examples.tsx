@@ -17,7 +17,8 @@ interface Example {
 
 const Examples = () => {
   const [examples, setExamples] = useState<Example[]>([])
-  
+  const [loading, setLoading] = useState(false)
+
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
   const simulation = useStoreState(state => state.simulation.simulation)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
@@ -48,7 +49,7 @@ const Examples = () => {
       setNewSimulation(newSimulation)
       setPreferredView('view')
     }
-  }, [lammps, setNewSimulation, setPreferredView])
+  }, [examples])
 
   const onEdit = useCallback((example: Example) => {
     const newSimulation: Simulation = {
@@ -57,12 +58,12 @@ const Examples = () => {
       inputScript: example.inputScript,
       start: false
     }
-    if (simulation?.id !== newSimulation.id) {
+    if (simulation?.id != newSimulation.id) {
       setNewSimulation(newSimulation)
     } else {
       setPreferredView('file'+newSimulation.inputScript)
     }
-  }, [setNewSimulation, setPreferredView, simulation?.id])
+  }, [examples])
 
   const renderCard = (example: Example) => (
     <Card
@@ -116,7 +117,7 @@ const Examples = () => {
     <div style={{padding: 10, margin: 10}}>
     {/* {Object.values(examples).map(renderCard)} */}
     {chunks.map(renderChunk)}
-    {examples.length === 0 && <Skeleton active/>}
+    {examples.length == 0 && <Skeleton active/>}
     </div>
     </>)
 }

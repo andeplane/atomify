@@ -189,7 +189,7 @@ const Simulation = () => {
         setStatus(undefined)
       });
     },
-    [setWasm, onPrint, setLammps, setStatus]
+    [setWasm, onPrint]
   );
   return (<></>)
 }
