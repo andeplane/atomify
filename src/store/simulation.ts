@@ -254,21 +254,21 @@ export const simulationModel: SimulationModel = {
     }
     
     lammps.start()
-    try {
-      actions.setRunning(true)
-      await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
-    } catch(e) {
-      console.log("Exception: ", e)
-      // @ts-ignore
-      const errorMessage = lammps.getExceptionMessage(e);
+    actions.setRunning(true)
+    await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
+    const errorMessage = lammps.getErrorMessage()
+    if (errorMessage) {
       if (errorMessage.includes("Atomify::canceled")) {
         // Simulation got canceled.
+        actions.setRunning(false)
       } else {
         notification.error({
           message: errorMessage,
           duration: 5
         })
+        actions.setRunning(false)
       }
+    } else {
       actions.setRunning(false)
     }
   }),

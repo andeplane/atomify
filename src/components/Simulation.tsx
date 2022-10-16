@@ -164,7 +164,6 @@ const Simulation = () => {
         lammps.setSyncFrequency(window.syncFrequency)
         // @ts-ignore
         if (window.cancel) {
-          console.log("It is absolutely going to be canceled!")
           lammps.cancel()
           // @ts-ignore
           window.cancel = false;

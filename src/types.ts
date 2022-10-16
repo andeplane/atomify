@@ -21,6 +21,7 @@ export type LammpsWeb = {
   numBonds: () => number
   cancel: () => void
   getExceptionMessage: (exceptionPtr: number) => string
+  getErrorMessage: () => string
   runFile: (path: string) => void
 }
 

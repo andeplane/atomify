@@ -6,6 +6,7 @@
 #include "force.h"
 #include "update.h"
 #include "modify.h"
+#include "error.h"
 #include "neigh_list.h"
 #include "fix_atomify.h"
 #define __EMSCRIPTEN__
@@ -17,6 +18,15 @@ using namespace std;
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 using namespace emscripten;
+
+class TestException : public std::exception {
+ public:
+  std::string message;
+
+  TestException(const std::string &msg) : message(msg) {}
+
+  const char *what() const noexcept override { return message.c_str(); }
+};
 
 class LAMMPSWeb
 {
@@ -53,6 +63,8 @@ public:
   void step();
   void start();
   void stop();
+  void testException();
+  std::string getErrorMessage();
   void runFile(std::string path);
   double getX(int n);
   double getY(int n);
@@ -107,6 +119,23 @@ LAMMPSWeb::LAMMPSWeb() :
 LAMMPSWeb::~LAMMPSWeb()
 {
   stop();
+}
+
+void LAMMPSWeb::testException()
+{
+  try {
+    std::cout << "Testing exceptions ... " << std::endl;
+    throw TestException("An exception");
+  } catch(TestException &ae) {
+    std::cout << "Got this exception" << std::endl;
+  }
+}
+
+std::string LAMMPSWeb::getErrorMessage() {
+  if (!lmp) {
+    return "";
+  }
+  return lmp->error->get_last_error();
 }
 
 void LAMMPSWeb::cancel() {
@@ -520,6 +549,8 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("getBondsPosition1", &LAMMPSWeb::getBondsPosition1)
       .function("getBondsPosition2", &LAMMPSWeb::getBondsPosition2)
       .function("getExceptionMessage", &LAMMPSWeb::getExceptionMessage)
+      .function("testException", &LAMMPSWeb::testException)
+      .function("getErrorMessage", &LAMMPSWeb::getErrorMessage)
       .function("cancel", &LAMMPSWeb::cancel)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
 
