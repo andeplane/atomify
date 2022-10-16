@@ -11,7 +11,7 @@ import {
 import { useMeasure } from 'react-use';
 import React, { useState, useEffect, useCallback } from 'react';
 import type { MenuProps } from 'antd';
-import { Layout, Menu, Modal, Tabs, Progress } from 'antd';
+import { Layout, Menu, Modal, Tabs, Progress, Button } from 'antd';
 import Simulation from './components/Simulation'
 import View from './containers/View'
 import Analyze from './containers/Analyze'
@@ -48,12 +48,14 @@ const App: React.FC = () => {
   const [selectedMenu, setSelectedMenu] = useState<string>("examples")
   const wasm = useStoreState(state => state.simulation.wasm)
   const running = useStoreState(state => state.simulation.running)
+  const showConsole = useStoreState(state => state.simulation.showConsole)
   const status = useStoreState(state => state.simulation.status)
   const simulation = useStoreState(state => state.simulation.simulation)
   const selectedFile = useStoreState(state => state.simulation.selectedFile)
   const setSelectedFile = useStoreActions(actions => actions.simulation.setSelectedFile)
   const preferredView = useStoreState(state => state.simulation.preferredView)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
+  const setShowConsole = useStoreActions(actions => actions.simulation.setShowConsole)
   const run = useStoreActions(actions => actions.simulation.run)
   
   useEffect(() => {
@@ -151,6 +153,11 @@ const App: React.FC = () => {
             <Examples />
           </Tabs.TabPane>
         </Tabs>
+          {showConsole && <Modal className='console-modal' bodyStyle={{backgroundColor: '#1E1E1E'}} width={'80%'} footer={[
+            <Button key="close" onClick={() => setShowConsole(false)}>
+            Close
+          </Button>
+          ]} closable={false} open onCancel={() => setShowConsole(false)}><Console width={'95vh'} height={'70vh'}/></Modal>}
           {<Modal closable={false} title={status?.title} open={status != null || wasm == null} footer={null}>
             {status?.text}
             <Progress

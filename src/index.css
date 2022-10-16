@@ -69,3 +69,7 @@ html, body, #root, .App {
 	color: #fff;
   margin-left: 2vh;
 }
+
+.console-modal .ant-modal-footer {
+  background-color: #1E1E1E !important
+}

@@ -2,7 +2,15 @@ import MonacoEditor from 'react-monaco-editor'
 import {useEffect, useRef} from 'react'
 import { useStoreState } from '../hooks';
 
-const Console = () => {
+interface ConsoleProps {
+  width?: number|string
+  height?: number|string
+}
+const Console = ({width, height}: ConsoleProps) => {
+  if (!height) {
+    height = '100vh'
+  }
+
   const lammpsOutput = useStoreState(state => state.simulation.lammpsOutput)
   const editorRef = useRef<any>(null)
   const options = {
@@ -18,7 +26,8 @@ const Console = () => {
 
   return (
     <MonacoEditor
-      height="100vh"
+      width={width}
+      height={height}
       language="javascript"
       theme="vs-dark"
       value={lammpsOutput.join("\n")}

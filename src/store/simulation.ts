@@ -93,6 +93,7 @@ export interface Simulation {
 
 export interface SimulationModel {
   running: boolean
+  showConsole: boolean
   simulation?: Simulation
   status?: Status
   preferredView?: string
@@ -111,6 +112,7 @@ export interface SimulationModel {
   resetLammpsOutput: Action<SimulationModel, void>
   addLammpsOutput: Action<SimulationModel, string>
   setNumAtoms: Action<SimulationModel, number|undefined>
+  setShowConsole: Action<SimulationModel, boolean>
   setCameraPosition: Action<SimulationModel, THREE.Vector3|undefined>
   setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
   setAtomTypes: Action<SimulationModel, {[key: number]: AtomType}|undefined>
@@ -138,6 +140,7 @@ export interface SimulationModel {
 
 export const simulationModel: SimulationModel = {
   running: false,
+  showConsole: false,
   files: [],
   lammpsOutput: [],
   resetLammpsOutput: action((state) => {
@@ -157,6 +160,9 @@ export const simulationModel: SimulationModel = {
   }),
   setSelectedFile: action((state, selectedFile?: SimulationFile) => {
     state.selectedFile = selectedFile
+  }),
+  setShowConsole: action((state, showConsole: boolean) => {
+    state.showConsole = showConsole
   }),
   setSimulationBox: action((state, simulationBox: THREE.Matrix3) => {
     state.simulationBox = simulationBox
@@ -261,21 +267,25 @@ export const simulationModel: SimulationModel = {
       if (errorMessage.includes("Atomify::canceled")) {
         // Simulation got canceled.
         actions.setRunning(false)
+        actions.setShowConsole(true)
       } else {
         notification.error({
           message: errorMessage,
           duration: 5
         })
         actions.setRunning(false)
+        actions.setShowConsole(true)
       }
     } else {
       actions.setRunning(false)
+      actions.setShowConsole(true)
     }
   }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
     // @ts-ignore
     window.simulation = simulation
     actions.setNumAtoms(undefined)
+    actions.setShowConsole(false)
     actions.setSimulationBox(undefined)
     actions.setSimulationOrigo(undefined)
     actions.setParticles(undefined)
