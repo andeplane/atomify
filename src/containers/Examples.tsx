@@ -4,6 +4,7 @@ import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Card, Layout, Skeleton, Row, Col, notification } from 'antd';
+import mixpanel from 'mixpanel-browser';
 
 const { Header } = Layout;
 const { Meta } = Card;
@@ -34,6 +35,7 @@ const Examples = () => {
   }, [])
 
   const onPlay = useCallback((example: Example) => {
+    mixpanel.track('Example.Run', {simulationId: example.id})
     const newSimulation: Simulation = {
       files: example.files,
       id: example.id,
@@ -52,6 +54,7 @@ const Examples = () => {
   }, [lammps, setNewSimulation, setPreferredView])
 
   const onEdit = useCallback((example: Example) => {
+    mixpanel.track('Example.Edit', {simulationId: example.id})
     const newSimulation: Simulation = {
       files: example.files,
       id: example.id,
