@@ -17,7 +17,7 @@ monaco.languages.setMonarchTokensProvider('lammps', {
   ],
 
   // we include these common regular expressions
-  symbols:  /[=><!~?:&|+\-*\/\^%]+/,
+  symbols:  /[=><!~?:&|+\-*/^%]+/,
 
   // C# style strings
   escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
@@ -35,7 +35,7 @@ monaco.languages.setMonarchTokensProvider('lammps', {
       { include: '@whitespace' },
 
       // delimiters and operators
-      [/[{}()\[\]]/, '@brackets'],
+      [/[{}()[\]]/, '@brackets'],
       [/[<>](?!@symbols)/, '@brackets'],
       [/@symbols/, { cases: { '@operators': 'operator',
                               '@default'  : '' } } ],
@@ -45,7 +45,7 @@ monaco.languages.setMonarchTokensProvider('lammps', {
       // Note: message are supressed during the first load -- change some lines to see them.
       
       // numbers
-      [/\d*\.\d+([eE][\-+]?\d+)?/, 'number.float'],
+      [/\d*\.\d+([eE][-+]?\d+)?/, 'number.float'],
       [/0[xX][0-9a-fA-F]+/, 'number.hex'],
       [/\d+/, 'number'],
 
@@ -63,10 +63,10 @@ monaco.languages.setMonarchTokensProvider('lammps', {
     ],
 
     comment: [
-      [/[^\/*]+/, 'comment' ],
+      [/[^/*]+/, 'comment' ],
       [/\/\*/,    'comment', '@push' ],    // nested comment
       ["\\*/",    'comment', '@pop'  ],
-      [/[\/*]/,   'comment' ],
+      [/[/*]/,   'comment' ],
       [/^#/,   'comment' ]
     ],
 

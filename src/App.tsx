@@ -8,9 +8,10 @@ import {
   BorderOutlined,
   AlignLeftOutlined
 } from '@ant-design/icons';
+import { useMeasure } from 'react-use';
+import React, { useState, useEffect, useCallback } from 'react';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, Modal, Tabs, Progress } from 'antd';
-import React, { useState, useEffect, useCallback } from 'react';
 import Simulation from './components/Simulation'
 import View from './containers/View'
 import Analyze from './containers/Analyze'
@@ -42,6 +43,7 @@ function getItem(
 }
 
 const App: React.FC = () => {
+  const [myRef, { width }] = useMeasure<HTMLDivElement>();
   const [collapsed, setCollapsed] = useState(false);
   const [selectedMenu, setSelectedMenu] = useState<string>("examples")
   const wasm = useStoreState(state => state.simulation.wasm)
@@ -53,6 +55,14 @@ const App: React.FC = () => {
   const preferredView = useStoreState(state => state.simulation.preferredView)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   const run = useStoreActions(actions => actions.simulation.run)
+  
+  useEffect(() => {
+    if (width < 1000) {
+      setCollapsed(true)
+    } else {
+      setCollapsed(false)
+    }
+  }, [width])
 
   const items: MenuItem[] = [
     getItem('View', 'view', <AlignLeftOutlined />),
@@ -109,8 +119,8 @@ const App: React.FC = () => {
   }, [simulation, setSelectedFile])
   
   return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={value => setCollapsed(value)}>
+    <Layout style={{ minHeight: '100vh' }} ref={myRef}>
+      <Sider width={300} collapsible collapsedWidth={50} collapsed={collapsed} onCollapse={value => setCollapsed(value)}>
         <div className="logo" />
         <Menu theme="dark" 
           selectedKeys={[selectedMenu]} 
