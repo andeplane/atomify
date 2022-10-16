@@ -157,7 +157,7 @@ const App: React.FC = () => {
             <Button key="close" onClick={() => setShowConsole(false)}>
             Close
           </Button>
-          ]} closable={false} open onCancel={() => setShowConsole(false)}><Console width={'95vh'} height={'70vh'}/></Modal>}
+          ]} closable={false} open onCancel={() => setShowConsole(false)}><Console width={'100%'} height={'70vh'}/></Modal>}
           {<Modal closable={false} title={status?.title} open={status != null || wasm == null} footer={null}>
             {status?.text}
             <Progress
