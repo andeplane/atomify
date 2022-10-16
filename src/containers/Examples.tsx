@@ -1,4 +1,5 @@
 import {useCallback, useState, useEffect} from 'react'
+import { useMeasure } from 'react-use';
 import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
@@ -17,7 +18,7 @@ interface Example {
 
 const Examples = () => {
   const [examples, setExamples] = useState<Example[]>([])
-  
+  const [myRef, { width }] = useMeasure<HTMLDivElement>();
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
   const simulation = useStoreState(state => state.simulation.simulation)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
@@ -87,9 +88,9 @@ const Examples = () => {
   )
 
   const renderChunk = (chunk: Example[], index: number) => (
-    <Row key={index.toString()} gutter={8}>
+    <Row key={index.toString()} gutter={8} justify="space-between">
       {chunk.map((example, index2) => (
-        <Col key={index.toString()+index2.toString()}className="gutter-row" span={5}>
+        <Col key={index.toString()+index2.toString()} className="gutter-row" span={5} style={{marginTop: 10}}>
           {renderCard(example)}
         </Col>
       ))}
@@ -106,14 +107,15 @@ const Examples = () => {
     return chunks
   }
 
-  const chunks = chunkIt(examples, 4)
+  const numChunks = Math.min(Math.max(1, Math.floor(width / 300)), 4)
+  const chunks = chunkIt(examples, numChunks)
 
   return (
     <>
     <Header className="site-layout-background" style={{ fontSize: 25 }}>
       Examples
     </Header>
-    <div style={{padding: 10, margin: 10}}>
+    <div style={{padding: 10, margin: 10}} ref={myRef}>
     {/* {Object.values(examples).map(renderCard)} */}
     {chunks.map(renderChunk)}
     {examples.length === 0 && <Skeleton active/>}
