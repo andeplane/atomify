@@ -3,6 +3,7 @@ import {LammpsWeb} from '../types'
 import {Particles, Bonds} from 'omovi'
 import {notification} from 'antd'
 import {AtomTypes, AtomType, hexToRgb} from '../utils/atomtypes'
+import mixpanel from 'mixpanel-browser';
 import * as THREE from 'three'
 
 const defaultAtomTypes: {[key:string]: AtomType} = {
@@ -261,6 +262,8 @@ export const simulationModel: SimulationModel = {
     
     lammps.start()
     actions.setRunning(true)
+    mixpanel.time_event('Simulation.Run');
+    
     await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
     const errorMessage = lammps.getErrorMessage()
     if (errorMessage) {
@@ -268,6 +271,7 @@ export const simulationModel: SimulationModel = {
         // Simulation got canceled.
         actions.setRunning(false)
         actions.setShowConsole(true)
+        mixpanel.track('Simulation.Run', {simulationId: simulation?.id, canceled: true, numAtoms: lammps.numAtoms()})
       } else {
         notification.error({
           message: errorMessage,
@@ -275,10 +279,12 @@ export const simulationModel: SimulationModel = {
         })
         actions.setRunning(false)
         actions.setShowConsole(true)
+        mixpanel.track('Simulation.Run', {simulationId: simulation?.id, failed: true, errorMessage, numAtoms: lammps.numAtoms()})
       }
     } else {
       actions.setRunning(false)
       actions.setShowConsole(true)
+      mixpanel.track('Simulation.Run', {simulationId: simulation?.id, completed: true, numAtoms: lammps.numAtoms()})
     }
   }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
@@ -381,6 +387,7 @@ export const simulationModel: SimulationModel = {
       const inputScriptFile = simulation.files.filter(file => file.fileName  === simulation.inputScript)[0]
       actions.setSelectedFile(inputScriptFile)
     }
+    mixpanel.track('Simulation.New', {simulationId: simulation?.id})
   }),
   reset: action((state) => {
     state.files = []

@@ -19,6 +19,7 @@ import Edit from './containers/Edit'
 import Console from './containers/Console'
 import Examples from './containers/Examples'
 import { useStoreActions, useStoreState } from './hooks';
+import mixpanel from 'mixpanel-browser';
 
 const { Content, Sider } = Layout;
 
@@ -117,8 +118,9 @@ const App: React.FC = () => {
         setSelectedFile(selectedFile)
       }
     }
-
-  }, [simulation, setSelectedFile])
+    
+    mixpanel.track('MenuClick', {selected, simulationId: simulation?.id, running})
+  }, [simulation, setSelectedFile, running])
   
   return (
     <Layout style={{ minHeight: '100vh' }} ref={myRef}>
@@ -136,7 +138,7 @@ const App: React.FC = () => {
         <Simulation />
         <Content>
           <>
-        <Tabs activeKey={selectedMenu.startsWith("file") ? "editfile" : selectedMenu}  renderTabBar={() => (<></>)}>
+        <Tabs activeKey={selectedMenu.startsWith("file") ? "editfile" : selectedMenu} renderTabBar={() => (<></>)}>
           <Tabs.TabPane tab="View" key="view"> 
             <View visible={selectedMenu==='view'} />
           </Tabs.TabPane>
