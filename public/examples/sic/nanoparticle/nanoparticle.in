@@ -42,8 +42,6 @@ neigh_modify delay 0 every 1 check yes
 
 timestep 0.002
 
-print "The system has origo at ${xMid} ${yMid} ${zMid}"
-
 velocity all create ${T0} 12345 loop geom mom yes rot yes
 fix nvt all nvt temp ${T0} ${T1} 2.0
 run 30000

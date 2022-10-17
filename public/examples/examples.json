@@ -18,7 +18,7 @@
   },
   {
     "id": "sic_nanoparticle",
-    "title": "SiC Nanoparticle",
+    "title": "SiC nanoparticle",
     "description": "A silicon carbide (SiC) nano particle in a carbon gas. The whole system is neutral, but initially, the particle has net charge. In this simulation, you can observe how the carbon gas attaches to the surface. The system cools down from 2200 K to 500 K.",
     "imageUrl": "examples/sic/nanoparticle/nanoparticle.png",
     "inputScript": "nanoparticle.in",
@@ -42,6 +42,31 @@
       {
         "fileName": "siliconcarbide.data",
         "url": "examples/sic/nanoparticle/siliconcarbide.data"
+      }
+    ]
+  },
+  {
+    "id": "sic_faceted_nanoparticle",
+    "title": "Faceted SiC nanoparticle",
+    "description": "A faceted SiC nano particle. All facets are of the same type (110 planes), but due a nucleation barrier during a volume conserving shape change (see Mullins, Rohrer 2000) two of the surfaces are prevented from reaching equilibrium.",
+    "imageUrl": "examples/sic/faceted_nanoparticle/faceted_nanoparticle.png",
+    "inputScript": "faceted_nanoparticle.in",
+    "files": [
+      {
+        "fileName": "faceted_nanoparticle.in",
+        "url": "examples/sic/faceted_nanoparticle/faceted_nanoparticle.in"
+      },
+      {
+        "fileName": "faceted_nanoparticle.png",
+        "url": "examples/sic/faceted_nanoparticle/faceted_nanoparticle.png"
+      },
+      {
+        "fileName": "SiC.vashishta",
+        "url": "examples/sic/faceted_nanoparticle/SiC.vashishta"
+      },
+      {
+        "fileName": "sic_nanoparticle.data",
+        "url": "examples/sic/faceted_nanoparticle/sic_nanoparticle.data"
       }
     ]
   },
