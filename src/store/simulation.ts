@@ -385,9 +385,17 @@ export const simulationModel: SimulationModel = {
         if (line.startsWith("#/")) {
           // This is an atomify command
           line = line.substring(2)
-          const atomType = parseAtomType(line)
-          if (atomType) {
-            newAtomTypes[atomType.atomType] = AtomTypes.filter(at => at.fullname===atomType.atomName)[0]
+          const parsedAtomType = parseAtomType(line)
+          if (parsedAtomType) {
+            const atomType: AtomType|undefined = AtomTypes.filter(at => at.fullname===parsedAtomType.atomName)[0]
+
+            if (atomType) {
+              newAtomTypes[parsedAtomType.atomType] = atomType
+            } else {
+              notification.warn({
+                message: `Atom type '${parsedAtomType.atomName}' does not exist. Ignoring setting radius and color.`
+              })
+            }
           }
           const atomSizeAndColor = parseAtomSizeAndColor(line)
           if (atomSizeAndColor) {
