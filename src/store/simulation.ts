@@ -154,7 +154,7 @@ export const simulationModel: SimulationModel = {
   runTimesteps: 0,
   runTotalTimesteps: 0,
   running: false,
-  selectedMenu: 'view',
+  selectedMenu: 'examples',
   showConsole: false,
   files: [],
   lammpsOutput: [],
