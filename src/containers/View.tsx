@@ -1,8 +1,12 @@
 import { useEffect, useState, useRef } from 'react'
+import {Layout, Row, Col, Progress} from 'antd'
+
 import { useStoreState } from '../hooks';
 import {Particles, Bonds, Visualizer} from 'omovi'
 import RenderSettings from './RenderSettings'
 import {SettingOutlined} from '@ant-design/icons'
+const { Header } = Layout;
+
 interface ViewProps {
   visible: boolean
 }
@@ -22,6 +26,11 @@ const View = ({visible}: ViewProps) => {
   const ssao = useStoreState(state => state.renderSettings.ssao)
   const brightness = useStoreState(state => state.renderSettings.brightness)
   const domElement = useRef<HTMLDivElement | null>(null)
+  const running = useStoreState(state => state.simulation.running)
+  const simulation = useStoreState(state => state.simulation.simulation)
+  const lastCommand = useStoreState(state => state.simulation.lastCommand)
+  const runTotalTimesteps = useStoreState(state => state.simulation.runTotalTimesteps)
+  const runTimesteps = useStoreState(state => state.simulation.runTimesteps)
   
   useEffect(() => {
     if (domElement.current && !loading && !visualizer) {
@@ -122,14 +131,34 @@ const View = ({visible}: ViewProps) => {
       }
     }
   }, [visualizer])
-
+  let title = ''
+  if (simulation) {
+    title = `${simulation?.inputScript}`
+    if (lastCommand) {
+      title += `> ${lastCommand}` 
+    }
+  }
   return (
-    <div id="canvas-container" style={{ height: '100%', width: '100%' }}>
-      <div style={{ height: '100%', width: '100%'  }} ref={domElement}> 
-        <RenderSettings open={showSettings} onClose={() => setShowSettings(false)} />
-        <SettingOutlined id="fixedbutton" style={{ fontSize: '32px', color: '#fff'}} onClick={() => setShowSettings(true)} />
+    <>
+    <Header className="site-layout-background" style={{ backgroundColor: 'rgba(0,0,0,0)', fontSize: 20, position: 'fixed' }}>
+      <Col>
+        <Row>
+          {title}
+        </Row>
+        <Row>
+          {running &&   
+            <Progress showInfo={false} style={{marginTop: '-25px'}} strokeColor={{'0%': '#108ee9','100%': '#87d068',}} width={30} percent={ Math.round(100 * (runTimesteps / (runTotalTimesteps+1)))} />
+          }
+        </Row>
+      </Col>
+    </Header>
+      <div id="canvas-container" style={{ height: '100%', width: '100%' }}>
+        <div style={{ height: '100%', width: '100%'  }} ref={domElement}> 
+          <RenderSettings open={showSettings} onClose={() => setShowSettings(false)} />
+          <SettingOutlined className="rendersettingsbutton" style={{ fontSize: '32px', color: '#fff'}} onClick={() => setShowSettings(true)} />
+        </div>
       </div>
-    </div>
+    </>
   )
 }
 export default View

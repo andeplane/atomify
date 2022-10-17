@@ -93,6 +93,10 @@ export interface Simulation {
 }
 
 export interface SimulationModel {
+  timesteps: number
+  runTimesteps: number
+  runTotalTimesteps: number
+  lastCommand?: string
   selectedMenu: string
   running: boolean
   showConsole: boolean
@@ -111,6 +115,10 @@ export interface SimulationModel {
   cameraTarget?: THREE.Vector3
   atomTypes?: {[key: number]: AtomType}
   numAtoms?: number
+  setTimesteps: Action<SimulationModel, number>
+  setRunTimesteps: Action<SimulationModel, number>
+  setRunTotalTimesteps: Action<SimulationModel, number>
+  setLastCommand: Action<SimulationModel, string|undefined>
   resetLammpsOutput: Action<SimulationModel, void>
   setSelectedMenu: Action<SimulationModel, string>
   addLammpsOutput: Action<SimulationModel, string>
@@ -142,6 +150,9 @@ export interface SimulationModel {
 }
 
 export const simulationModel: SimulationModel = {
+  timesteps: 0,
+  runTimesteps: 0,
+  runTotalTimesteps: 0,
   running: false,
   selectedMenu: 'examples',
   showConsole: false,
@@ -149,6 +160,18 @@ export const simulationModel: SimulationModel = {
   lammpsOutput: [],
   resetLammpsOutput: action((state) => {
     state.lammpsOutput = []
+  }),
+  setTimesteps: action((state, timesteps: number) => {
+    state.timesteps = timesteps
+  }),
+  setRunTimesteps: action((state, runTimesteps: number) => {
+    state.runTimesteps = runTimesteps
+  }),
+  setRunTotalTimesteps: action((state, runTotalTimesteps: number) => {
+    state.runTotalTimesteps = runTotalTimesteps
+  }),
+  setLastCommand: action((state, lastCommand?: string) => {
+    state.lastCommand = lastCommand
   }),
   addLammpsOutput: action((state, output: string) => {
     state.lammpsOutput = [...state.lammpsOutput, output]
@@ -262,7 +285,7 @@ export const simulationModel: SimulationModel = {
     }
     // @ts-ignore
     const lammps = getStoreState().simulation.lammps as LammpsWeb
-    if (!lammps || lammps.isRunning()) {
+    if (!lammps || lammps.getIsRunning()) {
       return
     }
     
@@ -277,7 +300,7 @@ export const simulationModel: SimulationModel = {
         // Simulation got canceled.
         actions.setRunning(false)
         actions.setShowConsole(true)
-        mixpanel.track('Simulation.Run', {simulationId: simulation?.id, canceled: true, numAtoms: lammps.numAtoms()})
+        mixpanel.track('Simulation.Run', {simulationId: simulation?.id, canceled: true, numAtoms: lammps.getNumAtoms()})
       } else {
         notification.error({
           message: errorMessage,
@@ -285,17 +308,22 @@ export const simulationModel: SimulationModel = {
         })
         actions.setRunning(false)
         actions.setShowConsole(true)
-        mixpanel.track('Simulation.Run', {simulationId: simulation?.id, failed: true, errorMessage, numAtoms: lammps.numAtoms()})
+        mixpanel.track('Simulation.Run', {simulationId: simulation?.id, failed: true, errorMessage, numAtoms: lammps.getNumAtoms()})
       }
     } else {
       actions.setRunning(false)
       actions.setShowConsole(true)
-      mixpanel.track('Simulation.Run', {simulationId: simulation?.id, completed: true, numAtoms: lammps.numAtoms()})
+      mixpanel.track('Simulation.Run', {simulationId: simulation?.id, completed: true, numAtoms: lammps.getNumAtoms()})
     }
+    actions.setLastCommand(undefined)
   }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
     // @ts-ignore
     window.simulation = simulation
+    actions.setLastCommand(undefined)
+    actions.setTimesteps(0)
+    actions.setRunTimesteps(0)
+    actions.setRunTotalTimesteps(0)
     actions.setNumAtoms(undefined)
     actions.setShowConsole(false)
     actions.setSimulationBox(undefined)

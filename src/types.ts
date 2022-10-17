@@ -1,27 +1,32 @@
 export type LammpsWeb = {
+  getNumAtoms: () => number
+  setSyncFrequency: (every: number) => void
+  setBuildNeighborlist: (buildNeighborlist: boolean) => void
+  getIsRunning: () => boolean
+  getErrorMessage: () => string
+  getLastCommand: () => string
+  getTimesteps: () => number
+  getRunTimesteps: () => number
+  getRunTotalTimesteps: () => number
+
   getPositionsPointer: () => number
   getIdPointer: () => number
   getTypePointer: () => number
-  loadLJ: () => void
-  isRunning: () => boolean
+  getCellMatrixPointer: () => number
+  getOrigoPointer: () => number
+  getBondsPosition1Pointer: () => number
+  getBondsPosition2Pointer: () => number
+  getBondsDistanceMapPointer: () => number
+  
   step: () => void
   stop: () => boolean
   start: () => boolean
+  cancel: () => void
   runCommand: (command: string) => void
-  numAtoms: () => number
-  setSyncFrequency: (every: number) => void
-  setBuildNeighborlist: (buildNeighborlist: boolean) => void
-  getCellMatrixPointer: () => number
-  getOrigoPointer: () => number
-  getBondsPosition1: () => number
-  getBondsPosition2: () => number
-  getBondsDistanceMapPointer: () => number
+  runFile: (path: string) => void
+  
   computeBonds: () => number
   computeParticles: () => number
-  numBonds: () => number
-  cancel: () => void
-  getErrorMessage: () => string
-  runFile: (path: string) => void
 }
 
 export type LammpsOutput = {
