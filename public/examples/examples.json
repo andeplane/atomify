@@ -185,6 +185,20 @@
   ]
 },
 {
+  "id": "granular_patterns",
+  "title": "Pattern formation in granular materials",
+  "description": "When particles (like sand, but really any particle) lie on a vibrating surface, there are various patterns that suddenly appear for certain values for the frequency and amplitude. In this simulation, you will see one such pattern. It might take some time, so be patient.",
+  "imageUrl": "examples/granular/patterns/patterns.png",
+  "inputScript": "patterns.in",
+  "keywords": ["granular"],
+  "files": [
+    {
+      "fileName": "patterns.in",
+      "url": "examples/granular/patterns/patterns.in"
+    }
+  ]
+},
+{
   "id": "amorphous_carbon",
   "title": "Amorphous carbon liquid quench",
   "description": "The simulation consists of carbon atoms, initially in the liquid state (high temperature). The temperature of the system is decreased progressively until hexagonal rings form. It results in an amorphous nanoporous structure of carbon. Warning: heavy and long simulation.",
