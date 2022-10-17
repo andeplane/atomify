@@ -52,7 +52,10 @@ const View = ({visible}: ViewProps) => {
       // There is a bug where the height is set to zero when going back to this view
       domElement.current.style.height = '100vh'
     }
-  }, [visible])
+    if (visualizer) {
+      visualizer.idle = !visible
+    }
+  }, [visible, visualizer])
 
   const prevParticlesRef = useRef<Particles>()
   useEffect(() => {
