@@ -5,6 +5,7 @@
     "description": "This example shows how you can measure the diffusion coefficient using the mean square displacement. The white atoms have mass 1 while the red atoms have mass 4. This results in the red atoms having diffusion coefficient half the value of the white ones.",
     "imageUrl": "examples/diffusion/diffusion/simple_diffusion.png",
     "inputScript": "simple_diffusion.in",
+    "keywords": ["lennard jones", "diffusion"],
     "files": [
       {
         "fileName": "simple_diffusion.in",
@@ -22,6 +23,7 @@
     "description": "A silicon carbide (SiC) nano particle in a carbon gas. The whole system is neutral, but initially, the particle has net charge. In this simulation, you can observe how the carbon gas attaches to the surface. The system cools down from 2200 K to 500 K.",
     "imageUrl": "examples/sic/nanoparticle/nanoparticle.png",
     "inputScript": "nanoparticle.in",
+    "keywords": ["vashishta", "sic", "nanoparticle"],
     "files": [
       {
         "fileName": "nanoparticle.in",
@@ -51,6 +53,7 @@
     "description": "A faceted SiC nano particle. All facets are of the same type (110 planes), but due a nucleation barrier during a volume conserving shape change (see Mullins, Rohrer 2000) two of the surfaces are prevented from reaching equilibrium.",
     "imageUrl": "examples/sic/faceted_nanoparticle/faceted_nanoparticle.png",
     "inputScript": "faceted_nanoparticle.in",
+    "keywords": ["vashishta", "sic", "nanoparticle"],
     "files": [
       {
         "fileName": "faceted_nanoparticle.in",
@@ -76,6 +79,7 @@
     "description": "A single water molecule using the vashishta potential.",
     "imageUrl": "examples/water/singlewater/singlewater.png",
     "inputScript": "singlewater.in",
+    "keywords": ["vashishta", "water"],
     "files": [
       {
         "fileName": "singlewater.data",
@@ -101,6 +105,7 @@
     "description": "Low density water gas using the vashishta potential.",
     "imageUrl": "examples/water/vapor/vapor.png",
     "inputScript": "vapor.in",
+    "keywords": ["vashishta", "water"],
     "files": [
       {
         "fileName": "vapor.data",
@@ -126,6 +131,7 @@
     "description": "The simulation consists of carbon atoms, initially in the liquid state (high temperature). The temperature of the system is decreased progressively until hexagonal rings form. It results in an amorphous nanoporous structure of carbon.",
     "imageUrl": "examples/simongravelle/solids/amorphous-carbon/amorphous-carbon.jpeg",
     "inputScript": "ac.in",
+    "keywords": ["airebo", "carbon", "amorphous"],
     "files": [
       {
         "fileName": "ac.data",
@@ -151,6 +157,7 @@
     "description": "Beta cristobalite crystal using the vashishta potential.",
     "imageUrl": "examples/silica/betacristobalite/betacristobalite.png",
     "inputScript": "betacristobalite.in",
+    "keywords": ["vashishta", "sio2", "crystal"],
     "files": [
       {
         "fileName": "betacristobalite.png",
@@ -176,6 +183,7 @@
     "description": "Zeolite ZSM-5 using the vashishta potential.",
     "imageUrl": "examples/silica/zeolite_zsm5/zeolite_zsm5.png",
     "inputScript": "zeolite_zsm5.in",
+    "keywords": ["vashishta", "zeolite"],
     "files": [
       {
         "fileName": "zeolite_zsm5.in",
@@ -201,6 +209,7 @@
     "description": "Generate a nanoporous silica structure from betacristobalite using the vashishta potential.",
     "imageUrl": "examples/silica/generate_nanoporous/generate_nanoporous.png",
     "inputScript": "generate_nanoporous.in",
+    "keywords": ["vashishta", "sio2", "amorphous", "nanoporous"],
     "files": [
       {
         "fileName": "generate_nanoporous.png",
@@ -226,6 +235,7 @@
     "description": "Crack propagation in a 2d solid.",
     "imageUrl": "examples/lammps/crack/crack.png",
     "inputScript": "crack.in",
+    "keywords": ["lennard jones", "crack", "2d"],
     "files": [
       {
         "fileName": "crack.png",
@@ -243,6 +253,7 @@
     "description": "Couette flow in a 2d channel.",
     "imageUrl": "examples/lammps/flow_couette/flow_couette.png",
     "inputScript": "flow_couette.in",
+    "keywords": ["lennard jones", "flow", "2d"],
     "files": [
       {
         "fileName": "flow_couette.in",
@@ -260,6 +271,7 @@
     "description": "Poiseuille flow in a 2d channel.",
     "imageUrl": "examples/lammps/flow_pois/flow_pois.png",
     "inputScript": "flow_pois.in",
+    "keywords": ["lennard jones", "flow", "2d"],
     "files": [
       {
         "fileName": "flow_pois.png",
@@ -277,6 +289,7 @@
     "description": "Frictional contact of spherical asperities between 2d surfaces.",
     "imageUrl": "examples/lammps/friction/friction.png",
     "inputScript": "friction.in",
+    "keywords": ["lennard jones", "friction", "2d"],
     "files": [
       {
         "fileName": "friction.png",
@@ -294,6 +307,7 @@
     "description": "CMAP 5-body contributions to CHARMM force field.",
     "imageUrl": "examples/lammps/cmap/cmap.png",
     "inputScript": "in.cmap",
+    "keywords": ["CHARMM"],
     "files": [
       {
         "fileName": "gagg.data",
@@ -319,6 +333,7 @@
     "description": "Deposition of atoms onto a 3d substrate.",
     "imageUrl": "examples/lammps/deposit_atom/deposit.png",
     "inputScript": "in.deposit.atom",
+    "keywords": ["lennard jones", "deposit"],
     "files": [
       {
         "fileName": "deposit.png",
@@ -336,6 +351,7 @@
     "description": "Deposition of molecules onto a 3d substrate.",
     "imageUrl": "examples/lammps/deposit_molecule/deposit_molecule.png",
     "inputScript": "in.deposit.molecule",
+    "keywords": ["lennard jones", "deposit", "3d"],
     "files": [
       {
         "fileName": "in.deposit.molecule",
@@ -357,6 +373,7 @@
     "description": "Self-assembly of small lipid-like molecules into 2d bilayers.",
     "imageUrl": "examples/lammps/micelle/micelle.png",
     "inputScript": "in.micelle",
+    "keywords": ["micelle"],
     "files": [
       {
         "fileName": "data.micelle",
@@ -382,6 +399,7 @@
     "description": "Flow around two voids in a 2d channel.",
     "imageUrl": "examples/lammps/obstacle/obstacle.png",
     "inputScript": "in.obstacle",
+    "keywords": ["lennard jones", "flow", "2d"],
     "files": [
       {
         "fileName": "in.obstacle",
@@ -399,6 +417,7 @@
     "description": "Dynamics of a small solvated peptide chain (5-mer).",
     "imageUrl": "examples/lammps/peptide/peptide.png",
     "inputScript": "in.peptide",
+    "keywords": ["peptide"],
     "files": [
       {
         "fileName": "in.peptide",
@@ -417,9 +436,10 @@
   {
     "id": "pour_2d",
     "title": "2d pour.",
-    "description": "Dynamics of a small solvated peptide chain (5-mer).",
+    "description": "Pouring of granular molecules into a 2d box, then chute flow.",
     "imageUrl": "examples/lammps/pour_2d/pour_2d.png",
     "inputScript": "in.pour.2d",
+    "keywords": ["granular", "pour", "2d"],
     "files": [
       {
         "fileName": "in.pour.2d",
@@ -437,6 +457,7 @@
     "description": "Pouring of granular molecules into a 2d box, then chute flow.",
     "imageUrl": "examples/lammps/pour_2d_molecule/pour_2d_molecule.png",
     "inputScript": "in.pour.2d.molecule",
+    "keywords": ["granular", "pour", "2d"],
     "files": [
       {
         "fileName": "pour_2d_molecule.png",
@@ -458,6 +479,7 @@
     "description": "Pouring of granular particles into a 3d box, then chute flow.",
     "imageUrl": "examples/lammps/pour_3d/pour.png",
     "inputScript": "in.pour",
+    "keywords": ["granular", "pour"],
     "files": [
       {
         "fileName": "pour.png",
@@ -475,6 +497,7 @@
     "description": "sideways shear applied to 2d solid.",
     "imageUrl": "examples/lammps/shear/shear.png",
     "inputScript": "in.shear",
+    "keywords": ["lennard jones", "shear", "2d"],
     "files": [
       {
         "fileName": "Ni_u3.eam",
@@ -496,6 +519,7 @@
     "description": "Sideways shear applied to 2d solid with a void.",
     "imageUrl": "examples/lammps/shear_void/shear_void.png",
     "inputScript": "in.shear.void",
+    "keywords": ["lennard jones", "shear", "2d"],
     "files": [
       {
         "fileName": "in.shear.void",
@@ -517,6 +541,7 @@
     "description": "This example contains a (crude and somewhat simple) example of the translocation of a (rather short) polymer through a hole in a wall, surrounded by an explicit LJ solvent.",
     "imageUrl": "examples/moltemplate/abstract_translocation/abstract_translocation.png",
     "inputScript": "run.in.npt",
+    "keywords": ["polymer"],
     "files": [
       {
         "fileName": "run.in.npt",
@@ -570,6 +595,7 @@
     "description": "This example is a simple simulation of a long alkane chain, in a vacuum at room temperature using the OPLSAA force field.",
     "imageUrl": "examples/moltemplate/alkane_chain_single/alkane_chain_2.png",
     "inputScript": "run.in.nvt",
+    "keywords": ["alkane"],
     "files": [
       {
         "fileName": "system_after_min.data",
@@ -635,6 +661,7 @@
     "description": "This example shows how to build a box of benzene molecules using the AMBER/GAFF force-field.",
     "imageUrl": "examples/moltemplate/benzene/benzene.png",
     "inputScript": "run.in.npt",
+    "keywords": ["amber", "benzene"],
     "files": [
       {
         "fileName": "run.in.npt",
@@ -688,6 +715,7 @@
     "description": "This is an implementation of the \"two-stage\" model used by Maxim Imakaev in the Naumova et Al 2013 Science paper on metaphase chromatin.",
     "imageUrl": "examples/moltemplate/chromosome_metaphase_Naumova2013/chromosome_metaphase_naumova2013.png",
     "inputScript": "run.in.stage1",
+    "keywords": ["benzene"],
     "files": [
       {
         "fileName": "system_after_min.data",
@@ -761,6 +789,7 @@
     "description": "This example shows how to simulate a mixture of ethylene and benzene using the AMBER/GAFF force field.",
     "imageUrl": "examples/moltemplate/ethylene+benzene/ethylene+benzene.png",
     "inputScript": "run.in.npt",
+    "keywords": ["amber", "ethylene", "benzene"],
     "files": [
       {
         "fileName": "run.in.npt",
@@ -814,6 +843,7 @@
     "description": "During this short simulation the protein evolves from an unfolded initial conformation to a misfolded conformation. It can take a very long time.",
     "imageUrl": "examples/moltemplate/frustrated/frustrated.png",
     "inputScript": "run_short_sim.in.nvt",
+    "keywords": ["protein folding"],
     "files": [
       {
         "fileName": "table_dihedral_frustrated.dat",
@@ -875,6 +905,7 @@
     "description": "A simulation of an ice crystal using SPCE water and the shake algorithm.",
     "imageUrl": "examples/moltemplate/ice_crystal/ice_crystal.png",
     "inputScript": "run.in.npt",
+    "keywords": ["spce", "water", "ice", "shake"],
     "files": [
       {
         "fileName": "run.in.npt",
@@ -928,6 +959,7 @@
     "description": "This example demonstrates how to build a simulation containing a box of methane.",
     "imageUrl": "examples/moltemplate/methane/methane.png",
     "inputScript": "run.in.npt",
+    "keywords": ["methane"],
     "files": [
       {
         "fileName": "run.in.npt",
@@ -989,6 +1021,7 @@
     "description": "This is a small version of a carbon-nanotube, water capillary system.",
     "imageUrl": "examples/moltemplate/nanotube+water/nanotube+water.png",
     "inputScript": "run.in.npt",
+    "keywords": ["water", "cnt", "carbon nanotube"],
     "files": [
       {
         "fileName": "run.in.npt",
@@ -1042,6 +1075,7 @@
     "description": "This example contains a mixture of SPCE water and methane. The methane molecules use OPLSAA force-field.",
     "imageUrl": "examples/moltemplate/waterSPCE+methane/waterSPCE+methane.png",
     "inputScript": "run.in.npt",
+    "keywords": ["spce", "water", "methane"],
     "files": [
       {
         "fileName": "run.in.npt",
@@ -1103,6 +1137,7 @@
     "description": "This example contains a mixture of SPCE water and salt (NaCl).",
     "imageUrl": "examples/moltemplate/waterSPCE+Na+Cl/waterSPCE+NA+CL.png",
     "inputScript": "run.in.npt",
+    "keywords": ["spce", "water", "salt"],
     "files": [
       {
         "fileName": "run.in.npt",
@@ -1152,6 +1187,7 @@
     "description": "The simulation consists of a mixture of isobutane and water. Over time (less than 1 ns), the two molecules phase-separate.",
     "imageUrl": "examples/moltemplate/waterTIP3P+isobutane/waterTIP3P+isobutane.png",
     "inputScript": "run.in.npt",
+    "keywords": ["tip3p", "water", "isobutane"],
     "files": [
       {
         "fileName": "run.in.npt",
@@ -1205,6 +1241,7 @@
     "description": "Combustion of Ammonia-Borine (AB) can be simulated with ReaxFF. Two AB molecules meet and a H<sub>2</sub> molecule is formed.",
     "imageUrl": "examples/reaxff/AB/AB.png",
     "inputScript": "AB.in",
+    "keywords": ["reaxff", "combustion", "ammonia-borine"],
     "files": [
       {
         "fileName": "lmp_control",
@@ -1239,9 +1276,10 @@
   {
     "id": "reax_cho",
     "title": "Hydrocarbon oxcidation",
-    "description": "Hydrocarbons (such as pentane) will at high temperatures react with oxygen and form water, CO, CO<sub>2</sub>, HO<sub>2</sub> and OH.",
+    "description": "Hydrocarbons (such as pentane) will at high temperatures react with oxygen and form water, CO, CO2, HO2 and OH.",
     "imageUrl": "examples/reaxff/CHO/CHO.png",
     "inputScript": "CHO.in",
+    "keywords": ["reaxff", "hydrocarbon", "pentane", "water"],
     "files": [
       {
         "fileName": "lmp_control",
@@ -1276,9 +1314,10 @@
   {
     "id": "reax_feoh3",
     "title": "Iron(III) hydroxide",
-    "description": "In this simulation, we see low density Iron(III) hydroxide (Fe(OH)<sub>3</sub>) at high temperature.",
+    "description": "In this simulation, we see low density Iron(III) hydroxide (Fe(OH)3) at high temperature.",
     "imageUrl": "examples/reaxff/FeOH3/FeOH3.png",
     "inputScript": "FeOH3.in",
+    "keywords": ["reaxff", "iron hydroxide"],
     "files": [
       {
         "fileName": "data.FeOH3",
@@ -1316,6 +1355,7 @@
     "description": "RDX is an organic compound normally used as an explosive, especially in world war II.",
     "imageUrl": "examples/reaxff/RDX/RDX.png",
     "inputScript": "RDX.in",
+    "keywords": ["reaxff", "RDX", "explosive"],
     "files": [
       {
         "fileName": "RDX.png",
@@ -1353,6 +1393,7 @@
     "description": "This structure is a zeolite called SSZ-13 (or CHA) and has one of the silicon sites replaced with Aluminum and a hydrogen atom.",
     "imageUrl": "examples/reaxff/ssz_13/ssz_13.png",
     "inputScript": "ssz_13.in",
+    "keywords": ["reaxff", "zeolite"],
     "files": [
       {
         "fileName": "ssz_13.png",
@@ -1378,6 +1419,7 @@
     "description": "In this simulation, we see vanadium oxide being simulated using ReaxFF at high temperature.",
     "imageUrl": "examples/reaxff/VOH/VOH.png",
     "inputScript": "VOH.in",
+    "keywords": ["reaxff", "vanadium oxide"],
     "files": [
       {
         "fileName": "lmp_control",
@@ -1412,9 +1454,10 @@
   {
     "id": "reax_znoh2",
     "title": "Zn(OH)<sub>2</sub>",
-    "description": "In this simulation, we see Zn(OH)<sub>2</sub> at high temperature.",
+    "description": "In this simulation, we see Zn(OH)2 at high temperature.",
     "imageUrl": "examples/reaxff/ZnOH2/ZnOH2.png",
     "inputScript": "ZnOH2.in",
+    "keywords": ["reaxff", "ZnOH2"],
     "files": [
       {
         "fileName": "ZnOH2.in",
