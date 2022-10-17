@@ -185,7 +185,7 @@ const Simulation = () => {
         }
       }
     }
-  }, [wasm, lammps, particles, bonds, setBonds, setParticles, setSimulationBox, setSimulationOrigo])
+  }, [wasm, lammps, particles, bonds, setBonds, setParticles, setSimulationBox, setSimulationOrigo, running, selectedMenu, simulation])
 
   useEffect(
     () => {

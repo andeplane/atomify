@@ -95,13 +95,13 @@ const App: React.FC = () => {
       setSelectedMenu(preferredView)
       setPreferredView(undefined)
     }
-  }, [preferredView, setPreferredView])
+  }, [preferredView, setPreferredView, setSelectedMenu])
   
   useEffect(() => {
     if (selectedFile) {
       setSelectedMenu('file'+selectedFile.fileName)
     }
-  }, [selectedFile])
+  }, [selectedFile, setSelectedMenu])
 
   const onMenuSelect = useCallback((selected: string) => {
     if (selected === "run") {

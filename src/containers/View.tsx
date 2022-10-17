@@ -29,7 +29,7 @@ const View = ({visible}: ViewProps) => {
       const newVisualizer = new Visualizer({
         domElement: domElement.current,
         initialColors: particleColors,
-        onCameraChanged: (position: THREE.Vector3, target: THREE.Vector3) => {console.log(position, target)}
+        // onCameraChanged: (position: THREE.Vector3, target: THREE.Vector3) => {console.log(position, target)}
       })
       setVisualizer(newVisualizer)
       setLoading(false)
@@ -112,7 +112,6 @@ const View = ({visible}: ViewProps) => {
       visualizer.renderer.renderSsao = ssao
       visualizer.ambientLight.intensity = 0.5 * brightness
       visualizer.directionalLight.intensity = 0.4 * brightness
-      console.log("Intensity of ambient ", visualizer.ambientLight.intensity)
     }
   }, [ssao, visualizer, brightness])
 

@@ -17,23 +17,6 @@
     ]
   },
   {
-    "id": "siadatom",
-    "title": "Si surface diffusion",
-    "description": "",
-    "imageUrl": "no",
-    "inputScript": "siadatom.in",
-    "files": [
-      {
-        "fileName": "siadatom.in",
-        "url": "examples/surfacediffusion/siadatom/siadatom.in"
-      },
-      {
-        "fileName": "Si.sw",
-        "url": "examples/surfacediffusion/siadatom/Si.sw"
-      }
-    ]
-  },
-  {
     "id": "singlewater",
     "title": "Single water molecule",
     "description": "A single water molecule using the vashishta potential.",
