@@ -1,12 +1,14 @@
 import { useEffect, useState, useRef } from 'react'
 import { useStoreState } from '../hooks';
 import {Particles, Bonds, Visualizer} from 'omovi'
-
+import RenderSettings from './RenderSettings'
+import {SettingOutlined} from '@ant-design/icons'
 interface ViewProps {
   visible: boolean
 }
 const View = ({visible}: ViewProps) => {
   const [loading, setLoading] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(state => state.simulation.cameraPosition)
@@ -17,6 +19,8 @@ const View = ({visible}: ViewProps) => {
   const [visualizer, setVisualizer] = useState<Visualizer | undefined>(
     undefined
   )
+  const ssao = useStoreState(state => state.renderSettings.ssao)
+  const brightness = useStoreState(state => state.renderSettings.brightness)
   const domElement = useRef<HTMLDivElement | null>(null)
   
   useEffect(() => {
@@ -25,7 +29,7 @@ const View = ({visible}: ViewProps) => {
       const newVisualizer = new Visualizer({
         domElement: domElement.current,
         initialColors: particleColors,
-        // onCameraChanged: (position: THREE.Vector3, target: THREE.Vector3) => {console.log(position, target)}
+        onCameraChanged: (position: THREE.Vector3, target: THREE.Vector3) => {console.log(position, target)}
       })
       setVisualizer(newVisualizer)
       setLoading(false)
@@ -104,6 +108,15 @@ const View = ({visible}: ViewProps) => {
   }, [particles, prevParticles, prevBonds, bonds, visualizer])
 
   useEffect(() => {
+    if (visualizer) {
+      visualizer.renderer.renderSsao = ssao
+      visualizer.ambientLight.intensity = 0.5 * brightness
+      visualizer.directionalLight.intensity = 0.4 * brightness
+      console.log("Intensity of ambient ", visualizer.ambientLight.intensity)
+    }
+  }, [ssao, visualizer, brightness])
+
+  useEffect(() => {
     return () => {
       if (visualizer) {
         visualizer.dispose()
@@ -112,8 +125,11 @@ const View = ({visible}: ViewProps) => {
   }, [visualizer])
 
   return (
-    <div style={{ height: '100%', width: '100%' }}>
-      <div style={{ height: '100%', width: '100%'  }} ref={domElement} />
+    <div id="canvas-container" style={{ height: '100%', width: '100%' }}>
+      <div style={{ height: '100%', width: '100%'  }} ref={domElement}> 
+        <RenderSettings open={showSettings} onClose={() => setShowSettings(false)} />
+        <SettingOutlined id="fixedbutton" style={{ fontSize: '32px', color: '#fff'}} onClick={() => setShowSettings(true)} />
+      </div>
     </div>
   )
 }

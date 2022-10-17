@@ -143,7 +143,7 @@ export interface SimulationModel {
 
 export const simulationModel: SimulationModel = {
   running: false,
-  selectedMenu: 'examples',
+  selectedMenu: 'view',
   showConsole: false,
   files: [],
   lammpsOutput: [],

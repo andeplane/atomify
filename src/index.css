@@ -73,3 +73,11 @@ html, body, #root, .App {
 .console-modal .ant-modal-footer {
   background-color: #1E1E1E !important
 }
+
+#fixedbutton {
+  position:fixed;
+  bottom:0;
+  right:0;
+  margin-right: 20px;
+  margin-bottom: 20px;
+}

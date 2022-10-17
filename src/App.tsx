@@ -121,7 +121,7 @@ const App: React.FC = () => {
     }
     
     mixpanel.track('MenuClick', {selected, simulationId: simulation?.id, running})
-  }, [simulation, setSelectedFile, running])
+  }, [simulation, setSelectedFile, running, setSelectedMenu])
   
   return (
     <Layout style={{ minHeight: '100vh' }} ref={myRef}>
