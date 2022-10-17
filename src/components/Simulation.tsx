@@ -216,7 +216,7 @@ const Simulation = () => {
   }, [wasm, lammps, particles, bonds, setBonds, 
     updateParticles, setSimulationBox, setSimulationOrigo, 
     running, selectedMenu, simulation, setTimesteps,
-    setRunTimesteps, setRunTotalTimesteps, setLastCommand])
+    setRunTimesteps, setRunTotalTimesteps, setLastCommand, atomTypes])
 
   useEffect(
     () => {
