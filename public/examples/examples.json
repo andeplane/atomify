@@ -145,11 +145,39 @@
       },
       {
         "fileName": "CH.airebo",
-        "url": "examples/simongravelle/solids/amorphous-carbon/CH.airebo"
+        "url": "examples/simongravelle/solids/shared/CH.airebo"
       },
       {
         "fileName": "amorphous-carbon.jpeg",
         "url": "examples/simongravelle/solids/amorphous-carbon/amorphous-carbon.jpeg"
+      }
+    ]
+  },
+  {
+    "id": "cnt_deformation",
+    "title": "Carbon nanotube under deformation",
+    "description": "The simulation consists of a single carbon nanotube (CNT) in vacuum. At the beginning of the simulation, a few atoms are removed from the CNT. The CNT is divided into three parts: the central part and the two edges. The two edges are forced to move, which leads to the gradual elongation of the CNT. Eventually, the CNT breaks. The breaking of the chemical bonds is permitted by the use of a reactive force field (AIREBO).",
+    "imageUrl": "examples/simongravelle/solids/cnt-under-deformation/cnt-under-deformation.jpeg",
+    "inputScript": "cnt-under-deformation.in",
+    "keywords": ["airebo", "carbon", "amorphous", "simongravelle"],
+    "author": "Simon Gravelle",
+    "authorUrl": "https://simongravelle.github.io/",
+    "files": [
+      {
+        "fileName": "cnt-under-deformation.data",
+        "url": "examples/simongravelle/solids/cnt-under-deformation/cnt-under-deformation.data"
+      },
+      {
+        "fileName": "cnt-under-deformation.in",
+        "url": "examples/simongravelle/solids/cnt-under-deformation/cnt-under-deformation.in"
+      },
+      {
+        "fileName": "CH.airebo",
+        "url": "examples/simongravelle/solids/shared/CH.airebo"
+      },
+      {
+        "fileName": "cnt-under-deformation.jpeg",
+        "url": "examples/simongravelle/solids/cnt-under-deformation/cnt-under-deformation.jpeg"
       }
     ]
   },
