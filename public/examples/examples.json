@@ -254,6 +254,32 @@
     ]
   },
   {
+    "id": "reversibly-adsorbing-particles",
+    "title": "Adsorption combined with diffusion create pink noise in nanopore",
+    "description": "The simulation consists of particles diffusing inside a cylindrical nanopore. The surface of the nanopore is covered with adsorbing sites, and the particles reversibly adsorb at the inner surface of the nanopore. The adsorption/desorption processes are modelled using bond/create and bond/break commands respectively. A bond forms if a particle comes close enough to a trap. An additional harmonic potential is added to trapped particles. The wall of the cylinder is modelled using the wall/region command.",
+    "imageUrl": "examples/simongravelle/interfaces/reversibly-adsorbing-particles/reversibly-adsorbing-particles.png",
+    "inputScript": "reversibly-adsorbing-particles.in",
+    "keywords": ["lennard jones", "salt", "water", "TIP4P"],
+    "files":[
+      {
+        "fileName": "reversibly-adsorbing-particles.in",
+        "url": "examples/simongravelle/interfaces/reversibly-adsorbing-particles/reversibly-adsorbing-particles.in"
+      },
+      {
+        "fileName": "reversibly-adsorbing-particles.data",
+        "url": "examples/simongravelle/interfaces/reversibly-adsorbing-particles/reversibly-adsorbing-particles.data"
+      },
+      {
+        "fileName": "bonds.in",
+        "url": "examples/simongravelle/interfaces/reversibly-adsorbing-particles/bonds.in"
+      },
+      {
+        "fileName": "groups.in",
+        "url": "examples/simongravelle/interfaces/reversibly-adsorbing-particles/groups.in"
+      }
+    ]
+  },
+  {
     "id": "betacristobalite",
     "title": "Silica beta cristobalite",
     "description": "Beta cristobalite crystal using the vashishta potential.",
