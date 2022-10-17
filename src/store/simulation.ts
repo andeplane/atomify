@@ -318,6 +318,8 @@ export const simulationModel: SimulationModel = {
       actions.setRunning(false)
       actions.setShowConsole(true)
       mixpanel.track('Simulation.Run', {simulationId: simulation?.id, completed: true, numAtoms: lammps.getNumAtoms()})
+      //@ts-ignore
+      window.postStepCallback()
     }
     actions.setLastCommand(undefined)
   }),
