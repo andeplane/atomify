@@ -174,6 +174,22 @@
     ]
   },
   {
+    "id": "2D-lj-fluid",
+    "title": "2D Lennard Jones fluid",
+    "description": "This simulation consists a binary 2D gas of LJ particles.",
+    "imageUrl": "examples/simongravelle/liquids/2D-lj-fluid/2D-lj-fluid.jpg",
+    "inputScript": "2D-lj-fluid.in",
+    "keywords": ["lennard jones", "fluid", "2d"],
+    "author": "Simon Gravelle",
+    "authorUrl": "https://simongravelle.github.io/",
+    "files": [
+      {
+        "fileName": "2D-lj-fluid.in",
+        "url": "examples/simongravelle/liquids/2D-lj-fluid/2D-lj-fluid.in"
+      }
+    ]
+  },
+  {
     "id": "betacristobalite",
     "title": "Silica beta cristobalite",
     "description": "Beta cristobalite crystal using the vashishta potential.",
