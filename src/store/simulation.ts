@@ -232,7 +232,9 @@ export const simulationModel: SimulationModel = {
   }),
   updateParticles: thunk((actions, particles: Particles, {getStoreState}) => {
     // @ts-ignore
-    if (!getStoreState().simulation.particleColors && particles) {
+    const computeColors = !getStoreState().simulation.particleColors
+    
+    if (computeColors && particles) {
       // @ts-ignore
       let atomTypes = getStoreState().simulation.atomTypes
       // We need to compute colors
@@ -253,10 +255,10 @@ export const simulationModel: SimulationModel = {
         // Real index refers to the index the particle has (not index in array).
         // This is the value used for lookup on the shader
         colors[realIndex] = atomType.color
-        particles.radii[index] = atomType.radius * 0.3
       })
       actions.setParticleColors(colors)
     }
+    
     // @ts-ignore
     actions.setParticles(particles)
   }),

@@ -5,6 +5,7 @@ import createModule from "../wasm/lammps.mjs";
 import { LammpsWeb } from '../types';
 import {Particles, Bonds} from 'omovi'
 import { notification } from 'antd';
+import {AtomType} from '../utils/atomtypes'
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
@@ -47,7 +48,7 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
   return newBonds
 }
 
-const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles) => {
+const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles, atomTypes?: {[key: number]: AtomType}) => {
   const numParticles = lammps.computeParticles()
   let newParticles = particles
   if (!particles || particles.capacity < numParticles) {
@@ -61,6 +62,7 @@ const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles) => {
     newParticles.types = new Float32Array(newCapacity)
     newParticles.radii.fill(0.25)
   }
+
   const positionsPtr = lammps.getPositionsPointer() / 4;
   const typePtr = lammps.getTypePointer() / 4;
   const idPtr = lammps.getIdPointer() / 4;
@@ -72,6 +74,23 @@ const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles) => {
   newParticles.types.set(typeSubarray)
   newParticles.indices.set(idSubarray)
   newParticles.count = numParticles
+  if (atomTypes) {
+    newParticles.types.forEach( (type: number, index: number) => {
+      // @ts-ignore
+      if (type > Object.keys(atomTypes).length) {
+        // If we have lots of atom types, just wrap around
+        type = (type % Object.keys(atomTypes).length) + 1
+      }
+      
+      let atomType = atomTypes[type]
+      if (atomType == null) {
+        // Fallback to default
+        atomType = atomTypes[1]
+      }
+
+      newParticles.radii[index] = atomType.radius * 0.3
+    })
+  }
   
   if (newParticles.mesh) {
     newParticles.mesh.count = numParticles
@@ -105,7 +124,8 @@ const Simulation = () => {
   const simulation = useStoreState(state => state.simulation.simulation)
   const running = useStoreState(state => state.simulation.running)
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
-  const setParticles = useStoreActions(actions => actions.simulation.updateParticles)
+  const atomTypes = useStoreState(state => state.simulation.atomTypes)
+  const updateParticles = useStoreActions(actions => actions.simulation.updateParticles)
   const setBonds = useStoreActions(actions => actions.simulation.setBonds)
   const setWasm = useStoreActions(actions => actions.simulation.setWasm)
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
@@ -117,7 +137,6 @@ const Simulation = () => {
   const setRunTimesteps = useStoreActions(actions => actions.simulation.setRunTimesteps)
   const setRunTotalTimesteps = useStoreActions(actions => actions.simulation.setRunTotalTimesteps)
   const setLastCommand = useStoreActions(actions => actions.simulation.setLastCommand)
-  
   const onPrint = useCallback( (text: string) => {
     //@ts-ignore
     addLammpsOutput(text)
@@ -163,10 +182,10 @@ const Simulation = () => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm) {
-        let newParticles = getPositions(lammps, wasm, particles)
+        let newParticles = getPositions(lammps, wasm, particles, atomTypes)
         newParticles.markNeedsUpdate()
         if (newParticles !== particles) {
-          setParticles(newParticles)
+          updateParticles(newParticles)
         }
 
         let newBonds = getBonds(lammps, wasm, bonds)
@@ -195,7 +214,7 @@ const Simulation = () => {
       }
     }
   }, [wasm, lammps, particles, bonds, setBonds, 
-    setParticles, setSimulationBox, setSimulationOrigo, 
+    updateParticles, setSimulationBox, setSimulationOrigo, 
     running, selectedMenu, simulation, setTimesteps,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand])
 
