@@ -1,6 +1,6 @@
 import {useCallback, useState, useEffect} from 'react'
 import { useMeasure } from 'react-use';
-import { Select } from 'antd';
+import { Select, Button } from 'antd';
 import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
@@ -17,6 +17,8 @@ interface Example {
   description: string
   imageUrl: string
   inputScript: string
+  author?: string,
+  authorUrl?: string,
   keywords?: string[]
 }
 
@@ -98,7 +100,18 @@ const Examples = () => {
     >
       <Meta
         title={example.title}
-        description={example.description}
+        description={(
+          <>
+            {example.description} 
+            <br />
+            {example.author && 
+              <>
+              Author <Button type="link" href={example.authorUrl} target={"_blank"}>{example.author}</Button>
+              </>
+            }
+          </>
+        )
+        }
       />
     </Card>
   )

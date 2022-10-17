@@ -132,6 +132,8 @@
     "imageUrl": "examples/simongravelle/solids/amorphous-carbon/amorphous-carbon.jpeg",
     "inputScript": "ac.in",
     "keywords": ["airebo", "carbon", "amorphous", "simongravelle"],
+    "author": "Simon Gravelle",
+    "authorUrl": "https://simongravelle.github.io/",
     "files": [
       {
         "fileName": "ac.data",
