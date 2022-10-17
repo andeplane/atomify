@@ -900,10 +900,6 @@
       "url": "examples/moltemplate/nanotube+water/system.in.settings"
     },
     {
-      "fileName": "run.in.nvt",
-      "url": "examples/moltemplate/nanotube+water/run.in.nvt"
-    },
-    {
       "fileName": "system.data",
       "url": "examples/moltemplate/nanotube+water/system.data"
     }
