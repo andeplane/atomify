@@ -93,6 +93,7 @@ export interface Simulation {
 }
 
 export interface SimulationModel {
+  selectedMenu: string
   running: boolean
   showConsole: boolean
   simulation?: Simulation
@@ -111,6 +112,7 @@ export interface SimulationModel {
   atomTypes?: {[key: number]: AtomType}
   numAtoms?: number
   resetLammpsOutput: Action<SimulationModel, void>
+  setSelectedMenu: Action<SimulationModel, string>
   addLammpsOutput: Action<SimulationModel, string>
   setNumAtoms: Action<SimulationModel, number|undefined>
   setShowConsole: Action<SimulationModel, boolean>
@@ -141,6 +143,7 @@ export interface SimulationModel {
 
 export const simulationModel: SimulationModel = {
   running: false,
+  selectedMenu: 'examples',
   showConsole: false,
   files: [],
   lammpsOutput: [],
@@ -149,6 +152,9 @@ export const simulationModel: SimulationModel = {
   }),
   addLammpsOutput: action((state, output: string) => {
     state.lammpsOutput = [...state.lammpsOutput, output]
+  }),
+  setSelectedMenu: action((state, selectedMenu: string) => {
+    state.selectedMenu = selectedMenu
   }),
   setPreferredView: action((state, preferredView?: string) => {
     state.preferredView = preferredView

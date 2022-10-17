@@ -46,7 +46,6 @@ function getItem(
 const App: React.FC = () => {
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
   const [collapsed, setCollapsed] = useState(false);
-  const [selectedMenu, setSelectedMenu] = useState<string>("examples")
   const wasm = useStoreState(state => state.simulation.wasm)
   const running = useStoreState(state => state.simulation.running)
   const showConsole = useStoreState(state => state.simulation.showConsole)
@@ -54,6 +53,8 @@ const App: React.FC = () => {
   const simulation = useStoreState(state => state.simulation.simulation)
   const selectedFile = useStoreState(state => state.simulation.selectedFile)
   const setSelectedFile = useStoreActions(actions => actions.simulation.setSelectedFile)
+  const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
+  const setSelectedMenu = useStoreActions(actions => actions.simulation.setSelectedMenu)
   const preferredView = useStoreState(state => state.simulation.preferredView)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   const setShowConsole = useStoreActions(actions => actions.simulation.setShowConsole)

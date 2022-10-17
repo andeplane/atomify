@@ -102,6 +102,9 @@ const Simulation = () => {
   const lammps = useStoreState(state => state.simulation.lammps)
   const particles = useStoreState(state => state.simulation.particles)
   const bonds = useStoreState(state => state.simulation.bonds)
+  const simulation = useStoreState(state => state.simulation.simulation)
+  const running = useStoreState(state => state.simulation.running)
+  const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
   const setParticles = useStoreActions(actions => actions.simulation.updateParticles)
   const setBonds = useStoreActions(actions => actions.simulation.setBonds)
   const setWasm = useStoreActions(actions => actions.simulation.setWasm)
@@ -110,7 +113,6 @@ const Simulation = () => {
   const setSimulationBox = useStoreActions(actions => actions.simulation.setSimulationBox)
   const setSimulationOrigo = useStoreActions(actions => actions.simulation.setSimulationOrigo)
   const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
-  
   
   const onPrint = useCallback( (text: string) => {
     //@ts-ignore
@@ -136,12 +138,12 @@ const Simulation = () => {
         window.syncFrequency = syncFrequencyMap[ev.key]
       }
 
-      if (ev.key === " ") {
+      if (selectedMenu === 'view' && simulation != null && !running && ev.key === " ") {
         //@ts-ignore
-        // window.lammps.step()
+        lammps.step()
       }
 
-      if (ev.key === "c") {
+      if (selectedMenu === 'view' && ev.key === "c") {
         //@ts-ignore
         const cameraPosition = window.visualizer.getCameraPosition()
         //@ts-ignore
