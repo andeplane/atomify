@@ -143,7 +143,7 @@ const View = ({visible}: ViewProps) => {
   }
   return (
     <>
-    <Header className="site-layout-background" style={{ backgroundColor: 'rgba(0,0,0,0)', fontSize: 20, position: 'fixed' }}>
+    <Header className="site-layout-background" style={{ backgroundColor: 'rgba(0,0,0,0)', fontSize: '1.5vw', position: 'fixed' }}>
       <Col>
         <Row>
           {title}
