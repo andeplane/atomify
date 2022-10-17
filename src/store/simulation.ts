@@ -262,7 +262,7 @@ export const simulationModel: SimulationModel = {
     }
     // @ts-ignore
     const lammps = getStoreState().simulation.lammps as LammpsWeb
-    if (!lammps || lammps.isRunning()) {
+    if (!lammps || lammps.getIsRunning()) {
       return
     }
     
@@ -277,7 +277,7 @@ export const simulationModel: SimulationModel = {
         // Simulation got canceled.
         actions.setRunning(false)
         actions.setShowConsole(true)
-        mixpanel.track('Simulation.Run', {simulationId: simulation?.id, canceled: true, numAtoms: lammps.numAtoms()})
+        mixpanel.track('Simulation.Run', {simulationId: simulation?.id, canceled: true, numAtoms: lammps.getNumAtoms()})
       } else {
         notification.error({
           message: errorMessage,
@@ -285,12 +285,12 @@ export const simulationModel: SimulationModel = {
         })
         actions.setRunning(false)
         actions.setShowConsole(true)
-        mixpanel.track('Simulation.Run', {simulationId: simulation?.id, failed: true, errorMessage, numAtoms: lammps.numAtoms()})
+        mixpanel.track('Simulation.Run', {simulationId: simulation?.id, failed: true, errorMessage, numAtoms: lammps.getNumAtoms()})
       }
     } else {
       actions.setRunning(false)
       actions.setShowConsole(true)
-      mixpanel.track('Simulation.Run', {simulationId: simulation?.id, completed: true, numAtoms: lammps.numAtoms()})
+      mixpanel.track('Simulation.Run', {simulationId: simulation?.id, completed: true, numAtoms: lammps.getNumAtoms()})
     }
   }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {

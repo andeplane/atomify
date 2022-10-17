@@ -12,10 +12,8 @@
 
 class LAMMPSWeb
 {
-public:
-  LAMMPSWeb();
-  ~LAMMPSWeb();
-  LAMMPS_NS::LAMMPS *lmp;
+private:
+  LAMMPS_NS::LAMMPS *m_lmp;
   double *m_cellMatrix;
   double *m_origo;
   float *m_bondsPosition1;
@@ -26,38 +24,46 @@ public:
   int m_particlesCapacity;
   int m_numBonds;
   bool m_buildNeighborlist;
+
+public:
+  LAMMPSWeb();
+  ~LAMMPSWeb();
+  long getCellMatrixPointer();
+  long getOrigoPointer();
+  int getNumAtoms();
+  bool getIsRunning();
+  void setSyncFrequency(int frequency);
+  void setBuildNeighborlist(bool buildNeighborlist);
+  std::string getErrorMessage();
+
+  // Pointer getters
   long getBondsDistanceMapPointer();
   long getPositionsPointer();
   long getIdPointer();
   long getTypePointer();
+  long getBondsPosition1Pointer();
+  long getBondsPosition2Pointer();
+
+  // Computes for particles and bonds
   void reallocateBondsData(int newCapacity);
-  long getBondsPosition1();
-  long getBondsPosition2();
   int computeBonds();
   int computeParticles();
   void computeBondsFromBondList();
   void computeBondsFromNeighborlist();
-  int numAtoms();
-  bool isRunning();
-  void loadLJ();
+
+  // Actions to control LAMMPS
   void cancel();
   void step();
   void start();
   void stop();
-  std::string getErrorMessage();
   void runFile(std::string path);
-  double getX(int n);
-  double getY(int n);
-  double getZ(int n);
-  void synchronizeLAMMPS(int mode);
   void runCommand(std::string command);
+  
+  void synchronizeLAMMPS(int mode);
+
+  LAMMPS_NS::Fix* findFixByIdentifier(std::string identifier);
   int findFixIndex(std::string identifier);
   bool fixExists(std::string identifier);
-  void setSyncFrequency(int frequency);
-  long getCellMatrixPointer();
-  long getOrigoPointer();
-  void setBuildNeighborlist(bool buildNeighborlist);
-  LAMMPS_NS::Fix* findFixByIdentifier(std::string identifier);
 };
 
 #ifdef __EMSCRIPTEN__
@@ -66,28 +72,30 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
 {
   class_<LAMMPSWeb>("LAMMPSWeb")
       .constructor<>()
-      .function("runCommand", &LAMMPSWeb::runCommand)
+      .function("setBuildNeighborlist", &LAMMPSWeb::setBuildNeighborlist)
+      .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency)
+      .function("getIsRunning", &LAMMPSWeb::getIsRunning)
+      .function("getErrorMessage", &LAMMPSWeb::getErrorMessage)
+
       .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
       .function("getBondsDistanceMapPointer", &LAMMPSWeb::getBondsDistanceMapPointer)
       .function("getIdPointer", &LAMMPSWeb::getIdPointer)
       .function("getTypePointer", &LAMMPSWeb::getTypePointer)
-      .function("loadLJ", &LAMMPSWeb::loadLJ)
-      .function("step", &LAMMPSWeb::step)
-      .function("isRunning", &LAMMPSWeb::isRunning)
-      .function("start", &LAMMPSWeb::start)
-      .function("stop", &LAMMPSWeb::stop)
-      .function("numAtoms", &LAMMPSWeb::numAtoms)
-      .function("runFile", &LAMMPSWeb::runFile)
       .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
       .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
-      .function("computeBonds", &LAMMPSWeb::computeBonds)
-      .function("computeParticles", &LAMMPSWeb::computeParticles)
-      .function("setBuildNeighborlist", &LAMMPSWeb::setBuildNeighborlist)
-      .function("getBondsPosition1", &LAMMPSWeb::getBondsPosition1)
-      .function("getBondsPosition2", &LAMMPSWeb::getBondsPosition2)
-      .function("getErrorMessage", &LAMMPSWeb::getErrorMessage)
+      .function("getBondsPosition1", &LAMMPSWeb::getBondsPosition1Pointer)
+      .function("getBondsPosition2", &LAMMPSWeb::getBondsPosition2Pointer)
+      
+      .function("step", &LAMMPSWeb::step)
+      .function("start", &LAMMPSWeb::start)
       .function("cancel", &LAMMPSWeb::cancel)
-      .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency);
+      .function("stop", &LAMMPSWeb::stop)
+      .function("getNumAtoms", &LAMMPSWeb::getNumAtoms)
+      .function("runFile", &LAMMPSWeb::runFile)
+      .function("runCommand", &LAMMPSWeb::runCommand)
+      
+      .function("computeBonds", &LAMMPSWeb::computeBonds)
+      .function("computeParticles", &LAMMPSWeb::computeParticles);
 
 }
 #endif

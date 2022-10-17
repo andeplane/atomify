@@ -42,7 +42,7 @@ const Examples = () => {
       inputScript: example.inputScript,
       start: true
     }
-    if (lammps?.isRunning()) {
+    if (lammps?.getIsRunning()) {
       notification.info({
         message: 'Simulation already running',
         description: "You can't start a new simulation while another one is running.",

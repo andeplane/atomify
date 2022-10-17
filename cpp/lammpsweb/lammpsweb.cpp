@@ -2,6 +2,7 @@
 #include "library.h"
 #include "domain.h"
 #include "atom.h"
+#include "input.h"
 #include "force.h"
 #include "update.h"
 #include "modify.h"
@@ -16,26 +17,23 @@ EM_JS(void, call_js_agrs, (), {
     postStepCallback();
 });
 
-bool postStepCallback()
-{
+bool postStepCallback() {
     call_js_agrs();
     return true;
 }
 
-EMSCRIPTEN_BINDINGS(module)
-{
+EMSCRIPTEN_BINDINGS(module) {
     emscripten::function("postStepCallback", &postStepCallback);
 }
 #endif
 
-void synchronizeLAMMPS_callback(void *caller, int mode)
-{
+void synchronizeLAMMPS_callback(void *caller, int mode) {
     LAMMPSWeb *controller = static_cast<LAMMPSWeb*>(caller);
     controller->synchronizeLAMMPS(mode);
 }
 
 LAMMPSWeb::LAMMPSWeb() : 
-  lmp(nullptr),
+  m_lmp(nullptr),
   m_cellMatrix(new double[9]),
   m_origo(new double[3]),
   m_numBonds(0),
@@ -44,21 +42,18 @@ LAMMPSWeb::LAMMPSWeb() :
   m_bondsPosition1(nullptr),
   m_bondsPosition2(nullptr),
   m_particlesPosition(nullptr),
-  m_bondsDistanceMap(new float[100 * 100])
-{
-  
+  m_bondsDistanceMap(new float[100 * 100]) {
+
 }
 
-LAMMPSWeb::~LAMMPSWeb()
-{
+LAMMPSWeb::~LAMMPSWeb() {
+  delete[] m_cellMatrix;
+  delete[] m_origo;
+  delete[] m_bondsPosition1;
+  delete[] m_bondsPosition2;
+  delete[] m_particlesPosition;
+  delete[] m_bondsDistanceMap;
   stop();
-}
-
-std::string LAMMPSWeb::getErrorMessage() {
-  if (!lmp) {
-    return "";
-  }
-  return lmp->error->get_last_error();
 }
 
 void LAMMPSWeb::cancel() {
@@ -87,8 +82,8 @@ void LAMMPSWeb::reallocateBondsData(int newCapacity) {
 }
 
 int LAMMPSWeb::computeParticles() {
-  LAMMPS_NS::Atom *atom = lmp->atom;
-  LAMMPS_NS::Domain *domain = lmp->domain;
+  LAMMPS_NS::Atom *atom = m_lmp->atom;
+  LAMMPS_NS::Domain *domain = m_lmp->domain;
 
   int m_numParticles = atom->natoms;
   
@@ -125,13 +120,13 @@ int LAMMPSWeb::computeBonds() {
 }
 
 void LAMMPSWeb::computeBondsFromBondList() {
-  LAMMPS_NS::Atom *atom = lmp->atom;
-  LAMMPS_NS::Domain *domain = lmp->domain;
+  LAMMPS_NS::Atom *atom = m_lmp->atom;
+  LAMMPS_NS::Domain *domain = m_lmp->domain;
   if(atom->nbonds==0) return;
   
-  double xSize = lmp->domain->prd[0];
-  double ySize = lmp->domain->prd[1];
-  double zSize = lmp->domain->prd[2];  
+  double xSize = m_lmp->domain->prd[0];
+  double ySize = m_lmp->domain->prd[1];
+  double zSize = m_lmp->domain->prd[2];  
   
   for (int i = 0; i < atom->natoms; i++) {
     double x = atom->x[i][0];
@@ -143,7 +138,7 @@ void LAMMPSWeb::computeBondsFromBondList() {
       if(j < 0 || j>=atom->natoms) {
         continue;
       }
-      if (!lmp->force->newton_bond && i<j) {
+      if (!m_lmp->force->newton_bond && i<j) {
         continue;
       }
     
@@ -192,9 +187,9 @@ void LAMMPSWeb::computeBondsFromNeighborlist() {
       return;
   }
 
-  LAMMPS_NS::Domain *domain = lmp->domain;
+  LAMMPS_NS::Domain *domain = m_lmp->domain;
   domain->box_corners();
-  LAMMPS_NS::Atom *atom = lmp->atom;
+  LAMMPS_NS::Atom *atom = m_lmp->atom;
   LAMMPS_NS::NeighList *list = fixAtomify->list;
   const int inum = list->inum;
   int *numneigh = list->numneigh;
@@ -249,16 +244,16 @@ void LAMMPSWeb::computeBondsFromNeighborlist() {
   }
 }
 
-long LAMMPSWeb::getBondsPosition1() {
+long LAMMPSWeb::getBondsPosition1Pointer() {
   return reinterpret_cast<long>(m_bondsPosition1);
 }
 
-long LAMMPSWeb::getBondsPosition2() {
+long LAMMPSWeb::getBondsPosition2Pointer() {
   return reinterpret_cast<long>(m_bondsPosition2);
 }
 
 long LAMMPSWeb::getCellMatrixPointer() {
-  LAMMPS_NS::Domain *domain = lmp->domain;
+  LAMMPS_NS::Domain *domain = m_lmp->domain;
   domain->box_corners();
   double a[] = {domain->corners[1][0], domain->corners[1][1], domain->corners[1][2]};
   double b[] = {domain->corners[2][0], domain->corners[2][1], domain->corners[2][2]};
@@ -278,7 +273,7 @@ long LAMMPSWeb::getCellMatrixPointer() {
 }
 
 long LAMMPSWeb::getOrigoPointer() {
-  LAMMPS_NS::Domain *domain = lmp->domain;
+  LAMMPS_NS::Domain *domain = m_lmp->domain;
   domain->box_corners();
   m_origo[0] = domain->corners[0][0];
   m_origo[1] = domain->corners[0][1];
@@ -287,8 +282,19 @@ long LAMMPSWeb::getOrigoPointer() {
   return reinterpret_cast<long>(m_origo);
 }
 
-bool LAMMPSWeb::isRunning() {
-  return lmp->update->whichflag!=0;
+bool LAMMPSWeb::getIsRunning() {
+  return m_lmp->update->whichflag!=0;
+}
+
+int LAMMPSWeb::getNumAtoms() {
+  return lammps_get_natoms((void *)m_lmp);
+}
+
+std::string LAMMPSWeb::getErrorMessage() {
+  if (!m_lmp) {
+    return "";
+  }
+  return m_lmp->error->get_last_error();
 }
 
 void LAMMPSWeb::setSyncFrequency(int every) {
@@ -304,8 +310,7 @@ void LAMMPSWeb::setBuildNeighborlist(bool buildNeighborlist) {
   m_buildNeighborlist = buildNeighborlist;
 }
 
-void LAMMPSWeb::synchronizeLAMMPS(int mode)
-{
+void LAMMPSWeb::synchronizeLAMMPS(int mode) {
     if(mode == 1000) {
       // Just a small sleep to not block UI
 #ifdef __EMSCRIPTEN__
@@ -322,28 +327,31 @@ void LAMMPSWeb::synchronizeLAMMPS(int mode)
 #endif
 }
 
-long LAMMPSWeb::getBondsDistanceMapPointer()
-{
+long LAMMPSWeb::getBondsDistanceMapPointer() {
   return reinterpret_cast<long>(m_bondsDistanceMap);
 }
 
-long LAMMPSWeb::getPositionsPointer()
-{
+long LAMMPSWeb::getPositionsPointer() {
   return reinterpret_cast<long>(m_particlesPosition);
 }
 
-long LAMMPSWeb::getIdPointer()
-{
-  auto ptr = lammps_extract_atom((void *)lmp, "id");
+long LAMMPSWeb::getIdPointer() {
+  auto ptr = lammps_extract_atom((void *)m_lmp, "id");
+
+  return reinterpret_cast<long>(ptr);
+}
+
+long LAMMPSWeb::getTypePointer() {
+  auto ptr = lammps_extract_atom((void *)m_lmp, "type");
 
   return reinterpret_cast<long>(ptr);
 }
 
 int LAMMPSWeb::findFixIndex(std::string identifier) {
-    if(!lmp) {
+    if(!m_lmp) {
         return -1;
     }
-    return lmp->modify->find_fix(identifier);
+    return m_lmp->modify->find_fix(identifier);
 }
 
 bool LAMMPSWeb::fixExists(std::string identifier) {
@@ -355,20 +363,12 @@ LAMMPS_NS::Fix* LAMMPSWeb::findFixByIdentifier(std::string identifier) {
     if(fixId < 0) {
         return nullptr;
     } else {
-        return lmp->modify->fix[fixId];
+        return m_lmp->modify->fix[fixId];
     }
 }
 
-long LAMMPSWeb::getTypePointer()
-{
-  auto ptr = lammps_extract_atom((void *)lmp, "type");
-
-  return reinterpret_cast<long>(ptr);
-}
-
-void LAMMPSWeb::start()
-{
-  if(lmp) {
+void LAMMPSWeb::start() {
+  if(m_lmp) {
       stop();
   }
 
@@ -378,8 +378,8 @@ void LAMMPSWeb::start()
       argv[i] = new char[100];
   }
 
-  lmp = (LAMMPS_NS::LAMMPS *)lammps_open_no_mpi(0, 0, nullptr);
-  lammps_command(lmp, "fix atomify all atomify");
+  m_lmp = (LAMMPS_NS::LAMMPS *)lammps_open_no_mpi(0, 0, nullptr);
+  lammps_command(m_lmp, "fix atomify all atomify");
   if(!fixExists("atomify")) {
       std::cerr << "Damn, could not create the fix... :/" << std::endl;
   }
@@ -392,58 +392,22 @@ void LAMMPSWeb::start()
   fix->set_callback(&synchronizeLAMMPS_callback, this);
 }
 
-void LAMMPSWeb::stop()
-{
-  if(lmp) {
-    lammps_close((void*)lmp);
-    lmp = nullptr;
+void LAMMPSWeb::stop() {
+  if(m_lmp) {
+    lammps_close((void*)m_lmp);
+    m_lmp = nullptr;
   }
 }
 
-void LAMMPSWeb::loadLJ()
-{
-  const char *script =
-      "# 3d Lennard-Jones melt\n"
-      "variable    x index 1\n"
-      "variable    y index 1\n"
-      "variable    z index 1\n"
-      "variable    xx equal 10*$x\n"
-      "variable    yy equal 10*$y\n"
-      "variable    zz equal 10*$z\n"
-      "units       lj\n"
-      "atom_style  atomic\n"
-      "lattice     fcc 0.8442\n"
-      "region      box block 0 ${xx} 0 ${yy} 0 ${zz}\n"
-      "create_box  1 box\n"
-      "create_atoms    1 box\n"
-      "mass        1 1.0\n"
-      "velocity    all create 1.44 87287 loop geom\n"
-      "pair_style  lj/cut 2.5\n"
-      "pair_coeff  1 1 1.0 1.0 2.5\n"
-      "neighbor    0.3 bin\n"
-      "neigh_modify    delay 0 every 20 check no\n"
-      "fix     1 all nve\n";
-  start();
-  lammps_commands_string((void *)lmp, script);
+void LAMMPSWeb::runFile(std::string path) {
+  lammps_file((void*)m_lmp, path.c_str());
 }
 
-void LAMMPSWeb::runFile(std::string path)
-{
-  lammps_file((void*)lmp, path.c_str());
-}
-
-void LAMMPSWeb::step()
-{
+void LAMMPSWeb::step() {
   const char *script = "run 1 pre no post no\n";
-  lammps_commands_string((void *)lmp, script);
+  lammps_commands_string((void *)m_lmp, script);
 }
 
-void LAMMPSWeb::runCommand(std::string command)
-{
-  lammps_commands_string((void *)lmp, command.c_str());
-}
-
-int LAMMPSWeb::numAtoms()
-{
-  return lammps_get_natoms((void *)lmp);
+void LAMMPSWeb::runCommand(std::string command) {
+  lammps_commands_string((void *)m_lmp, command.c_str());
 }
