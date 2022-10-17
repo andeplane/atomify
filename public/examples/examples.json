@@ -121,6 +121,31 @@
     ]
   },
   {
+    "id": "amorphous_carbon",
+    "title": "Amorphous carbon liquid quench",
+    "description": "The simulation consists of carbon atoms, initially in the liquid state (high temperature). The temperature of the system is decreased progressively until hexagonal rings form. It results in an amorphous nanoporous structure of carbon.",
+    "imageUrl": "examples/simongravelle/solids/amorphous-carbon/amorphous-carbon.jpeg",
+    "inputScript": "ac.in",
+    "files": [
+      {
+        "fileName": "ac.data",
+        "url": "examples/simongravelle/solids/amorphous-carbon/ac.data"
+      },
+      {
+        "fileName": "ac.in",
+        "url": "examples/simongravelle/solids/amorphous-carbon/ac.in"
+      },
+      {
+        "fileName": "CH.airebo",
+        "url": "examples/simongravelle/solids/amorphous-carbon/CH.airebo"
+      },
+      {
+        "fileName": "amorphous-carbon.jpeg",
+        "url": "examples/simongravelle/solids/amorphous-carbon/amorphous-carbon.jpeg"
+      }
+    ]
+  },
+  {
     "id": "betacristobalite",
     "title": "Silica beta cristobalite",
     "description": "Beta cristobalite crystal using the vashishta potential.",
