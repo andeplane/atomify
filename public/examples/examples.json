@@ -190,6 +190,22 @@
     ]
   },
   {
+    "id": "3D-lj-fluid",
+    "title": "3D Lennard Jones fluid",
+    "description": "This simulation consists a binary 3D gas of LJ particles.",
+    "imageUrl": "examples/simongravelle/liquids/3D-lj-fluid/3D-lj-fluid.jpg",
+    "inputScript": "3D-lj-fluid.in",
+    "keywords": ["lennard jones", "fluid"],
+    "author": "Simon Gravelle",
+    "authorUrl": "https://simongravelle.github.io/",
+    "files": [
+      {
+        "fileName": "3D-lj-fluid.in",
+        "url": "examples/simongravelle/liquids/3D-lj-fluid/3D-lj-fluid.in"
+      }
+    ]
+  },
+  {
     "id": "betacristobalite",
     "title": "Silica beta cristobalite",
     "description": "Beta cristobalite crystal using the vashishta potential.",
