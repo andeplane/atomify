@@ -212,6 +212,8 @@
     "imageUrl": "examples/simongravelle/liquids/nacl-solution/nacl-solution.png",
     "inputScript": "nacl-solution.in",
     "keywords": ["lennard jones", "salt", "water", "TIP4P"],
+    "author": "Simon Gravelle",
+    "authorUrl": "https://simongravelle.github.io/",
     "files":[
       {
         "fileName": "nacl-solution.in",
@@ -224,6 +226,29 @@
       {
         "fileName": "PARM.lammps",
         "url": "examples/simongravelle/liquids/nacl-solution/PARM.lammps"
+      }
+
+    ]
+  },
+  {
+    "id": "salt-dissolution-water",
+    "title": "NaCl solution",
+    "description": "The simulation consists of a cluster of NaCl in water in the NPT ensemble, at a temperature of 360 K and pressure of 1 atm.",
+    "imageUrl": "examples/simongravelle/liquids/salt-dissolution-water/salt-dissolution-water.png",
+    "inputScript": "salt-dissolution-water.in",
+    "keywords": ["lennard jones", "salt", "water", "TIP4P"],
+    "files":[
+      {
+        "fileName": "salt-dissolution-water.in",
+        "url": "examples/simongravelle/liquids/salt-dissolution-water/salt-dissolution-water.in"
+      },
+      {
+        "fileName": "salt-dissolution-water.data",
+        "url": "examples/simongravelle/liquids/salt-dissolution-water/salt-dissolution-water.data"
+      },
+      {
+        "fileName": "PARM.lammps",
+        "url": "examples/simongravelle/liquids/salt-dissolution-water/PARM.lammps"
       }
 
     ]
