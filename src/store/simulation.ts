@@ -250,8 +250,10 @@ export const simulationModel: SimulationModel = {
           // Fallback to default
           atomType = atomTypes[1]
         }
+        // Real index refers to the index the particle has (not index in array).
+        // This is the value used for lookup on the shader
         colors[realIndex] = atomType.color
-        particles.radii[realIndex] = atomType.radius * 0.2
+        particles.radii[index] = atomType.radius * 0.3
       })
       actions.setParticleColors(colors)
     }

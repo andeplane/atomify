@@ -21,7 +21,7 @@ const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
 
     newBonds = new Bonds(newCapacity);
     newBonds.indices.set(Array.from(Array(newCapacity).keys()))
-    newBonds.radii.fill(0.35/4)
+    newBonds.radii.fill(0.25)
   }
   
   if (numBonds === 0) {
