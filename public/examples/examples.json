@@ -131,7 +131,7 @@
     "description": "The simulation consists of carbon atoms, initially in the liquid state (high temperature). The temperature of the system is decreased progressively until hexagonal rings form. It results in an amorphous nanoporous structure of carbon.",
     "imageUrl": "examples/simongravelle/solids/amorphous-carbon/amorphous-carbon.jpeg",
     "inputScript": "ac.in",
-    "keywords": ["airebo", "carbon", "amorphous"],
+    "keywords": ["airebo", "carbon", "amorphous", "simongravelle"],
     "files": [
       {
         "fileName": "ac.data",
