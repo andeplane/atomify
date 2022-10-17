@@ -144,11 +144,23 @@ void FixAtomify::cancel()
 
 void FixAtomify::min_post_force(int vflag)
 {
-    // if(build_neighborlist) {
-    //     neighbor->build_one(list);
-    // }
-    // lost_atoms();
-    // (this->callback)(ptr_caller,MIN_POST_FORCE);
+    if (m_cancel) {
+        error->all(FLERR, "Atomify::canceled");
+    }
+    
+    step_count++;
+
+    if(build_neighborlist) {
+        neighbor->build_one(list);
+    }
+    lost_atoms();
+    bool should_sync = step_count % sync_frequency == 0;
+    if (should_sync) {
+        (this->callback)(ptr_caller,MIN_POST_FORCE);
+    } else if (sync_frequency > 10 && step_count % 10 == 0) {
+        // We won't sync anything, but will do a small sleep to not freeze UI
+        (this->callback)(ptr_caller, 1000);
+    }
 }
 
 /* ---------------------------------------------------------------------- */
