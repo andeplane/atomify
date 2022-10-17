@@ -4,7 +4,8 @@ import shutil
 
 def copy_files(include_lammpsweb=True, include_moltemplate=True):
   if include_lammpsweb:
-    shutil.copyfile("lammpsweb.cpp", "lammps/src/lammpsweb.cpp")
+    shutil.copyfile("lammpsweb/lammpsweb.cpp", "lammps/src/lammpsweb.cpp")
+    shutil.copyfile("lammpsweb/lammpsweb.h", "lammps/src/lammpsweb.h")
   shutil.copyfile("mpi.cpp", "lammps/src/mpi.cpp")
   shutil.copyfile("fix_atomify.cpp", "lammps/src/fix_atomify.cpp")
   shutil.copyfile("fix_atomify.h", "lammps/src/fix_atomify.h")
