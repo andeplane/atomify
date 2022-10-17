@@ -10,10 +10,6 @@
       {
         "fileName": "simple_diffusion.in",
         "url": "examples/diffusion/diffusion/simple_diffusion.in"
-      },
-      {
-        "fileName": "simple_diffusion.png",
-        "url": "examples/diffusion/diffusion/simple_diffusion.png"
       }
     ]
   },
@@ -28,10 +24,6 @@
       {
         "fileName": "nanoparticle.in",
         "url": "examples/sic/nanoparticle/nanoparticle.in"
-      },
-      {
-        "fileName": "nanoparticle.png",
-        "url": "examples/sic/nanoparticle/nanoparticle.png"
       },
       {
         "fileName": "make_stoichiometric.in",
@@ -60,10 +52,6 @@
         "url": "examples/sic/faceted_nanoparticle/faceted_nanoparticle.in"
       },
       {
-        "fileName": "faceted_nanoparticle.png",
-        "url": "examples/sic/faceted_nanoparticle/faceted_nanoparticle.png"
-      },
-      {
         "fileName": "SiC.vashishta",
         "url": "examples/sic/faceted_nanoparticle/SiC.vashishta"
       },
@@ -90,10 +78,6 @@
         "url": "examples/water/singlewater/singlewater.in"
       },
       {
-        "fileName": "singlewater.png",
-        "url": "examples/water/singlewater/singlewater.png"
-      },
-      {
         "fileName": "H2O.vashishta",
         "url": "examples/water/singlewater/H2O.vashishta"
       }
@@ -116,10 +100,6 @@
         "url": "examples/water/vapor/vapor.in"
       },
       {
-        "fileName": "vapor.png",
-        "url": "examples/water/vapor/vapor.png"
-      },
-      {
         "fileName": "H2O.vashishta",
         "url": "examples/water/vapor/H2O.vashishta"
       }
@@ -130,26 +110,42 @@
     "title": "Amorphous carbon liquid quench",
     "description": "The simulation consists of carbon atoms, initially in the liquid state (high temperature). The temperature of the system is decreased progressively until hexagonal rings form. It results in an amorphous nanoporous structure of carbon.",
     "imageUrl": "examples/simongravelle/solids/amorphous-carbon/amorphous-carbon.jpeg",
-    "inputScript": "ac.in",
+    "inputScript": "amorphous-carbon.in",
     "keywords": ["airebo", "carbon", "amorphous", "simongravelle"],
     "author": "Simon Gravelle",
     "authorUrl": "https://simongravelle.github.io/",
     "files": [
       {
-        "fileName": "ac.data",
-        "url": "examples/simongravelle/solids/amorphous-carbon/ac.data"
-      },
-      {
-        "fileName": "ac.in",
-        "url": "examples/simongravelle/solids/amorphous-carbon/ac.in"
+        "fileName": "amorphous-carbon.in",
+        "url": "examples/simongravelle/solids/amorphous-carbon/amorphous-carbon.in"
       },
       {
         "fileName": "CH.airebo",
         "url": "examples/simongravelle/solids/shared/CH.airebo"
+      }
+    ]
+  },
+  {
+    "id": "go-nanoparticle",
+    "title": "Graphene Oxcide nanoparticle",
+    "description": "The simulation consists of a single graphene oxide particle with a few water molecules. The initial GO nanoparticle has been generated using [make graphitics].",
+    "imageUrl": "examples/simongravelle/solids/GO-nanoparticle/GO-nanoparticle.png",
+    "inputScript": "GO-nanoparticle.in",
+    "keywords": ["airebo", "graphene oxcide", "graphene", "simongravelle"],
+    "author": "Simon Gravelle",
+    "authorUrl": "https://simongravelle.github.io/",
+    "files": [
+      {
+        "fileName": "GO-nanoparticle.in",
+        "url": "examples/simongravelle/solids/GO-nanoparticle/GO-nanoparticle.in"
       },
       {
-        "fileName": "amorphous-carbon.jpeg",
-        "url": "examples/simongravelle/solids/amorphous-carbon/amorphous-carbon.jpeg"
+        "fileName": "GO-nanoparticle.data",
+        "url": "examples/simongravelle/solids/GO-nanoparticle/GO-nanoparticle.data"
+      },
+      {
+        "fileName": "PARM.lammps",
+        "url": "examples/simongravelle/solids/GO-nanoparticle/PARM.lammps"
       }
     ]
   },
@@ -159,7 +155,7 @@
     "description": "The simulation consists of a single carbon nanotube (CNT) in vacuum. At the beginning of the simulation, a few atoms are removed from the CNT. The CNT is divided into three parts: the central part and the two edges. The two edges are forced to move, which leads to the gradual elongation of the CNT. Eventually, the CNT breaks. The breaking of the chemical bonds is permitted by the use of a reactive force field (AIREBO).",
     "imageUrl": "examples/simongravelle/solids/cnt-under-deformation/cnt-under-deformation.jpeg",
     "inputScript": "cnt-under-deformation.in",
-    "keywords": ["airebo", "carbon", "amorphous", "simongravelle"],
+    "keywords": ["airebo", "cnt", "carbon nanotube", "carbon", "simongravelle"],
     "author": "Simon Gravelle",
     "authorUrl": "https://simongravelle.github.io/",
     "files": [
@@ -174,10 +170,6 @@
       {
         "fileName": "CH.airebo",
         "url": "examples/simongravelle/solids/shared/CH.airebo"
-      },
-      {
-        "fileName": "cnt-under-deformation.jpeg",
-        "url": "examples/simongravelle/solids/cnt-under-deformation/cnt-under-deformation.jpeg"
       }
     ]
   },
@@ -189,10 +181,6 @@
     "inputScript": "betacristobalite.in",
     "keywords": ["vashishta", "sio2", "crystal"],
     "files": [
-      {
-        "fileName": "betacristobalite.png",
-        "url": "examples/silica/betacristobalite/betacristobalite.png"
-      },
       {
         "fileName": "betacristobalite.in",
         "url": "examples/silica/betacristobalite/betacristobalite.in"
@@ -226,10 +214,6 @@
       {
         "fileName": "SiO2.vashishta",
         "url": "examples/silica/zeolite_zsm5/SiO2.vashishta"
-      },
-      {
-        "fileName": "zeolite_zsm5.png",
-        "url": "examples/silica/zeolite_zsm5/zeolite_zsm5.png"
       }
     ]
   },
@@ -241,10 +225,6 @@
     "inputScript": "generate_nanoporous.in",
     "keywords": ["vashishta", "sio2", "amorphous", "nanoporous"],
     "files": [
-      {
-        "fileName": "generate_nanoporous.png",
-        "url": "examples/silica/generate_nanoporous/generate_nanoporous.png"
-      },
       {
         "fileName": "SiO2.vashishta",
         "url": "examples/silica/generate_nanoporous/SiO2.vashishta"
@@ -268,10 +248,6 @@
     "keywords": ["lennard jones", "crack", "2d"],
     "files": [
       {
-        "fileName": "crack.png",
-        "url": "examples/lammps/crack/crack.png"
-      },
-      {
         "fileName": "crack.in",
         "url": "examples/lammps/crack/crack.in"
       }
@@ -288,10 +264,6 @@
       {
         "fileName": "flow_couette.in",
         "url": "examples/lammps/flow_couette/flow_couette.in"
-      },
-      {
-        "fileName": "flow_couette.png",
-        "url": "examples/lammps/flow_couette/flow_couette.png"
       }
     ]
   },
@@ -303,10 +275,6 @@
     "inputScript": "flow_pois.in",
     "keywords": ["lennard jones", "flow", "2d"],
     "files": [
-      {
-        "fileName": "flow_pois.png",
-        "url": "examples/lammps/flow_pois/flow_pois.png"
-      },
       {
         "fileName": "flow_pois.in",
         "url": "examples/lammps/flow_pois/flow_pois.in"
@@ -321,10 +289,6 @@
     "inputScript": "friction.in",
     "keywords": ["lennard jones", "friction", "2d"],
     "files": [
-      {
-        "fileName": "friction.png",
-        "url": "examples/lammps/friction/friction.png"
-      },
       {
         "fileName": "friction.in",
         "url": "examples/lammps/friction/friction.in"
@@ -350,10 +314,6 @@
       {
         "fileName": "charmm22.cmap",
         "url": "examples/lammps/cmap/charmm22.cmap"
-      },
-      {
-        "fileName": "cmap.png",
-        "url": "examples/lammps/cmap/cmap.png"
       }
     ]
   },
@@ -365,10 +325,6 @@
     "inputScript": "in.deposit.atom",
     "keywords": ["lennard jones", "deposit"],
     "files": [
-      {
-        "fileName": "deposit.png",
-        "url": "examples/lammps/deposit_atom/deposit.png"
-      },
       {
         "fileName": "in.deposit.atom",
         "url": "examples/lammps/deposit_atom/in.deposit.atom"
@@ -388,10 +344,6 @@
         "url": "examples/lammps/deposit_molecule/in.deposit.molecule"
       },
       {
-        "fileName": "deposit_molecule.png",
-        "url": "examples/lammps/deposit_molecule/deposit_molecule.png"
-      },
-      {
         "fileName": "molecule.dimer",
         "url": "examples/lammps/deposit_molecule/molecule.dimer"
       }
@@ -408,10 +360,6 @@
       {
         "fileName": "data.micelle",
         "url": "examples/lammps/micelle/data.micelle"
-      },
-      {
-        "fileName": "micelle.png",
-        "url": "examples/lammps/micelle/micelle.png"
       },
       {
         "fileName": "def.micelle",
@@ -434,10 +382,6 @@
       {
         "fileName": "in.obstacle",
         "url": "examples/lammps/obstacle/in.obstacle"
-      },
-      {
-        "fileName": "obstacle.png",
-        "url": "examples/lammps/obstacle/obstacle.png"
       }
     ]
   },
@@ -452,10 +396,6 @@
       {
         "fileName": "in.peptide",
         "url": "examples/lammps/peptide/in.peptide"
-      },
-      {
-        "fileName": "peptide.png",
-        "url": "examples/lammps/peptide/peptide.png"
       },
       {
         "fileName": "data.peptide",
@@ -474,10 +414,6 @@
       {
         "fileName": "in.pour.2d",
         "url": "examples/lammps/pour_2d/in.pour.2d"
-      },
-      {
-        "fileName": "pour_2d.png",
-        "url": "examples/lammps/pour_2d/pour_2d.png"
       }
     ]
   },
@@ -489,10 +425,6 @@
     "inputScript": "in.pour.2d.molecule",
     "keywords": ["granular", "pour", "2d"],
     "files": [
-      {
-        "fileName": "pour_2d_molecule.png",
-        "url": "examples/lammps/pour_2d_molecule/pour_2d_molecule.png"
-      },
       {
         "fileName": "in.pour.2d.molecule",
         "url": "examples/lammps/pour_2d_molecule/in.pour.2d.molecule"
@@ -512,10 +444,6 @@
     "keywords": ["granular", "pour"],
     "files": [
       {
-        "fileName": "pour.png",
-        "url": "examples/lammps/pour_3d/pour.png"
-      },
-      {
         "fileName": "in.pour",
         "url": "examples/lammps/pour_3d/in.pour"
       }
@@ -532,10 +460,6 @@
       {
         "fileName": "Ni_u3.eam",
         "url": "examples/lammps/shear/Ni_u3.eam"
-      },
-      {
-        "fileName": "shear.png",
-        "url": "examples/lammps/shear/shear.png"
       },
       {
         "fileName": "in.shear",
@@ -558,10 +482,6 @@
       {
         "fileName": "Ni_u3.eam",
         "url": "examples/lammps/shear_void/Ni_u3.eam"
-      },
-      {
-        "fileName": "shear_void.png",
-        "url": "examples/lammps/shear_void/shear_void.png"
       }
     ]
   },
@@ -578,16 +498,8 @@
         "url": "examples/moltemplate/abstract_translocation/run.in.npt"
       },
       {
-        "fileName": "README_setup.sh",
-        "url": "examples/moltemplate/abstract_translocation/README_setup.sh"
-      },
-      {
         "fileName": "system.in",
         "url": "examples/moltemplate/abstract_translocation/system.in"
-      },
-      {
-        "fileName": "abstract_translocation.png",
-        "url": "examples/moltemplate/abstract_translocation/abstract_translocation.png"
       },
       {
         "fileName": "system.in.init",
@@ -630,14 +542,6 @@
       {
         "fileName": "system_after_min.data",
         "url": "examples/moltemplate/alkane_chain_single/system_after_min.data"
-      },
-      {
-        "fileName": "alkane_chain_2.png",
-        "url": "examples/moltemplate/alkane_chain_single/alkane_chain_2.png"
-      },
-      {
-        "fileName": "alkane_chain_1.png",
-        "url": "examples/moltemplate/alkane_chain_single/alkane_chain_1.png"
       },
       {
         "fileName": "README_setup.sh",
@@ -702,10 +606,6 @@
         "url": "examples/moltemplate/benzene/README_setup.sh"
       },
       {
-        "fileName": "benzene.png",
-        "url": "examples/moltemplate/benzene/benzene.png"
-      },
-      {
         "fileName": "system.in",
         "url": "examples/moltemplate/benzene/system.in"
       },
@@ -752,10 +652,6 @@
         "url": "examples/moltemplate/chromosome_metaphase_Naumova2013/system_after_min.data"
       },
       {
-        "fileName": "README_setup.sh",
-        "url": "examples/moltemplate/chromosome_metaphase_Naumova2013/README_setup.sh"
-      },
-      {
         "fileName": "system_after_stage1.data",
         "url": "examples/moltemplate/chromosome_metaphase_Naumova2013/system_after_stage1.data"
       },
@@ -800,10 +696,6 @@
         "url": "examples/moltemplate/chromosome_metaphase_Naumova2013/README_NUCLEAR_VOLUME_FRACTION_ESTIMATE.txt"
       },
       {
-        "fileName": "chromosome_metaphase_naumova2013.png",
-        "url": "examples/moltemplate/chromosome_metaphase_Naumova2013/chromosome_metaphase_naumova2013.png"
-      },
-      {
         "fileName": "system.data",
         "url": "examples/moltemplate/chromosome_metaphase_Naumova2013/system.data"
       },
@@ -836,10 +728,6 @@
       {
         "fileName": "system.in.init",
         "url": "examples/moltemplate/ethylene+benzene/system.in.init"
-      },
-      {
-        "fileName": "ethylene+benzene.png",
-        "url": "examples/moltemplate/ethylene+benzene/ethylene+benzene.png"
       },
       {
         "fileName": "system.in.settings",
@@ -916,16 +804,8 @@
         "url": "examples/moltemplate/frustrated/README.TXT"
       },
       {
-        "fileName": "README_run.sh",
-        "url": "examples/moltemplate/frustrated/README_run.sh"
-      },
-      {
         "fileName": "run_short_sim.in.nvt",
         "url": "examples/moltemplate/frustrated/run_short_sim.in.nvt"
-      },
-      {
-        "fileName": "frustrated.png",
-        "url": "examples/moltemplate/frustrated/frustrated.png"
       }
     ]
   },
@@ -970,10 +850,6 @@
         "url": "examples/moltemplate/ice_crystal/README_visualize.txt"
       },
       {
-        "fileName": "ice_crystal.png",
-        "url": "examples/moltemplate/ice_crystal/ice_crystal.png"
-      },
-      {
         "fileName": "system.data",
         "url": "examples/moltemplate/ice_crystal/system.data"
       },
@@ -1006,10 +882,6 @@
       {
         "fileName": "system.in",
         "url": "examples/moltemplate/methane/system.in"
-      },
-      {
-        "fileName": "methane.png",
-        "url": "examples/moltemplate/methane/methane.png"
       },
       {
         "fileName": "system.in.init",
@@ -1060,10 +932,6 @@
       {
         "fileName": "README_setup.sh",
         "url": "examples/moltemplate/nanotube+water/README_setup.sh"
-      },
-      {
-        "fileName": "nanotube+water.png",
-        "url": "examples/moltemplate/nanotube+water/nanotube+water.png"
       },
       {
         "fileName": "system.in",
@@ -1120,10 +988,6 @@
         "url": "examples/moltemplate/waterSPCE+methane/README_setup.sh"
       },
       {
-        "fileName": "waterSPCE+methane.png",
-        "url": "examples/moltemplate/waterSPCE+methane/waterSPCE+methane.png"
-      },
-      {
         "fileName": "system.in",
         "url": "examples/moltemplate/waterSPCE+methane/system.in"
       },
@@ -1152,10 +1016,6 @@
         "url": "examples/moltemplate/waterSPCE+methane/README.TXT"
       },
       {
-        "fileName": "README_run.sh",
-        "url": "examples/moltemplate/waterSPCE+methane/README_run.sh"
-      },
-      {
         "fileName": "system.in.charges",
         "url": "examples/moltemplate/waterSPCE+methane/system.in.charges"
       }
@@ -1176,10 +1036,6 @@
       {
         "fileName": "README_setup.sh",
         "url": "examples/moltemplate/waterSPCE+Na+Cl/README_setup.sh"
-      },
-      {
-        "fileName": "waterSPCE+NA+CL.png",
-        "url": "examples/moltemplate/waterSPCE+Na+Cl/waterSPCE+NA+CL.png"
       },
       {
         "fileName": "system.in",
@@ -1204,10 +1060,6 @@
       {
         "fileName": "system.data",
         "url": "examples/moltemplate/waterSPCE+Na+Cl/system.data"
-      },
-      {
-        "fileName": "README_run.sh",
-        "url": "examples/moltemplate/waterSPCE+Na+Cl/README_run.sh"
       }
     ]
   },
@@ -1230,10 +1082,6 @@
       {
         "fileName": "system.in",
         "url": "examples/moltemplate/waterTIP3P+isobutane/system.in"
-      },
-      {
-        "fileName": "waterTIP3P+isobutane.png",
-        "url": "examples/moltemplate/waterTIP3P+isobutane/waterTIP3P+isobutane.png"
       },
       {
         "fileName": "system.in.init",
@@ -1276,10 +1124,6 @@
       {
         "fileName": "lmp_control",
         "url": "examples/reaxff/AB/lmp_control"
-      },
-      {
-        "fileName": "AB.png",
-        "url": "examples/reaxff/AB/AB.png"
       },
       {
         "fileName": "ffield.reax.AB",
@@ -1332,10 +1176,6 @@
         "url": "examples/reaxff/CHO/data.CHO"
       },
       {
-        "fileName": "CHO.png",
-        "url": "examples/reaxff/CHO/CHO.png"
-      },
-      {
         "fileName": "param.qeq",
         "url": "examples/reaxff/CHO/param.qeq"
       }
@@ -1352,10 +1192,6 @@
       {
         "fileName": "data.FeOH3",
         "url": "examples/reaxff/FeOH3/data.FeOH3"
-      },
-      {
-        "fileName": "FeOH3.png",
-        "url": "examples/reaxff/FeOH3/FeOH3.png"
       },
       {
         "fileName": "lmp_control",
@@ -1387,10 +1223,6 @@
     "inputScript": "RDX.in",
     "keywords": ["reaxff", "RDX", "explosive"],
     "files": [
-      {
-        "fileName": "RDX.png",
-        "url": "examples/reaxff/RDX/RDX.png"
-      },
       {
         "fileName": "lmp_control",
         "url": "examples/reaxff/RDX/lmp_control"
@@ -1426,10 +1258,6 @@
     "keywords": ["reaxff", "zeolite"],
     "files": [
       {
-        "fileName": "ssz_13.png",
-        "url": "examples/reaxff/ssz_13/ssz_13.png"
-      },
-      {
         "fileName": "ffield_Psofogiannakis_CuOH_2015",
         "url": "examples/reaxff/ssz_13/ffield_Psofogiannakis_CuOH_2015"
       },
@@ -1454,10 +1282,6 @@
       {
         "fileName": "lmp_control",
         "url": "examples/reaxff/VOH/lmp_control"
-      },
-      {
-        "fileName": "VOH.png",
-        "url": "examples/reaxff/VOH/VOH.png"
       },
       {
         "fileName": "README",
@@ -1512,10 +1336,6 @@
       {
         "fileName": "param.qeq",
         "url": "examples/reaxff/ZnOH2/param.qeq"
-      },
-      {
-        "fileName": "ZnOH2.png",
-        "url": "examples/reaxff/ZnOH2/ZnOH2.png"
       }
     ]
   }

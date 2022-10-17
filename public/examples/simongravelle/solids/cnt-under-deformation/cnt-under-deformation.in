@@ -60,20 +60,14 @@ fix		myber all temp/berendsen ${T} ${T} 0.1
 fix		mynve all nve
 timestep	${dt}
 
-# ============= dump atom positions every 0.25 ps and log info every 0.25 ps
-dump 		mydmp all atom 500 dump.eq.lammpstrj
 thermo		500
 
 # ============= first run (5 ps)
 # ============= equilibrate the whole system at T
 run		10000 
 
-# ============= cancel berendsen and dump (will be replaced)
+# ============= cancel berendsen (will be replaced)
 unfix		myber
-undump		mydmp
-
-# ============= dump atom positions every 0.5 ps
-dump 		mydmp all atom 1000 dump.run.lammpstrj
 
 # ============= kill all the force along z for the control group 1 
 # ============= kill all the force along z for the control group 2 
