@@ -206,6 +206,29 @@
     ]
   },
   {
+    "id": "nacl-solution",
+    "title": "NaCl solution",
+    "description": "The simulation consists of a bulk solution of NaCl in water.",
+    "imageUrl": "examples/simongravelle/liquids/nacl-solution/nacl-solution.jpg",
+    "inputScript": "nacl-solution.in",
+    "keywords": ["lennard jones", "salt", "water", "TIP4P"],
+    "files":[
+      {
+        "fileName": "nacl-solution.in",
+        "url": "examples/simongravelle/liquids/nacl-solution/nacl-solution.in"
+      },
+      {
+        "fileName": "nacl-solution.data",
+        "url": "examples/simongravelle/liquids/nacl-solution/nacl-solution.data"
+      },
+      {
+        "fileName": "PARM.lammps",
+        "url": "examples/simongravelle/liquids/nacl-solution/PARM.lammps"
+      }
+
+    ]
+  },
+  {
     "id": "betacristobalite",
     "title": "Silica beta cristobalite",
     "description": "Beta cristobalite crystal using the vashishta potential.",
