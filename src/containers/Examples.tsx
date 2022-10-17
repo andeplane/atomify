@@ -1,10 +1,12 @@
 import {useCallback, useState, useEffect} from 'react'
 import { useMeasure } from 'react-use';
+import { Select, Button } from 'antd';
 import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Card, Layout, Skeleton, Row, Col, notification } from 'antd';
 import mixpanel from 'mixpanel-browser';
+const {Option} = Select
 
 const { Header } = Layout;
 const { Meta } = Card;
@@ -15,16 +17,20 @@ interface Example {
   description: string
   imageUrl: string
   inputScript: string
+  author?: string,
+  authorUrl?: string,
+  keywords?: string[]
 }
 
 const Examples = () => {
   const [examples, setExamples] = useState<Example[]>([])
+  const [filterKeywords, setFilterKeywords] = useState<string[]>([])
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
   const simulation = useStoreState(state => state.simulation.simulation)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   const lammps = useStoreState(state => state.simulation.lammps)
-    
+  
   useEffect(() => {
     (async () => {
       const examplesUrl = 'examples/examples.json'
@@ -68,6 +74,15 @@ const Examples = () => {
     }
   }, [setNewSimulation, setPreferredView, simulation?.id])
 
+  let keywordsSet: Set<string> = new Set()
+  examples.forEach(example => {
+    if (example.keywords) {
+      example.keywords.forEach( (keyword) => keywordsSet.add(keyword) )
+    }
+  })
+  const keywords = Array.from(keywordsSet)
+  keywords.sort()
+
   const renderCard = (example: Example) => (
     <Card
       key={example.id}
@@ -85,7 +100,18 @@ const Examples = () => {
     >
       <Meta
         title={example.title}
-        description={example.description}
+        description={(
+          <>
+            {example.description} 
+            <br />
+            {example.author && 
+              <>
+              Author <Button type="link" href={example.authorUrl} target={"_blank"}>{example.author}</Button>
+              </>
+            }
+          </>
+        )
+        }
       />
     </Card>
   )
@@ -110,18 +136,45 @@ const Examples = () => {
     return chunks
   }
 
+  let filteredExamples: Example[] = []
+  if (filterKeywords.length > 0) {
+    filteredExamples = examples.filter(example => {
+      let didFind = false
+      if (example.keywords) {
+        example.keywords.forEach(keyword => {
+          if (filterKeywords.includes(keyword)) {
+            didFind = true
+          }
+        })
+      }
+      return didFind
+    })
+  } else {
+    filteredExamples = examples
+  }
   const numChunks = Math.min(Math.max(1, Math.floor(width / 300)), 4)
-  const chunks = chunkIt(examples, numChunks)
+  const chunks = chunkIt(filteredExamples, numChunks)
 
   return (
     <>
     <Header className="site-layout-background" style={{ fontSize: 25 }}>
-      Examples
+      Examples 
     </Header>
     <div style={{padding: 10, margin: 10}} ref={myRef}>
-    {/* {Object.values(examples).map(renderCard)} */}
-    {chunks.map(renderChunk)}
-    {examples.length === 0 && <Skeleton active/>}
+      <Select
+          mode="multiple"
+          allowClear
+          style={{ width: '100%' }}
+          placeholder="Please select"
+          defaultValue={[]}
+          onChange={setFilterKeywords}
+        >
+          {keywords.map(keyword => (
+            <Option key={keyword}>{keyword}</Option>
+          ))}
+      </Select>
+      {chunks.map(renderChunk)}
+      {examples.length === 0 && <Skeleton active/>}
     </div>
     </>)
 }

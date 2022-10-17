@@ -24,7 +24,7 @@ export const AtomTypes: AtomType[] = [
   { shortname: "Li", fullname: "lithium", radius: 1.82, color: new THREE.Color(...hexToRgb("#CC80FF")) },
   { shortname: "Be", fullname: "beryllium", radius: 1.53, color: new THREE.Color(...hexToRgb("#C2FF00")) },
   { shortname: "B", fullname: "boron", radius: 1.92, color: new THREE.Color(...hexToRgb("#FFB5B5")) },
-  { shortname: "C", fullname: "carbon", radius: 1.70, color: new THREE.Color(...hexToRgb("#505050")) },
+  { shortname: "C", fullname: "carbon", radius: 1.70, color: new THREE.Color(...hexToRgb("#808080")) },
   { shortname: "N", fullname: "nitrogen", radius: 1.55, color: new THREE.Color(...hexToRgb("#3050F8")) },
   { shortname: "O", fullname: "oxygen", radius: 1.52, color: new THREE.Color(...hexToRgb("#AA0000")) },
   { shortname: "F", fullname: "fluorine", radius: 1.35, color: new THREE.Color(...hexToRgb("#90E050")) },
