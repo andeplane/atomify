@@ -165,7 +165,7 @@ const Examples = () => {
           mode="multiple"
           allowClear
           style={{ width: '100%' }}
-          placeholder="Please select"
+          placeholder="Filter on example keywords"
           defaultValue={[]}
           onChange={setFilterKeywords}
         >

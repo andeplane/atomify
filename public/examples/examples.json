@@ -187,7 +187,7 @@
 {
   "id": "amorphous_carbon",
   "title": "Amorphous carbon liquid quench",
-  "description": "The simulation consists of carbon atoms, initially in the liquid state (high temperature). The temperature of the system is decreased progressively until hexagonal rings form. It results in an amorphous nanoporous structure of carbon.",
+  "description": "The simulation consists of carbon atoms, initially in the liquid state (high temperature). The temperature of the system is decreased progressively until hexagonal rings form. It results in an amorphous nanoporous structure of carbon. Warning: heavy and long simulation.",
   "imageUrl": "examples/simongravelle/solids/amorphous-carbon/amorphous-carbon.jpeg",
   "inputScript": "amorphous-carbon.in",
   "keywords": ["airebo", "carbon", "amorphous", "simongravelle"],
@@ -230,7 +230,7 @@
   "id": "cnt_deformation",
   "title": "Carbon nanotube under deformation",
   "description": "The simulation consists of a single carbon nanotube (CNT) in vacuum. At the beginning of the simulation, a few atoms are removed from the CNT. The CNT is divided into three parts: the central part and the two edges. The two edges are forced to move, which leads to the gradual elongation of the CNT. Eventually, the CNT breaks. The breaking of the chemical bonds is permitted by the use of a reactive force field (AIREBO).",
-  "imageUrl": "examples/simongravelle/solids/cnt-under-deformation/cnt-under-deformation.jpeg",
+  "imageUrl": "examples/simongravelle/solids/cnt-under-deformation/cnt-under-deformation.png",
   "inputScript": "cnt-under-deformation.in",
   "keywords": ["airebo", "cnt", "carbon nanotube", "carbon", "simongravelle"],
   "author": "Simon Gravelle",
@@ -255,7 +255,7 @@
   "description": "The simulation consists of a bulk solution of NaCl in water.",
   "imageUrl": "examples/simongravelle/liquids/nacl-solution/nacl-solution.png",
   "inputScript": "nacl-solution.in",
-  "keywords": ["lennard jones", "salt", "water", "TIP4P"],
+  "keywords": ["lennard jones", "salt", "water", "tip4p"],
   "author": "Simon Gravelle",
   "authorUrl": "https://simongravelle.github.io/",
   "files": [{
@@ -278,7 +278,7 @@
   "description": "The simulation consists of a cluster of NaCl in water in the NPT ensemble, at a temperature of 360 K and pressure of 1 atm.",
   "imageUrl": "examples/simongravelle/liquids/salt-dissolution-water/salt-dissolution-water.png",
   "inputScript": "salt-dissolution-water.in",
-  "keywords": ["lennard jones", "salt", "water", "TIP4P"],
+  "keywords": ["lennard jones", "salt", "water", "tip4p"],
   "author": "Simon Gravelle",
   "authorUrl": "https://simongravelle.github.io/",
   "files": [{
@@ -302,7 +302,7 @@
   "description": "The simulation consists of particles diffusing inside a cylindrical nanopore. The surface of the nanopore is covered with adsorbing sites, and the particles reversibly adsorb at the inner surface of the nanopore. The adsorption/desorption processes are modelled using bond/create and bond/break commands respectively. A bond forms if a particle comes close enough to a trap. An additional harmonic potential is added to trapped particles. The wall of the cylinder is modelled using the wall/region command.",
   "imageUrl": "examples/simongravelle/interfaces/reversibly-adsorbing-particles/reversibly-adsorbing-particles.png",
   "inputScript": "reversibly-adsorbing-particles.in",
-  "keywords": ["lennard jones", "salt", "water", "TIP4P"],
+  "keywords": ["lennard jones", "salt", "water", "tip4p"],
   "author": "Simon Gravelle",
   "authorUrl": "https://simongravelle.github.io/",
   "files": [{
@@ -440,7 +440,7 @@
   "description": "CMAP 5-body contributions to CHARMM force field.",
   "imageUrl": "examples/lammps/cmap/cmap.png",
   "inputScript": "in.cmap",
-  "keywords": ["CHARMM"],
+  "keywords": ["charmm"],
   "files": [{
       "fileName": "gagg.data",
       "url": "examples/lammps/cmap/gagg.data"
@@ -1018,7 +1018,7 @@
   "description": "Combustion of Ammonia-Borine (AB) can be simulated with ReaxFF. Two AB molecules meet and a H<sub>2</sub> molecule is formed.",
   "imageUrl": "examples/reaxff/AB/AB.png",
   "inputScript": "AB.in",
-  "keywords": ["reaxff", "combustion", "ammonia-borine"],
+  "keywords": ["reaxff", "combustion", "ammonia borine"],
   "files": [{
       "fileName": "lmp_control",
       "url": "examples/reaxff/AB/lmp_control"
@@ -1076,7 +1076,7 @@
   "description": "RDX is an organic compound normally used as an explosive, especially in world war II.",
   "imageUrl": "examples/reaxff/RDX/RDX.png",
   "inputScript": "RDX.in",
-  "keywords": ["reaxff", "RDX", "explosive"],
+  "keywords": ["reaxff", "explosive"],
   "files": [{
       "fileName": "lmp_control",
       "url": "examples/reaxff/RDX/lmp_control"
@@ -1155,7 +1155,7 @@
   "description": "In this simulation, we see Zn(OH)2 at high temperature.",
   "imageUrl": "examples/reaxff/ZnOH2/ZnOH2.png",
   "inputScript": "ZnOH2.in",
-  "keywords": ["reaxff", "ZnOH2"],
+  "keywords": ["reaxff"],
   "files": [{
       "fileName": "ZnOH2.in",
       "url": "examples/reaxff/ZnOH2/ZnOH2.in"
