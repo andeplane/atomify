@@ -35,6 +35,10 @@ public:
   void setSyncFrequency(int frequency);
   void setBuildNeighborlist(bool buildNeighborlist);
   std::string getErrorMessage();
+  std::string getLastCommand();
+  int getTimesteps();
+  int getRunTotalTimesteps();
+  int getRunTimesteps();
 
   // Pointer getters
   long getBondsDistanceMapPointer();
@@ -76,15 +80,19 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency)
       .function("getIsRunning", &LAMMPSWeb::getIsRunning)
       .function("getErrorMessage", &LAMMPSWeb::getErrorMessage)
-
+      .function("getLastCommand", &LAMMPSWeb::getLastCommand)
+      .function("getTimesteps", &LAMMPSWeb::getTimesteps)
+      .function("getRunTimesteps", &LAMMPSWeb::getRunTimesteps)
+      .function("getRunTotalTimesteps", &LAMMPSWeb::getRunTotalTimesteps)
+      
       .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
       .function("getBondsDistanceMapPointer", &LAMMPSWeb::getBondsDistanceMapPointer)
       .function("getIdPointer", &LAMMPSWeb::getIdPointer)
       .function("getTypePointer", &LAMMPSWeb::getTypePointer)
       .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
       .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
-      .function("getBondsPosition1", &LAMMPSWeb::getBondsPosition1Pointer)
-      .function("getBondsPosition2", &LAMMPSWeb::getBondsPosition2Pointer)
+      .function("getBondsPosition1Pointer", &LAMMPSWeb::getBondsPosition1Pointer)
+      .function("getBondsPosition2Pointer", &LAMMPSWeb::getBondsPosition2Pointer)
       
       .function("step", &LAMMPSWeb::step)
       .function("start", &LAMMPSWeb::start)

@@ -1,4 +1,14 @@
 export type LammpsWeb = {
+  getNumAtoms: () => number
+  setSyncFrequency: (every: number) => void
+  setBuildNeighborlist: (buildNeighborlist: boolean) => void
+  getIsRunning: () => boolean
+  getErrorMessage: () => string
+  getLastCommand: () => string
+  getTimesteps: () => number
+  getRunTimesteps: () => number
+  getRunTotalTimesteps: () => number
+
   getPositionsPointer: () => number
   getIdPointer: () => number
   getTypePointer: () => number
@@ -7,12 +17,6 @@ export type LammpsWeb = {
   getBondsPosition1Pointer: () => number
   getBondsPosition2Pointer: () => number
   getBondsDistanceMapPointer: () => number
-  
-  getNumAtoms: () => number
-  setSyncFrequency: (every: number) => void
-  setBuildNeighborlist: (buildNeighborlist: boolean) => void
-  getErrorMessage: () => string
-  getIsRunning: () => boolean
   
   step: () => void
   stop: () => boolean

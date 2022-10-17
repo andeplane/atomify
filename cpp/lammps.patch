@@ -30,6 +30,31 @@ index 2261b1d..71e340e 100644
  #endif
  }
  
+diff --git a/src/input.h b/src/input.h
+index f54d2ea..a78b3d6 100644
+--- a/src/input.h
++++ b/src/input.h
+@@ -26,7 +26,6 @@ class Input : protected Pointers {
+   friend class Error;
+   friend class Deprecated;
+   friend class SimpleCommandsTest_Echo_Test;
+-
+  public:
+   int narg;                    // # of command args
+   char **arg;                  // parsed args for command
+@@ -41,12 +40,10 @@ class Input : protected Pointers {
+   // substitute for variables in a string
+   void write_echo(const std::string &);    // send text to active echo file pointers
+ 
+- protected:
+   char *command;      // ptr to current command
+   int echo_screen;    // 0 = no, 1 = yes
+   int echo_log;       // 0 = no, 1 = yes
+ 
+- private:
+   int me;                           // proc ID
+   int maxarg;                       // max # of args in arg
+   char *line, *copy, *work;         // input line & copy and work string
 diff --git a/src/modify.cpp b/src/modify.cpp
 index 90b911b..8c462ba 100644
 --- a/src/modify.cpp

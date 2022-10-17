@@ -113,6 +113,10 @@ const Simulation = () => {
   const setSimulationBox = useStoreActions(actions => actions.simulation.setSimulationBox)
   const setSimulationOrigo = useStoreActions(actions => actions.simulation.setSimulationOrigo)
   const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
+  const setTimesteps = useStoreActions(actions => actions.simulation.setTimesteps)
+  const setRunTimesteps = useStoreActions(actions => actions.simulation.setRunTimesteps)
+  const setRunTotalTimesteps = useStoreActions(actions => actions.simulation.setRunTotalTimesteps)
+  const setLastCommand = useStoreActions(actions => actions.simulation.setLastCommand)
   
   const onPrint = useCallback( (text: string) => {
     //@ts-ignore
@@ -183,9 +187,17 @@ const Simulation = () => {
           // @ts-ignore
           window.cancel = false;
         }
+
+        setTimesteps(lammps.getTimesteps())
+        setRunTimesteps(lammps.getRunTimesteps())
+        setRunTotalTimesteps(lammps.getRunTotalTimesteps())
+        setLastCommand(lammps.getLastCommand())
       }
     }
-  }, [wasm, lammps, particles, bonds, setBonds, setParticles, setSimulationBox, setSimulationOrigo, running, selectedMenu, simulation])
+  }, [wasm, lammps, particles, bonds, setBonds, 
+    setParticles, setSimulationBox, setSimulationOrigo, 
+    running, selectedMenu, simulation, setTimesteps,
+    setRunTimesteps, setRunTotalTimesteps, setLastCommand])
 
   useEffect(
     () => {

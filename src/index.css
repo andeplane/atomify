@@ -74,8 +74,8 @@ html, body, #root, .App {
   background-color: #1E1E1E !important
 }
 
-#fixedbutton {
-  position:fixed;
+.rendersettingsbutton {
+  position:fixed !important;
   bottom:0;
   right:0;
   margin-right: 20px;

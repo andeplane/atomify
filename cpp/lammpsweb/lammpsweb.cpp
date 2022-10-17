@@ -297,6 +297,37 @@ std::string LAMMPSWeb::getErrorMessage() {
   return m_lmp->error->get_last_error();
 }
 
+std::string LAMMPSWeb::getLastCommand() {
+  if (!m_lmp) {
+    return "";
+  }
+  std::string lastCommand = "(unknown)";
+  if (m_lmp->input && m_lmp->input->line) lastCommand = m_lmp->input->line;
+  return lastCommand;
+}
+
+
+int LAMMPSWeb::getTimesteps() {
+  if (!m_lmp) {
+    return 0;
+  }
+  return m_lmp->update->ntimestep;
+}
+
+int LAMMPSWeb::getRunTotalTimesteps() {
+  if (!m_lmp) {
+    return 0;
+  }
+  return m_lmp->update->laststep - m_lmp->update->firststep;
+}
+
+int LAMMPSWeb::getRunTimesteps() {
+  if (!m_lmp) {
+    return 0;
+  }
+  return m_lmp->update->ntimestep - m_lmp->update->firststep;
+}
+
 void LAMMPSWeb::setSyncFrequency(int every) {
   LAMMPS_NS::Fix *originalFix = findFixByIdentifier(std::string("atomify"));
   if (!originalFix) {
