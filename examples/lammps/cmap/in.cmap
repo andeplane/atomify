@@ -31,4 +31,7 @@ velocity        all create 0.0 12345678 dist uniform
 
 timestep        2.0
 
+thermo_style one
+thermo 100
+
 run             100000

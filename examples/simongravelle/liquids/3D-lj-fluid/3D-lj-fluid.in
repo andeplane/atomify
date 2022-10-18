@@ -31,7 +31,6 @@ neigh_modify every 1 delay 5 check yes
 
 # minimisation
 minimize 1.0e-4 1.0e-6 1000 10000
-reset_timestep 0
 
 # dynamics
 fix mynve all nve
@@ -39,7 +38,8 @@ fix mylgv all langevin 1.0 1.0 0.1 1530917
 timestep 0.005
 
 # outputs
-thermo 1000
+thermo 100
+thermo_style one
 
 # run
 run 10000

@@ -40,6 +40,9 @@ displace_atoms all move 12 12 12
 
 neigh_modify delay 0 every 1 check yes
 
+thermo 100
+thermo_style one
+
 timestep 0.002
 
 velocity all create ${T0} 12345 loop geom mom yes rot yes

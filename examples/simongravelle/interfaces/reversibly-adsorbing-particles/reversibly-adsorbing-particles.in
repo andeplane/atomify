@@ -49,6 +49,8 @@ include			bonds.in
 
 # ===================== output properties
 thermo 			10000
+thermo_style one
+
 compute 		Tion ions temp 
 thermo_modify 		temp Tion
 

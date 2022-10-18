@@ -10,7 +10,6 @@
 #/bond 2 3 2.0
 #/bond 3 3 2.0
 #/bond 2 2 2.0
-log none
 units		real
 
 atom_style	charge
@@ -23,10 +22,12 @@ neighbor	2 bin
 neigh_modify every 1 delay 0 check yes
 
 fix		1 all nve
-fix             2 all qeq/reax 1 0.0 10.0 1e-4 param.qeq
-fix             3 all temp/berendsen 2500.0 2500.0 100.0
+fix   2 all qeq/reax 1 0.0 10.0 1e-4 param.qeq
 
-velocity all create 4000.0 492845 rot yes dist gaussian
+velocity all create 8000.0 492845 rot yes dist gaussian
+
+thermo_style custom step temp pe etotal epair
+thermo 10
 
 timestep	0.25
-run 10000
+run 5000

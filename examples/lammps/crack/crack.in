@@ -61,9 +61,11 @@ fix 2 boundary setforce NULL 0.0 0.0
 # run
 
 timestep 0.003
-thermo 200
+thermo 100
+thermo_style one
+
 thermo_modify temp new
 
 neigh_modify exclude type 2 3
 
-run 5000
+run 10000
