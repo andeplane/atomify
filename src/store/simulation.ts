@@ -3,6 +3,7 @@ import {LammpsWeb} from '../types'
 import {Particles, Bonds} from 'omovi'
 import {notification} from 'antd'
 import {AtomTypes, AtomType, hexToRgb} from '../utils/atomtypes'
+import AnalyzeNotebook from '../utils/AnalyzeNotebook'
 import mixpanel from 'mixpanel-browser';
 import * as THREE from 'three'
 import localforage from 'localforage'
@@ -310,7 +311,6 @@ export const simulationModel: SimulationModel = {
     const wasm = getStoreState().simulation.wasm
     const fileNames: string[] = wasm.FS.readdir(`/${simulation.id}`)
     const files: {[key: string]: SimulationFile} = {}
-    console.log("Got file names ", fileNames)
     fileNames.forEach( (fileName: string) => {
       if (['.', '..'].includes(fileName)) {
         return
@@ -324,20 +324,42 @@ export const simulationModel: SimulationModel = {
       }
     })
 
-    const createLocalForageObject = (name: string, path: string, type: "directory"|"file", contents?: string) => (
-      {
-        "name": name,
-        "path": path,
-        "last_modified": new Date().toISOString(),
-        "created": new Date().toISOString(),
-        "format": type==="directory" ? "json" : "text",
-        "mimetype": type==="directory" ? "application/json" : "text/plain",
-        "content": contents ? contents : [],
-        "size": 0,
-        "writable": true,
-        "type": type
+    const createLocalForageObject = (name: string, path: string, type: "directory"|"file", content?: string|Object) => {
+
+      let mimetype = "text/plain"
+      let format = "text"
+      let size = 0
+      const now = new Date().toISOString()
+
+      if (type === "directory" || typeof content === "object") {
+        mimetype = "application/json"
+        format = "json"
       }
-    )
+      if (content) {
+        if (typeof content === "string") {
+          size = content.length
+        } else {
+          size = JSON.stringify(content).length
+        }
+      }
+      
+      return {
+        name,
+        path,
+        last_modified: now, 
+        created: now, // TODO(keep created date if it exists)
+        format,
+        mimetype: mimetype,
+        content: content ? content : [],
+        size,
+        writable: true,
+        type
+      }
+    }
+
+    // Add an example analysis file
+    const analyzeFileName = 'analyze.ipynb'
+    localforage.setItem(analyzeFileName, createLocalForageObject(analyzeFileName,analyzeFileName, 'file', AnalyzeNotebook(simulation.id)))
     
     await localforage.setItem(simulation.id, createLocalForageObject(simulation.id, simulation.id, "directory"))
     for (const file of Object.values(files)) {
