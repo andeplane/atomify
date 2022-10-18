@@ -5,6 +5,15 @@ import {notification} from 'antd'
 import {AtomTypes, AtomType, hexToRgb} from '../utils/atomtypes'
 import mixpanel from 'mixpanel-browser';
 import * as THREE from 'three'
+import localforage from 'localforage'
+
+localforage.config({
+  driver      : localforage.INDEXEDDB, // Force WebSQL; same as using setDriver()
+  name        : 'JupyterLite Storage',
+  version     : 5.0,
+  storeName   : 'files', // Should be alphanumeric, with underscores.
+  description : 'some description'
+});
 
 const defaultAtomTypes: {[key:string]: AtomType} = {
   '1': { shortname: "1", fullname: "1", radius: 1.20, color: new THREE.Color(255, 102, 102 ) },
@@ -280,15 +289,42 @@ export const simulationModel: SimulationModel = {
     if (!simulation) {
       return
     }
+    const createLocalForageObject = (name: string, path: string, type: "directory"|"file", contents?: string) => (
+      {
+        "name": name,
+        "path": path,
+        "last_modified": new Date().toISOString(),
+        "created": new Date().toISOString(),
+        "format": type==="directory" ? "json" : "text",
+        "mimetype": type==="directory" ? "application/json" : "text/plain",
+        "content": contents ? contents : [],
+        "size": 0,
+        "writable": true,
+        "type": type
+      }
+    )
+    
     // @ts-ignore
     const wasm = getStoreState().simulation.wasm
     for (const file of simulation.files) {
       // Update all files if no fileName is specified
       if (file.fileName === fileName || !fileName) {
+        console.log("Syncing to wasm")
         wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content)
+        console.log("Synced to wasm")
         console.log("Synced file ", file.fileName)
       }
     }
+    await localforage.setItem(simulation.id, createLocalForageObject(simulation.id, simulation.id, "directory"))
+    for (const file of simulation.files) {
+      // Update all files if no fileName is specified
+      if (file.fileName === fileName || !fileName) {
+        console.log("Synced to localforage")
+        await localforage.setItem(`${simulation.id}/${file.fileName}`, createLocalForageObject(file.fileName, `${simulation.id}/${file.fileName}`, "file", file.content))
+        console.log("Synced file ", file.fileName)
+      }
+    }
+    console.log("did sync files")
   }),
   run: thunk(async (actions, payload, {getStoreState}) => {
     // @ts-ignore
