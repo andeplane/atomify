@@ -1,10 +1,10 @@
-name: Deploy to GitHub pages
+name: Build
 on:
   push:
     branches:
-      - main
+      - '**'
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -19,8 +19,3 @@ jobs:
       run: npm install
     - name: Build app
       run: npm run predeploy
-    - name: Deploy app
-      uses: peaceiris/actions-gh-pages@v3
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./build
