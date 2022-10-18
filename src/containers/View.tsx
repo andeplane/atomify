@@ -122,8 +122,7 @@ const View = ({visible}: ViewProps) => {
   useEffect(() => {
     if (visualizer) {
       visualizer.renderer.renderSsao = ssao
-      visualizer.ambientLight.intensity = 0.5 * brightness
-      visualizer.directionalLight.intensity = 0.4 * brightness
+      visualizer.pointLight.intensity = 0.5 * brightness
     }
   }, [ssao, visualizer, brightness])
 
