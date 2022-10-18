@@ -29,12 +29,15 @@ group salt type 3 4 # Na = type 3 and Cl = type 4
 
 # maintain the shape of the water molecules
 fix myshk wat shake 1.0e-4 200 0 b 1 a 1
+
 # use NPT with isotropic pressure control
 fix mynpt all npt temp 360 360 100 iso 1 1 1000
 timestep 1.0
+
 # keep salt at the center of the box
 fix myrct salt recenter INIT INIT INIT
 
+thermo_style one
 thermo 5000
 
 # run for 25 ns

@@ -26,6 +26,7 @@ mass 		1 12.0107
 pair_coeff	* * CH.airebo C
 
 # ============= minimise energy
+thermo_style one
 thermo		10
 minimize 	1.0e-4 1.0e-6 100 1000
 reset_timestep	0

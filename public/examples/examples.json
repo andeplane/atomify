@@ -1,4 +1,18 @@
-[{
+[
+  {
+    "id": "diffusion",
+    "title": "Diffusion",
+    "description": "This example shows how you can measure the diffusion coefficient using the mean square displacement. The white atoms have mass 1 while the red atoms have mass 4. This results in the red atoms having diffusion coefficient half the value of the white ones.",
+    "analysisDescription": "# About this simulation\nWe simulate two Lennard Jones particle types with masses 1.0 and 4.0. The diffusion coefficient [https://en.wikipedia.org/wiki/Mass_diffusivity](scales like) D$\\propto 1/\\sqrt{m}$, so we should see a factor 2 higher diffusion coefficient for the small molecules.",
+    "imageUrl": "examples/diffusion/diffusion/simple_diffusion.png",
+    "inputScript": "simple_diffusion.in",
+    "keywords": ["lennard jones", "diffusion"],
+    "files": [{
+      "fileName": "simple_diffusion.in",
+      "url": "examples/diffusion/diffusion/simple_diffusion.in"
+    }]
+  },
+  {
   "id": "proteinfolding",
   "title": "Protein folding",
   "description": "During this short simulation the protein evolves from an unfolded initial conformation to a misfolded conformation. It can take a very long time.",
@@ -56,17 +70,54 @@
   }]
 },
 {
-  "id": "diffusion",
-  "title": "Diffusion",
-  "description": "This example shows how you can measure the diffusion coefficient using the mean square displacement. The white atoms have mass 1 while the red atoms have mass 4. This results in the red atoms having diffusion coefficient half the value of the white ones.",
-  "analysisDescription": "# About this simulation\nWe simulate two Lennard Jones particle types with masses 1.0 and 4.0. The diffusion coefficient [https://en.wikipedia.org/wiki/Mass_diffusivity](scales like) D$\\propto 1/\\sqrt{m}$, so we should see a factor 2 higher diffusion coefficient for the small molecules.",
-  "imageUrl": "examples/diffusion/diffusion/simple_diffusion.png",
-  "inputScript": "simple_diffusion.in",
-  "keywords": ["lennard jones", "diffusion"],
+  "id": "generate_nanoporous",
+  "title": "Generate nanoporous silica",
+  "description": "Generate a nanoporous silica structure from betacristobalite using the vashishta potential.",
+  "imageUrl": "examples/silica/generate_nanoporous/generate_nanoporous.png",
+  "inputScript": "generate_nanoporous.in",
+  "keywords": ["vashishta", "sio2", "amorphous", "nanoporous"],
   "files": [{
-    "fileName": "simple_diffusion.in",
-    "url": "examples/diffusion/diffusion/simple_diffusion.in"
-  }]
+      "fileName": "SiO2.vashishta",
+      "url": "examples/silica/generate_nanoporous/SiO2.vashishta"
+    },
+    {
+      "fileName": "generate_nanoporous.in",
+      "url": "examples/silica/generate_nanoporous/generate_nanoporous.in"
+    },
+    {
+      "fileName": "betacristobalite.data",
+      "url": "examples/silica/generate_nanoporous/betacristobalite.data"
+    }
+  ]
+},
+{
+  "id": "reax_cho",
+  "title": "Hydrocarbon oxcidation",
+  "description": "Hydrocarbons (such as pentane) will at high temperatures react with oxygen and form water, CO, CO2, HO2 and OH. After around 3000 timesteps, we see some interesting reactions forming new molecules.",
+  "imageUrl": "examples/reaxff/CHO/CHO.png",
+  "inputScript": "CHO.in",
+  "keywords": ["reaxff", "hydrocarbon", "pentane", "water"],
+  "files": [{
+      "fileName": "lmp_control",
+      "url": "examples/reaxff/CHO/lmp_control"
+    },
+    {
+      "fileName": "CHO.in",
+      "url": "examples/reaxff/CHO/CHO.in"
+    },
+    {
+      "fileName": "ffield.reax.cho",
+      "url": "examples/reaxff/CHO/ffield.reax.cho"
+    },
+    {
+      "fileName": "data.CHO",
+      "url": "examples/reaxff/CHO/data.CHO"
+    },
+    {
+      "fileName": "param.qeq",
+      "url": "examples/reaxff/CHO/param.qeq"
+    }
+  ]
 },
 {
   "id": "sic_nanoparticle",
@@ -90,35 +141,6 @@
     {
       "fileName": "siliconcarbide.data",
       "url": "examples/sic/nanoparticle/siliconcarbide.data"
-    }
-  ]
-},
-{
-  "id": "reax_cho",
-  "title": "Hydrocarbon oxcidation",
-  "description": "Hydrocarbons (such as pentane) will at high temperatures react with oxygen and form water, CO, CO2, HO2 and OH.",
-  "imageUrl": "examples/reaxff/CHO/CHO.png",
-  "inputScript": "CHO.in",
-  "keywords": ["reaxff", "hydrocarbon", "pentane", "water"],
-  "files": [{
-      "fileName": "lmp_control",
-      "url": "examples/reaxff/CHO/lmp_control"
-    },
-    {
-      "fileName": "CHO.in",
-      "url": "examples/reaxff/CHO/CHO.in"
-    },
-    {
-      "fileName": "ffield.reax.cho",
-      "url": "examples/reaxff/CHO/ffield.reax.cho"
-    },
-    {
-      "fileName": "data.CHO",
-      "url": "examples/reaxff/CHO/data.CHO"
-    },
-    {
-      "fileName": "param.qeq",
-      "url": "examples/reaxff/CHO/param.qeq"
     }
   ]
 },
@@ -381,23 +403,23 @@
   ]
 },
 {
-  "id": "generate_nanoporous",
+  "id": "nanoporous_sio2",
   "title": "Nanoporous silica",
-  "description": "Generate a nanoporous silica structure from betacristobalite using the vashishta potential.",
-  "imageUrl": "examples/silica/generate_nanoporous/generate_nanoporous.png",
-  "inputScript": "generate_nanoporous.in",
+  "description": "",
+  "imageUrl": "examples/silica/nanoporous_sio2/nanoporous_sio2.png",
+  "inputScript": "nanoporous_sio2.in",
   "keywords": ["vashishta", "sio2", "amorphous", "nanoporous"],
   "files": [{
       "fileName": "SiO2.vashishta",
-      "url": "examples/silica/generate_nanoporous/SiO2.vashishta"
+      "url": "examples/silica/nanoporous_sio2/SiO2.vashishta"
     },
     {
-      "fileName": "generate_nanoporous.in",
-      "url": "examples/silica/generate_nanoporous/generate_nanoporous.in"
+      "fileName": "nanoporous_sio2.in",
+      "url": "examples/silica/nanoporous_sio2/nanoporous_sio2.in"
     },
     {
-      "fileName": "betacristobalite.data",
-      "url": "examples/silica/generate_nanoporous/betacristobalite.data"
+      "fileName": "nanoporous_sio2.data",
+      "url": "examples/silica/nanoporous_sio2/nanoporous_sio2.data"
     }
   ]
 },

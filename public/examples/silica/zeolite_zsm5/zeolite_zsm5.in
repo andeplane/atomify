@@ -23,5 +23,8 @@ velocity all create 300 376847 loop geom
 
 timestep 0.002
 
+thermo_style one
+thermo 100
+
 fix nvt all nvt temp 300 300 1.0
-run 1000
+run 5000

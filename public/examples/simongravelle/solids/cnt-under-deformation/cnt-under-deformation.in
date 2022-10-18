@@ -64,6 +64,7 @@ fix		mynve all nve
 timestep	${dt}
 
 thermo		500
+thermo_style one
 
 # ============= first run (5 ps)
 # ============= equilibrate the whole system at T
@@ -108,4 +109,4 @@ displace_atoms	topgroup move 0 0 0.1
 displace_atoms	botgroup move 0 0 -0.1
 run		1000
 next		a
-jump 		input.lammps loop
+jump 		cnt-under-deformation.in loop

@@ -23,4 +23,7 @@ velocity all create 300.0 86151 mom yes
 fix nve all nve
 timestep 0.0005
 
+thermo 10
+thermo_style one
+
 run 1000
