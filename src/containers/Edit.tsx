@@ -89,7 +89,7 @@ monaco.languages.setMonarchTokensProvider('lammps', {
 const Edit = () => {
   const selectedFile = useStoreState(state => state.simulation.selectedFile)
   const simulation =  useStoreState(state => state.simulation.simulation)
-  const syncFiles = useStoreActions(actions => actions.simulation.syncFiles)
+  const syncFilesWasm = useStoreActions(actions => actions.simulation.syncFilesWasm)
   const options = {
     selectOnLineNumbers: true
   };
@@ -103,9 +103,9 @@ const Edit = () => {
     const file = simulation?.files.filter(file => file.fileName === selectedFile?.fileName)[0]
     if (file) {
       file.content=newValue
-      syncFiles(file.fileName)
+      syncFilesWasm(file.fileName)
     }
-  }, [selectedFile?.fileName, simulation?.files, syncFiles])
+  }, [selectedFile?.fileName, simulation?.files, syncFilesWasm])
 
   if (!selectedFile) {
     return (<>No file selected</>)

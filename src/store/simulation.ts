@@ -8,9 +8,8 @@ import * as THREE from 'three'
 import localforage from 'localforage'
 
 localforage.config({
-  driver      : localforage.INDEXEDDB, // Force WebSQL; same as using setDriver()
+  driver      : localforage.INDEXEDDB,
   name        : 'JupyterLite Storage',
-  version     : 5.0,
   storeName   : 'files', // Should be alphanumeric, with underscores.
   description : 'some description'
 });
@@ -159,7 +158,8 @@ export interface SimulationModel {
   setStatus: Action<SimulationModel, Status|undefined>
   setLammps: Action<SimulationModel, LammpsWeb>
   setWasm: Action<SimulationModel, any>
-  syncFiles: Thunk<SimulationModel, string|undefined>
+  syncFilesWasm: Thunk<SimulationModel, string|undefined>
+  syncFilesJupyterLite: Thunk<SimulationModel, undefined>
   run: Thunk<SimulationModel>
   newSimulation: Thunk<SimulationModel, Simulation>
   wasm?: any
@@ -283,12 +283,47 @@ export const simulationModel: SimulationModel = {
   setStatus: action((state, status?: Status) => {
     state.status = status
   }),
-  syncFiles: thunk(async (actions, fileName: string|undefined, {getStoreState}) => {
+  syncFilesWasm: thunk(async (actions, fileName: string|undefined, {getStoreState}) => {
     //@ts-ignore
     const simulation = getStoreState().simulation.simulation as Simulation
     if (!simulation) {
       return
     }
+    
+    // @ts-ignore
+    const wasm = getStoreState().simulation.wasm
+    for (const file of simulation.files) {
+      // Update all files if no fileName is specified
+      if (file.fileName === fileName || !fileName) {
+        wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content)
+        console.log("Synced file ", file.fileName)
+      }
+    }
+  }),
+  syncFilesJupyterLite: thunk(async (actions, dummy: undefined, {getStoreState}) => { // TODO: deal with the undefined hack
+    //@ts-ignore
+    const simulation = getStoreState().simulation.simulation as Simulation
+    if (!simulation) {
+      return
+    }
+    // @ts-ignore
+    const wasm = getStoreState().simulation.wasm
+    const fileNames: string[] = wasm.FS.readdir(`/${simulation.id}`)
+    const files: {[key: string]: SimulationFile} = {}
+    console.log("Got file names ", fileNames)
+    fileNames.forEach( (fileName: string) => {
+      if (['.', '..'].includes(fileName)) {
+        return
+      }
+
+      const filePath = `/${simulation.id}/${fileName}`
+      files[fileName] = {
+        content: wasm.FS.readFile(filePath, { encoding: 'utf8' }),
+        fileName,
+        url: '' // TODO: Deal with this hack
+      }
+    })
+
     const createLocalForageObject = (name: string, path: string, type: "directory"|"file", contents?: string) => (
       {
         "name": name,
@@ -304,27 +339,11 @@ export const simulationModel: SimulationModel = {
       }
     )
     
-    // @ts-ignore
-    const wasm = getStoreState().simulation.wasm
-    for (const file of simulation.files) {
-      // Update all files if no fileName is specified
-      if (file.fileName === fileName || !fileName) {
-        console.log("Syncing to wasm")
-        wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content)
-        console.log("Synced to wasm")
-        console.log("Synced file ", file.fileName)
-      }
-    }
     await localforage.setItem(simulation.id, createLocalForageObject(simulation.id, simulation.id, "directory"))
-    for (const file of simulation.files) {
+    for (const file of Object.values(files)) {
       // Update all files if no fileName is specified
-      if (file.fileName === fileName || !fileName) {
-        console.log("Synced to localforage")
-        await localforage.setItem(`${simulation.id}/${file.fileName}`, createLocalForageObject(file.fileName, `${simulation.id}/${file.fileName}`, "file", file.content))
-        console.log("Synced file ", file.fileName)
-      }
+      await localforage.setItem(`${simulation.id}/${file.fileName}`, createLocalForageObject(file.fileName, `${simulation.id}/${file.fileName}`, "file", file.content))
     }
-    console.log("did sync files")
   }),
   run: thunk(async (actions, payload, {getStoreState}) => {
     // @ts-ignore
@@ -366,6 +385,7 @@ export const simulationModel: SimulationModel = {
       //@ts-ignore
       window.postStepCallback()
     }
+    actions.syncFilesJupyterLite()
     actions.setLastCommand(undefined)
   }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
@@ -470,7 +490,7 @@ export const simulationModel: SimulationModel = {
 
     const inputScriptFile = simulation.files.filter(file => file.fileName===simulation.inputScript)[0]
     extractAtomifyCommands(inputScriptFile?.content)
-    actions.syncFiles(undefined)
+    actions.syncFilesWasm(undefined)
     actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)
     await actions.setStatus(undefined)

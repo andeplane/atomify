@@ -157,9 +157,14 @@ const App: React.FC = () => {
           </Tabs.TabPane>
         </Tabs>
           {showConsole && <Modal className='console-modal' bodyStyle={{backgroundColor: '#1E1E1E'}} width={'80%'} footer={[
+            <>
+            <Button key="analyze" onClick={() => {setShowConsole(false); setPreferredView('analyze')}}>
+              Analyze simulation
+            </Button>
             <Button key="close" onClick={() => setShowConsole(false)}>
-            Close
-          </Button>
+              Close
+            </Button>
+          </>
           ]} closable={false} open onCancel={() => setShowConsole(false)}><Console width={'100%'} height={'70vh'}/></Modal>}
           {<Modal closable={false} title={status?.title} open={status != null || wasm == null} footer={null}>
             {status?.text}
