@@ -3,8 +3,17 @@ import {LammpsWeb} from '../types'
 import {Particles, Bonds} from 'omovi'
 import {notification} from 'antd'
 import {AtomTypes, AtomType, hexToRgb} from '../utils/atomtypes'
+import AnalyzeNotebook from '../utils/AnalyzeNotebook'
 import mixpanel from 'mixpanel-browser';
 import * as THREE from 'three'
+import localforage from 'localforage'
+
+localforage.config({
+  driver      : localforage.INDEXEDDB,
+  name        : 'JupyterLite Storage',
+  storeName   : 'files', // Should be alphanumeric, with underscores.
+  description : 'some description'
+});
 
 const defaultAtomTypes: {[key:string]: AtomType} = {
   '1': { shortname: "1", fullname: "1", radius: 1.20, color: new THREE.Color(255, 102, 102 ) },
@@ -98,6 +107,7 @@ export interface Simulation {
   id: string
   files: SimulationFile[]
   inputScript: string
+  analysisDescription?: string
   start: boolean
 }
 
@@ -150,7 +160,8 @@ export interface SimulationModel {
   setStatus: Action<SimulationModel, Status|undefined>
   setLammps: Action<SimulationModel, LammpsWeb>
   setWasm: Action<SimulationModel, any>
-  syncFiles: Thunk<SimulationModel, string|undefined>
+  syncFilesWasm: Thunk<SimulationModel, string|undefined>
+  syncFilesJupyterLite: Thunk<SimulationModel, undefined>
   run: Thunk<SimulationModel>
   newSimulation: Thunk<SimulationModel, Simulation>
   wasm?: any
@@ -274,12 +285,13 @@ export const simulationModel: SimulationModel = {
   setStatus: action((state, status?: Status) => {
     state.status = status
   }),
-  syncFiles: thunk(async (actions, fileName: string|undefined, {getStoreState}) => {
+  syncFilesWasm: thunk(async (actions, fileName: string|undefined, {getStoreState}) => {
     //@ts-ignore
     const simulation = getStoreState().simulation.simulation as Simulation
     if (!simulation) {
       return
     }
+    
     // @ts-ignore
     const wasm = getStoreState().simulation.wasm
     for (const file of simulation.files) {
@@ -288,6 +300,71 @@ export const simulationModel: SimulationModel = {
         wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content)
         console.log("Synced file ", file.fileName)
       }
+    }
+  }),
+  syncFilesJupyterLite: thunk(async (actions, dummy: undefined, {getStoreState}) => { // TODO: deal with the undefined hack
+    //@ts-ignore
+    const simulation = getStoreState().simulation.simulation as Simulation
+    if (!simulation) {
+      return
+    }
+    // @ts-ignore
+    const wasm = getStoreState().simulation.wasm
+    const fileNames: string[] = wasm.FS.readdir(`/${simulation.id}`)
+    const files: {[key: string]: SimulationFile} = {}
+    fileNames.forEach( (fileName: string) => {
+      if (['.', '..'].includes(fileName)) {
+        return
+      }
+
+      const filePath = `/${simulation.id}/${fileName}`
+      files[fileName] = {
+        content: wasm.FS.readFile(filePath, { encoding: 'utf8' }),
+        fileName,
+        url: '' // TODO: Deal with this hack
+      }
+    })
+
+    const createLocalForageObject = (name: string, path: string, type: "directory"|"file", content?: string|Object) => {
+      let mimetype = "text/plain"
+      let format = "text"
+      let size = 0
+      const now = new Date().toISOString()
+
+      if (type === "directory" || typeof content === "object") {
+        mimetype = "application/json"
+        format = "json"
+      }
+      if (content) {
+        if (typeof content === "string") {
+          size = content.length
+        } else {
+          size = JSON.stringify(content).length
+        }
+      }
+      
+      return {
+        name,
+        path,
+        last_modified: now, 
+        created: now, // TODO(keep created date if it exists)
+        format,
+        mimetype: mimetype,
+        content: content ? content : [],
+        size,
+        writable: true,
+        type
+      }
+    }
+
+    // Add an example analysis file
+    const analyzeFileName = 'analyze.ipynb'
+    localforage.setItem(analyzeFileName, createLocalForageObject(analyzeFileName,analyzeFileName, 'file', AnalyzeNotebook(simulation)))
+    
+    await localforage.setItem(simulation.id, createLocalForageObject(simulation.id, simulation.id, "directory"))
+    for (const file of Object.values(files)) {
+      // Update all files if no fileName is specified
+      await localforage.setItem(`${simulation.id}/${file.fileName}`, createLocalForageObject(file.fileName, `${simulation.id}/${file.fileName}`, "file", file.content))
     }
   }),
   run: thunk(async (actions, payload, {getStoreState}) => {
@@ -330,6 +407,7 @@ export const simulationModel: SimulationModel = {
       //@ts-ignore
       window.postStepCallback()
     }
+    actions.syncFilesJupyterLite()
     actions.setLastCommand(undefined)
   }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
@@ -434,7 +512,7 @@ export const simulationModel: SimulationModel = {
 
     const inputScriptFile = simulation.files.filter(file => file.fileName===simulation.inputScript)[0]
     extractAtomifyCommands(inputScriptFile?.content)
-    actions.syncFiles(undefined)
+    actions.syncFilesWasm(undefined)
     actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)
     await actions.setStatus(undefined)

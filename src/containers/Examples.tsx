@@ -15,6 +15,7 @@ interface Example {
   title: string
   files: SimulationFile[]
   description: string
+  analysisDescription?: string
   imageUrl: string
   inputScript: string
   author?: string,
@@ -46,6 +47,7 @@ const Examples = () => {
       files: example.files,
       id: example.id,
       inputScript: example.inputScript,
+      analysisDescription: example.analysisDescription,
       start: true
     }
     if (lammps?.getIsRunning()) {
