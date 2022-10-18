@@ -145,6 +145,10 @@ const Simulation = () => {
 
   useEffect(() => {
     window.onkeydown = (ev) => {
+      if (selectedMenu !== 'view') {
+        return
+      }
+      
       const syncFrequencyMap = {
         '1': 1,
         '2': 2,
@@ -161,12 +165,13 @@ const Simulation = () => {
         window.syncFrequency = syncFrequencyMap[ev.key]
       }
 
-      if (selectedMenu === 'view' && simulation != null && !running && ev.key === " ") {
+      if (lammps != null && simulation != null && !running && ev.key === " ") {
+        lammps.setSyncFrequency(1)
         //@ts-ignore
         lammps.step()
       }
 
-      if (selectedMenu === 'view' && ev.key === "c") {
+      if (ev.key === "c") {
         //@ts-ignore
         const cameraPosition = window.visualizer.getCameraPosition()
         //@ts-ignore

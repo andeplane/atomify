@@ -3,7 +3,7 @@ import {Layout, Row, Col, Progress} from 'antd'
 
 import { useStoreState } from '../hooks';
 import {Particles, Bonds, Visualizer} from 'omovi'
-import RenderSettings from './RenderSettings'
+import Settings from './Settings'
 import {SettingOutlined} from '@ant-design/icons'
 const { Header } = Layout;
 
@@ -156,7 +156,7 @@ const View = ({visible}: ViewProps) => {
     </Header>
       <div id="canvas-container" style={{ height: '100%', width: '100%' }}>
         <div style={{ height: '100%', width: '100%'  }} ref={domElement}> 
-          <RenderSettings open={showSettings} onClose={() => setShowSettings(false)} />
+          <Settings open={showSettings} onClose={() => setShowSettings(false)} />
           <SettingOutlined className="rendersettingsbutton" style={{ fontSize: '32px', color: '#fff'}} onClick={() => setShowSettings(true)} />
         </div>
       </div>
