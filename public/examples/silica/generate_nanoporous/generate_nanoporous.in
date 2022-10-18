@@ -24,7 +24,7 @@ mass 2 15.9994
 velocity all create 4500 376847 loop geom
 
 fix nvt all nvt temp 4500 4500 0.1
-thermo_style custom step temp etotal density volume
+thermo_style custom step temp etotal density vol
 thermo 100
 
 write_data initial.data
