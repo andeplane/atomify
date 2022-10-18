@@ -163,6 +163,10 @@ const Simulation = () => {
       if (Object.keys(syncFrequencyMap).indexOf(ev.key) >= 0) {
         //@ts-ignore
         window.syncFrequency = syncFrequencyMap[ev.key]
+        notification.info({
+          //@ts-ignore
+          message: `Simulation speed set to ${window.syncFrequency}.`
+        })
       }
 
       if (lammps != null && simulation != null && !running && ev.key === " ") {
@@ -179,7 +183,7 @@ const Simulation = () => {
         const output = `#/camera position ${cameraPosition.x.toFixed(1)} ${cameraPosition.y.toFixed(1)} ${cameraPosition.z.toFixed(1)}\n#/camera target ${cameraTarget.x.toFixed(1)} ${cameraTarget.y.toFixed(1)} ${cameraTarget.z.toFixed(1)}`
         navigator.clipboard.writeText(output);
         notification.info({
-          message: "Copied camera position and target to clipboard"
+          message: "Copied camera position and target to clipboard."
         })
       }
     }
