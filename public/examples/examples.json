@@ -59,6 +59,7 @@
   "id": "diffusion",
   "title": "Diffusion",
   "description": "This example shows how you can measure the diffusion coefficient using the mean square displacement. The white atoms have mass 1 while the red atoms have mass 4. This results in the red atoms having diffusion coefficient half the value of the white ones.",
+  "analysisDescription": "# About this simulation\nWe simulate two Lennard Jones particle types with masses 1.0 and 4.0. The diffusion coefficient [https://en.wikipedia.org/wiki/Mass_diffusivity](scales like) D$\\propto 1/\\sqrt{m}$, so we should see a factor 2 higher diffusion coefficient for the small molecules.",
   "imageUrl": "examples/diffusion/diffusion/simple_diffusion.png",
   "inputScript": "simple_diffusion.in",
   "keywords": ["lennard jones", "diffusion"],

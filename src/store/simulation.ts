@@ -107,6 +107,7 @@ export interface Simulation {
   id: string
   files: SimulationFile[]
   inputScript: string
+  analysisDescription?: string
   start: boolean
 }
 
@@ -325,7 +326,6 @@ export const simulationModel: SimulationModel = {
     })
 
     const createLocalForageObject = (name: string, path: string, type: "directory"|"file", content?: string|Object) => {
-
       let mimetype = "text/plain"
       let format = "text"
       let size = 0
@@ -359,7 +359,7 @@ export const simulationModel: SimulationModel = {
 
     // Add an example analysis file
     const analyzeFileName = 'analyze.ipynb'
-    localforage.setItem(analyzeFileName, createLocalForageObject(analyzeFileName,analyzeFileName, 'file', AnalyzeNotebook(simulation.id)))
+    localforage.setItem(analyzeFileName, createLocalForageObject(analyzeFileName,analyzeFileName, 'file', AnalyzeNotebook(simulation)))
     
     await localforage.setItem(simulation.id, createLocalForageObject(simulation.id, simulation.id, "directory"))
     for (const file of Object.values(files)) {
