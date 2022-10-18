@@ -182,16 +182,18 @@ const Simulation = () => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm) {
-        let newParticles = getPositions(lammps, wasm, particles, atomTypes)
-        newParticles.markNeedsUpdate()
-        if (newParticles !== particles) {
-          updateParticles(newParticles)
-        }
-
-        let newBonds = getBonds(lammps, wasm, bonds)
-        newBonds.markNeedsUpdate()
-        if (newBonds !== bonds) {
-          setBonds(newBonds)
+        if (selectedMenu === 'view') {
+          let newParticles = getPositions(lammps, wasm, particles, atomTypes)
+          newParticles.markNeedsUpdate()
+          if (newParticles !== particles) {
+            updateParticles(newParticles)
+          }
+  
+          let newBonds = getBonds(lammps, wasm, bonds)
+          newBonds.markNeedsUpdate()
+          if (newBonds !== bonds) {
+            setBonds(newBonds)
+          }
         }
 
         const simulationBox = getSimulationBox(lammps, wasm)
