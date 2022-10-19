@@ -34,16 +34,8 @@ const Examples = () => {
 
   
   useEffect(() => {
-    (async () => {
-      const urlSearchParams = new URLSearchParams(window.location.search);
-      const params = Object.fromEntries(urlSearchParams.entries());
-
-      let examplesUrl = 'https://raw.githubusercontent.com/andeplane/atomify-examples/main/examples.json'
-      if (params['examplesUrl'] != null) {
-        examplesUrl = params['examplesUrl']
-      }
+    const fetchExamples = async(examplesUrl: string) => {
       console.log("Fetching examples from ", examplesUrl)
-
       const response = await fetch(examplesUrl, {cache: "no-store"})
       const data = await response.json()
       const baseUrl = data["baseUrl"]
@@ -55,6 +47,25 @@ const Examples = () => {
         })
       })
       setExamples(data["examples"])
+    }
+
+    (async () => {
+      const urlSearchParams = new URLSearchParams(window.location.search);
+      const params = Object.fromEntries(urlSearchParams.entries());
+
+      let defaultExamplesUrl = 'examples/examples.json'
+      let examplesUrl = defaultExamplesUrl
+      if (params['examplesUrl'] != null) {
+        examplesUrl = params['examplesUrl']
+      }
+      
+      try {
+        await fetchExamples(examplesUrl)
+      } catch (e) {
+        notification.error({message: `Could not fetch examples from ${examplesUrl}. Fetching default.`})
+        await fetchExamples(defaultExamplesUrl)
+      }
+      
     })()
   }, [])
 
