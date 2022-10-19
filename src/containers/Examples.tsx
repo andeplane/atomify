@@ -1,10 +1,15 @@
 import {useCallback, useState, useEffect} from 'react'
 import { useMeasure } from 'react-use';
-import { Select, Button } from 'antd';
+import { Select, Button, Divider } from 'antd';
 import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Card, Layout, Skeleton, Row, Col, notification } from 'antd';
+import ReactMarkdown from 'react-markdown'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
+
 import mixpanel from 'mixpanel-browser';
 const {Option} = Select
 
@@ -25,6 +30,7 @@ interface Example {
 
 const Examples = () => {
   const [title, setTitle] = useState("Examples")
+  const [description, setDescription] = useState<string>("")
   const [examples, setExamples] = useState<Example[]>([])
   const [filterKeywords, setFilterKeywords] = useState<string[]>([])
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
@@ -35,11 +41,17 @@ const Examples = () => {
 
   useEffect(() => {
     const fetchExamples = async(examplesUrl: string) => {
-      console.log("Fetching examples from ", examplesUrl)
-      const response = await fetch(examplesUrl, {cache: "no-store"})
+      let response = await fetch(examplesUrl, {cache: "no-store"})
       const data = await response.json()
       const baseUrl = data["baseUrl"]
       const title = data["title"] || "Examples"
+      const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`
+      response = await fetch(descriptionsUrl)
+      if (response.status !== 404) {
+        const description = await response.text()
+        setDescription(description)
+      }
+      
       const examples: Example[] = data["examples"]
       examples.forEach(example => {
         example.imageUrl = `${baseUrl}/${example.imageUrl}`
@@ -50,6 +62,7 @@ const Examples = () => {
 
       setTitle(title)
       setExamples(data["examples"])
+      mixpanel.track('Examples.Fetch', {examplesUrl})
     }
 
     (async () => {
@@ -194,6 +207,8 @@ const Examples = () => {
       {title}
     </Header>
     <div style={{padding: 10, margin: 10}} ref={myRef}>
+      <ReactMarkdown linkTarget="_blank" remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{description}</ReactMarkdown>
+      <Divider />
       <Select
           mode="multiple"
           allowClear
