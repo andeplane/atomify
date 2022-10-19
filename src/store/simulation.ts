@@ -325,16 +325,19 @@ export const simulationModel: SimulationModel = {
       }
     })
 
-    const createLocalForageObject = (name: string, path: string, type: "directory"|"file", content?: string|Object) => {
+    type JupyterFileType = "directory"|"file"|"notebook"
+
+    const createLocalForageObject = (name: string, path: string, type: JupyterFileType, content?: string|Object) => {
       let mimetype = "text/plain"
       let format = "text"
       let size = 0
       const now = new Date().toISOString()
 
-      if (type === "directory" || typeof content === "object") {
+      if (type === "directory" || type === "notebook" || typeof content === "object") {
         mimetype = "application/json"
         format = "json"
       }
+      
       if (content) {
         if (typeof content === "string") {
           size = content.length
@@ -359,12 +362,18 @@ export const simulationModel: SimulationModel = {
 
     // Add an example analysis file
     const analyzeFileName = 'analyze.ipynb'
-    localforage.setItem(analyzeFileName, createLocalForageObject(analyzeFileName,analyzeFileName, 'file', AnalyzeNotebook(simulation)))
+    localforage.setItem(analyzeFileName, createLocalForageObject(analyzeFileName,analyzeFileName, 'notebook', AnalyzeNotebook(simulation)))
     
     await localforage.setItem(simulation.id, createLocalForageObject(simulation.id, simulation.id, "directory"))
     for (const file of Object.values(files)) {
+      let type: JupyterFileType  = "file"
+      let content: any = file.content
+      if (file.fileName.endsWith("ipynb")) {
+        type = "notebook"
+        content = JSON.parse(content)
+      }
       // Update all files if no fileName is specified
-      await localforage.setItem(`${simulation.id}/${file.fileName}`, createLocalForageObject(file.fileName, `${simulation.id}/${file.fileName}`, "file", file.content))
+      await localforage.setItem(`${simulation.id}/${file.fileName}`, createLocalForageObject(file.fileName, `${simulation.id}/${file.fileName}`, type, content))
     }
   }),
   run: thunk(async (actions, payload, {getStoreState}) => {
