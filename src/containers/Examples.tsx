@@ -220,7 +220,7 @@ const Examples = () => {
             <Option key={keyword}>{keyword}</Option>
           ))}
       </Select>
-      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{description}</ReactMarkdown>
+      <ReactMarkdown linkTarget="_blank" remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{description}</ReactMarkdown>
       {chunks.map(renderChunk)}
       {examples.length === 0 && <Skeleton active/>}
     </div>
