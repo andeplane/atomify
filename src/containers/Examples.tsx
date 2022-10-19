@@ -5,6 +5,11 @@ import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Card, Layout, Skeleton, Row, Col, notification } from 'antd';
+import ReactMarkdown from 'react-markdown'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
+
 import mixpanel from 'mixpanel-browser';
 const {Option} = Select
 
@@ -25,6 +30,7 @@ interface Example {
 
 const Examples = () => {
   const [title, setTitle] = useState("Examples")
+  const [description, setDescription] = useState<string>("")
   const [examples, setExamples] = useState<Example[]>([])
   const [filterKeywords, setFilterKeywords] = useState<string[]>([])
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
@@ -36,10 +42,18 @@ const Examples = () => {
   useEffect(() => {
     const fetchExamples = async(examplesUrl: string) => {
       console.log("Fetching examples from ", examplesUrl)
-      const response = await fetch(examplesUrl, {cache: "no-store"})
+      let response = await fetch(examplesUrl, {cache: "no-store"})
       const data = await response.json()
       const baseUrl = data["baseUrl"]
       const title = data["title"] || "Examples"
+      const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`
+      console.log("Fetching ", descriptionsUrl)
+      response = await fetch(descriptionsUrl)
+      if (response.status != 404) {
+        const description = await response.text()
+        setDescription(description)
+      }
+      
       const examples: Example[] = data["examples"]
       examples.forEach(example => {
         example.imageUrl = `${baseUrl}/${example.imageUrl}`
@@ -206,6 +220,7 @@ const Examples = () => {
             <Option key={keyword}>{keyword}</Option>
           ))}
       </Select>
+      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{description}</ReactMarkdown>
       {chunks.map(renderChunk)}
       {examples.length === 0 && <Skeleton active/>}
     </div>
