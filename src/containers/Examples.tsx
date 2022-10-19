@@ -1,6 +1,6 @@
 import {useCallback, useState, useEffect} from 'react'
 import { useMeasure } from 'react-use';
-import { Select, Button } from 'antd';
+import { Select, Button, Divider } from 'antd';
 import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
@@ -49,7 +49,7 @@ const Examples = () => {
       const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`
       console.log("Fetching ", descriptionsUrl)
       response = await fetch(descriptionsUrl)
-      if (response.status != 404) {
+      if (response.status !== 404) {
         const description = await response.text()
         setDescription(description)
       }
@@ -64,6 +64,7 @@ const Examples = () => {
 
       setTitle(title)
       setExamples(data["examples"])
+      mixpanel.track('Examples.Fetch', {examplesUrl})
     }
 
     (async () => {
@@ -208,6 +209,8 @@ const Examples = () => {
       {title}
     </Header>
     <div style={{padding: 10, margin: 10}} ref={myRef}>
+      <ReactMarkdown linkTarget="_blank" remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{description}</ReactMarkdown>
+      <Divider />
       <Select
           mode="multiple"
           allowClear
@@ -220,7 +223,6 @@ const Examples = () => {
             <Option key={keyword}>{keyword}</Option>
           ))}
       </Select>
-      <ReactMarkdown linkTarget="_blank" remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>{description}</ReactMarkdown>
       {chunks.map(renderChunk)}
       {examples.length === 0 && <Skeleton active/>}
     </div>
