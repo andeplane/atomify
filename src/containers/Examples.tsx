@@ -132,7 +132,7 @@ const Examples = () => {
   const renderCard = (example: Example) => (
     <Card
       key={example.id}
-      style={{ width: 300 }}
+      style={{ width: 300, marginLeft: 'auto', marginRight: 'auto' }}
       cover={
         <img
           alt="example"
@@ -163,9 +163,9 @@ const Examples = () => {
   )
 
   const renderChunk = (chunk: Example[], index: number) => (
-    <Row key={index.toString()} gutter={8} justify="space-between">
+    <Row key={index.toString()} gutter={8} justify="space-evenly">
       {chunk.map((example, index2) => (
-        <Col key={index.toString()+index2.toString()} className="gutter-row" span={5} style={{marginTop: 10}}>
+        <Col key={index.toString()+index2.toString()} className="gutter-row" span={24/chunk.length} style={{marginTop: 10}}>
           {renderCard(example)}
         </Col>
       ))}
