@@ -31,13 +31,30 @@ const Examples = () => {
   const simulation = useStoreState(state => state.simulation.simulation)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   const lammps = useStoreState(state => state.simulation.lammps)
+
   
   useEffect(() => {
     (async () => {
-      const examplesUrl = 'examples/examples.json'
-      const response = await fetch(examplesUrl)
+      const urlSearchParams = new URLSearchParams(window.location.search);
+      const params = Object.fromEntries(urlSearchParams.entries());
+
+      let examplesUrl = 'https://raw.githubusercontent.com/andeplane/atomify-examples/main/examples.json'
+      if (params['examplesUrl'] != null) {
+        examplesUrl = params['examplesUrl']
+      }
+      console.log("Fetching examples from ", examplesUrl)
+
+      const response = await fetch(examplesUrl, {cache: "no-store"})
       const data = await response.json()
-      setExamples(data)
+      const baseUrl = data["baseUrl"]
+      const examples: Example[] = data["examples"]
+      examples.forEach(example => {
+        example.imageUrl = `${baseUrl}/${example.imageUrl}`
+        example.files.forEach(file => {
+          file.url = `${baseUrl}/${file.url}`
+        })
+      })
+      setExamples(data["examples"])
     })()
   }, [])
 
