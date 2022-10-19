@@ -372,7 +372,6 @@ export const simulationModel: SimulationModel = {
         type = "notebook"
         content = JSON.parse(content)
       }
-      // Update all files if no fileName is specified
       await localforage.setItem(`${simulation.id}/${file.fileName}`, createLocalForageObject(file.fileName, `${simulation.id}/${file.fileName}`, type, content))
     }
   }),
