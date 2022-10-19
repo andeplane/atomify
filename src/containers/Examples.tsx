@@ -24,6 +24,7 @@ interface Example {
 }
 
 const Examples = () => {
+  const [title, setTitle] = useState("Examples")
   const [examples, setExamples] = useState<Example[]>([])
   const [filterKeywords, setFilterKeywords] = useState<string[]>([])
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
@@ -32,13 +33,13 @@ const Examples = () => {
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   const lammps = useStoreState(state => state.simulation.lammps)
 
-  
   useEffect(() => {
     const fetchExamples = async(examplesUrl: string) => {
       console.log("Fetching examples from ", examplesUrl)
       const response = await fetch(examplesUrl, {cache: "no-store"})
       const data = await response.json()
       const baseUrl = data["baseUrl"]
+      const title = data["title"] || "Examples"
       const examples: Example[] = data["examples"]
       examples.forEach(example => {
         example.imageUrl = `${baseUrl}/${example.imageUrl}`
@@ -46,6 +47,8 @@ const Examples = () => {
           file.url = `${baseUrl}/${file.url}`
         })
       })
+
+      setTitle(title)
       setExamples(data["examples"])
     }
 
@@ -188,7 +191,7 @@ const Examples = () => {
   return (
     <>
     <Header className="site-layout-background" style={{ fontSize: 25 }}>
-      Examples 
+      {title}
     </Header>
     <div style={{padding: 10, margin: 10}} ref={myRef}>
       <Select
