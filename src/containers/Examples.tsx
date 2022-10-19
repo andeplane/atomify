@@ -41,13 +41,11 @@ const Examples = () => {
 
   useEffect(() => {
     const fetchExamples = async(examplesUrl: string) => {
-      console.log("Fetching examples from ", examplesUrl)
       let response = await fetch(examplesUrl, {cache: "no-store"})
       const data = await response.json()
       const baseUrl = data["baseUrl"]
       const title = data["title"] || "Examples"
       const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`
-      console.log("Fetching ", descriptionsUrl)
       response = await fetch(descriptionsUrl)
       if (response.status !== 404) {
         const description = await response.text()
