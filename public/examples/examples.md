@@ -1,0 +1,1 @@
+Atomify comes with a bunch of example simulations. You can easily create your own set of simulations for e.g. teaching by using this  [Github template](https://github.com/andeplane/atomify-examples-template). Simulations can contain input scripts, data files, Python notebooks for simulation analysis.
