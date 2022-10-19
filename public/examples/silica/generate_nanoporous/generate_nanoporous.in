@@ -12,7 +12,7 @@ units metal
 boundary p p p
 atom_style atomic
 read_data betacristobalite.data
-replicate 20 20 20
+replicate 6 6 6
 
 pair_style vashishta/table 10000 0.5
 pair_coeff	* * SiO2.vashishta Si O
