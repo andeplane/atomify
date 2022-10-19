@@ -14,6 +14,9 @@ We here introduce Atomify, a web editor running LAMMPS with real time visualizat
 ## How does it work?
 LAMMPS is compiled to [Webassembly](https://webassembly.org/) using [Emscripten](https://emscripten.org/) so it can run in the browser. It runs with about 50% of the speed of natively compiled LAMMPS (single threaded). The visualization is built on top of [three.js](https://threejs.org/). The Jupyter notebook is called [Jupyterlite](https://jupyterlite.readthedocs.io/) and is a version of Python running entirely on the web thanks to [Pyodide](https://pyodide.org/en/stable/).
 
+## Customize example simulations
+You can use this [Github template](https://github.com/andeplane/atomify-examples-template) to create your own set of simulations and Jupyter notebook analysis using Atomify.
+
 ## How to build and run locally
 ### Prerequisites
  - [NodeJS](https://nodejs.org/en/) to install packages and run locally
