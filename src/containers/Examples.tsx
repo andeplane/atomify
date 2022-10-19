@@ -24,6 +24,7 @@ interface Example {
 }
 
 const Examples = () => {
+  const [title, setTitle] = useState("Examples")
   const [examples, setExamples] = useState<Example[]>([])
   const [filterKeywords, setFilterKeywords] = useState<string[]>([])
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
@@ -31,13 +32,43 @@ const Examples = () => {
   const simulation = useStoreState(state => state.simulation.simulation)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   const lammps = useStoreState(state => state.simulation.lammps)
-  
+
   useEffect(() => {
-    (async () => {
-      const examplesUrl = 'examples/examples.json'
-      const response = await fetch(examplesUrl)
+    const fetchExamples = async(examplesUrl: string) => {
+      console.log("Fetching examples from ", examplesUrl)
+      const response = await fetch(examplesUrl, {cache: "no-store"})
       const data = await response.json()
-      setExamples(data)
+      const baseUrl = data["baseUrl"]
+      const title = data["title"] || "Examples"
+      const examples: Example[] = data["examples"]
+      examples.forEach(example => {
+        example.imageUrl = `${baseUrl}/${example.imageUrl}`
+        example.files.forEach(file => {
+          file.url = `${baseUrl}/${file.url}`
+        })
+      })
+
+      setTitle(title)
+      setExamples(data["examples"])
+    }
+
+    (async () => {
+      const urlSearchParams = new URLSearchParams(window.location.search);
+      const params = Object.fromEntries(urlSearchParams.entries());
+
+      let defaultExamplesUrl = 'examples/examples.json'
+      let examplesUrl = defaultExamplesUrl
+      if (params['examplesUrl'] != null) {
+        examplesUrl = params['examplesUrl']
+      }
+      
+      try {
+        await fetchExamples(examplesUrl)
+      } catch (e) {
+        notification.error({message: `Could not fetch examples from ${examplesUrl}. Fetching default.`})
+        await fetchExamples(defaultExamplesUrl)
+      }
+      
     })()
   }, [])
 
@@ -160,7 +191,7 @@ const Examples = () => {
   return (
     <>
     <Header className="site-layout-background" style={{ fontSize: 25 }}>
-      Examples 
+      {title}
     </Header>
     <div style={{padding: 10, margin: 10}} ref={myRef}>
       <Select
