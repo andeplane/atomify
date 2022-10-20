@@ -42,10 +42,10 @@ const AnalyzeNotebook = (simulation: Simulation) => {
     ]
   }
 
-  notebook["cells"][0]["source"] = notebook["cells"][1]["source"].replace("###SIMULATIONID###", simulation.id)
+  notebook["cells"][0]["source"] = notebook["cells"][0]["source"].replace("###SIMULATIONID###", simulation.id)
   if (simulation.analysisDescription) {
     // @ts-ignore
-    notebook["cells"].splice(1, 0, {
+    notebook["cells"].splice(0, 0, {
       "cell_type": "markdown",
       "source": simulation.analysisDescription,
       "metadata": {}
