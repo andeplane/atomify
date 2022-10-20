@@ -8,6 +8,9 @@ export type LammpsWeb = {
   getTimesteps: () => number
   getRunTimesteps: () => number
   getRunTotalTimesteps: () => number
+  getTimestepsPerSecond: () => number
+  getCPURemain: () => number
+  getWhichFlag: () => number
 
   getPositionsPointer: () => number
   getIdPointer: () => number

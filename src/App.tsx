@@ -13,6 +13,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, Modal, Tabs, Progress, Button } from 'antd';
 import Simulation from './components/Simulation'
+import SimulationSummary from './containers/SimulationSummary'
 import View from './containers/View'
 import Analyze from './containers/Analyze'
 import Edit from './containers/Edit'
@@ -123,6 +124,7 @@ const App: React.FC = () => {
   }, [simulation, setSelectedFile, running, setSelectedMenu])
   
   return (
+    <>
     <Layout style={{ minHeight: '100vh' }} ref={myRef}>
       <Sider width={300} collapsible collapsedWidth={50} collapsed={collapsed} onCollapse={value => setCollapsed(value)}>
         <div className="logo" />
@@ -179,7 +181,9 @@ const App: React.FC = () => {
           </>
         </Content>
       </Layout>
+      {preferredView==='view' && <SimulationSummary />}
     </Layout>
+    </>
   );
 };
 

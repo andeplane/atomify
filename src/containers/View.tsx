@@ -44,6 +44,8 @@ const View = ({visible}: ViewProps) => {
       setLoading(false)
       // @ts-ignore
       window.visualizer = newVisualizer
+      document.body.removeChild(newVisualizer.cpuStats.dom)
+      document.body.removeChild(newVisualizer.memoryStats.dom)
     }
   }, [domElement, visualizer, loading, particleColors])
 

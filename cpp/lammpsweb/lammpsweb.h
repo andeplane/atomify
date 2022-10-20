@@ -31,6 +31,9 @@ public:
   long getCellMatrixPointer();
   long getOrigoPointer();
   int getNumAtoms();
+  double getTimestepsPerSecond();
+  double getCPURemain();
+  int getWhichFlag();
   bool getIsRunning();
   void setSyncFrequency(int frequency);
   void setBuildNeighborlist(bool buildNeighborlist);
@@ -84,6 +87,9 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("getTimesteps", &LAMMPSWeb::getTimesteps)
       .function("getRunTimesteps", &LAMMPSWeb::getRunTimesteps)
       .function("getRunTotalTimesteps", &LAMMPSWeb::getRunTotalTimesteps)
+      .function("getTimestepsPerSecond", &LAMMPSWeb::getTimestepsPerSecond)
+      .function("getCPURemain", &LAMMPSWeb::getCPURemain)
+      .function("getWhichFlag", &LAMMPSWeb::getWhichFlag)
       
       .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
       .function("getBondsDistanceMapPointer", &LAMMPSWeb::getBondsDistanceMapPointer)

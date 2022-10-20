@@ -46,12 +46,6 @@ const Settings = ({open, onClose}: SettingsProps) => {
       name: 'Step simulation',
       description: 'Run one single timestep (only works after simulation is finished)',
       keyboardshortcut: 'space'
-    },
-    {
-      key: 'simulationspeed',
-      name: 'Set simulation speed',
-      description: 'Set simulation speed (speeds 1, 2, 4, 6, 10, 20, 50, 100, 200)',
-      keyboardshortcut: '1, 2, 3, 4, 5, 6, 7, 8, 9'
     }
   ];
 
