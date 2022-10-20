@@ -29,10 +29,10 @@ def copy_voronoi_files():
       shutil.copyfile(f"voro++-0.4.6/src/{file}", f"lammps/src/{file}")
   shutil.move('lammps/src/voro++.cc', 'lammps/src/voro++.cpp')
 
-if True or not os.path.exists('lammps'):
+if not os.path.exists('lammps'):
   # First clone lammps
   print("Could not find local clone of LAMMPS, cloning ...")
-  # subprocess.call("git clone --depth 1 --branch stable_23Jun2022_update1  https://github.com/lammps/lammps.git", shell=True)
+  subprocess.call("git clone --depth 1 --branch stable_23Jun2022_update1  https://github.com/lammps/lammps.git", shell=True)
   print("Copying modified files ...")
   copy_mpi_files_and_patch() # First compile, it is not with emscripten, so we should not include lammpsweb
   copy_moltemplate_files()
