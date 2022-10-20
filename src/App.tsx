@@ -19,7 +19,7 @@ import Edit from './containers/Edit'
 import Console from './containers/Console'
 import Examples from './containers/Examples'
 import { useStoreActions, useStoreState } from './hooks';
-import mixpanel from 'mixpanel-browser';
+import {track} from './utils/metrics'
 
 const { Content, Sider } = Layout;
 
@@ -120,7 +120,7 @@ const App: React.FC = () => {
       }
     }
     
-    mixpanel.track('MenuClick', {selected, simulationId: simulation?.id, running})
+    track('MenuClick', {selected, simulationId: simulation?.id, running})
   }, [simulation, setSelectedFile, running, setSelectedMenu])
   
   return (

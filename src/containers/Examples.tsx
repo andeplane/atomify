@@ -5,12 +5,12 @@ import {Simulation, SimulationFile} from '../store/simulation'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Card, Layout, Skeleton, Row, Col, notification } from 'antd';
+import {track} from '../utils/metrics'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 
-import mixpanel from 'mixpanel-browser';
 const {Option} = Select
 
 const { Header } = Layout;
@@ -62,7 +62,7 @@ const Examples = () => {
 
       setTitle(title)
       setExamples(data["examples"])
-      mixpanel.track('Examples.Fetch', {examplesUrl})
+      track('Examples.Fetch', {examplesUrl})
     }
 
     (async () => {
@@ -86,7 +86,7 @@ const Examples = () => {
   }, [])
 
   const onPlay = useCallback((example: Example) => {
-    mixpanel.track('Example.Run', {simulationId: example.id})
+    track('Example.Run', {simulationId: example.id})
     const newSimulation: Simulation = {
       files: example.files,
       id: example.id,
@@ -106,7 +106,7 @@ const Examples = () => {
   }, [lammps, setNewSimulation, setPreferredView])
 
   const onEdit = useCallback((example: Example) => {
-    mixpanel.track('Example.Edit', {simulationId: example.id})
+    track('Example.Edit', {simulationId: example.id})
     const newSimulation: Simulation = {
       files: example.files,
       id: example.id,
