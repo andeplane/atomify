@@ -23,6 +23,7 @@ interface Example {
   analysisDescription?: string
   imageUrl: string
   inputScript: string
+  analysisScript?: string
   author?: string,
   authorUrl?: string,
   keywords?: string[]
@@ -92,6 +93,7 @@ const Examples = () => {
       id: example.id,
       inputScript: example.inputScript,
       analysisDescription: example.analysisDescription,
+      analysisScript: example.analysisScript,
       start: true
     }
     if (lammps?.getIsRunning()) {
