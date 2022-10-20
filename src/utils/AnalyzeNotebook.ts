@@ -25,15 +25,6 @@ const AnalyzeNotebook = (simulation: Simulation) => {
     "cells": [
       {
         "cell_type": "code",
-        "source": "# https://github.com/henriasv/lammps-logfile\nimport piplite\nawait piplite.install(['atomify-lammps-logfile'])",
-        "metadata": {
-          "trusted": true
-        },
-        "execution_count": null,
-        "outputs": []
-      },
-      {
-        "cell_type": "code",
         "source": "import lammps_logfile\nimport matplotlib.pyplot as plt\n\nlog = lammps_logfile.File(\"###SIMULATIONID###/log.lammps\")\nstep = log.get(\"Step\")\n\nfor keyword in log.keywords:\n    plt.figure()\n    plt.plot(step, log.get(keyword), label=keyword)\n    plt.xlabel('Timestep')\n    plt.title(keyword)\n    plt.show()",
         "metadata": {
           "trusted": true
@@ -51,7 +42,7 @@ const AnalyzeNotebook = (simulation: Simulation) => {
     ]
   }
 
-  notebook["cells"][1]["source"] = notebook["cells"][1]["source"].replace("###SIMULATIONID###", simulation.id)
+  notebook["cells"][0]["source"] = notebook["cells"][1]["source"].replace("###SIMULATIONID###", simulation.id)
   if (simulation.analysisDescription) {
     // @ts-ignore
     notebook["cells"].splice(1, 0, {

@@ -93,7 +93,6 @@ const App: React.FC = () => {
   useEffect(() => {
     if (preferredView) {
       setSelectedMenu(preferredView)
-      setPreferredView(undefined)
     }
   }, [preferredView, setPreferredView, setSelectedMenu])
   
@@ -158,7 +157,7 @@ const App: React.FC = () => {
         </Tabs>
           {showConsole && <Modal className='console-modal' bodyStyle={{backgroundColor: '#1E1E1E'}} width={'80%'} footer={[
             <>
-            <Button key="analyze" onClick={() => {setShowConsole(false); setPreferredView('analyze')}}>
+            <Button key="analyze" onClick={() => {setShowConsole(false); setPreferredView(undefined); setPreferredView('analyze')}}>
               Analyze simulation
             </Button>
             <Button key="close" onClick={() => setShowConsole(false)}>

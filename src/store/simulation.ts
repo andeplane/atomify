@@ -108,6 +108,7 @@ export interface Simulation {
   files: SimulationFile[]
   inputScript: string
   analysisDescription?: string
+  analysisScript?: string
   start: boolean
 }
 
