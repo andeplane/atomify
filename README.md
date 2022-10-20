@@ -5,7 +5,7 @@
 
 ➡️ **https://andeplane.github.io/atomify**
 
-➡️ **[Customize your own version for e.g. teaching](https://github.com/andeplane/atomify-examples-template)**
+➡️ **[Customize content for e.g. teaching (takes 2 minutes)](https://github.com/andeplane/atomify-examples-template)**
 
 ![Atomify](atomify.gif)
 
