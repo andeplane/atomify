@@ -103,12 +103,22 @@ export interface SimulationFile {
   url: string
 }
 
+export interface SimulationStatus {
+  remainingTime: number
+  timestepsPerSecond: number
+  box?: THREE.Matrix3
+  origo?: THREE.Vector3
+  runType: string
+  numAtoms: number
+}
+
 export interface Simulation {
   id: string
   files: SimulationFile[]
   inputScript: string
   analysisDescription?: string
   analysisScript?: string
+  status?: SimulationStatus
   start: boolean
 }
 
@@ -129,12 +139,10 @@ export interface SimulationModel {
   particles?: Particles
   bonds?: Bonds
   particleColors?: THREE.Color[]
-  simulationBox?: THREE.Matrix3
-  simulationOrigo?: THREE.Vector3
+  
   cameraPosition?: THREE.Vector3
   cameraTarget?: THREE.Vector3
   atomTypes?: {[key: number]: AtomType}
-  numAtoms?: number
   setTimesteps: Action<SimulationModel, number>
   setRunTimesteps: Action<SimulationModel, number>
   setRunTotalTimesteps: Action<SimulationModel, number>
@@ -142,7 +150,6 @@ export interface SimulationModel {
   resetLammpsOutput: Action<SimulationModel, void>
   setSelectedMenu: Action<SimulationModel, string>
   addLammpsOutput: Action<SimulationModel, string>
-  setNumAtoms: Action<SimulationModel, number|undefined>
   setShowConsole: Action<SimulationModel, boolean>
   setCameraPosition: Action<SimulationModel, THREE.Vector3|undefined>
   setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
@@ -155,8 +162,6 @@ export interface SimulationModel {
   setParticles: Action<SimulationModel, Particles>
   setBonds: Action<SimulationModel, Bonds>
   updateParticles: Thunk<SimulationModel, Particles>
-  setSimulationBox: Action<SimulationModel, THREE.Matrix3|undefined>
-  setSimulationOrigo: Action<SimulationModel, THREE.Vector3|undefined>
   setFiles: Action<SimulationModel, string[]>
   setStatus: Action<SimulationModel, Status|undefined>
   setLammps: Action<SimulationModel, LammpsWeb>
@@ -203,9 +208,6 @@ export const simulationModel: SimulationModel = {
   setPreferredView: action((state, preferredView?: string) => {
     state.preferredView = preferredView
   }),
-  setNumAtoms: action((state, numAtoms?: number) => {
-    state.numAtoms = numAtoms
-  }),
   setParticleColors: action((state, particleColors?: THREE.Color[]) => {
     state.particleColors = particleColors
   }),
@@ -214,12 +216,6 @@ export const simulationModel: SimulationModel = {
   }),
   setShowConsole: action((state, showConsole: boolean) => {
     state.showConsole = showConsole
-  }),
-  setSimulationBox: action((state, simulationBox: THREE.Matrix3) => {
-    state.simulationBox = simulationBox
-  }),
-  setSimulationOrigo: action((state, simulationOrigo: THREE.Vector3) => {
-    state.simulationOrigo = simulationOrigo
   }),
   setCameraPosition: action((state, cameraPosition: THREE.Vector3) => {
     state.cameraPosition = cameraPosition
@@ -426,10 +422,7 @@ export const simulationModel: SimulationModel = {
     actions.setTimesteps(0)
     actions.setRunTimesteps(0)
     actions.setRunTotalTimesteps(0)
-    actions.setNumAtoms(undefined)
     actions.setShowConsole(false)
-    actions.setSimulationBox(undefined)
-    actions.setSimulationOrigo(undefined)
     actions.setParticles(undefined)
     actions.setBonds(undefined)
     actions.setParticleColors(undefined)

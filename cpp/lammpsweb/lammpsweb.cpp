@@ -314,6 +314,27 @@ int LAMMPSWeb::getTimesteps() {
   return m_lmp->update->ntimestep;
 }
 
+double LAMMPSWeb::getTimestepsPerSecond() {
+  if (!m_lmp) {
+    return 0;
+  }
+  return lammps_get_thermo(m_lmp, "spcpu");
+}
+
+int LAMMPSWeb::getWhichFlag() {
+  if (!m_lmp) {
+    return 0;
+  }
+  return m_lmp->update->whichflag;
+}
+
+double LAMMPSWeb::getCPURemain() {
+  if (!m_lmp) {
+    return 0;
+  }
+  return lammps_get_thermo(m_lmp, "cpuremain");
+}
+
 int LAMMPSWeb::getRunTotalTimesteps() {
   if (!m_lmp) {
     return 0;

@@ -81,3 +81,22 @@ html, body, #root, .App {
   margin-right: 20px;
   margin-bottom: 20px;
 }
+
+.simulationsummary {
+  position:fixed !important;
+  background-color: #fff;
+  border-radius: 10px;
+  width: 300px;
+  padding: 10px;
+  top:0;
+  right:0;
+  margin-right: 10px;
+  margin-top: 10px;
+  opacity: 0.1;
+  transition-property: opacity;
+  transition-duration: 0.3s;
+}
+
+.simulationsummary.hover {
+  opacity: 0.8
+}

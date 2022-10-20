@@ -6,6 +6,7 @@ import { LammpsWeb } from '../types';
 import {Particles, Bonds} from 'omovi'
 import { notification } from 'antd';
 import {AtomType} from '../utils/atomtypes'
+import {SimulationStatus, Simulation} from '../store/simulation'
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
@@ -116,7 +117,7 @@ const getSimulationOrigo = (lammps: LammpsWeb, wasm: any) => {
   return origo
 }
 
-const Simulation = () => {
+const SimulationComponent = () => {
   const wasm = useStoreState(state => state.simulation.wasm)
   const lammps = useStoreState(state => state.simulation.lammps)
   const particles = useStoreState(state => state.simulation.particles)
@@ -130,11 +131,10 @@ const Simulation = () => {
   const setWasm = useStoreActions(actions => actions.simulation.setWasm)
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
-  const setSimulationBox = useStoreActions(actions => actions.simulation.setSimulationBox)
-  const setSimulationOrigo = useStoreActions(actions => actions.simulation.setSimulationOrigo)
   const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
   const setTimesteps = useStoreActions(actions => actions.simulation.setTimesteps)
   const setRunTimesteps = useStoreActions(actions => actions.simulation.setRunTimesteps)
+  const setSimulation = useStoreActions(actions => actions.simulation.setSimulation)
   const setRunTotalTimesteps = useStoreActions(actions => actions.simulation.setRunTotalTimesteps)
   const setLastCommand = useStoreActions(actions => actions.simulation.setLastCommand)
   const onPrint = useCallback( (text: string) => {
@@ -149,26 +149,6 @@ const Simulation = () => {
         return
       }
       
-      const syncFrequencyMap = {
-        '1': 1,
-        '2': 2,
-        '3': 4,
-        '4': 6,
-        '5': 10,
-        '6': 20,
-        '7': 50,
-        '8': 100,
-        '9': 200,
-      }
-      if (Object.keys(syncFrequencyMap).indexOf(ev.key) >= 0) {
-        //@ts-ignore
-        window.syncFrequency = syncFrequencyMap[ev.key]
-        notification.info({
-          //@ts-ignore
-          message: `Simulation speed set to ${window.syncFrequency}.`
-        })
-      }
-
       if (lammps != null && simulation != null && !running && ev.key === " ") {
         lammps.setSyncFrequency(1)
         //@ts-ignore
@@ -190,7 +170,7 @@ const Simulation = () => {
 
     //@ts-ignore
     window.postStepCallback = () => {
-      if (lammps && wasm) {
+      if (lammps && wasm && simulation) {
         if (selectedMenu === 'view') {
           let newParticles = getPositions(lammps, wasm, particles, atomTypes)
           newParticles.markNeedsUpdate()
@@ -205,10 +185,23 @@ const Simulation = () => {
           }
         }
 
-        const simulationBox = getSimulationBox(lammps, wasm)
-        const origo = getSimulationOrigo(lammps, wasm)
-        setSimulationBox(simulationBox)
-        setSimulationOrigo(origo)
+        const whichFlag = lammps.getWhichFlag()
+        let runType = ""
+
+        if (whichFlag) {
+          runType = whichFlag===1 ? "Dynamics" : "Minimization"
+        }
+        const simulationStatus: SimulationStatus = {
+          remainingTime: lammps.getCPURemain(),
+          timestepsPerSecond: lammps.getTimestepsPerSecond(),
+          runType,
+          origo: getSimulationOrigo(lammps, wasm),
+          box: getSimulationBox(lammps, wasm),
+          numAtoms: lammps.getNumAtoms()
+        }
+        const newSimulation: Simulation = {...simulation, status: simulationStatus}
+        setSimulation(newSimulation)
+
         // @ts-ignore
         lammps.setSyncFrequency(window.syncFrequency)
         // @ts-ignore
@@ -225,7 +218,7 @@ const Simulation = () => {
       }
     }
   }, [wasm, lammps, particles, bonds, setBonds, 
-    updateParticles, setSimulationBox, setSimulationOrigo, 
+    updateParticles, setSimulation, 
     running, selectedMenu, simulation, setTimesteps,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand, atomTypes])
 
@@ -254,7 +247,7 @@ const Simulation = () => {
         // @ts-ignore
         window.lammps = lammps
         // @ts-ignore
-        window.syncFrequency = 2
+        window.syncFrequency = 1
         setStatus(undefined)
       });
     },
@@ -262,4 +255,4 @@ const Simulation = () => {
   );
   return (<></>)
 }
-export default Simulation
+export default SimulationComponent
