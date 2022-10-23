@@ -221,7 +221,8 @@ const SimulationComponent = () => {
   }, [wasm, lammps, particles, bonds, setBonds, 
     updateParticles,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
-    atomTypes, setSimulationStatus])
+    atomTypes, setSimulationStatus, selectedMenu, running, 
+    setSimulationSettings, setTimesteps, simulation, simulationSettings])
 
   useEffect(
     () => {
@@ -255,7 +256,6 @@ const SimulationComponent = () => {
     },
     [setWasm, onPrint, setLammps, setStatus]
   );
-  console.log("Rendering Simulation")
   return (<></>)
 }
 export default SimulationComponent
