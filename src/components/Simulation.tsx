@@ -124,10 +124,10 @@ const SimulationComponent = () => {
   const bonds = useStoreState(state => state.simulation.bonds)
   const simulation = useStoreState(state => state.simulation.simulation)
   const simulationSettings = useStoreState(state => state.settings.simulation)
+  const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
   const running = useStoreState(state => state.simulation.running)
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
   const atomTypes = useStoreState(state => state.simulation.atomTypes)
-  const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
   const updateParticles = useStoreActions(actions => actions.simulation.updateParticles)
   const setBonds = useStoreActions(actions => actions.simulation.setBonds)
   const setWasm = useStoreActions(actions => actions.simulation.setWasm)
@@ -253,9 +253,10 @@ const SimulationComponent = () => {
         // @ts-ignore
         window.syncFrequency = 1
         setStatus(undefined)
+        setSimulationSettings({...simulationSettings, speed: 1})
       });
     },
-    [setWasm, onPrint, setLammps, setStatus]
+    [setWasm, onPrint, setLammps, setStatus, setSimulationSettings, simulationSettings]
   );
   return (<></>)
 }
