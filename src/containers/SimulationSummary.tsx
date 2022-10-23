@@ -24,13 +24,13 @@ const SimulationSummary = () => {
   return (            
     <div onMouseOver={handleMouseOver} onMouseOut={handleMouseOut} className={"simulationsummary"+(isHovering ? " hover" : "")}>
       {simulation?.status && <>
-          <p>
+          <div>
             Type: {simulation.status.runType}<br />
             Number of atoms: {Math.ceil(simulation?.status.numAtoms)}<br />
             Remaining time: {Math.ceil(simulation?.status.remainingTime)} s<br />
             Timesteps per second: {Math.ceil(simulation?.status.timestepsPerSecond)} <br />
             Simulation speed: <InputNumber min={1} max={200} defaultValue={simulationSettings.speed} onChange={(value) => setSyncFrequency(value)} />
-          </p>
+          </div>
         </>
       }
     </div>
