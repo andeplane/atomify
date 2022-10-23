@@ -1,0 +1,59 @@
+# Move camera to a nice position
+#/camera position 33.5 39.0 47.8
+#/camera target 34.9 38.2 10.1
+
+# Set atom size and color
+#/atom 1 1.0 #ffffff
+
+# settings
+
+variable	x equal 40
+variable	y equal 40
+
+variable	rho equal 0.6
+variable t equal 1.0
+variable	rc equal 2.5
+
+# problem setup
+
+units		lj
+dimension	2
+atom_style	atomic
+neigh_modify	delay 0 every 1
+
+lattice sq2 ${rho}
+region simbox block 0 $x 0 $y -0.1 0.1
+create_box 1 simbox
+create_atoms 1 box
+
+pair_style lj/cut ${rc}
+pair_coeff * * 1 1
+
+mass * 1.0
+velocity all create $t 97287
+
+fix nve all nve
+fix langevin all langevin $t $t 0.1 498094
+fix enforce2d all enforce2d
+
+# equilibration run
+
+run 2000
+
+unfix	langevin
+
+# data gathering run
+
+reset_timestep 0
+
+compute vacf all vacf
+fix 4 all ave/time 1 1 1 c_vacf[4] #file tmp.vacf
+
+# factor of 0.5 is for 2d
+fix vacf_vector all vector 1 c_vacf[4]
+variable diffusioncoeff equal 0.5*dt*trap(f_vacf_vector)
+
+thermo_style	custom step temp c_vacf[4] v_diffusioncoeff
+
+thermo 25
+run 10000
