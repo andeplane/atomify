@@ -136,7 +136,7 @@ const SimulationComponent = () => {
   const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
   const setTimesteps = useStoreActions(actions => actions.simulation.setTimesteps)
   const setRunTimesteps = useStoreActions(actions => actions.simulation.setRunTimesteps)
-  const setSimulation = useStoreActions(actions => actions.simulation.setSimulation)
+  const setSimulationStatus = useStoreActions(actions => actions.simulation.setSimulationStatus)
   const setRunTotalTimesteps = useStoreActions(actions => actions.simulation.setRunTotalTimesteps)
   const setLastCommand = useStoreActions(actions => actions.simulation.setLastCommand)
   const onPrint = useCallback( (text: string) => {
@@ -173,6 +173,15 @@ const SimulationComponent = () => {
 
     //@ts-ignore
     window.postStepCallback = () => {
+      // @ts-ignore
+      if (window.prev) {
+        const now = performance.now()
+        //@ts-ignore
+        console.log("Time per frame ", now - window.prev)
+      }
+      //@ts-ignore
+      window.prev = performance.now()
+      
       if (lammps && wasm && simulation) {
         if (selectedMenu === 'view') {
           let newParticles = getPositions(lammps, wasm, particles, atomTypes)
@@ -180,7 +189,6 @@ const SimulationComponent = () => {
           if (newParticles !== particles) {
             updateParticles(newParticles)
           }
-  
           let newBonds = getBonds(lammps, wasm, bonds)
           newBonds.markNeedsUpdate()
           if (newBonds !== bonds) {
@@ -202,8 +210,7 @@ const SimulationComponent = () => {
           box: getSimulationBox(lammps, wasm),
           numAtoms: lammps.getNumAtoms()
         }
-        const newSimulation: Simulation = {...simulation, status: simulationStatus}
-        setSimulation(newSimulation)
+        setSimulationStatus(simulationStatus)
 
         // @ts-ignore
         lammps.setSyncFrequency(window.syncFrequency)
@@ -221,10 +228,9 @@ const SimulationComponent = () => {
       }
     }
   }, [wasm, lammps, particles, bonds, setBonds, 
-    updateParticles, setSimulation, 
-    running, selectedMenu, simulation, setTimesteps,
+    updateParticles,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
-    atomTypes, setSimulationSettings, simulationSettings])
+    atomTypes, setSimulationStatus])
 
   useEffect(
     () => {
@@ -258,6 +264,7 @@ const SimulationComponent = () => {
     },
     [setWasm, onPrint, setLammps, setStatus]
   );
+  console.log("Rendering Simulation")
   return (<></>)
 }
 export default SimulationComponent

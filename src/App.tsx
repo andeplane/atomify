@@ -13,7 +13,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, Modal, Tabs, Progress, Button } from 'antd';
 import Simulation from './components/Simulation'
-import SimulationSummaryOverlay from './components/SimulationSummaryOverlay'
 import View from './containers/View'
 import Notebook from './containers/Notebook'
 import Edit from './containers/Edit'
@@ -21,7 +20,6 @@ import Console from './containers/Console'
 import Examples from './containers/Examples'
 import { useStoreActions, useStoreState } from './hooks';
 import {track} from './utils/metrics'
-
 const { Content, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -181,7 +179,6 @@ const App: React.FC = () => {
           </>
         </Content>
       </Layout>
-      {preferredView==='view' && <SimulationSummaryOverlay />}
     </Layout>
     </>
   );
