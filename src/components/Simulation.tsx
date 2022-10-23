@@ -233,30 +233,30 @@ const SimulationComponent = () => {
         text: '',
         progress: 0.3
       })
-
-      createModule({
-        print: onPrint, 
-        printErr: onPrint,
-      }).then((Module: any) => {
-        setStatus({
-          title: 'Downloading LAMMPS ...',
-          text: '',
-          progress: 0.6
-        })
-        setWasm(Module)
-        const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
-        setLammps(lammps)
-        // @ts-ignore
-        window.wasm = Module
-        // @ts-ignore
-        window.lammps = lammps
-        // @ts-ignore
-        window.syncFrequency = 1
-        setStatus(undefined)
-        setSimulationSettings({...simulationSettings, speed: 1})
-      });
+      if (!wasm) {
+        createModule({
+          print: onPrint, 
+          printErr: onPrint,
+        }).then((Module: any) => {
+          setStatus({
+            title: 'Downloading LAMMPS ...',
+            text: '',
+            progress: 0.6
+          })
+          setWasm(Module)
+          const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
+          setLammps(lammps)
+          // @ts-ignore
+          window.wasm = Module
+          // @ts-ignore
+          window.lammps = lammps
+          // @ts-ignore
+          window.syncFrequency = 1
+          setStatus(undefined)
+        });
+      }
     },
-    [setWasm, onPrint, setLammps, setStatus, setSimulationSettings, simulationSettings]
+    [setWasm, onPrint, setLammps, setStatus]
   );
   return (<></>)
 }
