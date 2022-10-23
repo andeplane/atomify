@@ -173,15 +173,6 @@ const SimulationComponent = () => {
 
     //@ts-ignore
     window.postStepCallback = () => {
-      // @ts-ignore
-      if (window.prev) {
-        const now = performance.now()
-        //@ts-ignore
-        console.log("Time per frame ", now - window.prev)
-      }
-      //@ts-ignore
-      window.prev = performance.now()
-      
       if (lammps && wasm && simulation) {
         if (selectedMenu === 'view') {
           let newParticles = getPositions(lammps, wasm, particles, atomTypes)
