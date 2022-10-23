@@ -6,7 +6,7 @@ import { LammpsWeb } from '../types';
 import {Particles, Bonds} from 'omovi'
 import { notification } from 'antd';
 import {AtomType} from '../utils/atomtypes'
-import {SimulationStatus, Simulation} from '../store/simulation'
+import {SimulationStatus} from '../store/simulation'
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
@@ -254,7 +254,7 @@ const SimulationComponent = () => {
         });
       }
     },
-    [setWasm, onPrint, setLammps, setStatus]
+    [wasm, setWasm, onPrint, setLammps, setStatus]
   );
   return (<></>)
 }

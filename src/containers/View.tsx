@@ -29,8 +29,9 @@ const AnalyzeButtonContainer = styled.div`
 `
 
 const Container = styled.div`
-  padding: 2px;
-  color: 0xffffff;
+  padding: 5px;
+  color: #ffffff;
+  height: 100vh;
 `
 
 const View = ({visible}: ViewProps) => {
