@@ -6,7 +6,7 @@ import { LammpsWeb } from '../types';
 import {Particles, Bonds} from 'omovi'
 import { notification } from 'antd';
 import {AtomType} from '../utils/atomtypes'
-import {SimulationStatus, Simulation} from '../store/simulation'
+import {SimulationStatus} from '../store/simulation'
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
@@ -123,6 +123,8 @@ const SimulationComponent = () => {
   const particles = useStoreState(state => state.simulation.particles)
   const bonds = useStoreState(state => state.simulation.bonds)
   const simulation = useStoreState(state => state.simulation.simulation)
+  const simulationSettings = useStoreState(state => state.settings.simulation)
+  const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
   const running = useStoreState(state => state.simulation.running)
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
   const atomTypes = useStoreState(state => state.simulation.atomTypes)
@@ -134,7 +136,7 @@ const SimulationComponent = () => {
   const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
   const setTimesteps = useStoreActions(actions => actions.simulation.setTimesteps)
   const setRunTimesteps = useStoreActions(actions => actions.simulation.setRunTimesteps)
-  const setSimulation = useStoreActions(actions => actions.simulation.setSimulation)
+  const setSimulationStatus = useStoreActions(actions => actions.simulation.setSimulationStatus)
   const setRunTotalTimesteps = useStoreActions(actions => actions.simulation.setRunTotalTimesteps)
   const setLastCommand = useStoreActions(actions => actions.simulation.setLastCommand)
   const onPrint = useCallback( (text: string) => {
@@ -150,6 +152,7 @@ const SimulationComponent = () => {
       }
       
       if (lammps != null && simulation != null && !running && ev.key === " ") {
+        setSimulationSettings({...simulationSettings, speed: 1})
         lammps.setSyncFrequency(1)
         //@ts-ignore
         lammps.step()
@@ -177,7 +180,6 @@ const SimulationComponent = () => {
           if (newParticles !== particles) {
             updateParticles(newParticles)
           }
-  
           let newBonds = getBonds(lammps, wasm, bonds)
           newBonds.markNeedsUpdate()
           if (newBonds !== bonds) {
@@ -199,16 +201,15 @@ const SimulationComponent = () => {
           box: getSimulationBox(lammps, wasm),
           numAtoms: lammps.getNumAtoms()
         }
-        const newSimulation: Simulation = {...simulation, status: simulationStatus}
-        setSimulation(newSimulation)
+        setSimulationStatus(simulationStatus)
 
         // @ts-ignore
         lammps.setSyncFrequency(window.syncFrequency)
         // @ts-ignore
         if (window.cancel) {
-          lammps.cancel()
           // @ts-ignore
           window.cancel = false;
+          lammps.cancel()
         }
 
         setTimesteps(lammps.getTimesteps())
@@ -218,9 +219,10 @@ const SimulationComponent = () => {
       }
     }
   }, [wasm, lammps, particles, bonds, setBonds, 
-    updateParticles, setSimulation, 
-    running, selectedMenu, simulation, setTimesteps,
-    setRunTimesteps, setRunTotalTimesteps, setLastCommand, atomTypes])
+    updateParticles,
+    setRunTimesteps, setRunTotalTimesteps, setLastCommand,
+    atomTypes, setSimulationStatus, selectedMenu, running, 
+    setSimulationSettings, setTimesteps, simulation, simulationSettings])
 
   useEffect(
     () => {
@@ -229,29 +231,30 @@ const SimulationComponent = () => {
         text: '',
         progress: 0.3
       })
-
-      createModule({
-        print: onPrint, 
-        printErr: onPrint,
-      }).then((Module: any) => {
-        setStatus({
-          title: 'Downloading LAMMPS ...',
-          text: '',
-          progress: 0.6
-        })
-        setWasm(Module)
-        const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
-        setLammps(lammps)
-        // @ts-ignore
-        window.wasm = Module
-        // @ts-ignore
-        window.lammps = lammps
-        // @ts-ignore
-        window.syncFrequency = 1
-        setStatus(undefined)
-      });
+      if (!wasm) {
+        createModule({
+          print: onPrint, 
+          printErr: onPrint,
+        }).then((Module: any) => {
+          setStatus({
+            title: 'Downloading LAMMPS ...',
+            text: '',
+            progress: 0.6
+          })
+          setWasm(Module)
+          const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
+          setLammps(lammps)
+          // @ts-ignore
+          window.wasm = Module
+          // @ts-ignore
+          window.lammps = lammps
+          // @ts-ignore
+          window.syncFrequency = 1
+          setStatus(undefined)
+        });
+      }
     },
-    [setWasm, onPrint, setLammps, setStatus]
+    [wasm, setWasm, onPrint, setLammps, setStatus]
   );
   return (<></>)
 }

@@ -8,11 +8,9 @@ interface SettingsProps {
 }
 
 const Settings = ({open, onClose}: SettingsProps) => {
-  const ssao = useStoreState(state => state.renderSettings.ssao)
-  const setSsao = useStoreActions(actions => actions.renderSettings.setSsao)
-  const brightness = useStoreState(state => state.renderSettings.brightness)
-  const setBrightness = useStoreActions(actions => actions.renderSettings.setBrightness)
-
+  const renderSettings = useStoreState(state => state.settings.render)
+  const setRenderSettings = useStoreActions(actions => actions.settings.setRender)
+  
   interface KeyboardShortcutsDataType {
     key: React.Key;
     name: string;
@@ -52,13 +50,13 @@ const Settings = ({open, onClose}: SettingsProps) => {
   const renderRenderSettings = () => (
     <>
       <p>
-        <Checkbox checked={ssao} onChange={(e) => setSsao(e.target.checked)}>
+        <Checkbox checked={renderSettings.ssao} onChange={(e) => setRenderSettings({...renderSettings, ssao: e.target.checked})}>
           Enable SSAO
         </Checkbox>
       </p>
       <div>
         Brightness
-        <Slider min={0.1} max={2.0} step={0.1} defaultValue={brightness} onChange={(value) => setBrightness(value)} />
+        <Slider min={0.1} max={2.0} step={0.1} defaultValue={renderSettings.brightness} onChange={(value) => setRenderSettings({...renderSettings, brightness: value})} />
       </div>
     </>
   )

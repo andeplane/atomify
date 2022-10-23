@@ -118,7 +118,6 @@ export interface Simulation {
   inputScript: string
   analysisDescription?: string
   analysisScript?: string
-  status?: SimulationStatus
   start: boolean
 }
 
@@ -138,6 +137,7 @@ export interface SimulationModel {
   selectedFile?: SimulationFile
   particles?: Particles
   bonds?: Bonds
+  simulationStatus?: SimulationStatus
   particleColors?: THREE.Color[]
   
   cameraPosition?: THREE.Vector3
@@ -151,6 +151,7 @@ export interface SimulationModel {
   setSelectedMenu: Action<SimulationModel, string>
   addLammpsOutput: Action<SimulationModel, string>
   setShowConsole: Action<SimulationModel, boolean>
+  setSimulationStatus: Action<SimulationModel, SimulationStatus>
   setCameraPosition: Action<SimulationModel, THREE.Vector3|undefined>
   setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
   setAtomTypes: Action<SimulationModel, {[key: number]: AtomType}|undefined>
@@ -186,6 +187,9 @@ export const simulationModel: SimulationModel = {
   lammpsOutput: [],
   resetLammpsOutput: action((state) => {
     state.lammpsOutput = []
+  }),
+  setSimulationStatus: action((state, value: SimulationStatus) => {
+    state.simulationStatus = value
   }),
   setTimesteps: action((state, timesteps: number) => {
     state.timesteps = timesteps

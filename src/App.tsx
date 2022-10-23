@@ -13,15 +13,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, Modal, Tabs, Progress, Button } from 'antd';
 import Simulation from './components/Simulation'
-import SimulationSummary from './containers/SimulationSummary'
 import View from './containers/View'
-import Analyze from './containers/Analyze'
+import Notebook from './containers/Notebook'
 import Edit from './containers/Edit'
 import Console from './containers/Console'
 import Examples from './containers/Examples'
 import { useStoreActions, useStoreState } from './hooks';
 import {track} from './utils/metrics'
-
 const { Content, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -72,7 +70,7 @@ const App: React.FC = () => {
   const items: MenuItem[] = [
     getItem('View', 'view', <AlignLeftOutlined />),
     getItem('Console', 'console', <BorderOuterOutlined />),
-    getItem('Analyze', 'analyze', <LineChartOutlined />),
+    getItem('Notebook', 'notebook', <LineChartOutlined />),
     getItem('Edit', 'edit', <EditOutlined />, simulation ? simulation.files.map(file => {
       return getItem(file.fileName, 'file'+file.fileName, <FileOutlined />)
     }): [], undefined, selectedFile==null),
@@ -94,6 +92,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (preferredView) {
       setSelectedMenu(preferredView)
+      setPreferredView(undefined)
     }
   }, [preferredView, setPreferredView, setSelectedMenu])
   
@@ -147,8 +146,8 @@ const App: React.FC = () => {
           <Tabs.TabPane tab="Console" key="console"> 
             <Console/>
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Analyze" key="analyze">
-            <Analyze />
+          <Tabs.TabPane tab="Notebook" key="notebook">
+            <Notebook />
           </Tabs.TabPane>
           <Tabs.TabPane tab="Edit" key="editfile">
             <Edit />
@@ -159,8 +158,8 @@ const App: React.FC = () => {
         </Tabs>
           {showConsole && <Modal className='console-modal' bodyStyle={{backgroundColor: '#1E1E1E'}} width={'80%'} footer={[
             <>
-            <Button key="analyze" onClick={() => {setShowConsole(false); setPreferredView(undefined); setPreferredView('analyze')}}>
-              Analyze simulation
+            <Button key="analyze" onClick={() => {setShowConsole(false); setPreferredView(undefined); setPreferredView('notebook')}}>
+              Analyze in notebook
             </Button>
             <Button key="close" onClick={() => setShowConsole(false)}>
               Close
@@ -181,7 +180,6 @@ const App: React.FC = () => {
           </>
         </Content>
       </Layout>
-      {preferredView==='view' && <SimulationSummary />}
     </Layout>
     </>
   );

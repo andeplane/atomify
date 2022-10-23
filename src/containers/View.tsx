@@ -4,15 +4,40 @@ import {Layout, Row, Col, Progress} from 'antd'
 import { useStoreState } from '../hooks';
 import {Particles, Bonds, Visualizer} from 'omovi'
 import Settings from './Settings'
-import {SettingOutlined} from '@ant-design/icons'
-const { Header } = Layout;
+import SimulationSummaryOverlay from '../components/SimulationSummaryOverlay'
+import SimulationSummary from './SimulationSummary'
+import {SettingOutlined, AreaChartOutlined} from '@ant-design/icons'
+import styled from "styled-components";
+const { Header, Sider } = Layout;
 
 interface ViewProps {
   visible: boolean
 }
+
+const SettingsButtonContainer = styled.div`
+  position:fixed !important;
+  bottom:0;
+  right:0;
+  margin-bottom: 20px;
+`
+
+const AnalyzeButtonContainer = styled.div`
+  position:fixed !important;
+  bottom:0;
+  right:0;
+  margin-bottom: 20px;
+`
+
+const Container = styled.div`
+  padding: 5px;
+  color: #ffffff;
+  height: 100vh;
+`
+
 const View = ({visible}: ViewProps) => {
   const [loading, setLoading] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
+  const [showAnalyze, setShowAnalyze] = useState(false)
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(state => state.simulation.cameraPosition)
@@ -23,8 +48,7 @@ const View = ({visible}: ViewProps) => {
   const [visualizer, setVisualizer] = useState<Visualizer | undefined>(
     undefined
   )
-  const ssao = useStoreState(state => state.renderSettings.ssao)
-  const brightness = useStoreState(state => state.renderSettings.brightness)
+  const renderSettings = useStoreState(state => state.settings.render)
   const domElement = useRef<HTMLDivElement | null>(null)
   const running = useStoreState(state => state.simulation.running)
   const simulation = useStoreState(state => state.simulation.simulation)
@@ -123,10 +147,10 @@ const View = ({visible}: ViewProps) => {
 
   useEffect(() => {
     if (visualizer) {
-      visualizer.renderer.renderSsao = ssao
-      visualizer.pointLight.intensity = 0.5 * brightness
+      visualizer.renderer.renderSsao = renderSettings.ssao
+      visualizer.pointLight.intensity = 0.5 * renderSettings.brightness
     }
-  }, [ssao, visualizer, brightness])
+  }, [renderSettings, visualizer])
 
   useEffect(() => {
     return () => {
@@ -143,7 +167,7 @@ const View = ({visible}: ViewProps) => {
     }
   }
   return (
-    <>
+    <Layout>
     <Header className="site-layout-background" style={{ backgroundColor: 'rgba(0,0,0,0)', fontSize: '1.5vw', position: 'fixed' }}>
       <Col>
         <Row>
@@ -159,10 +183,23 @@ const View = ({visible}: ViewProps) => {
       <div id="canvas-container" style={{ height: '100%', width: '100%' }}>
         <div style={{ height: '100%', width: '100%'  }} ref={domElement}> 
           <Settings open={showSettings} onClose={() => setShowSettings(false)} />
-          <SettingOutlined className="rendersettingsbutton" style={{ fontSize: '32px', color: '#fff'}} onClick={() => setShowSettings(true)} />
+          <AnalyzeButtonContainer>
+            <AreaChartOutlined style={{ fontSize: '32px', color: '#fff', marginRight: showAnalyze ? 370 : 70}} onClick={() => setShowAnalyze(!showAnalyze)} />
+          </AnalyzeButtonContainer>
+          <SettingsButtonContainer>
+            <SettingOutlined style={{ fontSize: '32px', color: '#fff', marginRight: showAnalyze ? 320 : 20}} onClick={() => setShowSettings(true)} />
+          </SettingsButtonContainer>
+          {!showAnalyze && <SimulationSummaryOverlay />}
         </div>
       </div>
-    </>
+      {showAnalyze && 
+        <Sider width={300}>
+          <Container>
+            <SimulationSummary />
+          </Container>
+        </Sider>
+      }
+      </Layout>
   )
 }
 export default View
