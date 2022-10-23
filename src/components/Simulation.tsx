@@ -206,9 +206,9 @@ const SimulationComponent = () => {
         lammps.setSyncFrequency(window.syncFrequency)
         // @ts-ignore
         if (window.cancel) {
-          lammps.cancel()
           // @ts-ignore
           window.cancel = false;
+          lammps.cancel()
         }
 
         setTimesteps(lammps.getTimesteps())

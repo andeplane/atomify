@@ -23,8 +23,7 @@ const View = ({visible}: ViewProps) => {
   const [visualizer, setVisualizer] = useState<Visualizer | undefined>(
     undefined
   )
-  const ssao = useStoreState(state => state.renderSettings.ssao)
-  const brightness = useStoreState(state => state.renderSettings.brightness)
+  const renderSettings = useStoreState(state => state.settings.render)
   const domElement = useRef<HTMLDivElement | null>(null)
   const running = useStoreState(state => state.simulation.running)
   const simulation = useStoreState(state => state.simulation.simulation)
@@ -123,10 +122,10 @@ const View = ({visible}: ViewProps) => {
 
   useEffect(() => {
     if (visualizer) {
-      visualizer.renderer.renderSsao = ssao
-      visualizer.pointLight.intensity = 0.5 * brightness
+      visualizer.renderer.renderSsao = renderSettings.ssao
+      visualizer.pointLight.intensity = 0.5 * renderSettings.brightness
     }
-  }, [ssao, visualizer, brightness])
+  }, [renderSettings, visualizer])
 
   useEffect(() => {
     return () => {
