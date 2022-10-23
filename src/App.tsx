@@ -92,6 +92,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (preferredView) {
       setSelectedMenu(preferredView)
+      setPreferredView(undefined)
     }
   }, [preferredView, setPreferredView, setSelectedMenu])
   
