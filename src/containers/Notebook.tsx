@@ -21,7 +21,7 @@ const Notebook = () => {
   return (
     <>
       <div style={{height: '100vh', width: '100%'}}>
-      <Iframe sandbox={["allow-scripts", "allow-same-origin"]} url={notebookUrl}
+      <Iframe url={notebookUrl}
           width="100%"
           height="100%"
           id=""
