@@ -123,9 +123,11 @@ const SimulationComponent = () => {
   const particles = useStoreState(state => state.simulation.particles)
   const bonds = useStoreState(state => state.simulation.bonds)
   const simulation = useStoreState(state => state.simulation.simulation)
+  const simulationSettings = useStoreState(state => state.settings.simulation)
   const running = useStoreState(state => state.simulation.running)
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
   const atomTypes = useStoreState(state => state.simulation.atomTypes)
+  const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
   const updateParticles = useStoreActions(actions => actions.simulation.updateParticles)
   const setBonds = useStoreActions(actions => actions.simulation.setBonds)
   const setWasm = useStoreActions(actions => actions.simulation.setWasm)
@@ -150,6 +152,7 @@ const SimulationComponent = () => {
       }
       
       if (lammps != null && simulation != null && !running && ev.key === " ") {
+        setSimulationSettings({...simulationSettings, speed: 1})
         lammps.setSyncFrequency(1)
         //@ts-ignore
         lammps.step()
@@ -220,7 +223,8 @@ const SimulationComponent = () => {
   }, [wasm, lammps, particles, bonds, setBonds, 
     updateParticles, setSimulation, 
     running, selectedMenu, simulation, setTimesteps,
-    setRunTimesteps, setRunTotalTimesteps, setLastCommand, atomTypes])
+    setRunTimesteps, setRunTotalTimesteps, setLastCommand,
+    atomTypes, setSimulationSettings, simulationSettings])
 
   useEffect(
     () => {
