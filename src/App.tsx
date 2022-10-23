@@ -13,7 +13,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { MenuProps } from 'antd';
 import { Layout, Menu, Modal, Tabs, Progress, Button } from 'antd';
 import Simulation from './components/Simulation'
-import SimulationSummary from './containers/SimulationSummary'
+import SimulationSummaryOverlay from './components/SimulationSummaryOverlay'
 import View from './containers/View'
 import Notebook from './containers/Notebook'
 import Edit from './containers/Edit'
@@ -181,7 +181,7 @@ const App: React.FC = () => {
           </>
         </Content>
       </Layout>
-      {preferredView==='view' && <SimulationSummary />}
+      {preferredView==='view' && <SimulationSummaryOverlay />}
     </Layout>
     </>
   );
