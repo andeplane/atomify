@@ -1,4 +1,5 @@
 import { action, Action } from 'easy-peasy';
+import {Compute, Fix} from '../types'
 
 export interface SimulationStatusModel {
   remainingTime: number
@@ -7,6 +8,10 @@ export interface SimulationStatusModel {
   origo?: THREE.Vector3
   runType: string
   numAtoms: number
+  computes: Compute[]
+  fixes: Fix[]
+  setComputes: Action<SimulationStatusModel, Compute[]>
+  setFixes: Action<SimulationStatusModel, Fix[]>
   setRemainingTime: Action<SimulationStatusModel, number>
   setTimestepsPerSecond: Action<SimulationStatusModel, number>
   setNumAtoms: Action<SimulationStatusModel, number>
@@ -20,6 +25,14 @@ export const simulationStatusModel: SimulationStatusModel = {
   timestepsPerSecond: 0,
   runType: "",
   numAtoms: 0,
+  computes: [],
+  fixes: [],
+  setComputes: action((state, value: Compute[]) => {
+    state.computes = value
+  }),
+  setFixes: action((state, value: Fix[]) => {
+    state.fixes = value
+  }),
   setRemainingTime: action((state, value: number) => {
     state.remainingTime = value
   }),

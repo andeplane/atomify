@@ -6,6 +6,19 @@
 #include "force.h"
 #include "update.h"
 #include "modify.h"
+#include "fix_ave_chunk.h"
+#include "fix_ave_histo.h"
+#include "fix_ave_time.h"
+#include "compute_pe.h"
+#include "compute_temp.h"
+#include "compute_ke.h"
+#include "compute_pressure.h"
+#include "compute_rdf.h"
+#include "compute_msd.h"
+#include "compute_vacf.h"
+#include "compute_com.h"
+#include "compute_gyration.h"
+#include "compute.h"
 #include "error.h"
 #include "neigh_list.h"
 #include "fix_atomify.h"
@@ -347,6 +360,46 @@ int LAMMPSWeb::getRunTimesteps() {
     return 0;
   }
   return m_lmp->update->ntimestep - m_lmp->update->firststep;
+}
+
+std::vector<Compute> LAMMPSWeb::getComputes() {
+  auto v = std::vector<Compute>();
+  if (!m_lmp) {
+    return v;
+  }
+  
+  for(int i=0; i < m_lmp->modify->ncompute; i++) {
+    LAMMPS_NS::Compute *c = m_lmp->modify->compute[i];
+    if (dynamic_cast<LAMMPS_NS::ComputePE*>(c) == nullptr) v.push_back({ std::string(c->id), ComputePE });
+    else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeTemp });
+    else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeKE });
+    else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(c) == nullptr) v.push_back({ std::string(c->id), ComputePressure });
+    else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeRDF });
+    else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeMSD });
+    else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeVACF });
+    else if (dynamic_cast<LAMMPS_NS::ComputeCOM*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeCOM });
+    else if (dynamic_cast<LAMMPS_NS::ComputeGyration*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeGyration });
+    else v.push_back({ std::string(c->id), ComputeOther});
+    
+  }
+
+  return v;
+}
+
+std::vector<Fix> LAMMPSWeb::getFixes() {
+  auto v = std::vector<Fix>();
+  if (!m_lmp) {
+    return v;
+  }
+  for(int i=0; i < m_lmp->modify->nfix; i++) {
+    LAMMPS_NS::Fix *f = m_lmp->modify->fix[i];
+    if (dynamic_cast<LAMMPS_NS::FixAveChunk*>(f) == nullptr) v.push_back({ std::string(f->id), FixAveChunk });
+    else if (dynamic_cast<LAMMPS_NS::FixAveHisto*>(f) == nullptr) v.push_back({ std::string(f->id), FixAveHisto });
+    else if (dynamic_cast<LAMMPS_NS::FixAveTime*>(f) == nullptr) v.push_back({ std::string(f->id), FixAveTime });
+    else v.push_back({ std::string(f->id), FixOther});
+  }
+  
+  return v;
 }
 
 void LAMMPSWeb::setSyncFrequency(int every) {

@@ -3,12 +3,52 @@
 #include "lammps.h"
 #include "fix.h"
 #include <iostream>
+#include <string>
+
 #ifdef __EMSCRIPTEN__
   #include <emscripten.h>
   #include <emscripten/bind.h>
   #include <emscripten/val.h>
   using namespace emscripten;
 #endif
+
+enum ComputeType {
+  ComputePressure,
+  ComputeTemp,
+  ComputePE,
+  ComputeKE,
+  ComputeRDF,
+  ComputeMSD,
+  ComputeVACF,
+  ComputeCOM,
+  ComputeGyration,
+  ComputeKEAtom,
+  ComputePropertyAtom,
+  ComputeClusterAtom,
+  ComputeCNAAtom,
+  ComputeOther,
+};
+
+enum FixType {
+  FixAveChunk,
+  FixAveHisto,
+  FixAveTime,
+  FixOther
+};
+
+struct Compute {
+  std::string name;
+  ComputeType type;
+  std::string getName() { return name; }
+  int getType() { return type; }
+};
+
+struct Fix {
+  std::string name;
+  FixType type;
+  std::string getName() { return name; }
+  int getType() { return type; }
+};
 
 class LAMMPSWeb
 {
@@ -42,6 +82,8 @@ public:
   int getTimesteps();
   int getRunTotalTimesteps();
   int getRunTimesteps();
+  std::vector<Compute> getComputes();
+  std::vector<Fix> getFixes();
 
   // Pointer getters
   long getBondsDistanceMapPointer();
@@ -90,7 +132,9 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("getTimestepsPerSecond", &LAMMPSWeb::getTimestepsPerSecond)
       .function("getCPURemain", &LAMMPSWeb::getCPURemain)
       .function("getWhichFlag", &LAMMPSWeb::getWhichFlag)
-      
+      .function("getComputes", &LAMMPSWeb::getComputes)
+      .function("getFixes", &LAMMPSWeb::getFixes)
+
       .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
       .function("getBondsDistanceMapPointer", &LAMMPSWeb::getBondsDistanceMapPointer)
       .function("getIdPointer", &LAMMPSWeb::getIdPointer)
@@ -110,6 +154,17 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       
       .function("computeBonds", &LAMMPSWeb::computeBonds)
       .function("computeParticles", &LAMMPSWeb::computeParticles);
+
+  class_<Compute>("Compute")
+    .constructor<>()
+    .function("getName", &Compute::getName)
+    .function("getType", &Compute::getType);
+  class_<Fix>("Fix")
+    .constructor<>()
+    .function("getName", &Fix::getName)
+    .function("getType", &Fix::getType);
+  register_vector<Compute>("vector<Compute>");
+  register_vector<Fix>("vector<Fix>");
 
 }
 #endif

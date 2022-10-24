@@ -139,6 +139,9 @@ const SimulationComponent = () => {
   const setSimulationStatus = useStoreActions(actions => actions.simulation.setSimulationStatus)
   const setRunTotalTimesteps = useStoreActions(actions => actions.simulation.setRunTotalTimesteps)
   const setLastCommand = useStoreActions(actions => actions.simulation.setLastCommand)
+  const setComputes = useStoreActions(actions => actions.simulationStatus.setComputes)
+  const setFixes = useStoreActions(actions => actions.simulationStatus.setFixes)
+
   const onPrint = useCallback( (text: string) => {
     //@ts-ignore
     addLammpsOutput(text)
@@ -203,6 +206,28 @@ const SimulationComponent = () => {
         }
         setSimulationStatus(simulationStatus)
 
+        const lmpComputes = lammps.getComputes()
+        const lmpFixes = lammps.getFixes()
+        const computes = []
+        const fixes = []
+        for (let i = 0; i < lmpComputes.size(); i++) {
+          const compute = lmpComputes.get(i)
+          computes.push({
+            name: compute.getName(),
+            type: compute.getType()
+          })
+        }
+
+        for (let i = 0; i < lmpFixes.size(); i++) {
+          const fix = lmpFixes.get(i)
+          fixes.push({
+            name: fix.getName(),
+            type: fix.getType()
+          })
+        }
+        setComputes(computes)
+        setFixes(fixes)
+        
         // @ts-ignore
         lammps.setSyncFrequency(window.syncFrequency)
         // @ts-ignore
@@ -222,7 +247,7 @@ const SimulationComponent = () => {
     updateParticles,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
     atomTypes, setSimulationStatus, selectedMenu, running, 
-    setSimulationSettings, setTimesteps, simulation, simulationSettings])
+    setSimulationSettings, setTimesteps, simulation, simulationSettings, setComputes, setFixes])
 
   useEffect(
     () => {
