@@ -369,18 +369,20 @@ std::vector<Compute> LAMMPSWeb::getComputes() {
   }
   
   for(int i=0; i < m_lmp->modify->ncompute; i++) {
-    LAMMPS_NS::Compute *c = m_lmp->modify->compute[i];
-    if (dynamic_cast<LAMMPS_NS::ComputePE*>(c) == nullptr) v.push_back({ std::string(c->id), ComputePE });
-    else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeTemp });
-    else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeKE });
-    else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(c) == nullptr) v.push_back({ std::string(c->id), ComputePressure });
-    else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeRDF });
-    else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeMSD });
-    else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeVACF });
-    else if (dynamic_cast<LAMMPS_NS::ComputeCOM*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeCOM });
-    else if (dynamic_cast<LAMMPS_NS::ComputeGyration*>(c) == nullptr) v.push_back({ std::string(c->id), ComputeGyration });
-    else v.push_back({ std::string(c->id), ComputeOther});
-    
+    LAMMPS_NS::Compute *lmp_compute = m_lmp->modify->compute[i];
+    Compute compute;
+    if (dynamic_cast<LAMMPS_NS::ComputePE*>(lmp_compute) == nullptr) compute = { std::string(lmp_compute->id), ComputePE };
+    else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(lmp_compute) == nullptr) compute = { std::string(lmp_compute->id), ComputeTemp };
+    else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(lmp_compute) == nullptr) compute = { std::string(lmp_compute->id), ComputeKE };
+    else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(lmp_compute) == nullptr) compute = { std::string(lmp_compute->id), ComputePressure };
+    else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(lmp_compute) == nullptr) compute = { std::string(lmp_compute->id), ComputeRDF };
+    else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(lmp_compute) == nullptr) compute = { std::string(lmp_compute->id), ComputeMSD };
+    else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(lmp_compute) == nullptr) compute = { std::string(lmp_compute->id), ComputeVACF };
+    else if (dynamic_cast<LAMMPS_NS::ComputeCOM*>(lmp_compute) == nullptr) compute = { std::string(lmp_compute->id), ComputeCOM };
+    else if (dynamic_cast<LAMMPS_NS::ComputeGyration*>(lmp_compute) == nullptr) compute = { std::string(lmp_compute->id), ComputeGyration };
+    else compute = { std::string(lmp_compute->id), ComputeOther};
+    compute.sync(m_lmp, lmp_compute);
+    v.push_back(compute);
   }
 
   return v;

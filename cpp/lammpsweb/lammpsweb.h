@@ -2,6 +2,8 @@
 #define LAMMPSWEB_H
 #include "lammps.h"
 #include "fix.h"
+#include "atomify_compute.h"
+#include "atomify_fix.h"
 #include <iostream>
 #include <string>
 
@@ -11,44 +13,6 @@
   #include <emscripten/val.h>
   using namespace emscripten;
 #endif
-
-enum ComputeType {
-  ComputePressure,
-  ComputeTemp,
-  ComputePE,
-  ComputeKE,
-  ComputeRDF,
-  ComputeMSD,
-  ComputeVACF,
-  ComputeCOM,
-  ComputeGyration,
-  ComputeKEAtom,
-  ComputePropertyAtom,
-  ComputeClusterAtom,
-  ComputeCNAAtom,
-  ComputeOther,
-};
-
-enum FixType {
-  FixAveChunk,
-  FixAveHisto,
-  FixAveTime,
-  FixOther
-};
-
-struct Compute {
-  std::string name;
-  ComputeType type;
-  std::string getName() { return name; }
-  int getType() { return type; }
-};
-
-struct Fix {
-  std::string name;
-  FixType type;
-  std::string getName() { return name; }
-  int getType() { return type; }
-};
 
 class LAMMPSWeb
 {
@@ -155,16 +119,23 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("computeBonds", &LAMMPSWeb::computeBonds)
       .function("computeParticles", &LAMMPSWeb::computeParticles);
 
+
+
   class_<Compute>("Compute")
     .constructor<>()
     .function("getName", &Compute::getName)
-    .function("getType", &Compute::getType);
+    .function("getType", &Compute::getType)
+    .function("getIsPerAtom", &Compute::getIsPerAtom)
+    .function("getPerAtomData", &Compute::getPerAtomData)
+    .function("setSyncData", &Compute::setSyncData);
+  
   class_<Fix>("Fix")
     .constructor<>()
     .function("getName", &Fix::getName)
     .function("getType", &Fix::getType);
   register_vector<Compute>("vector<Compute>");
   register_vector<Fix>("vector<Fix>");
+  register_vector<float>("vector<float>");
 
 }
 #endif

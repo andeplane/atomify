@@ -7,6 +7,7 @@ import {Particles, Bonds} from 'omovi'
 import { notification } from 'antd';
 import {AtomType} from '../utils/atomtypes'
 import {SimulationStatus} from '../store/simulation'
+import colormap from 'colormap'
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
@@ -188,6 +189,60 @@ const SimulationComponent = () => {
           if (newBonds !== bonds) {
             setBonds(newBonds)
           }
+
+          const lmpComputes = lammps.getComputes()
+          const lmpFixes = lammps.getFixes()
+          const computes = []
+          const fixes = []
+          for (let i = 0; i < lmpComputes.size(); i++) {
+            const compute = lmpComputes.get(i)
+            computes.push({
+              name: compute.getName(),
+              type: compute.getType(),
+              isPerAtom: compute.getIsPerAtom(),
+              perAtomDataPtr: compute.getPerAtomData()
+            })
+            if (compute.getIsPerAtom()) {
+              let colors = colormap({
+                colormap: 'jet',
+                nshades: 72,
+                format: 'float',
+                alpha: 1
+              })
+      
+              const perAtomDataPtr = compute.getPerAtomData() / 4
+              //@ts-ignore
+              const perAtomArray = wasm.HEAPF32.subarray(perAtomDataPtr, perAtomDataPtr + newParticles.count ) as Float32Array
+              //@ts-ignore
+              window.perAtomArray = perAtomArray
+              // @ts-ignore
+              const minValue = Math.max.apply(null, perAtomArray)
+              // @ts-ignore
+              const maxValue = Math.min.apply(null, perAtomArray)
+              // console.log("Min, max, size ", minValue, maxValue, perAtomArray.length)
+              perAtomArray.forEach( (value, index) => {
+                const realIndex = newParticles.indices[index]
+                const colorIndex = Math.floor((value - minValue) / (maxValue - minValue) * (colors.length-1))
+                const color = colors[colorIndex]
+                // console.log("Got color index ", colorIndex)
+                // @ts-ignore
+                if (window.visualizer) {
+                  // @ts-ignore
+                  window.visualizer.setColor(realIndex, {r: 255*color[0], g: 255*color[1], b: 255*color[2]})
+                }
+              })
+            }
+          }
+
+          for (let i = 0; i < lmpFixes.size(); i++) {
+            const fix = lmpFixes.get(i)
+            fixes.push({
+              name: fix.getName(),
+              type: fix.getType()
+            })
+          }
+          setComputes(computes)
+          setFixes(fixes)
         }
 
         const whichFlag = lammps.getWhichFlag()
@@ -206,28 +261,6 @@ const SimulationComponent = () => {
         }
         setSimulationStatus(simulationStatus)
 
-        const lmpComputes = lammps.getComputes()
-        const lmpFixes = lammps.getFixes()
-        const computes = []
-        const fixes = []
-        for (let i = 0; i < lmpComputes.size(); i++) {
-          const compute = lmpComputes.get(i)
-          computes.push({
-            name: compute.getName(),
-            type: compute.getType()
-          })
-        }
-
-        for (let i = 0; i < lmpFixes.size(); i++) {
-          const fix = lmpFixes.get(i)
-          fixes.push({
-            name: fix.getName(),
-            type: fix.getType()
-          })
-        }
-        setComputes(computes)
-        setFixes(fixes)
-        
         // @ts-ignore
         lammps.setSyncFrequency(window.syncFrequency)
         // @ts-ignore

@@ -63,6 +63,9 @@ type CPPArray<T> = {
 type LMPCompute = {
   getName: () => string
   getType: () => ComputeType
+  getPerAtomData: () => number
+  getIsPerAtom: () => boolean
+  setSyncData: (syncData: boolean) => void
 }
 
 type LMPFix = {
@@ -73,6 +76,8 @@ type LMPFix = {
 export type Compute = {
   name: string
   type: ComputeType
+  isPerAtom: boolean
+  perAtomDataPtr: number
 }
 
 export type Fix = {
