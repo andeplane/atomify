@@ -8,6 +8,7 @@ import { notification } from 'antd';
 import {AtomType} from '../utils/atomtypes'
 import {SimulationStatus} from '../store/simulation'
 import colormap from 'colormap'
+import { ModifierInput, ModifierOutput } from '../modifiers/types';
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
@@ -119,19 +120,21 @@ const getSimulationOrigo = (lammps: LammpsWeb, wasm: any) => {
 }
 
 const SimulationComponent = () => {
-  const wasm = useStoreState(state => state.simulation.wasm)
+  const state = useStoreState(state => state)
+  // @ts-ignore
+  const wasm = window.wasm
   const lammps = useStoreState(state => state.simulation.lammps)
   const particles = useStoreState(state => state.simulation.particles)
   const bonds = useStoreState(state => state.simulation.bonds)
   const simulation = useStoreState(state => state.simulation.simulation)
   const simulationSettings = useStoreState(state => state.settings.simulation)
+  const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
   const running = useStoreState(state => state.simulation.running)
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
   const atomTypes = useStoreState(state => state.simulation.atomTypes)
   const updateParticles = useStoreActions(actions => actions.simulation.updateParticles)
   const setBonds = useStoreActions(actions => actions.simulation.setBonds)
-  const setWasm = useStoreActions(actions => actions.simulation.setWasm)
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
   const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
@@ -142,7 +145,7 @@ const SimulationComponent = () => {
   const setLastCommand = useStoreActions(actions => actions.simulation.setLastCommand)
   const setComputes = useStoreActions(actions => actions.simulationStatus.setComputes)
   const setFixes = useStoreActions(actions => actions.simulationStatus.setFixes)
-
+  
   const onPrint = useCallback( (text: string) => {
     //@ts-ignore
     addLammpsOutput(text)
@@ -178,11 +181,22 @@ const SimulationComponent = () => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm && simulation) {
+        const modifierInput: ModifierInput = {
+          lammps,
+          wasm,
+        }
+        const modifierOutput: ModifierOutput = {
+          particles,
+          bonds,
+          // @ts-ignore
+          visualizer: window.visualizer
+        }
+        // @ts-ignore
+        postTimestepModifiers.forEach(modifier => modifier.run(state, modifierInput, modifierOutput))
+        
         if (selectedMenu === 'view') {
-          let newParticles = getPositions(lammps, wasm, particles, atomTypes)
-          newParticles.markNeedsUpdate()
-          if (newParticles !== particles) {
-            updateParticles(newParticles)
+          if (modifierOutput.particles !== particles) {
+            updateParticles(modifierOutput.particles)
           }
           let newBonds = getBonds(lammps, wasm, bonds)
           newBonds.markNeedsUpdate()
@@ -202,36 +216,36 @@ const SimulationComponent = () => {
               isPerAtom: compute.getIsPerAtom(),
               perAtomDataPtr: compute.getPerAtomData()
             })
-            if (compute.getIsPerAtom()) {
-              let colors = colormap({
-                colormap: 'jet',
-                nshades: 72,
-                format: 'float',
-                alpha: 1
-              })
+            // if (false && compute.getIsPerAtom()) {
+            //   let colors = colormap({
+            //     colormap: 'jet',
+            //     nshades: 72,
+            //     format: 'float',
+            //     alpha: 1
+            //   })
       
-              const perAtomDataPtr = compute.getPerAtomData() / 4
-              //@ts-ignore
-              const perAtomArray = wasm.HEAPF32.subarray(perAtomDataPtr, perAtomDataPtr + newParticles.count ) as Float32Array
-              //@ts-ignore
-              window.perAtomArray = perAtomArray
-              // @ts-ignore
-              const minValue = Math.max.apply(null, perAtomArray)
-              // @ts-ignore
-              const maxValue = Math.min.apply(null, perAtomArray)
-              // console.log("Min, max, size ", minValue, maxValue, perAtomArray.length)
-              perAtomArray.forEach( (value, index) => {
-                const realIndex = newParticles.indices[index]
-                const colorIndex = Math.floor((value - minValue) / (maxValue - minValue) * (colors.length-1))
-                const color = colors[colorIndex]
-                // console.log("Got color index ", colorIndex)
-                // @ts-ignore
-                if (window.visualizer) {
-                  // @ts-ignore
-                  window.visualizer.setColor(realIndex, {r: 255*color[0], g: 255*color[1], b: 255*color[2]})
-                }
-              })
-            }
+            //   const perAtomDataPtr = compute.getPerAtomData() / 4
+            //   //@ts-ignore
+            //   const perAtomArray = wasm.HEAPF32.subarray(perAtomDataPtr, perAtomDataPtr + newParticles.count ) as Float32Array
+            //   //@ts-ignore
+            //   window.perAtomArray = perAtomArray
+            //   // @ts-ignore
+            //   const minValue = Math.max.apply(null, perAtomArray)
+            //   // @ts-ignore
+            //   const maxValue = Math.min.apply(null, perAtomArray)
+            //   // console.log("Min, max, size ", minValue, maxValue, perAtomArray.length)
+            //   perAtomArray.forEach( (value, index) => {
+            //     const realIndex = newParticles.indices[index]
+            //     const colorIndex = Math.floor((value - minValue) / (maxValue - minValue) * (colors.length-1))
+            //     const color = colors[colorIndex]
+            //     // console.log("Got color index ", colorIndex)
+            //     // @ts-ignore
+            //     if (window.visualizer) {
+            //       // @ts-ignore
+            //       window.visualizer.setColor(realIndex, {r: 255*color[0], g: 255*color[1], b: 255*color[2]})
+            //     }
+            //   })
+            // }
           }
 
           for (let i = 0; i < lmpFixes.size(); i++) {
@@ -280,16 +294,18 @@ const SimulationComponent = () => {
     updateParticles,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
     atomTypes, setSimulationStatus, selectedMenu, running, 
-    setSimulationSettings, setTimesteps, simulation, simulationSettings, setComputes, setFixes])
+    setSimulationSettings, setTimesteps, simulation, 
+    postTimestepModifiers, simulationSettings, setComputes, setFixes])
 
   useEffect(
     () => {
-      setStatus({
-        title: 'Downloading LAMMPS ...',
-        text: '',
-        progress: 0.3
-      })
-      if (!wasm) {
+      // @ts-ignore
+      if (!window.wasm) {
+        setStatus({
+          title: 'Downloading LAMMPS ...',
+          text: '',
+          progress: 0.3
+        })
         createModule({
           print: onPrint, 
           printErr: onPrint,
@@ -299,7 +315,7 @@ const SimulationComponent = () => {
             text: '',
             progress: 0.6
           })
-          setWasm(Module)
+          // setWasm(Module)
           const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
           setLammps(lammps)
           // @ts-ignore
@@ -312,7 +328,7 @@ const SimulationComponent = () => {
         });
       }
     },
-    [wasm, setWasm, onPrint, setLammps, setStatus]
+    [onPrint, setLammps, setStatus]
   );
   return (<></>)
 }

@@ -58,7 +58,7 @@ variable diffusion_coeff_heavy equal c_msd_heavy[4]/6/(step*dt+1.0e-6)
 compute        peratom all pe/atom
 compute        pe all reduce sum c_peratom
 
-thermo 1
+thermo 100
 thermo_style custom step v_diffusion_coeff_light v_msd_light v_diffusion_coeff_heavy v_msd_heavy c_pe
 fix 1 all nve
 run 3000
