@@ -1,6 +1,7 @@
 import { action, Action } from 'easy-peasy';
 import Modifier from '../modifiers/modifier'
 import SyncParticlesModifier from '../modifiers/syncparticles'
+import SyncBondsModifier from '../modifiers/syncbonds'
 
 export interface ProcessingModel {
   postTimestepModifiers: Modifier[]
@@ -11,10 +12,12 @@ export const processingModel: ProcessingModel = {
   postTimestepModifiers: [
     new SyncParticlesModifier({
       name: 'SyncParticles'
+    }),
+    new SyncBondsModifier({
+      name: 'SyncBonds'
     })
   ],
   setPostTimestepModifiers: action((state, value: Modifier[]) => {
-    console.log("Setting value: ", value)
     state.postTimestepModifiers = value
   })
 };
