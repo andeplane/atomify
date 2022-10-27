@@ -2,10 +2,9 @@ import {useCallback, useEffect} from 'react'
 import {useStoreActions, useStoreState} from '../hooks'
 import * as THREE from 'three'
 import createModule from "../wasm/lammps.mjs";
-import { LammpsWeb } from '../types';
+import { LammpsWeb, Compute, Fix } from '../types';
 import { notification } from 'antd';
 import {SimulationStatus} from '../store/simulation'
-import colormap from 'colormap'
 import { ModifierInput, ModifierOutput } from '../modifiers/types';
 
 const cellMatrix = new THREE.Matrix3()
@@ -112,54 +111,13 @@ const SimulationComponent = () => {
           
           const lmpComputes = lammps.getComputes()
           const lmpFixes = lammps.getFixes()
-          const computes = []
-          const fixes = []
+          const computes: Compute[] = []
           for (let i = 0; i < lmpComputes.size(); i++) {
-            const compute = lmpComputes.get(i)
-            computes.push({
-              name: compute.getName(),
-              type: compute.getType(),
-              isPerAtom: compute.getIsPerAtom(),
-              perAtomDataPtr: compute.getPerAtomData()
-            })
-            // if (false && compute.getIsPerAtom()) {
-            //   let colors = colormap({
-            //     colormap: 'jet',
-            //     nshades: 72,
-            //     format: 'float',
-            //     alpha: 1
-            //   })
-      
-            //   const perAtomDataPtr = compute.getPerAtomData() / 4
-            //   //@ts-ignore
-            //   const perAtomArray = wasm.HEAPF32.subarray(perAtomDataPtr, perAtomDataPtr + newParticles.count ) as Float32Array
-            //   //@ts-ignore
-            //   window.perAtomArray = perAtomArray
-            //   // @ts-ignore
-            //   const minValue = Math.max.apply(null, perAtomArray)
-            //   // @ts-ignore
-            //   const maxValue = Math.min.apply(null, perAtomArray)
-            //   // console.log("Min, max, size ", minValue, maxValue, perAtomArray.length)
-            //   perAtomArray.forEach( (value, index) => {
-            //     const realIndex = newParticles.indices[index]
-            //     const colorIndex = Math.floor((value - minValue) / (maxValue - minValue) * (colors.length-1))
-            //     const color = colors[colorIndex]
-            //     // console.log("Got color index ", colorIndex)
-            //     // @ts-ignore
-            //     if (window.visualizer) {
-            //       // @ts-ignore
-            //       window.visualizer.setColor(realIndex, {r: 255*color[0], g: 255*color[1], b: 255*color[2]})
-            //     }
-            //   })
-            // }
+            computes.push(lmpComputes.get(i))
           }
-
+          const fixes: Fix[] = []
           for (let i = 0; i < lmpFixes.size(); i++) {
-            const fix = lmpFixes.get(i)
-            fixes.push({
-              name: fix.getName(),
-              type: fix.getType()
-            })
+            fixes.push(lmpFixes.get(i))
           }
           setComputes(computes)
           setFixes(fixes)
@@ -201,7 +159,7 @@ const SimulationComponent = () => {
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
     atomTypes, setSimulationStatus, selectedMenu, running, 
     setSimulationSettings, setTimesteps, simulation, 
-    postTimestepModifiers, simulationSettings, setComputes, setFixes])
+    postTimestepModifiers, state, simulationSettings, setComputes, setFixes])
 
   useEffect(
     () => {

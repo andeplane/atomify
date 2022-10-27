@@ -41,7 +41,7 @@ FixAtomify::FixAtomify(LAMMPS *lmp, int narg, char **arg)
     , callback(NULL)
     , ptr_caller(NULL)
     , build_neighborlist(false)
-    , sync_frequency(10)
+    , sync_frequency(1)
     , m_cancel(false)
 {
 }
@@ -106,6 +106,7 @@ void FixAtomify::update_compute(const char computeId[])
 
 void FixAtomify::update_computes()
 {
+    // Prepare computes to be computed next time step
     for(int i=0; i<modify->ncompute; i++) {
         Compute *compute = modify->compute[i];
         if(compute->peatomflag || compute->peflag || compute->pressatomflag || compute->pressflag) {
@@ -123,11 +124,16 @@ void FixAtomify::end_of_step()
     if(build_neighborlist) {
         neighbor->build_one(list);
     }
+
     lost_atoms();
-    bool should_sync = step_count % sync_frequency == 0;
-    if (should_sync) {
-        (this->callback)(ptr_caller,END_OF_STEP);
+    bool will_sync_next = (step_count+1) % sync_frequency == 0;
+    if (will_sync_next) {
         update_computes();
+    }
+
+    bool will_sync_now = step_count % sync_frequency == 0;
+    if (will_sync_now) {
+        (this->callback)(ptr_caller,END_OF_STEP);
     } else if (sync_frequency > 10 && step_count % 10 == 0) {
         // We won't sync anything, but will do a small sleep to not freeze UI
         (this->callback)(ptr_caller, 1000);

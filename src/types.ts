@@ -11,8 +11,8 @@ export type LammpsWeb = {
   getTimestepsPerSecond: () => number
   getCPURemain: () => number
   getWhichFlag: () => number
-  getComputes: () => CPPArray<LMPCompute>
-  getFixes: () => CPPArray<LMPFix>
+  getComputes: () => CPPArray<Compute>
+  getFixes: () => CPPArray<Fix>
 
   getPositionsPointer: () => number
   getIdPointer: () => number
@@ -60,30 +60,20 @@ type CPPArray<T> = {
   size: () => number
 }
 
-type LMPCompute = {
+export type Compute = {
   getName: () => string
   getType: () => ComputeType
   getPerAtomData: () => number
   getIsPerAtom: () => boolean
-  setSyncData: (syncData: boolean) => void
+  sync: () => void
+  execute: () => boolean
 }
 
-type LMPFix = {
+export type Fix = {
   getName: () => string
   getType: () => FixType
 }
 
-export type Compute = {
-  name: string
-  type: ComputeType
-  isPerAtom: boolean
-  perAtomDataPtr: number
-}
-
-export type Fix = {
-  name: string
-  type: FixType
-}
 
 export type LammpsOutput = {
     // type: LineType
