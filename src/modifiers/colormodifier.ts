@@ -5,14 +5,15 @@ import colormap from 'colormap'
 
 interface ColorModifierProps {
   name: string
+  active: boolean
   computeName: string
 }
 
 class ColorModifier extends Modifier {
   public computeName: string
 
-  constructor({name, computeName}: ColorModifierProps) {
-    super({name})
+  constructor({name, active, computeName}: ColorModifierProps) {
+    super({name, active})
     this.computeName = computeName
   }
 
