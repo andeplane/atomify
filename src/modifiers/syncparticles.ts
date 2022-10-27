@@ -5,11 +5,12 @@ import {Particles} from 'omovi'
 
 interface SyncParticlesModifierProps {
   name: string
+  active: boolean
 }
 
 class SyncParticlesModifier extends Modifier {
-  constructor({name}: SyncParticlesModifierProps) {
-    super({name})
+  constructor({name, active}: SyncParticlesModifierProps) {
+    super({name, active})
   }
 
   run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {

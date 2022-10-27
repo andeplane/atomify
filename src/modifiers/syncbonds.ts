@@ -5,11 +5,12 @@ import {Bonds} from 'omovi'
 
 interface SyncBondsModifierProps {
   name: string
+  active: boolean
 }
 
 class SyncBondsModifier extends Modifier {
-  constructor({name}: SyncBondsModifierProps) {
-    super({name})
+  constructor({name, active}: SyncBondsModifierProps) {
+    super({name, active})
   }
 
   run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
