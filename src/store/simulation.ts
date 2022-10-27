@@ -166,12 +166,10 @@ export interface SimulationModel {
   setFiles: Action<SimulationModel, string[]>
   setStatus: Action<SimulationModel, Status|undefined>
   setLammps: Action<SimulationModel, LammpsWeb>
-  setWasm: Action<SimulationModel, any>
   syncFilesWasm: Thunk<SimulationModel, string|undefined>
   syncFilesJupyterLite: Thunk<SimulationModel, undefined>
   run: Thunk<SimulationModel>
   newSimulation: Thunk<SimulationModel, Simulation>
-  wasm?: any
   lammps?: LammpsWeb
   reset: Action<SimulationModel, undefined>
 }
@@ -229,9 +227,6 @@ export const simulationModel: SimulationModel = {
   }),
   setAtomTypes: action((state, atomTypes: {[key: number]: AtomType}) => {
     state.atomTypes = atomTypes
-  }),
-  setWasm: action((state, wasm: any) => {
-    state.wasm = wasm
   }),
   setLammps: action((state, lammps: LammpsWeb) => {
     state.lammps = lammps
@@ -294,7 +289,7 @@ export const simulationModel: SimulationModel = {
     }
     
     // @ts-ignore
-    const wasm = getStoreState().simulation.wasm
+    const wasm = window.wasm
     for (const file of simulation.files) {
       // Update all files if no fileName is specified
       if (file.fileName === fileName || !fileName) {
@@ -310,7 +305,7 @@ export const simulationModel: SimulationModel = {
       return
     }
     // @ts-ignore
-    const wasm = getStoreState().simulation.wasm
+    const wasm = window.wasm
     const fileNames: string[] = wasm.FS.readdir(`/${simulation.id}`)
     const files: {[key: string]: SimulationFile} = {}
     fileNames.forEach( (fileName: string) => {
@@ -434,7 +429,7 @@ export const simulationModel: SimulationModel = {
     actions.resetLammpsOutput()
 
     // @ts-ignore
-    const wasm = getStoreState().simulation.wasm
+    const wasm = window.wasm
     // @ts-ignore
     const lammps = getStoreState().simulation.lammps
     

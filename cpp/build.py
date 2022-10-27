@@ -1,6 +1,7 @@
 import os
 import subprocess
 import shutil
+import hashlib
 
 def copy_moltemplate_files():
   shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_charmm_coul_charmm_inter.cpp", "lammps/src/pair_lj_charmm_coul_charmm_inter.cpp")
@@ -17,11 +18,21 @@ def copy_mpi_files_and_patch():
   shutil.copyfile("fix_atomify.cpp", "lammps/src/fix_atomify.cpp")
   shutil.copyfile("fix_atomify.h", "lammps/src/fix_atomify.h")
 
+def file_content(path):
+  return open(path, 'r').read()
+
 def copy_atomify_files():
-  shutil.copyfile("lammpsweb/lammpsweb.cpp", "lammps/src/lammpsweb.cpp")
-  shutil.copyfile("lammpsweb/lammpsweb.h", "lammps/src/lammpsweb.h")
-  shutil.copyfile("fix_atomify.cpp", "lammps/src/fix_atomify.cpp")
-  shutil.copyfile("fix_atomify.h", "lammps/src/fix_atomify.h")
+  files = ["atomify_compute", "atomify_fix", "fix_atomify", "lammpsweb"]
+  for file in files:
+    cpp_new_path = os.path.join('lammpsweb', file+".cpp")
+    cpp_lmp_path = os.path.join('lammps/src', file+".cpp")
+    h_new_path = os.path.join('lammpsweb', file+".h")
+    h_lmp_path = os.path.join('lammps/src', file+".h")
+
+    if file_content(cpp_new_path) != file_content(cpp_lmp_path) or file_content(h_new_path) != file_content(h_lmp_path):
+      print(f"{file} is updated. Copying new version...")
+      shutil.copyfile(cpp_new_path, cpp_lmp_path)
+      shutil.copyfile(h_new_path, h_lmp_path)
 
 def copy_voronoi_files():
   for file in os.listdir('voro++-0.4.6/src'):

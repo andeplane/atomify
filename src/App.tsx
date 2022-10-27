@@ -45,7 +45,8 @@ function getItem(
 const App: React.FC = () => {
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
   const [collapsed, setCollapsed] = useState(false);
-  const wasm = useStoreState(state => state.simulation.wasm)
+  // @ts-ignore
+  const wasm = window.wasm
   const running = useStoreState(state => state.simulation.running)
   const showConsole = useStoreState(state => state.simulation.showConsole)
   const status = useStoreState(state => state.simulation.status)

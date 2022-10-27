@@ -11,6 +11,8 @@ export type LammpsWeb = {
   getTimestepsPerSecond: () => number
   getCPURemain: () => number
   getWhichFlag: () => number
+  getComputes: () => CPPArray<Compute>
+  getFixes: () => CPPArray<LMPFix>
 
   getPositionsPointer: () => number
   getIdPointer: () => number
@@ -30,6 +32,62 @@ export type LammpsWeb = {
   
   computeBonds: () => number
   computeParticles: () => number
+}
+
+enum ComputeType {
+  ComputePressure,
+  ComputeTemp,
+  ComputePE,
+  ComputeKE,
+  ComputeRDF,
+  ComputeMSD,
+  ComputeVACF,
+  ComputeCOM,
+  ComputeGyration,
+  ComputeKEAtom,
+  ComputePropertyAtom,
+  ComputeClusterAtom,
+  ComputeCNAAtom,
+  ComputeOther,
+}
+
+enum FixType {
+  FixOther
+}
+
+type CPPArray<T> = {
+  get: (index: number) => T
+  size: () => number
+}
+
+export type LMPCompute = {
+  getName: () => string
+  getType: () => ComputeType
+  getPerAtomData: () => number
+  getIsPerAtom: () => boolean
+  sync: () => void
+  execute: () => boolean
+}
+
+export type Compute = {
+  name: string
+  type: ComputeType
+  getName: () => string
+  getType: () => ComputeType
+  getPerAtomData: () => number
+  getIsPerAtom: () => boolean
+  sync: () => void
+  execute: () => boolean
+}
+
+export type LMPFix = {
+  getName: () => string
+  getType: () => FixType
+}
+
+export type Fix = {
+  name: string
+  type: FixType
 }
 
 export type LammpsOutput = {

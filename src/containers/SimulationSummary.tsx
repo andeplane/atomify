@@ -6,6 +6,9 @@ const SimulationSummary = () => {
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
 
   const simulationStatus = useStoreState(state => state.simulation.simulationStatus)
+  const computes = useStoreState(state => state.simulationStatus.computes)
+  const fixes = useStoreState(state => state.simulationStatus.fixes)
+
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
       setSimulationSettings({...simulationSettings, speed: value})
@@ -20,7 +23,11 @@ const SimulationSummary = () => {
             Number of atoms: {Math.ceil(simulationStatus.numAtoms)}<br />
             Remaining time: {Math.ceil(simulationStatus.remainingTime)} s<br />
             Timesteps per second: {Math.ceil(simulationStatus.timestepsPerSecond)} <br />
-            Simulation speed: <InputNumber min={1} max={200} defaultValue={simulationSettings.speed} onChange={(value) => setSyncFrequency(value)} />
+            Simulation speed: <InputNumber min={1} max={200} defaultValue={simulationSettings.speed} onChange={(value) => setSyncFrequency(value)} /> <br /><br />
+            <b>Computes:</b><br />
+            {computes.map(c => <div style={{marginLeft: "4px"}}>{c.name}<br /></div>)}
+            <br /><b>Fixes:</b><br />
+            {fixes.map(f => <div style={{marginLeft: "4px"}}>{f.name}<br /></div>)}
           </div>
       }
     </>

@@ -2,7 +2,13 @@
 #define LAMMPSWEB_H
 #include "lammps.h"
 #include "fix.h"
+#include "compute.h"
+#include "atomify_compute.h"
+#include "atomify_fix.h"
 #include <iostream>
+#include <string>
+#include <map>
+
 #ifdef __EMSCRIPTEN__
   #include <emscripten.h>
   #include <emscripten/bind.h>
@@ -14,6 +20,7 @@ class LAMMPSWeb
 {
 private:
   LAMMPS_NS::LAMMPS *m_lmp;
+  std::map<std::string,Compute> m_computes;
   double *m_cellMatrix;
   double *m_origo;
   float *m_bondsPosition1;
@@ -42,6 +49,8 @@ public:
   int getTimesteps();
   int getRunTotalTimesteps();
   int getRunTimesteps();
+  std::vector<Compute> getComputes();
+  std::vector<Fix> getFixes();
 
   // Pointer getters
   long getBondsDistanceMapPointer();
@@ -55,6 +64,7 @@ public:
   void reallocateBondsData(int newCapacity);
   int computeBonds();
   int computeParticles();
+  bool executeCompute(LAMMPS_NS::Compute *compute);
   void computeBondsFromBondList();
   void computeBondsFromNeighborlist();
 
@@ -67,9 +77,12 @@ public:
   void runCommand(std::string command);
   
   void synchronizeLAMMPS(int mode);
+  void syncComputes();
 
   LAMMPS_NS::Fix* findFixByIdentifier(std::string identifier);
+  LAMMPS_NS::Compute* findComputeByIdentifier(std::string identifier);
   int findFixIndex(std::string identifier);
+  int findComputeIndex(std::string identifier);
   bool fixExists(std::string identifier);
 };
 
@@ -90,7 +103,9 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("getTimestepsPerSecond", &LAMMPSWeb::getTimestepsPerSecond)
       .function("getCPURemain", &LAMMPSWeb::getCPURemain)
       .function("getWhichFlag", &LAMMPSWeb::getWhichFlag)
-      
+      .function("getComputes", &LAMMPSWeb::getComputes)
+      .function("getFixes", &LAMMPSWeb::getFixes)
+
       .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
       .function("getBondsDistanceMapPointer", &LAMMPSWeb::getBondsDistanceMapPointer)
       .function("getIdPointer", &LAMMPSWeb::getIdPointer)
@@ -111,6 +126,23 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("computeBonds", &LAMMPSWeb::computeBonds)
       .function("computeParticles", &LAMMPSWeb::computeParticles);
 
+  class_<Compute>("Compute")
+    .constructor<>()
+    .function("getName", &Compute::getName)
+    .function("getType", &Compute::getType)
+    .function("getIsPerAtom", &Compute::getIsPerAtom)
+    .function("getPerAtomData", &Compute::getPerAtomData)
+    .function("sync", &Compute::sync)
+    .function("execute", &Compute::execute)
+    .function("setSyncData", &Compute::setSyncData);
+  
+  class_<Fix>("Fix")
+    .constructor<>()
+    .function("getName", &Fix::getName)
+    .function("getType", &Fix::getType);
+  register_vector<Fix>("vector<Fix>");
+  register_vector<Compute>("vector<Compute>");
+  register_vector<float>("vector<float>");
 }
 #endif
 #endif

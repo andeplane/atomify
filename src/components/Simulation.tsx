@@ -2,104 +2,13 @@ import {useCallback, useEffect} from 'react'
 import {useStoreActions, useStoreState} from '../hooks'
 import * as THREE from 'three'
 import createModule from "../wasm/lammps.mjs";
-import { LammpsWeb } from '../types';
-import {Particles, Bonds} from 'omovi'
+import { LammpsWeb, Compute, Fix } from '../types';
 import { notification } from 'antd';
-import {AtomType} from '../utils/atomtypes'
 import {SimulationStatus} from '../store/simulation'
+import { ModifierInput, ModifierOutput } from '../modifiers/types';
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
-
-const getBonds = (lammps: LammpsWeb, wasm: any, bonds?: Bonds) => {
-  const numBonds = lammps.computeBonds()
-
-  let newBonds = bonds
-  if (!bonds || bonds.capacity < numBonds) {
-    let newCapacity = numBonds
-    if (bonds) {
-      bonds.dispose()
-    }
-
-    newBonds = new Bonds(newCapacity);
-    newBonds.indices.set(Array.from(Array(newCapacity).keys()))
-    newBonds.radii.fill(0.25)
-  }
-  
-  if (numBonds === 0) {
-    newBonds.count = 0
-    if (newBonds.mesh) {
-      newBonds.mesh.count = numBonds
-    }
-    return newBonds
-  }
-
-  const bonds1Ptr = lammps.getBondsPosition1Pointer() / 4
-  const bonds2Ptr = lammps.getBondsPosition2Pointer() / 4
-  const positions1Subarray = wasm.HEAPF32.subarray(bonds1Ptr, bonds1Ptr + 3 * numBonds) as Float32Array
-  const positions2Subarray = wasm.HEAPF32.subarray(bonds2Ptr, bonds2Ptr + 3 * numBonds) as Float32Array
-  newBonds.positions1.set(positions1Subarray)
-  newBonds.positions2.set(positions2Subarray)
-  
-  newBonds.count = numBonds
-  if (newBonds.mesh) {
-    newBonds.mesh.count = numBonds
-  }
-
-  return newBonds
-}
-
-const getPositions = (lammps: LammpsWeb, wasm: any, particles?: Particles, atomTypes?: {[key: number]: AtomType}) => {
-  const numParticles = lammps.computeParticles()
-  let newParticles = particles
-  if (!particles || particles.capacity < numParticles) {
-    let newCapacity = numParticles
-    if (particles) {
-      newCapacity = Math.max(numParticles, 2 * particles.capacity)
-      particles.dispose()
-    }
-
-    newParticles = new Particles(newCapacity);
-    newParticles.types = new Float32Array(newCapacity)
-    newParticles.radii.fill(0.25)
-  }
-
-  const positionsPtr = lammps.getPositionsPointer() / 4;
-  const typePtr = lammps.getTypePointer() / 4;
-  const idPtr = lammps.getIdPointer() / 4;
-  const positionsSubarray = wasm.HEAPF32.subarray(positionsPtr, positionsPtr + 3 * numParticles) as Float32Array
-  const typeSubarray = wasm.HEAP32.subarray(typePtr, typePtr + numParticles) as Int32Array
-  const idSubarray = wasm.HEAP32.subarray(idPtr, idPtr + numParticles) as Int32Array
-  
-  newParticles.positions.set(positionsSubarray)
-  newParticles.types.set(typeSubarray)
-  newParticles.indices.set(idSubarray)
-  newParticles.count = numParticles
-  if (atomTypes) {
-    newParticles.types.forEach( (type: number, index: number) => {
-      // @ts-ignore
-      if (type > Object.keys(atomTypes).length) {
-        // If we have lots of atom types, just wrap around
-        type = (type % Object.keys(atomTypes).length) + 1
-      }
-      
-      let atomType = atomTypes[type]
-      if (atomType == null) {
-        // Fallback to default
-        atomType = atomTypes[1]
-      }
-
-      newParticles.radii[index] = atomType.radius * 0.3
-    })
-  }
-  
-  if (newParticles.mesh) {
-    newParticles.mesh.count = numParticles
-    newParticles.geometry.setDrawRange(0, numParticles)
-  }
-
-  return newParticles
-}
 
 const getSimulationBox = (lammps: LammpsWeb, wasm: any) => {
   const cellMatrixPointer = lammps.getCellMatrixPointer() / 8;
@@ -118,19 +27,21 @@ const getSimulationOrigo = (lammps: LammpsWeb, wasm: any) => {
 }
 
 const SimulationComponent = () => {
-  const wasm = useStoreState(state => state.simulation.wasm)
+  const state = useStoreState(state => state)
+  // @ts-ignore
+  const wasm = window.wasm
   const lammps = useStoreState(state => state.simulation.lammps)
   const particles = useStoreState(state => state.simulation.particles)
   const bonds = useStoreState(state => state.simulation.bonds)
   const simulation = useStoreState(state => state.simulation.simulation)
   const simulationSettings = useStoreState(state => state.settings.simulation)
+  const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
   const running = useStoreState(state => state.simulation.running)
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
   const atomTypes = useStoreState(state => state.simulation.atomTypes)
   const updateParticles = useStoreActions(actions => actions.simulation.updateParticles)
   const setBonds = useStoreActions(actions => actions.simulation.setBonds)
-  const setWasm = useStoreActions(actions => actions.simulation.setWasm)
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
   const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
@@ -139,6 +50,9 @@ const SimulationComponent = () => {
   const setSimulationStatus = useStoreActions(actions => actions.simulation.setSimulationStatus)
   const setRunTotalTimesteps = useStoreActions(actions => actions.simulation.setRunTotalTimesteps)
   const setLastCommand = useStoreActions(actions => actions.simulation.setLastCommand)
+  const setComputes = useStoreActions(actions => actions.simulationStatus.setComputes)
+  const setFixes = useStoreActions(actions => actions.simulationStatus.setFixes)
+  
   const onPrint = useCallback( (text: string) => {
     //@ts-ignore
     addLammpsOutput(text)
@@ -174,17 +88,50 @@ const SimulationComponent = () => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm && simulation) {
+        const modifierInput: ModifierInput = {
+          lammps,
+          wasm,
+        }
+        const modifierOutput: ModifierOutput = {
+          particles,
+          bonds,
+          // @ts-ignore
+          visualizer: window.visualizer
+        }
+        // @ts-ignore
+        postTimestepModifiers.forEach(modifier => modifier.run(state, modifierInput, modifierOutput))
+        
         if (selectedMenu === 'view') {
-          let newParticles = getPositions(lammps, wasm, particles, atomTypes)
-          newParticles.markNeedsUpdate()
-          if (newParticles !== particles) {
-            updateParticles(newParticles)
+          if (modifierOutput.particles !== particles) {
+            updateParticles(modifierOutput.particles)
           }
-          let newBonds = getBonds(lammps, wasm, bonds)
-          newBonds.markNeedsUpdate()
-          if (newBonds !== bonds) {
-            setBonds(newBonds)
+          if (modifierOutput.bonds !== bonds) {
+            setBonds(modifierOutput.bonds)
           }
+          
+          const lmpComputes = lammps.getComputes()
+          const lmpFixes = lammps.getFixes()
+          const computes: Compute[] = []
+          for (let i = 0; i < lmpComputes.size(); i++) {
+            // This is a hack because we can't pass these functions to other objects for some reason,
+            // and we can't call the c++ functions outside main sync thread, so want to resolve name and type 
+            // so UI can render them
+            const lmpCompute = (lmpComputes.get(i) as unknown) as Compute
+            lmpCompute.name = lmpCompute.getName()
+            lmpCompute.type = lmpCompute.getType()
+            computes.push(lmpCompute)
+          }
+          const fixes: Fix[] = []
+          for (let i = 0; i < lmpFixes.size(); i++) {
+            const lmpFix = lmpFixes.get(i)
+
+            fixes.push({
+              name: lmpFix.getName(),
+              type: lmpFix.getType()
+            })
+          }
+          setComputes(computes)
+          setFixes(fixes)
         }
 
         const whichFlag = lammps.getWhichFlag()
@@ -222,16 +169,18 @@ const SimulationComponent = () => {
     updateParticles,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
     atomTypes, setSimulationStatus, selectedMenu, running, 
-    setSimulationSettings, setTimesteps, simulation, simulationSettings])
+    setSimulationSettings, setTimesteps, simulation, 
+    postTimestepModifiers, state, simulationSettings, setComputes, setFixes])
 
   useEffect(
     () => {
-      setStatus({
-        title: 'Downloading LAMMPS ...',
-        text: '',
-        progress: 0.3
-      })
-      if (!wasm) {
+      // @ts-ignore
+      if (!window.wasm) {
+        setStatus({
+          title: 'Downloading LAMMPS ...',
+          text: '',
+          progress: 0.3
+        })
         createModule({
           print: onPrint, 
           printErr: onPrint,
@@ -241,7 +190,7 @@ const SimulationComponent = () => {
             text: '',
             progress: 0.6
           })
-          setWasm(Module)
+          // setWasm(Module)
           const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
           setLammps(lammps)
           // @ts-ignore
@@ -254,7 +203,7 @@ const SimulationComponent = () => {
         });
       }
     },
-    [wasm, setWasm, onPrint, setLammps, setStatus]
+    [onPrint, setLammps, setStatus]
   );
   return (<></>)
 }
