@@ -72,7 +72,7 @@ const SimulationComponent = () => {
         lammps.step()
       }
 
-      if (ev.key === "c") {
+      if (ev.key === "c" && !ev.metaKey && !ev.ctrlKey) {
         //@ts-ignore
         const cameraPosition = window.visualizer.getCameraPosition()
         //@ts-ignore
