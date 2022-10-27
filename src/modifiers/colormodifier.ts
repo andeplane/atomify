@@ -24,13 +24,12 @@ class ColorModifier extends Modifier {
       alpha: 1
     })
     const computes = state.simulationStatus.computes
-    console.log("computes: ", computes)
-    const compute = computes.filter(c => c.getName() === this.computeName)[0]
+    const compute = computes.filter(c => c.name === this.computeName)[0]
     if (!compute || !compute.getIsPerAtom()) {
       console.log("No compute, or it is not per atom")
       return
     }
-
+    
     const didCompute = compute.execute()
     if (!didCompute) {
       console.log("Did not compute. I do not know why!")
@@ -46,7 +45,6 @@ class ColorModifier extends Modifier {
     const minValue = Math.max.apply(null, perAtomArray)
     // @ts-ignore
     const maxValue = Math.min.apply(null, perAtomArray)
-    console.log("Min, max, size ", minValue, maxValue, perAtomArray.length)
     perAtomArray.forEach( (value, index) => {
       const realIndex = output.particles.indices[index]
       const colorIndex = Math.floor((value - minValue) / (maxValue - minValue) * (colors.length-1))

@@ -12,7 +12,7 @@ export type LammpsWeb = {
   getCPURemain: () => number
   getWhichFlag: () => number
   getComputes: () => CPPArray<Compute>
-  getFixes: () => CPPArray<Fix>
+  getFixes: () => CPPArray<LMPFix>
 
   getPositionsPointer: () => number
   getIdPointer: () => number
@@ -60,7 +60,7 @@ type CPPArray<T> = {
   size: () => number
 }
 
-export type Compute = {
+export type LMPCompute = {
   getName: () => string
   getType: () => ComputeType
   getPerAtomData: () => number
@@ -69,11 +69,26 @@ export type Compute = {
   execute: () => boolean
 }
 
-export type Fix = {
+export type Compute = {
+  name: string
+  type: ComputeType
+  getName: () => string
+  getType: () => ComputeType
+  getPerAtomData: () => number
+  getIsPerAtom: () => boolean
+  sync: () => void
+  execute: () => boolean
+}
+
+export type LMPFix = {
   getName: () => string
   getType: () => FixType
 }
 
+export type Fix = {
+  name: string
+  type: FixType
+}
 
 export type LammpsOutput = {
     // type: LineType

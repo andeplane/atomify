@@ -113,11 +113,22 @@ const SimulationComponent = () => {
           const lmpFixes = lammps.getFixes()
           const computes: Compute[] = []
           for (let i = 0; i < lmpComputes.size(); i++) {
-            computes.push(lmpComputes.get(i))
+            // This is a hack because we can't pass these functions to other objects for some reason,
+            // and we can't call the c++ functions outside main sync thread, so want to resolve name and type 
+            // so UI can render them
+            const lmpCompute = (lmpComputes.get(i) as unknown) as Compute
+            lmpCompute.name = lmpCompute.getName()
+            lmpCompute.type = lmpCompute.getType()
+            computes.push(lmpCompute)
           }
           const fixes: Fix[] = []
           for (let i = 0; i < lmpFixes.size(); i++) {
-            fixes.push(lmpFixes.get(i))
+            const lmpFix = lmpFixes.get(i)
+
+            fixes.push({
+              name: lmpFix.getName(),
+              type: lmpFix.getType()
+            })
           }
           setComputes(computes)
           setFixes(fixes)

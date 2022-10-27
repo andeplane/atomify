@@ -408,14 +408,12 @@ void LAMMPSWeb::syncComputes() {
       // else 
       compute = { m_lmp, lmpCompute, computeId, ComputeOther};
       m_computes[computeId] = compute;
-      printf("Adding compute %s\n", computeId.c_str());
     }
   }
 
   // See if we have any compute that no longer is in LAMMPS
   for (auto it = m_computes.cbegin(); it != m_computes.cend();) {
     if (!findComputeByIdentifier(it->first)) {
-      printf("Removing compute %s\n", it->first.c_str());
       m_computes.erase(it++);
     } else {
       ++it;
