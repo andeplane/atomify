@@ -2,6 +2,8 @@ import Modifier from './modifier'
 import { ModifierInput, ModifierOutput } from './types'
 import {StoreModel} from '../store/model'
 import colormap from 'colormap'
+import {AtomTypes} from '../utils/atomtypes'
+import {Visualizer} from 'omovi'
 
 interface ColorModifierProps {
   name: string
@@ -17,7 +19,7 @@ class ColorModifier extends Modifier {
     this.computeName = computeName
   }
 
-  run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
+  runByProperty = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
     let colors = colormap({
       colormap: 'jet',
       nshades: 72,
@@ -57,6 +59,29 @@ class ColorModifier extends Modifier {
         window.visualizer.setColor(realIndex, {r: 255*color[0], g: 255*color[1], b: 255*color[2]})
       }
     })
+  }
+
+  runByType = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
+    if (!state.render.particleStylesUpdated) {
+      return
+    }
+    const particleStyles = state.render.particleStyles
+    // @ts-ignore
+    const visualizer: Visualizer = window.visualizer
+    for(let i = 0; i < output.particles.count; i++) {
+      const realIndex = output.particles.indices[i]
+      const type = output.particles.types[i]
+      let atomType = particleStyles[type]
+      if (!atomType) {
+        atomType = AtomTypes[type % AtomTypes.length]
+      }
+      output.particles.radii[i] = 0.25 * state.render.particleRadius * atomType.radius
+      visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
+    }
+  }
+
+  run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
+    this.runByType(state, input, output)
   }
 }
 

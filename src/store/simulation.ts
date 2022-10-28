@@ -365,7 +365,7 @@ export const simulationModel: SimulationModel = {
     actions.syncFilesJupyterLite()
     actions.setLastCommand(undefined)
   }),
-  newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
+  newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState, getStoreActions}) => {
     // @ts-ignore
     window.simulation = simulation
     actions.setLastCommand(undefined)
@@ -375,6 +375,8 @@ export const simulationModel: SimulationModel = {
     actions.setShowConsole(false)
     actions.setSimulation(simulation)
     actions.resetLammpsOutput()
+    // @ts-ignore
+    getStoreActions().render.resetParticleStyle()
 
     // @ts-ignore
     const wasm = window.wasm
@@ -429,6 +431,11 @@ export const simulationModel: SimulationModel = {
 
             if (atomType) {
               newAtomTypes[parsedAtomType.atomType] = atomType
+              // @ts-ignore
+              getStoreActions().render.addParticleStyle({
+                index: parsedAtomType.atomType,
+                atomType: atomType
+              })
             } else {
               notification.warn({
                 message: `Atom type '${parsedAtomType.atomName}' does not exist. Ignoring setting radius and color.`
@@ -437,11 +444,21 @@ export const simulationModel: SimulationModel = {
           }
           const atomSizeAndColor = parseAtomSizeAndColor(line)
           if (atomSizeAndColor) {
-            newAtomTypes[atomSizeAndColor.atomTypeIndex].color = new THREE.Color(...hexToRgb(atomSizeAndColor.color))
-            newAtomTypes[atomSizeAndColor.atomTypeIndex].radius = atomSizeAndColor.radius
+            const atomType: AtomType = {
+              color: new THREE.Color(...hexToRgb(atomSizeAndColor.color)),
+              radius: atomSizeAndColor.radius,
+              shortname: atomSizeAndColor.atomTypeIndex.toString(),
+              fullname: atomSizeAndColor.atomTypeIndex.toString()
+            }
+            // @ts-ignore
+            getStoreActions().render.addParticleStyle({
+              index: atomSizeAndColor.atomTypeIndex,
+              atomType: atomType
+            })
           }
           const bond = parseBond(line);
           if (bond) {
+            // we map the 2D coordinate into 1D
             bondsDistanceMapSubarray[100 * bond.atomType1 + bond.atomType2] = bond.distance
             bondsDistanceMapSubarray[100 * bond.atomType2 + bond.atomType1] = bond.distance
             lammps.setBuildNeighborlist(true)
