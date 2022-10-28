@@ -1,31 +1,26 @@
 import {useStoreState, useStoreActions} from '../hooks'
 import {SettingOutlined} from '@ant-design/icons'
-import {InputNumber, Table, Row, Col} from 'antd'
+import {InputNumber, Table, Divider} from 'antd'
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
+import {Compute, Fix} from '../types'
 import React, {useState} from 'react'
 import Modifier from '../modifiers/modifier'
-import {Modal} from 'antd'
 
-// interface DataType {
-//   key: React.ReactNode;
-//   name: string;
-//   children?: DataType[];
-//   onSettingsClicked: () => void
-// }
+interface SimulationSummaryType {
+  key: React.ReactNode
+  name: string
+  value: string|number
+}
 
-// const data: Modifier[] = [
-//   {
-//     key: 1,
-//     name: 'Particles',
-//     onSettingsClicked: () => console.log("Clicked particles")
-//   },
-//   {
-//     key: 1,
-//     name: 'Bonds',
-//     onSettingsClicked: () => console.log("Clicked bonds")
-//   },
-// ];
+const modiferColumns: ColumnsType<Modifier> = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    // render: (text, record) => <Row justify="space-between"><Col span={8}>{text}</Col> <Col span={2}><SettingOutlined onClick={() => console.log("Clicked thing")} /></Col></Row>
+  }
+];
 
 const SimulationSummary = () => {
   const [settingsRenderer, setSettingsRenderer] = useState<() => JSX.Element | undefined>()
@@ -45,14 +40,7 @@ const SimulationSummary = () => {
     }
   }
 
-  const columns: ColumnsType<Modifier> = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-      // render: (text, record) => <Row justify="space-between"><Col span={8}>{text}</Col> <Col span={2}><SettingOutlined onClick={() => console.log("Clicked thing")} /></Col></Row>
-    }
-  ];
+  
   // rowSelection objects indicates the need for row selection
   const rowSelection: TableRowSelection<Modifier> = {
     onChange: (selectedRowKeys, selectedRows) => {
@@ -63,29 +51,118 @@ const SimulationSummary = () => {
     },
   };
 
+  const simulationSummaryColumns: ColumnsType<SimulationSummaryType> = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'Value',
+      dataIndex: 'value',
+      key: 'value',
+      render: (text, record) => {
+        if (record.key === "simulationspeed") {
+          return <InputNumber min={1} max={200} defaultValue={simulationSettings.speed} onChange={(value) => setSyncFrequency(value)} />
+        }
+        return <>{text}</>
+      }
+    }
+  ];
+
+  const computeColumns: ColumnsType<Compute> = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    }
+  ];
+
+  const fixesColumns: ColumnsType<Fix> = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    }
+  ];
+
+  let simulationStatusData: SimulationSummaryType[] = []
+  let computesData: SimulationSummaryType[] = []
+  if (simulationStatus) {
+    simulationStatusData = [
+      {
+        key: "numatoms",
+        name: "Number of atoms",
+        value: Math.ceil(simulationStatus.numAtoms)
+      },
+      {
+        key: "timeremain",
+        name: "Remaining time",
+        value: Math.ceil(simulationStatus.remainingTime).toString()+' s'
+      },
+      {
+        key: "tsps",
+        name: "Timesteps per second",
+        value: Math.ceil(simulationStatus.timestepsPerSecond)
+      },
+      {
+        key: "simulationspeed",
+        name: "Simulation speed",
+        value: simulationSettings.speed
+      },
+    ]
+  }
+
   return (            
     <>
       <Table
-        title={() => 'Modifiers'}
+        title={() => <b>Modifiers</b>}
         size='small'
         showHeader={false}
-        columns={columns}
+        columns={modiferColumns}
         rowSelection={{ ...rowSelection, selectedRowKeys: selectedModifiers}}
         dataSource={modifiers}
         pagination={{hideOnSinglePage: true}}
       />
       {simulationStatus && 
-          <div>
-            Type: {simulationStatus.runType}<br />
-            Number of atoms: {Math.ceil(simulationStatus.numAtoms)}<br />
-            Remaining time: {Math.ceil(simulationStatus.remainingTime)} s<br />
-            Timesteps per second: {Math.ceil(simulationStatus.timestepsPerSecond)} <br />
-            Simulation speed: <InputNumber min={1} max={200} defaultValue={simulationSettings.speed} onChange={(value) => setSyncFrequency(value)} /> <br /><br />
-            <b>Computes:</b><br />
-            {computes.map(c => <div style={{marginLeft: "4px"}}>{c.name}<br /></div>)}
-            <br /><b>Fixes:</b><br />
-            {fixes.map(f => <div style={{marginLeft: "4px"}}>{f.name}<br /></div>)}
-          </div>
+          <>
+          <Table
+            title={() => <b>Summary</b>}
+            size='small'
+            showHeader={false}
+            columns={simulationSummaryColumns}
+            dataSource={simulationStatusData}
+            pagination={{hideOnSinglePage: true}}
+          />
+          <Table
+            title={() => <b>Computes</b>}
+            size='small'
+            showHeader={false}
+            columns={computeColumns}
+            dataSource={computes}
+            pagination={{hideOnSinglePage: true}}
+          />
+          <Table
+            title={() => <b>Fixes</b>}
+            size='small'
+            showHeader={false}
+            columns={fixesColumns}
+            dataSource={fixes}
+            pagination={{hideOnSinglePage: true}}
+          />
+          </>
+          
+          // <Table>
+          //   Type: {simulationStatus.runType}<br />
+          //   Number of atoms: {Math.ceil(simulationStatus.numAtoms)}<br />
+          //   Remaining time: {Math.ceil(simulationStatus.remainingTime)} s<br />
+          //   Timesteps per second: {Math.ceil(simulationStatus.timestepsPerSecond)} <br />
+          //   Simulation speed: <InputNumber min={1} max={200} defaultValue={simulationSettings.speed} onChange={(value) => setSyncFrequency(value)} /> <br /><br />
+          //   <b>Computes:</b><br />
+          //   {computes.map(c => <div style={{marginLeft: "4px"}}>{c.name}<br /></div>)}
+          //   <br /><b>Fixes:</b><br />
+          //   {fixes.map(f => <div style={{marginLeft: "4px"}}>{f.name}<br /></div>)}
+          // </Table>
       }
     </>
   )
