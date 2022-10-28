@@ -1,4 +1,4 @@
-# Atomify - a real time LAMMPS visualizer on the web
+# Atomify - a real time molecular dynamics visualizer on the web using LAMMPS
 [![Deploy](https://github.com/andeplane/atomify/actions/workflows/deploy.yaml/badge.svg?branch=main)](https://github.com/andeplane/atomify/actions/workflows/deploy.yaml)
 
 ## ⚛️ Try it in your browser ⚛️
