@@ -43,7 +43,7 @@ const View = ({visible}: ViewProps) => {
   const cameraPosition = useStoreState(state => state.simulation.cameraPosition)
   const cameraTarget = useStoreState(state => state.simulation.cameraTarget)
   const particles = useStoreState(state => state.simulation.particles)
-  const bonds = useStoreState(state => state.simulation.bonds)
+  const bonds = useStoreState(state => state.render.bonds)
   const particleColors = useStoreState(state => state.simulation.particleColors)
   const [visualizer, setVisualizer] = useState<Visualizer | undefined>(
     undefined

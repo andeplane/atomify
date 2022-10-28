@@ -2,7 +2,6 @@ import Modifier from './modifier'
 import { ModifierInput, ModifierOutput } from './types'
 import {StoreModel} from '../store/model'
 import {Bonds} from 'omovi'
-import {Modal} from 'antd'
 
 interface SyncBondsModifierProps {
   name: string
@@ -26,7 +25,7 @@ class SyncBondsModifier extends Modifier {
     }
 
     const numBonds = input.lammps.computeBonds()
-
+    const bondRadius = state.render.bondRadius
     let newBonds = output.bonds
     if (!newBonds || newBonds.capacity < numBonds) {
       let newCapacity = numBonds
@@ -36,7 +35,7 @@ class SyncBondsModifier extends Modifier {
 
       newBonds = new Bonds(newCapacity);
       newBonds.indices.set(Array.from(Array(newCapacity).keys()))
-      newBonds.radii.fill(0.25)
+      newBonds.radii.fill(bondRadius * 0.25)
       output.bonds = newBonds
     }
     
@@ -60,8 +59,6 @@ class SyncBondsModifier extends Modifier {
       newBonds.mesh.count = numBonds
     }
     newBonds.markNeedsUpdate()
-
-    return newBonds
   }
 }
 

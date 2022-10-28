@@ -136,10 +136,8 @@ export interface SimulationModel {
   lammpsOutput: string[]
   selectedFile?: SimulationFile
   particles?: Particles
-  bonds?: Bonds
   simulationStatus?: SimulationStatus
   particleColors?: THREE.Color[]
-  
   cameraPosition?: THREE.Vector3
   cameraTarget?: THREE.Vector3
   atomTypes?: {[key: number]: AtomType}
@@ -161,7 +159,6 @@ export interface SimulationModel {
   setSimulation: Action<SimulationModel, Simulation>
   setRunning: Action<SimulationModel, boolean>
   setParticles: Action<SimulationModel, Particles>
-  setBonds: Action<SimulationModel, Bonds>
   updateParticles: Thunk<SimulationModel, Particles>
   setFiles: Action<SimulationModel, string[]>
   setStatus: Action<SimulationModel, Status|undefined>
@@ -179,7 +176,7 @@ export const simulationModel: SimulationModel = {
   runTimesteps: 0,
   runTotalTimesteps: 0,
   running: false,
-  selectedMenu: 'examples',
+  selectedMenu: 'view',
   showConsole: false,
   files: [],
   lammpsOutput: [],
@@ -242,9 +239,6 @@ export const simulationModel: SimulationModel = {
   }),
   setParticles: action((state, particles: Particles) => {
     state.particles = particles
-  }),
-  setBonds: action((state, bonds: Bonds) => {
-    state.bonds = bonds
   }),
   updateParticles: thunk((actions, particles: Particles, {getStoreState}) => {
     // @ts-ignore
@@ -423,7 +417,6 @@ export const simulationModel: SimulationModel = {
     actions.setRunTotalTimesteps(0)
     actions.setShowConsole(false)
     actions.setParticles(undefined)
-    actions.setBonds(undefined)
     actions.setParticleColors(undefined)
     actions.setSimulation(simulation)
     actions.resetLammpsOutput()

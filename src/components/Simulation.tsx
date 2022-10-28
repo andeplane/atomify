@@ -32,7 +32,7 @@ const SimulationComponent = () => {
   const wasm = window.wasm
   const lammps = useStoreState(state => state.simulation.lammps)
   const particles = useStoreState(state => state.simulation.particles)
-  const bonds = useStoreState(state => state.simulation.bonds)
+  const bonds = useStoreState(state => state.render.bonds)
   const simulation = useStoreState(state => state.simulation.simulation)
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
@@ -41,7 +41,7 @@ const SimulationComponent = () => {
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
   const atomTypes = useStoreState(state => state.simulation.atomTypes)
   const updateParticles = useStoreActions(actions => actions.simulation.updateParticles)
-  const setBonds = useStoreActions(actions => actions.simulation.setBonds)
+  const setBonds = useStoreActions(actions => actions.render.setBonds)
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
   const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)

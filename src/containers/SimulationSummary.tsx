@@ -1,11 +1,12 @@
 import {useStoreState, useStoreActions} from '../hooks'
 import {SettingOutlined} from '@ant-design/icons'
-import {InputNumber, Table, Divider} from 'antd'
+import {InputNumber, Table, Row, Col} from 'antd'
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
 import {Compute, Fix} from '../types'
 import React, {useState} from 'react'
 import Modifier from '../modifiers/modifier'
+import SyncBondsSettings from '../modifiers/SyncBondsSettings';
 
 interface SimulationSummaryType {
   key: React.ReactNode
@@ -13,17 +14,24 @@ interface SimulationSummaryType {
   value: string|number
 }
 
-const modiferColumns: ColumnsType<Modifier> = [
+const computeColumns: ColumnsType<Compute> = [
   {
     title: 'Name',
     dataIndex: 'name',
     key: 'name',
-    // render: (text, record) => <Row justify="space-between"><Col span={8}>{text}</Col> <Col span={2}><SettingOutlined onClick={() => console.log("Clicked thing")} /></Col></Row>
+  }
+];
+
+const fixesColumns: ColumnsType<Fix> = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
   }
 ];
 
 const SimulationSummary = () => {
-  const [settingsRenderer, setSettingsRenderer] = useState<() => JSX.Element | undefined>()
+  const [visibleSettings, setVisibleSettings] = useState<string|undefined>()
   const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds"])
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const modifiers = useStoreState(state => state.processing.postTimestepModifiers)
@@ -40,6 +48,14 @@ const SimulationSummary = () => {
     }
   }
 
+  const modiferColumns: ColumnsType<Modifier> = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (text, record) => <Row justify="space-between"><Col span={8}>{text}</Col> <Col span={2}><SettingOutlined onClick={() => setVisibleSettings(text)} /></Col></Row>
+    }
+  ];
   
   // rowSelection objects indicates the need for row selection
   const rowSelection: TableRowSelection<Modifier> = {
@@ -70,24 +86,8 @@ const SimulationSummary = () => {
     }
   ];
 
-  const computeColumns: ColumnsType<Compute> = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-    }
-  ];
-
-  const fixesColumns: ColumnsType<Fix> = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-      key: 'name',
-    }
-  ];
-
   let simulationStatusData: SimulationSummaryType[] = []
-  let computesData: SimulationSummaryType[] = []
+  
   if (simulationStatus) {
     simulationStatusData = [
       {
@@ -125,45 +125,34 @@ const SimulationSummary = () => {
         pagination={{hideOnSinglePage: true}}
       />
       {simulationStatus && 
-          <>
-          <Table
-            title={() => <b>Summary</b>}
-            size='small'
-            showHeader={false}
-            columns={simulationSummaryColumns}
-            dataSource={simulationStatusData}
-            pagination={{hideOnSinglePage: true}}
-          />
-          <Table
-            title={() => <b>Computes</b>}
-            size='small'
-            showHeader={false}
-            columns={computeColumns}
-            dataSource={computes}
-            pagination={{hideOnSinglePage: true}}
-          />
-          <Table
-            title={() => <b>Fixes</b>}
-            size='small'
-            showHeader={false}
-            columns={fixesColumns}
-            dataSource={fixes}
-            pagination={{hideOnSinglePage: true}}
-          />
-          </>
-          
-          // <Table>
-          //   Type: {simulationStatus.runType}<br />
-          //   Number of atoms: {Math.ceil(simulationStatus.numAtoms)}<br />
-          //   Remaining time: {Math.ceil(simulationStatus.remainingTime)} s<br />
-          //   Timesteps per second: {Math.ceil(simulationStatus.timestepsPerSecond)} <br />
-          //   Simulation speed: <InputNumber min={1} max={200} defaultValue={simulationSettings.speed} onChange={(value) => setSyncFrequency(value)} /> <br /><br />
-          //   <b>Computes:</b><br />
-          //   {computes.map(c => <div style={{marginLeft: "4px"}}>{c.name}<br /></div>)}
-          //   <br /><b>Fixes:</b><br />
-          //   {fixes.map(f => <div style={{marginLeft: "4px"}}>{f.name}<br /></div>)}
-          // </Table>
+        <>
+        <Table
+          title={() => <b>Summary</b>}
+          size='small'
+          showHeader={false}
+          columns={simulationSummaryColumns}
+          dataSource={simulationStatusData}
+          pagination={{hideOnSinglePage: true}}
+        />
+        <Table
+          title={() => <b>Computes</b>}
+          size='small'
+          showHeader={false}
+          columns={computeColumns}
+          dataSource={computes}
+          pagination={{hideOnSinglePage: true}}
+        />
+        <Table
+          title={() => <b>Fixes</b>}
+          size='small'
+          showHeader={false}
+          columns={fixesColumns}
+          dataSource={fixes}
+          pagination={{hideOnSinglePage: true}}
+        />
+        </>
       }
+      {visibleSettings==='Bonds' && <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />}
     </>
   )
 }
