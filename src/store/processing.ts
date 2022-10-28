@@ -12,11 +12,11 @@ export interface ProcessingModel {
 export const processingModel: ProcessingModel = {
   postTimestepModifiers: [
     new SyncParticlesModifier({
-      name: 'SyncParticles',
+      name: 'Particles',
       active: true
     }),
     new SyncBondsModifier({
-      name: 'SyncBonds',
+      name: 'Bonds',
       active: true
     }),
     // new ColorModifier({

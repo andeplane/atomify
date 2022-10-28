@@ -14,6 +14,15 @@ class SyncParticlesModifier extends Modifier {
   }
 
   run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
+    if (!this.active) {
+      if (output.particles) {
+        output.particles.count = 0
+        if (output.particles.mesh) {
+          output.particles.mesh.count = 0
+        }
+      }
+      return
+    }
     const numParticles = input.lammps.computeParticles()
     let newParticles = output.particles
     if (!newParticles || newParticles.capacity < numParticles) {

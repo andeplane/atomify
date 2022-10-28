@@ -183,12 +183,6 @@ const View = ({visible}: ViewProps) => {
       <div id="canvas-container" style={{ height: '100%', width: '100%' }}>
         <div style={{ height: '100%', width: '100%'  }} ref={domElement}> 
           <Settings open={showSettings} onClose={() => setShowSettings(false)} />
-          <AnalyzeButtonContainer>
-            <AreaChartOutlined style={{ fontSize: '32px', color: '#fff', marginRight: showAnalyze ? 370 : 70}} onClick={() => setShowAnalyze(!showAnalyze)} />
-          </AnalyzeButtonContainer>
-          <SettingsButtonContainer>
-            <SettingOutlined style={{ fontSize: '32px', color: '#fff', marginRight: showAnalyze ? 320 : 20}} onClick={() => setShowSettings(true)} />
-          </SettingsButtonContainer>
           {!showAnalyze && <SimulationSummaryOverlay />}
         </div>
       </div>
@@ -199,6 +193,12 @@ const View = ({visible}: ViewProps) => {
           </Container>
         </Sider>
       }
+      <AnalyzeButtonContainer>
+        <AreaChartOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 70}} onClick={() => setShowAnalyze(!showAnalyze)} />
+      </AnalyzeButtonContainer>
+      <SettingsButtonContainer>
+        <SettingOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 20}} onClick={() => setShowSettings(true)} />
+      </SettingsButtonContainer>
       </Layout>
   )
 }

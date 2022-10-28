@@ -2,6 +2,7 @@ import Modifier from './modifier'
 import { ModifierInput, ModifierOutput } from './types'
 import {StoreModel} from '../store/model'
 import {Bonds} from 'omovi'
+import {Modal} from 'antd'
 
 interface SyncBondsModifierProps {
   name: string
@@ -14,6 +15,16 @@ class SyncBondsModifier extends Modifier {
   }
 
   run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
+    if (!this.active) {
+      if (output.bonds) {
+        output.bonds.count = 0
+        if (output.bonds.mesh) {
+          output.bonds.mesh.count = 0
+        }
+      }
+      return
+    }
+
     const numBonds = input.lammps.computeBonds()
 
     let newBonds = output.bonds
