@@ -1,6 +1,5 @@
 import { action, Action, thunk, Thunk } from 'easy-peasy';
 import {LammpsWeb} from '../types'
-import {Particles, Bonds} from 'omovi'
 import {notification} from 'antd'
 import {AtomTypes, AtomType, hexToRgb} from '../utils/atomtypes'
 import AnalyzeNotebook from '../utils/AnalyzeNotebook'
@@ -172,7 +171,7 @@ export const simulationModel: SimulationModel = {
   runTimesteps: 0,
   runTotalTimesteps: 0,
   running: false,
-  selectedMenu: 'view',
+  selectedMenu: 'examples',
   showConsole: false,
   files: [],
   lammpsOutput: [],
