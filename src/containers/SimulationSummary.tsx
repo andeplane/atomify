@@ -33,7 +33,7 @@ const fixesColumns: ColumnsType<Fix> = [
 
 const SimulationSummary = () => {
   const [visibleSettings, setVisibleSettings] = useState<string|undefined>()
-  const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds"])
+  const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors"])
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const modifiers = useStoreState(state => state.processing.postTimestepModifiers)
 
