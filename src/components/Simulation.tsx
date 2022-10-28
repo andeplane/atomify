@@ -31,8 +31,8 @@ const SimulationComponent = () => {
   // @ts-ignore
   const wasm = window.wasm
   const lammps = useStoreState(state => state.simulation.lammps)
-  const particles = useStoreState(state => state.simulation.particles)
-  const bonds = useStoreState(state => state.simulation.bonds)
+  const particles = useStoreState(state => state.render.particles)
+  const bonds = useStoreState(state => state.render.bonds)
   const simulation = useStoreState(state => state.simulation.simulation)
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
@@ -40,8 +40,8 @@ const SimulationComponent = () => {
   const running = useStoreState(state => state.simulation.running)
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
   const atomTypes = useStoreState(state => state.simulation.atomTypes)
-  const updateParticles = useStoreActions(actions => actions.simulation.updateParticles)
-  const setBonds = useStoreActions(actions => actions.simulation.setBonds)
+  const setParticles = useStoreActions(actions => actions.render.setParticles)
+  const setBonds = useStoreActions(actions => actions.render.setBonds)
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
   const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
@@ -52,6 +52,8 @@ const SimulationComponent = () => {
   const setLastCommand = useStoreActions(actions => actions.simulation.setLastCommand)
   const setComputes = useStoreActions(actions => actions.simulationStatus.setComputes)
   const setFixes = useStoreActions(actions => actions.simulationStatus.setFixes)
+  const setParticleStylesUpdated = useStoreActions(actions => actions.render.setParticleStylesUpdated)
+
   
   const onPrint = useCallback( (text: string) => {
     //@ts-ignore
@@ -100,10 +102,11 @@ const SimulationComponent = () => {
         }
         // @ts-ignore
         postTimestepModifiers.forEach(modifier => modifier.run(state, modifierInput, modifierOutput))
+        setParticleStylesUpdated(false)
         
         if (selectedMenu === 'view') {
           if (modifierOutput.particles !== particles) {
-            updateParticles(modifierOutput.particles)
+            setParticles(modifierOutput.particles)
           }
           if (modifierOutput.bonds !== bonds) {
             setBonds(modifierOutput.bonds)
@@ -166,7 +169,7 @@ const SimulationComponent = () => {
       }
     }
   }, [wasm, lammps, particles, bonds, setBonds, 
-    updateParticles,
+    setParticles, setParticleStylesUpdated,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
     atomTypes, setSimulationStatus, selectedMenu, running, 
     setSimulationSettings, setTimesteps, simulation, 

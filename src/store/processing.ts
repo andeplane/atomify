@@ -2,7 +2,7 @@ import { action, Action } from 'easy-peasy';
 import Modifier from '../modifiers/modifier'
 import SyncParticlesModifier from '../modifiers/syncparticles'
 import SyncBondsModifier from '../modifiers/syncbonds'
-// import ColorModifier from '../modifiers/colormodifier'
+import ColorModifier from '../modifiers/colormodifier'
 
 export interface ProcessingModel {
   postTimestepModifiers: Modifier[]
@@ -12,17 +12,18 @@ export interface ProcessingModel {
 export const processingModel: ProcessingModel = {
   postTimestepModifiers: [
     new SyncParticlesModifier({
-      name: 'SyncParticles',
+      name: 'Particles',
       active: true
     }),
     new SyncBondsModifier({
-      name: 'SyncBonds',
+      name: 'Bonds',
       active: true
     }),
-    // new ColorModifier({
-    //   name: 'SyncBonds',
-    //   computeName: 'peAtom'
-    // })
+    new ColorModifier({
+      name: 'Colors',
+      computeName: 'peAtom',
+      active: true
+    })
   ],
   setPostTimestepModifiers: action((state, value: Modifier[]) => {
     state.postTimestepModifiers = value

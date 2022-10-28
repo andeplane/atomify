@@ -1,6 +1,5 @@
 import { action, Action, thunk, Thunk } from 'easy-peasy';
 import {LammpsWeb} from '../types'
-import {Particles, Bonds} from 'omovi'
 import {notification} from 'antd'
 import {AtomTypes, AtomType, hexToRgb} from '../utils/atomtypes'
 import AnalyzeNotebook from '../utils/AnalyzeNotebook'
@@ -135,11 +134,8 @@ export interface SimulationModel {
   files: string[]
   lammpsOutput: string[]
   selectedFile?: SimulationFile
-  particles?: Particles
-  bonds?: Bonds
   simulationStatus?: SimulationStatus
   particleColors?: THREE.Color[]
-  
   cameraPosition?: THREE.Vector3
   cameraTarget?: THREE.Vector3
   atomTypes?: {[key: number]: AtomType}
@@ -156,13 +152,9 @@ export interface SimulationModel {
   setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
   setAtomTypes: Action<SimulationModel, {[key: number]: AtomType}|undefined>
   setPreferredView: Action<SimulationModel, string|undefined>
-  setParticleColors: Action<SimulationModel, THREE.Color[]|undefined>
   setSelectedFile: Action<SimulationModel, SimulationFile>
   setSimulation: Action<SimulationModel, Simulation>
   setRunning: Action<SimulationModel, boolean>
-  setParticles: Action<SimulationModel, Particles>
-  setBonds: Action<SimulationModel, Bonds>
-  updateParticles: Thunk<SimulationModel, Particles>
   setFiles: Action<SimulationModel, string[]>
   setStatus: Action<SimulationModel, Status|undefined>
   setLammps: Action<SimulationModel, LammpsWeb>
@@ -210,9 +202,6 @@ export const simulationModel: SimulationModel = {
   setPreferredView: action((state, preferredView?: string) => {
     state.preferredView = preferredView
   }),
-  setParticleColors: action((state, particleColors?: THREE.Color[]) => {
-    state.particleColors = particleColors
-  }),
   setSelectedFile: action((state, selectedFile?: SimulationFile) => {
     state.selectedFile = selectedFile
   }),
@@ -240,44 +229,6 @@ export const simulationModel: SimulationModel = {
   setFiles: action((state, files: string[]) => {
     state.files = files
   }),
-  setParticles: action((state, particles: Particles) => {
-    state.particles = particles
-  }),
-  setBonds: action((state, bonds: Bonds) => {
-    state.bonds = bonds
-  }),
-  updateParticles: thunk((actions, particles: Particles, {getStoreState}) => {
-    // @ts-ignore
-    const computeColors = !getStoreState().simulation.particleColors
-    
-    if (computeColors && particles) {
-      // @ts-ignore
-      let atomTypes = getStoreState().simulation.atomTypes
-      // We need to compute colors
-      const colors: THREE.Color[] = []
-      particles.types.forEach( (type: number, index: number) => {
-        const realIndex = particles.indices[index]
-        // @ts-ignore
-        if (type > Object.keys(atomTypes).length) {
-          // If we have lots of atom types, just wrap around
-          type = (type % Object.keys(atomTypes).length) + 1
-        }
-        
-        let atomType = atomTypes[type]
-        if (atomType == null) {
-          // Fallback to default
-          atomType = atomTypes[1]
-        }
-        // Real index refers to the index the particle has (not index in array).
-        // This is the value used for lookup on the shader
-        colors[realIndex] = atomType.color
-      })
-      actions.setParticleColors(colors)
-    }
-    
-    // @ts-ignore
-    actions.setParticles(particles)
-  }),
   setStatus: action((state, status?: Status) => {
     state.status = status
   }),
@@ -294,7 +245,6 @@ export const simulationModel: SimulationModel = {
       // Update all files if no fileName is specified
       if (file.fileName === fileName || !fileName) {
         wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content)
-        console.log("Synced file ", file.fileName)
       }
     }
   }),
@@ -414,7 +364,7 @@ export const simulationModel: SimulationModel = {
     actions.syncFilesJupyterLite()
     actions.setLastCommand(undefined)
   }),
-  newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState}) => {
+  newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState, getStoreActions}) => {
     // @ts-ignore
     window.simulation = simulation
     actions.setLastCommand(undefined)
@@ -422,11 +372,10 @@ export const simulationModel: SimulationModel = {
     actions.setRunTimesteps(0)
     actions.setRunTotalTimesteps(0)
     actions.setShowConsole(false)
-    actions.setParticles(undefined)
-    actions.setBonds(undefined)
-    actions.setParticleColors(undefined)
     actions.setSimulation(simulation)
     actions.resetLammpsOutput()
+    // @ts-ignore
+    getStoreActions().render.resetParticleStyle()
 
     // @ts-ignore
     const wasm = window.wasm
@@ -481,6 +430,11 @@ export const simulationModel: SimulationModel = {
 
             if (atomType) {
               newAtomTypes[parsedAtomType.atomType] = atomType
+              // @ts-ignore
+              getStoreActions().render.addParticleStyle({
+                index: parsedAtomType.atomType,
+                atomType: atomType
+              })
             } else {
               notification.warn({
                 message: `Atom type '${parsedAtomType.atomName}' does not exist. Ignoring setting radius and color.`
@@ -489,11 +443,21 @@ export const simulationModel: SimulationModel = {
           }
           const atomSizeAndColor = parseAtomSizeAndColor(line)
           if (atomSizeAndColor) {
-            newAtomTypes[atomSizeAndColor.atomTypeIndex].color = new THREE.Color(...hexToRgb(atomSizeAndColor.color))
-            newAtomTypes[atomSizeAndColor.atomTypeIndex].radius = atomSizeAndColor.radius
+            const atomType: AtomType = {
+              color: new THREE.Color(...hexToRgb(atomSizeAndColor.color)),
+              radius: atomSizeAndColor.radius,
+              shortname: atomSizeAndColor.atomTypeIndex.toString(),
+              fullname: atomSizeAndColor.atomTypeIndex.toString()
+            }
+            // @ts-ignore
+            getStoreActions().render.addParticleStyle({
+              index: atomSizeAndColor.atomTypeIndex,
+              atomType: atomType
+            })
           }
           const bond = parseBond(line);
           if (bond) {
+            // we map the 2D coordinate into 1D
             bondsDistanceMapSubarray[100 * bond.atomType1 + bond.atomType2] = bond.distance
             bondsDistanceMapSubarray[100 * bond.atomType2 + bond.atomType1] = bond.distance
             lammps.setBuildNeighborlist(true)

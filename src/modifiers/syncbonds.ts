@@ -14,8 +14,18 @@ class SyncBondsModifier extends Modifier {
   }
 
   run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
-    const numBonds = input.lammps.computeBonds()
+    if (!this.active) {
+      if (output.bonds) {
+        output.bonds.count = 0
+        if (output.bonds.mesh) {
+          output.bonds.mesh.count = 0
+        }
+      }
+      return
+    }
 
+    const numBonds = input.lammps.computeBonds()
+    const bondRadius = state.render.bondRadius
     let newBonds = output.bonds
     if (!newBonds || newBonds.capacity < numBonds) {
       let newCapacity = numBonds
@@ -25,7 +35,7 @@ class SyncBondsModifier extends Modifier {
 
       newBonds = new Bonds(newCapacity);
       newBonds.indices.set(Array.from(Array(newCapacity).keys()))
-      newBonds.radii.fill(0.25)
+      newBonds.radii.fill(bondRadius * 0.25)
       output.bonds = newBonds
     }
     
@@ -49,8 +59,6 @@ class SyncBondsModifier extends Modifier {
       newBonds.mesh.count = numBonds
     }
     newBonds.markNeedsUpdate()
-
-    return newBonds
   }
 }
 
