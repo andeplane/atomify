@@ -82,6 +82,7 @@ class ColorModifier extends Modifier {
 
   run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
     this.runByType(state, input, output)
+    // this.runByProperty(state, input, output)
   }
 }
 

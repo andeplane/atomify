@@ -17,8 +17,10 @@ const SyncParticlesSettings = ({onClose}:{onClose: () => void}) => {
   const onParticleRadiusChanged = useCallback((value: number) => {
     const oldValue = particleRadius
     const factor = value / oldValue
+    for (let i = 0; i < particles.count; i++) {
+      particles.radii[i] *= factor
+    }
     setParticleRadius(value)
-    // bonds.radii.fill(0.25 * value)
     particles.markNeedsUpdate()
   }, [particleRadius, setParticleRadius, particles])
 
@@ -38,7 +40,7 @@ const SyncParticlesSettings = ({onClose}:{onClose: () => void}) => {
   ];
 
   return (
-    <Modal title="Particle settings" open footer={null} onCancel={() => onClose}>
+    <Modal title="Particle settings" open footer={null} onCancel={onClose}>
       <Table
         size='small'
         showHeader={false}

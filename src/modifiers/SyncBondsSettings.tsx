@@ -36,7 +36,7 @@ const SyncBondsSettings = ({onClose}:{onClose: () => void}) => {
   ];
 
   return (
-    <Modal title="Bonds settings" open footer={null} onCancel={() => onClose}>
+    <Modal title="Bonds settings" open footer={null} onCancel={onClose}>
       <Table
         size='small'
         showHeader={false}

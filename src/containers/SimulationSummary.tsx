@@ -7,6 +7,7 @@ import {Compute, Fix} from '../types'
 import React, {useState} from 'react'
 import Modifier from '../modifiers/modifier'
 import SyncBondsSettings from '../modifiers/SyncBondsSettings';
+import SyncParticlesSettings from '../modifiers/SyncParticlesSettings';
 
 interface SimulationSummaryType {
   key: React.ReactNode
@@ -112,7 +113,7 @@ const SimulationSummary = () => {
       },
     ]
   }
-
+  
   return (            
     <>
       <Table
@@ -153,6 +154,7 @@ const SimulationSummary = () => {
         </>
       }
       {visibleSettings==='Bonds' && <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />}
+      {visibleSettings==='Particles' && <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />}
     </>
   )
 }
