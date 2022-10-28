@@ -135,7 +135,6 @@ export interface SimulationModel {
   files: string[]
   lammpsOutput: string[]
   selectedFile?: SimulationFile
-  particles?: Particles
   simulationStatus?: SimulationStatus
   particleColors?: THREE.Color[]
   cameraPosition?: THREE.Vector3
@@ -154,12 +153,9 @@ export interface SimulationModel {
   setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
   setAtomTypes: Action<SimulationModel, {[key: number]: AtomType}|undefined>
   setPreferredView: Action<SimulationModel, string|undefined>
-  setParticleColors: Action<SimulationModel, THREE.Color[]|undefined>
   setSelectedFile: Action<SimulationModel, SimulationFile>
   setSimulation: Action<SimulationModel, Simulation>
   setRunning: Action<SimulationModel, boolean>
-  setParticles: Action<SimulationModel, Particles>
-  updateParticles: Thunk<SimulationModel, Particles>
   setFiles: Action<SimulationModel, string[]>
   setStatus: Action<SimulationModel, Status|undefined>
   setLammps: Action<SimulationModel, LammpsWeb>
@@ -207,9 +203,6 @@ export const simulationModel: SimulationModel = {
   setPreferredView: action((state, preferredView?: string) => {
     state.preferredView = preferredView
   }),
-  setParticleColors: action((state, particleColors?: THREE.Color[]) => {
-    state.particleColors = particleColors
-  }),
   setSelectedFile: action((state, selectedFile?: SimulationFile) => {
     state.selectedFile = selectedFile
   }),
@@ -237,41 +230,6 @@ export const simulationModel: SimulationModel = {
   setFiles: action((state, files: string[]) => {
     state.files = files
   }),
-  setParticles: action((state, particles: Particles) => {
-    state.particles = particles
-  }),
-  updateParticles: thunk((actions, particles: Particles, {getStoreState}) => {
-    // @ts-ignore
-    const computeColors = !getStoreState().simulation.particleColors
-    
-    if (computeColors && particles) {
-      // @ts-ignore
-      let atomTypes = getStoreState().simulation.atomTypes
-      // We need to compute colors
-      const colors: THREE.Color[] = []
-      particles.types.forEach( (type: number, index: number) => {
-        const realIndex = particles.indices[index]
-        // @ts-ignore
-        if (type > Object.keys(atomTypes).length) {
-          // If we have lots of atom types, just wrap around
-          type = (type % Object.keys(atomTypes).length) + 1
-        }
-        
-        let atomType = atomTypes[type]
-        if (atomType == null) {
-          // Fallback to default
-          atomType = atomTypes[1]
-        }
-        // Real index refers to the index the particle has (not index in array).
-        // This is the value used for lookup on the shader
-        colors[realIndex] = atomType.color
-      })
-      actions.setParticleColors(colors)
-    }
-    
-    // @ts-ignore
-    actions.setParticles(particles)
-  }),
   setStatus: action((state, status?: Status) => {
     state.status = status
   }),
@@ -288,7 +246,6 @@ export const simulationModel: SimulationModel = {
       // Update all files if no fileName is specified
       if (file.fileName === fileName || !fileName) {
         wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content)
-        console.log("Synced file ", file.fileName)
       }
     }
   }),
@@ -416,8 +373,6 @@ export const simulationModel: SimulationModel = {
     actions.setRunTimesteps(0)
     actions.setRunTotalTimesteps(0)
     actions.setShowConsole(false)
-    actions.setParticles(undefined)
-    actions.setParticleColors(undefined)
     actions.setSimulation(simulation)
     actions.resetLammpsOutput()
 

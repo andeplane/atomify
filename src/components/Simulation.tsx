@@ -31,7 +31,7 @@ const SimulationComponent = () => {
   // @ts-ignore
   const wasm = window.wasm
   const lammps = useStoreState(state => state.simulation.lammps)
-  const particles = useStoreState(state => state.simulation.particles)
+  const particles = useStoreState(state => state.render.particles)
   const bonds = useStoreState(state => state.render.bonds)
   const simulation = useStoreState(state => state.simulation.simulation)
   const simulationSettings = useStoreState(state => state.settings.simulation)
@@ -40,7 +40,7 @@ const SimulationComponent = () => {
   const running = useStoreState(state => state.simulation.running)
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
   const atomTypes = useStoreState(state => state.simulation.atomTypes)
-  const updateParticles = useStoreActions(actions => actions.simulation.updateParticles)
+  const setParticles = useStoreActions(actions => actions.render.setParticles)
   const setBonds = useStoreActions(actions => actions.render.setBonds)
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
@@ -103,7 +103,7 @@ const SimulationComponent = () => {
         
         if (selectedMenu === 'view') {
           if (modifierOutput.particles !== particles) {
-            updateParticles(modifierOutput.particles)
+            setParticles(modifierOutput.particles)
           }
           if (modifierOutput.bonds !== bonds) {
             setBonds(modifierOutput.bonds)
@@ -166,7 +166,7 @@ const SimulationComponent = () => {
       }
     }
   }, [wasm, lammps, particles, bonds, setBonds, 
-    updateParticles,
+    setParticles,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
     atomTypes, setSimulationStatus, selectedMenu, running, 
     setSimulationSettings, setTimesteps, simulation, 

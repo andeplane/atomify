@@ -23,6 +23,7 @@ class SyncParticlesModifier extends Modifier {
       }
       return
     }
+    const particleRadius = state.render.particleRadius
     const numParticles = input.lammps.computeParticles()
     let newParticles = output.particles
     if (!newParticles || newParticles.capacity < numParticles) {
@@ -34,7 +35,7 @@ class SyncParticlesModifier extends Modifier {
 
       newParticles = new Particles(newCapacity);
       newParticles.types = new Float32Array(newCapacity)
-      newParticles.radii.fill(0.25)
+      newParticles.radii.fill(0.25 * particleRadius)
       output.particles = newParticles
     }
 
@@ -49,29 +50,12 @@ class SyncParticlesModifier extends Modifier {
     newParticles.types.set(typeSubarray)
     newParticles.indices.set(idSubarray)
     newParticles.count = numParticles
-    const atomTypes = state.simulation.atomTypes
-    if (atomTypes) {
-      newParticles.types.forEach( (type: number, index: number) => {
-        // @ts-ignore
-        if (type > Object.keys(atomTypes).length) {
-          // If we have lots of atom types, just wrap around
-          type = (type % Object.keys(atomTypes).length) + 1
-        }
-        
-        let atomType = atomTypes[type]
-        if (atomType == null) {
-          // Fallback to default
-          atomType = atomTypes[1]
-        }
-
-        newParticles.radii[index] = atomType.radius * 0.3
-      })
-    }
     
     if (newParticles.mesh) {
       newParticles.mesh.count = numParticles
       newParticles.geometry.setDrawRange(0, numParticles)
     }
+
     newParticles.markNeedsUpdate()
     return newParticles
   }
