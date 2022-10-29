@@ -40,11 +40,11 @@ class ColorModifier extends Modifier {
     this.computeName = computeName
   }
 
-  runByProperty = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
-    if (!state.render.visualizer) {
+  runByProperty = (input: ModifierInput, output: ModifierOutput) => {
+    if (!input.renderState.visualizer) {
       return
     }
-    const visualizer = state.render.visualizer
+    const visualizer = input.renderState.visualizer
 
     let colors = colormap({
       colormap: 'jet',
@@ -52,7 +52,7 @@ class ColorModifier extends Modifier {
       format: 'float',
       alpha: 1
     })
-    const computes = state.simulationStatus.computes
+    const computes = input.computes
     const compute = computes.filter(c => c.name === this.computeName)[0]
     if (!compute || !compute.getIsPerAtom()) {
       return
@@ -81,12 +81,12 @@ class ColorModifier extends Modifier {
     })
   }
 
-  runByType = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
-    if (!state.render.particleStylesUpdated || !state.render.visualizer) {
+  runByType = (input: ModifierInput, output: ModifierOutput) => {
+    if (!input.renderState.particleStylesUpdated || !input.renderState.visualizer) {
       return
     }
-    const particleStyles = state.render.particleStyles
-    const visualizer = state.render.visualizer
+    const particleStyles = input.renderState.particleStyles
+    const visualizer = input.renderState.visualizer
     // @ts-ignore
     window.particleStyles = particleStyles
     
@@ -97,14 +97,14 @@ class ColorModifier extends Modifier {
       if (!atomType) {
         atomType = defaultAtomTypes[ type % defaultAtomTypes.length]
       }
-      output.particles.radii[i] = 0.25 * state.render.particleRadius * atomType.radius
+      output.particles.radii[i] = 0.25 * input.renderState.particleRadius * atomType.radius
       visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
     }
     output.colorsUpdated = true
   }
 
-  run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
-    this.runByType(state, input, output)
+  run = (input: ModifierInput, output: ModifierOutput) => {
+    this.runByType(input, output)
     // this.runByProperty(state, input, output)
   }
 }

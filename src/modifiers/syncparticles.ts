@@ -13,7 +13,7 @@ class SyncParticlesModifier extends Modifier {
     super({name, active})
   }
 
-  run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
+  run = (input: ModifierInput, output: ModifierOutput) => {
     if (!this.active) {
       if (output.particles) {
         output.particles.count = 0
@@ -23,7 +23,7 @@ class SyncParticlesModifier extends Modifier {
       }
       return
     }
-    const particleRadius = state.render.particleRadius
+    const particleRadius = input.renderState.particleRadius
     const numParticles = input.lammps.computeParticles()
     let newParticles = output.particles
     if (!newParticles || newParticles.capacity < numParticles) {
