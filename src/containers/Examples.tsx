@@ -139,6 +139,8 @@ const Examples = () => {
         <img
           alt="example"
           src={example.imageUrl}
+          onClick={() => onPlay(example)}
+          style={{cursor: 'pointer'}}
         />
       }
       actions={[
