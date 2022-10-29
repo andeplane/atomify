@@ -33,13 +33,11 @@ class ColorModifier extends Modifier {
     const computes = state.simulationStatus.computes
     const compute = computes.filter(c => c.name === this.computeName)[0]
     if (!compute || !compute.getIsPerAtom()) {
-      console.log("No compute, or it is not per atom")
       return
     }
     
     const didCompute = compute.execute()
     if (!didCompute) {
-      console.log("Did not compute. I do not know why!")
       return
     }
     compute.sync()
@@ -67,17 +65,20 @@ class ColorModifier extends Modifier {
     }
     const particleStyles = state.render.particleStyles
     const visualizer = state.render.visualizer
+    // @ts-ignore
+    window.particleStyles = particleStyles
     
     for(let i = 0; i < output.particles.count; i++) {
       const realIndex = output.particles.indices[i]
       const type = output.particles.types[i]
       let atomType = particleStyles[type]
       if (!atomType) {
-        atomType = AtomTypes[type % AtomTypes.length]
+        atomType = AtomTypes[ (type + 10) % AtomTypes.length]
       }
       output.particles.radii[i] = 0.25 * state.render.particleRadius * atomType.radius
       visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
     }
+    output.colorsUpdated = true
   }
 
   run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {

@@ -17,6 +17,6 @@ class Modifier {
     this.active = active
   }
 
-  run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {}
+  run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => { }
 }
 export default Modifier

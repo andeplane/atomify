@@ -97,12 +97,13 @@ const SimulationComponent = () => {
         const modifierOutput: ModifierOutput = {
           particles,
           bonds,
-          // @ts-ignore
-          visualizer: window.visualizer
+          colorsUpdated: false
         }
         // @ts-ignore
         postTimestepModifiers.forEach(modifier => modifier.run(state, modifierInput, modifierOutput))
-        setParticleStylesUpdated(false)
+        if (modifierOutput.colorsUpdated) {
+          setParticleStylesUpdated(false)
+        }
         
         if (selectedMenu === 'view') {
           if (modifierOutput.particles !== particles) {

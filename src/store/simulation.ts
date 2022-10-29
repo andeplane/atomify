@@ -158,6 +158,7 @@ export interface SimulationModel {
   setFiles: Action<SimulationModel, string[]>
   setStatus: Action<SimulationModel, Status|undefined>
   setLammps: Action<SimulationModel, LammpsWeb>
+  extractAndApplyAtomifyCommands: Thunk<SimulationModel, string>
   syncFilesWasm: Thunk<SimulationModel, string|undefined>
   syncFilesJupyterLite: Thunk<SimulationModel, undefined>
   run: Thunk<SimulationModel>
@@ -231,6 +232,72 @@ export const simulationModel: SimulationModel = {
   }),
   setStatus: action((state, status?: Status) => {
     state.status = status
+  }),
+  // @ts-ignore
+  extractAndApplyAtomifyCommands: thunk((actions, inputScript: string, {getStoreActions, getStoreState}) => {
+    const lines = inputScript.split("\n")
+    
+    // @ts-ignore
+    const wasm = window.wasm
+    // @ts-ignore
+    const lammps = getStoreState().simulation.lammps
+    
+    // Reset all settings for dynamic bonds
+    const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
+    const bondsDistanceMapSubarray = wasm.HEAPF32.subarray(bondsDistanceMapPointer, bondsDistanceMapPointer + 10000) as Float32Array
+    
+    lines.forEach(line => {
+      line = line.trim()
+      if (line.startsWith("#/")) {
+        // This is an atomify command
+        line = line.substring(2)
+        const parsedAtomType = parseAtomType(line)
+        if (parsedAtomType) {
+          const atomType: AtomType|undefined = AtomTypes.filter(at => at.fullname===parsedAtomType.atomName)[0]
+
+          if (atomType) {
+            // @ts-ignore
+            getStoreActions().render.addParticleStyle({
+              index: parsedAtomType.atomType,
+              atomType: atomType
+            })
+          } else {
+            notification.warn({
+              message: `Atom type '${parsedAtomType.atomName}' does not exist. Ignoring setting radius and color.`
+            })
+          }
+        }
+        const atomSizeAndColor = parseAtomSizeAndColor(line)
+        if (atomSizeAndColor) {
+          const atomType: AtomType = {
+            color: new THREE.Color(...hexToRgb(atomSizeAndColor.color)),
+            radius: atomSizeAndColor.radius,
+            shortname: atomSizeAndColor.atomTypeIndex.toString(),
+            fullname: atomSizeAndColor.atomTypeIndex.toString()
+          }
+          // @ts-ignore
+          getStoreActions().render.addParticleStyle({
+            index: atomSizeAndColor.atomTypeIndex,
+            atomType: atomType
+          })
+        }
+        const bond = parseBond(line);
+        if (bond) {
+          // we map the 2D coordinate into 1D
+          bondsDistanceMapSubarray[100 * bond.atomType1 + bond.atomType2] = bond.distance
+          bondsDistanceMapSubarray[100 * bond.atomType2 + bond.atomType1] = bond.distance
+          lammps.setBuildNeighborlist(true)
+        }
+        const cameraPosition = parseCameraPosition(line)
+        if (cameraPosition) {
+          actions.setCameraPosition(cameraPosition)
+        }
+        const cameraTarget = parseCameraTarget(line)
+        if (cameraTarget) {
+          actions.setCameraTarget(cameraTarget)
+        }
+      }
+    })
   }),
   syncFilesWasm: thunk(async (actions, fileName: string|undefined, {getStoreState}) => {
     //@ts-ignore
@@ -336,6 +403,11 @@ export const simulationModel: SimulationModel = {
     lammps.start()
     actions.setRunning(true)
     time_event('Simulation.Run');
+
+    const inputScriptFile = simulation.files.filter(file => file.fileName===simulation.inputScript)[0]
+    if (inputScriptFile.content) {
+      actions.extractAndApplyAtomifyCommands(inputScriptFile.content)
+    }
     
     await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
     const errorMessage = lammps.getErrorMessage()
@@ -410,73 +482,6 @@ export const simulationModel: SimulationModel = {
       text: "",
       progress: 0.9
     })
-
-    const extractAtomifyCommands = (inputScript?: string) => {
-      if (!inputScript) {
-        return
-      }
-
-      const newAtomTypes: {[key: number]: AtomType} = {...defaultAtomTypes}
-      
-      const lines = inputScript.split("\n")
-      lines.forEach(line => {
-        line = line.trim()
-        if (line.startsWith("#/")) {
-          // This is an atomify command
-          line = line.substring(2)
-          const parsedAtomType = parseAtomType(line)
-          if (parsedAtomType) {
-            const atomType: AtomType|undefined = AtomTypes.filter(at => at.fullname===parsedAtomType.atomName)[0]
-
-            if (atomType) {
-              newAtomTypes[parsedAtomType.atomType] = atomType
-              // @ts-ignore
-              getStoreActions().render.addParticleStyle({
-                index: parsedAtomType.atomType,
-                atomType: atomType
-              })
-            } else {
-              notification.warn({
-                message: `Atom type '${parsedAtomType.atomName}' does not exist. Ignoring setting radius and color.`
-              })
-            }
-          }
-          const atomSizeAndColor = parseAtomSizeAndColor(line)
-          if (atomSizeAndColor) {
-            const atomType: AtomType = {
-              color: new THREE.Color(...hexToRgb(atomSizeAndColor.color)),
-              radius: atomSizeAndColor.radius,
-              shortname: atomSizeAndColor.atomTypeIndex.toString(),
-              fullname: atomSizeAndColor.atomTypeIndex.toString()
-            }
-            // @ts-ignore
-            getStoreActions().render.addParticleStyle({
-              index: atomSizeAndColor.atomTypeIndex,
-              atomType: atomType
-            })
-          }
-          const bond = parseBond(line);
-          if (bond) {
-            // we map the 2D coordinate into 1D
-            bondsDistanceMapSubarray[100 * bond.atomType1 + bond.atomType2] = bond.distance
-            bondsDistanceMapSubarray[100 * bond.atomType2 + bond.atomType1] = bond.distance
-            lammps.setBuildNeighborlist(true)
-          }
-          const cameraPosition = parseCameraPosition(line)
-          if (cameraPosition) {
-            actions.setCameraPosition(cameraPosition)
-          }
-          const cameraTarget = parseCameraTarget(line)
-          if (cameraTarget) {
-            actions.setCameraTarget(cameraTarget)
-          }
-        }
-      })
-      actions.setAtomTypes(newAtomTypes)
-    }
-
-    const inputScriptFile = simulation.files.filter(file => file.fileName===simulation.inputScript)[0]
-    extractAtomifyCommands(inputScriptFile?.content)
     actions.syncFilesWasm(undefined)
     actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)

@@ -1,5 +1,5 @@
 import { LammpsWeb } from "../types"
-import {Particles, Bonds, Visualizer} from 'omovi'
+import {Particles, Bonds} from 'omovi'
 
 export type ModifierInput = {
   wasm: any
@@ -9,5 +9,5 @@ export type ModifierInput = {
 export type ModifierOutput = {
   particles: Particles
   bonds: Bonds
-  visualizer: Visualizer
+  colorsUpdated: boolean
 }
