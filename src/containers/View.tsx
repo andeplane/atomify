@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import {Layout, Row, Col, Progress} from 'antd'
 
-import { useStoreState } from '../hooks';
+import { useStoreState, useStoreActions } from '../hooks';
 import {Particles, Bonds, Visualizer} from 'omovi'
 import Settings from './Settings'
 import SimulationSummaryOverlay from '../components/SimulationSummaryOverlay'
@@ -45,9 +45,9 @@ const View = ({visible}: ViewProps) => {
   const particles = useStoreState(state => state.render.particles)
   const bonds = useStoreState(state => state.render.bonds)
   const particleColors = useStoreState(state => state.simulation.particleColors)
-  const [visualizer, setVisualizer] = useState<Visualizer | undefined>(
-    undefined
-  )
+  const visualizer = useStoreState(state => state.render.visualizer)
+  const setVisualizer = useStoreActions(actions => actions.render.setVisualizer)
+  
   const renderSettings = useStoreState(state => state.settings.render)
   const domElement = useRef<HTMLDivElement | null>(null)
   const running = useStoreState(state => state.simulation.running)
@@ -71,7 +71,7 @@ const View = ({visible}: ViewProps) => {
       document.body.removeChild(newVisualizer.cpuStats.dom)
       document.body.removeChild(newVisualizer.memoryStats.dom)
     }
-  }, [domElement, visualizer, loading, particleColors])
+  }, [domElement, setVisualizer, visualizer, loading, particleColors])
 
   useEffect(() => {
     if (visible && domElement.current) {

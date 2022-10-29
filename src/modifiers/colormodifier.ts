@@ -3,7 +3,6 @@ import { ModifierInput, ModifierOutput } from './types'
 import {StoreModel} from '../store/model'
 import colormap from 'colormap'
 import {AtomTypes} from '../utils/atomtypes'
-import {Visualizer} from 'omovi'
 
 interface ColorModifierProps {
   name: string
@@ -20,6 +19,11 @@ class ColorModifier extends Modifier {
   }
 
   runByProperty = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
+    if (!state.render.visualizer) {
+      return
+    }
+    const visualizer = state.render.visualizer
+
     let colors = colormap({
       colormap: 'jet',
       nshades: 72,
@@ -53,35 +57,26 @@ class ColorModifier extends Modifier {
       const colorIndex = Math.floor((value - minValue) / (maxValue - minValue) * (colors.length-1))
       
       const color = colors[colorIndex]
-      // @ts-ignore
-      if (window.visualizer) {
-        // @ts-ignore
-        window.visualizer.setColor(realIndex, {r: 255*color[0], g: 255*color[1], b: 255*color[2]})
-      }
+      visualizer.setColor(realIndex, {r: 255*color[0], g: 255*color[1], b: 255*color[2]})
     })
   }
 
   runByType = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
-    if (!state.render.particleStylesUpdated) {
+    if (!state.render.particleStylesUpdated || !state.render.visualizer) {
       return
     }
     const particleStyles = state.render.particleStyles
-    // @ts-ignore
-    const visualizer: Visualizer = window.visualizer
-    let atomType
-    try {
-      for(let i = 0; i < output.particles.count; i++) {
-        const realIndex = output.particles.indices[i]
-        const type = output.particles.types[i]
-        atomType = particleStyles[type]
-        if (!atomType) {
-          atomType = AtomTypes[type % AtomTypes.length]
-        }
-        output.particles.radii[i] = 0.25 * state.render.particleRadius * atomType.radius
-        visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
+    const visualizer = state.render.visualizer
+    
+    for(let i = 0; i < output.particles.count; i++) {
+      const realIndex = output.particles.indices[i]
+      const type = output.particles.types[i]
+      let atomType = particleStyles[type]
+      if (!atomType) {
+        atomType = AtomTypes[type % AtomTypes.length]
       }
-    } catch (e) {
-      console.log("Error setting colors: ", e, ". Got atomType: ", atomType)
+      output.particles.radii[i] = 0.25 * state.render.particleRadius * atomType.radius
+      visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
     }
   }
 

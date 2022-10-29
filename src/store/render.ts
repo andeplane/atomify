@@ -1,5 +1,5 @@
 import { action, Action } from 'easy-peasy';
-import {Particles, Bonds} from 'omovi'
+import {Particles, Bonds, Visualizer} from 'omovi'
 import {AtomType} from '../utils/atomtypes'
 
 interface ParticleStyle {
@@ -11,9 +11,11 @@ export interface RenderModel {
   particleStyles: AtomType[],
   particleStylesUpdated: boolean
   bondRadius: number
+  visualizer?: Visualizer
   particleRadius: number
   particles?: Particles
   bonds?: Bonds
+  setVisualizer: Action<RenderModel, Visualizer>
   setParticles: Action<RenderModel, Particles>
   setBonds: Action<RenderModel, Bonds>
   setBondRadius: Action<RenderModel, number>
@@ -34,6 +36,9 @@ export const renderModel: RenderModel = {
     state.particleStyles = particleStyles
     state.particleStylesUpdated = true
   }),
+  setVisualizer: action((state, value: Visualizer) => {
+    state.visualizer = value
+  }),
   setParticles: action((state, value: Particles) => {
     state.particles = value
   }),
@@ -50,7 +55,14 @@ export const renderModel: RenderModel = {
     state.particleRadius = value
   }),
   resetParticleStyle: action((state) => {
-    console.log("Did reset")
+    if (state.particles) {
+      state.particles.count = 0
+      state.particles.markNeedsUpdate()
+    }
+    if (state.bonds) {
+      state.bonds.count = 0
+      state.bonds.markNeedsUpdate()
+    }
     state.particleStyles = []
     state.particleStylesUpdated = true
   })
