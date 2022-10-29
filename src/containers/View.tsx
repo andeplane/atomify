@@ -52,9 +52,9 @@ const View = ({visible}: ViewProps) => {
   const domElement = useRef<HTMLDivElement | null>(null)
   const running = useStoreState(state => state.simulation.running)
   const simulation = useStoreState(state => state.simulation.simulation)
-  const lastCommand = useStoreState(state => state.simulation.lastCommand)
-  const runTotalTimesteps = useStoreState(state => state.simulation.runTotalTimesteps)
-  const runTimesteps = useStoreState(state => state.simulation.runTimesteps)
+  const lastCommand = useStoreState(state => state.simulationStatus.lastCommand)
+  const runTotalTimesteps = useStoreState(state => state.simulationStatus.runTotalTimesteps)
+  const runTimesteps = useStoreState(state => state.simulationStatus.runTimesteps)
   
   useEffect(() => {
     if (domElement.current && !loading && !visualizer) {

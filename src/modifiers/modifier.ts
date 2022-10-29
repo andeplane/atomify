@@ -1,5 +1,4 @@
 import { ModifierInput, ModifierOutput } from './types'
-import {StoreModel} from '../store/model'
 
 interface ModifierProps {
   name: string
@@ -17,6 +16,6 @@ class Modifier {
     this.active = active
   }
 
-  run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {}
+  run = (input: ModifierInput, output: ModifierOutput) => { }
 }
 export default Modifier

@@ -2,6 +2,10 @@ import { action, Action } from 'easy-peasy';
 import {Compute, Fix} from '../types'
 
 export interface SimulationStatusModel {
+  timesteps: number
+  runTimesteps: number
+  runTotalTimesteps: number
+  lastCommand?: string
   remainingTime: number
   timestepsPerSecond: number
   box?: THREE.Matrix3
@@ -10,6 +14,10 @@ export interface SimulationStatusModel {
   numAtoms: number
   computes: Compute[]
   fixes: Fix[]
+  setTimesteps: Action<SimulationStatusModel, number>
+  setRunTimesteps: Action<SimulationStatusModel, number>
+  setRunTotalTimesteps: Action<SimulationStatusModel, number>
+  setLastCommand: Action<SimulationStatusModel, string|undefined>
   setComputes: Action<SimulationStatusModel, Compute[]>
   setFixes: Action<SimulationStatusModel, Fix[]>
   setRemainingTime: Action<SimulationStatusModel, number>
@@ -18,9 +26,13 @@ export interface SimulationStatusModel {
   setRunType:  Action<SimulationStatusModel, string>
   setBox: Action<SimulationStatusModel, THREE.Matrix3>
   setOrigo: Action<SimulationStatusModel, THREE.Vector3>
+  reset: Action<SimulationStatusModel>
 }
 
 export const simulationStatusModel: SimulationStatusModel = {
+  timesteps: 0,
+  runTimesteps: 0,
+  runTotalTimesteps: 0,
   remainingTime: 0,
   timestepsPerSecond: 0,
   runType: "",
@@ -32,6 +44,18 @@ export const simulationStatusModel: SimulationStatusModel = {
   }),
   setFixes: action((state, value: Fix[]) => {
     state.fixes = value
+  }),
+  setTimesteps: action((state, timesteps: number) => {
+    state.timesteps = timesteps
+  }),
+  setRunTimesteps: action((state, runTimesteps: number) => {
+    state.runTimesteps = runTimesteps
+  }),
+  setRunTotalTimesteps: action((state, runTotalTimesteps: number) => {
+    state.runTotalTimesteps = runTotalTimesteps
+  }),
+  setLastCommand: action((state, lastCommand?: string) => {
+    state.lastCommand = lastCommand
   }),
   setRemainingTime: action((state, value: number) => {
     state.remainingTime = value
@@ -50,5 +74,11 @@ export const simulationStatusModel: SimulationStatusModel = {
   }),
   setOrigo: action((state, value: THREE.Vector3) => {
     state.origo = value
+  }),
+  reset: action((state) => {
+    state.lastCommand = undefined
+    state.timesteps = 0
+    state.runTimesteps = 0
+    state.runTotalTimesteps = 0
   })
 };

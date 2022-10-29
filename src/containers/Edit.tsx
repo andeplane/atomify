@@ -1,5 +1,5 @@
 import {useCallback} from 'react'
-import {useStoreActions, useStoreState} from '../hooks'
+import {useStoreState} from '../hooks'
 import MonacoEditor, {monaco} from 'react-monaco-editor'
 
 
@@ -85,11 +85,9 @@ monaco.languages.setMonarchTokensProvider('lammps', {
   },
 })
 
-
 const Edit = () => {
   const selectedFile = useStoreState(state => state.simulation.selectedFile)
   const simulation =  useStoreState(state => state.simulation.simulation)
-  const syncFilesWasm = useStoreActions(actions => actions.simulation.syncFilesWasm)
   const options = {
     selectOnLineNumbers: true
   };
@@ -103,9 +101,8 @@ const Edit = () => {
     const file = simulation?.files.filter(file => file.fileName === selectedFile?.fileName)[0]
     if (file) {
       file.content=newValue
-      syncFilesWasm(file.fileName)
     }
-  }, [selectedFile?.fileName, simulation?.files, syncFilesWasm])
+  }, [selectedFile?.fileName, simulation?.files])
 
   if (!selectedFile) {
     return (<>No file selected</>)

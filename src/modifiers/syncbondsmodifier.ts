@@ -1,6 +1,5 @@
 import Modifier from './modifier'
 import { ModifierInput, ModifierOutput } from './types'
-import {StoreModel} from '../store/model'
 import {Bonds} from 'omovi'
 
 interface SyncBondsModifierProps {
@@ -13,7 +12,7 @@ class SyncBondsModifier extends Modifier {
     super({name, active})
   }
 
-  run = (state: StoreModel, input: ModifierInput, output: ModifierOutput) => {
+  run = (input: ModifierInput, output: ModifierOutput) => {
     if (!this.active) {
       if (output.bonds) {
         output.bonds.count = 0
@@ -25,7 +24,7 @@ class SyncBondsModifier extends Modifier {
     }
 
     const numBonds = input.lammps.computeBonds()
-    const bondRadius = state.render.bondRadius
+    const bondRadius = input.renderState.bondRadius
     let newBonds = output.bonds
     if (!newBonds || newBonds.capacity < numBonds) {
       let newCapacity = numBonds

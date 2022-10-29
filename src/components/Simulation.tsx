@@ -27,29 +27,28 @@ const getSimulationOrigo = (lammps: LammpsWeb, wasm: any) => {
 }
 
 const SimulationComponent = () => {
-  const state = useStoreState(state => state)
   // @ts-ignore
   const wasm = window.wasm
   const lammps = useStoreState(state => state.simulation.lammps)
   const particles = useStoreState(state => state.render.particles)
   const bonds = useStoreState(state => state.render.bonds)
   const simulation = useStoreState(state => state.simulation.simulation)
+  const renderState = useStoreState(state => state.render)
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
   const running = useStoreState(state => state.simulation.running)
+  const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
-  const atomTypes = useStoreState(state => state.simulation.atomTypes)
   const setParticles = useStoreActions(actions => actions.render.setParticles)
   const setBonds = useStoreActions(actions => actions.render.setBonds)
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
-  const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
-  const setTimesteps = useStoreActions(actions => actions.simulation.setTimesteps)
-  const setRunTimesteps = useStoreActions(actions => actions.simulation.setRunTimesteps)
+  const setTimesteps = useStoreActions(actions => actions.simulationStatus.setTimesteps)
+  const setRunTimesteps = useStoreActions(actions => actions.simulationStatus.setRunTimesteps)
   const setSimulationStatus = useStoreActions(actions => actions.simulation.setSimulationStatus)
-  const setRunTotalTimesteps = useStoreActions(actions => actions.simulation.setRunTotalTimesteps)
-  const setLastCommand = useStoreActions(actions => actions.simulation.setLastCommand)
+  const setRunTotalTimesteps = useStoreActions(actions => actions.simulationStatus.setRunTotalTimesteps)
+  const setLastCommand = useStoreActions(actions => actions.simulationStatus.setLastCommand)
   const setComputes = useStoreActions(actions => actions.simulationStatus.setComputes)
   const setFixes = useStoreActions(actions => actions.simulationStatus.setFixes)
   const setParticleStylesUpdated = useStoreActions(actions => actions.render.setParticleStylesUpdated)
@@ -86,23 +85,54 @@ const SimulationComponent = () => {
         })
       }
     }
+  }, [lammps, running, selectedMenu, setSimulationSettings, simulation, simulationSettings])
 
+  useEffect(() => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm && simulation) {
+        const lmpComputes = lammps.getComputes()
+        const lmpFixes = lammps.getFixes()
+        const computes: Compute[] = []
+        for (let i = 0; i < lmpComputes.size(); i++) {
+          // This is a hack because we can't pass these functions to other objects for some reason,
+          // and we can't call the c++ functions outside main sync thread, so want to resolve name and type 
+          // so UI can render them
+          const lmpCompute = (lmpComputes.get(i) as unknown) as Compute
+          lmpCompute.name = lmpCompute.getName()
+          lmpCompute.type = lmpCompute.getType()
+          computes.push(lmpCompute)
+        }
+        const fixes: Fix[] = []
+        for (let i = 0; i < lmpFixes.size(); i++) {
+          const lmpFix = lmpFixes.get(i)
+
+          fixes.push({
+            name: lmpFix.getName(),
+            type: lmpFix.getType()
+          })
+        }
+        setComputes(computes)
+        setFixes(fixes)
+        
         const modifierInput: ModifierInput = {
           lammps,
           wasm,
+          renderState: renderState,
+          computes,
+          fixes
         }
+        
         const modifierOutput: ModifierOutput = {
           particles,
           bonds,
-          // @ts-ignore
-          visualizer: window.visualizer
+          colorsUpdated: false
         }
         // @ts-ignore
-        postTimestepModifiers.forEach(modifier => modifier.run(state, modifierInput, modifierOutput))
-        setParticleStylesUpdated(false)
+        postTimestepModifiers.forEach(modifier => modifier.run(modifierInput, modifierOutput))
+        if (modifierOutput.colorsUpdated) {
+          setParticleStylesUpdated(false)
+        }
         
         if (selectedMenu === 'view') {
           if (modifierOutput.particles !== particles) {
@@ -111,30 +141,6 @@ const SimulationComponent = () => {
           if (modifierOutput.bonds !== bonds) {
             setBonds(modifierOutput.bonds)
           }
-          
-          const lmpComputes = lammps.getComputes()
-          const lmpFixes = lammps.getFixes()
-          const computes: Compute[] = []
-          for (let i = 0; i < lmpComputes.size(); i++) {
-            // This is a hack because we can't pass these functions to other objects for some reason,
-            // and we can't call the c++ functions outside main sync thread, so want to resolve name and type 
-            // so UI can render them
-            const lmpCompute = (lmpComputes.get(i) as unknown) as Compute
-            lmpCompute.name = lmpCompute.getName()
-            lmpCompute.type = lmpCompute.getType()
-            computes.push(lmpCompute)
-          }
-          const fixes: Fix[] = []
-          for (let i = 0; i < lmpFixes.size(); i++) {
-            const lmpFix = lmpFixes.get(i)
-
-            fixes.push({
-              name: lmpFix.getName(),
-              type: lmpFix.getType()
-            })
-          }
-          setComputes(computes)
-          setFixes(fixes)
         }
 
         const whichFlag = lammps.getWhichFlag()
@@ -168,12 +174,13 @@ const SimulationComponent = () => {
         setLastCommand(lammps.getLastCommand())
       }
     }
-  }, [wasm, lammps, particles, bonds, setBonds, 
-    setParticles, setParticleStylesUpdated,
+  }, [wasm, lammps, particles, bonds, simulation, selectedMenu, renderState,
+    running, simulationSettings, postTimestepModifiers, 
+    setParticles, setParticleStylesUpdated, setBonds, 
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
-    atomTypes, setSimulationStatus, selectedMenu, running, 
-    setSimulationSettings, setTimesteps, simulation, 
-    postTimestepModifiers, state, simulationSettings, setComputes, setFixes])
+    setSimulationStatus, setComputes, setFixes, 
+    setSimulationSettings, setTimesteps
+    ])
 
   useEffect(
     () => {

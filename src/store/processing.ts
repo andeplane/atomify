@@ -1,7 +1,7 @@
 import { action, Action } from 'easy-peasy';
 import Modifier from '../modifiers/modifier'
-import SyncParticlesModifier from '../modifiers/syncparticles'
-import SyncBondsModifier from '../modifiers/syncbonds'
+import SyncParticlesModifier from '../modifiers/syncparticlesmodifier'
+import SyncBondsModifier from '../modifiers/syncbondsmodifier'
 import ColorModifier from '../modifiers/colormodifier'
 
 export interface ProcessingModel {
