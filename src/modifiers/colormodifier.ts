@@ -32,6 +32,7 @@ interface ColorModifierProps {
 
 class ColorModifier extends Modifier {
   public computeName?: string
+  private previousColoringMethod?: string
 
   constructor({name, active}: ColorModifierProps) {
     super({name, active})
@@ -77,14 +78,15 @@ class ColorModifier extends Modifier {
       const color = colors[colorIndex]
       visualizer.setColor(realIndex, {r: 255*color[0], g: 255*color[1], b: 255*color[2]})
     })
+    this.previousColoringMethod = 'property'
     return
   }
 
   runByType = (input: ModifierInput, output: ModifierOutput) => {
-    if ( !input.renderState.particleStylesUpdated || !input.renderState.visualizer) {
+    if ( (this.previousColoringMethod === 'type' && !input.renderState.particleStylesUpdated) || !input.renderState.visualizer) {
       return
     }
-
+    
     const particleStyles = input.renderState.particleStyles
     const visualizer = input.renderState.visualizer
     // @ts-ignore
@@ -101,6 +103,7 @@ class ColorModifier extends Modifier {
       visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
     }
     output.colorsUpdated = true
+    this.previousColoringMethod = 'type'
   }
 
   run = (input: ModifierInput, output: ModifierOutput) => {

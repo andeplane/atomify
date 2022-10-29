@@ -1,6 +1,6 @@
 import {useStoreState, useStoreActions} from '../hooks'
 import {SettingOutlined} from '@ant-design/icons'
-import {InputNumber, Table, Row, Col} from 'antd'
+import {InputNumber, Table, Row, Col, Button} from 'antd'
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
 import {Compute, Fix} from '../types'
@@ -9,20 +9,13 @@ import Modifier from '../modifiers/modifier'
 import SyncBondsSettings from '../modifiers/SyncBondsSettings';
 import SyncParticlesSettings from '../modifiers/SyncParticlesSettings';
 import ColorModifierSettings from '../modifiers/ColorModifierSettings';
+import ColorModifier from '../modifiers/colormodifier';
 
 interface SimulationSummaryType {
   key: React.ReactNode
   name: string
   value: string|number
 }
-
-const computeColumns: ColumnsType<Compute> = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-  }
-];
 
 const fixesColumns: ColumnsType<Fix> = [
   {
@@ -37,7 +30,8 @@ const SimulationSummary = () => {
   const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors"])
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const modifiers = useStoreState(state => state.processing.postTimestepModifiers)
-
+  const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
+  const colorModifier = postTimestepModifiers.filter(modifier => modifier.name==="Colors")[0] as ColorModifier
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
 
   const simulationStatus = useStoreState(state => state.simulation.simulationStatus)
@@ -49,6 +43,21 @@ const SimulationSummary = () => {
       setSimulationSettings({...simulationSettings, speed: value})
     }
   }
+
+  const computeColumns: ColumnsType<Compute> = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (value, record) => {
+        if (record.isPerAtom) {
+          return <Button style={{padding: 0}} type="link" onMouseEnter={() => {colorModifier.computeName=value}} onMouseLeave={() => {colorModifier.computeName=undefined}}>{value}</Button>
+        } else {
+          return (<>{value}</>)
+        }
+      }
+    }
+  ];
 
   const modiferColumns: ColumnsType<Modifier> = [
     {
