@@ -101,6 +101,8 @@ const SimulationComponent = () => {
           const lmpCompute = (lmpComputes.get(i) as unknown) as Compute
           lmpCompute.name = lmpCompute.getName()
           lmpCompute.type = lmpCompute.getType()
+          lmpCompute.isPerAtom = lmpCompute.getIsPerAtom()
+          
           computes.push(lmpCompute)
         }
         const fixes: Fix[] = []

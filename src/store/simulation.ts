@@ -6,6 +6,7 @@ import AnalyzeNotebook from '../utils/AnalyzeNotebook'
 import {track, time_event} from '../utils/metrics'
 import * as THREE from 'three'
 import localforage from 'localforage'
+import ColorModifier from '../modifiers/colormodifier';
 
 localforage.config({
   driver      : localforage.INDEXEDDB,
@@ -197,7 +198,7 @@ export const simulationModel: SimulationModel = {
     // Reset all settings for dynamic bonds
     const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
     const bondsDistanceMapSubarray = wasm.HEAPF32.subarray(bondsDistanceMapPointer, bondsDistanceMapPointer + 10000) as Float32Array
-    console.log("Parsing files")
+    
     lines.forEach(line => {
       line = line.trim()
       if (line.startsWith("#/")) {
@@ -410,6 +411,15 @@ export const simulationModel: SimulationModel = {
     actions.setShowConsole(false)
     actions.setSimulation(simulation)
     actions.resetLammpsOutput()
+
+    // Reset potentially chosen per atom coloring
+    // @ts-ignore
+    const postTimestepModifiers = getStoreState().processing.postTimestepModifiers
+    const colorModifier = postTimestepModifiers.filter( (modifier: any) => modifier.name==="Colors")[0] as ColorModifier
+    if (colorModifier) {
+      colorModifier.computeName = undefined
+    }
+
     // @ts-ignore
     getStoreActions().render.resetParticleStyles()
 

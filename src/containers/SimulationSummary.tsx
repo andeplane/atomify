@@ -8,6 +8,7 @@ import React, {useState} from 'react'
 import Modifier from '../modifiers/modifier'
 import SyncBondsSettings from '../modifiers/SyncBondsSettings';
 import SyncParticlesSettings from '../modifiers/SyncParticlesSettings';
+import ColorModifierSettings from '../modifiers/ColorModifierSettings';
 
 interface SimulationSummaryType {
   key: React.ReactNode
@@ -155,6 +156,7 @@ const SimulationSummary = () => {
       }
       {visibleSettings==='Bonds' && <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Particles' && <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />}
+      {visibleSettings==='Colors' && <ColorModifierSettings onClose={() => setVisibleSettings(undefined)} />}
     </>
   )
 }

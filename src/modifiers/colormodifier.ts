@@ -28,15 +28,14 @@ const defaultAtomTypes: AtomType[] = [
 interface ColorModifierProps {
   name: string
   active: boolean
-  computeName: string
 }
 
 class ColorModifier extends Modifier {
-  public computeName: string
+  public computeName?: string
 
-  constructor({name, active, computeName}: ColorModifierProps) {
+  constructor({name, active}: ColorModifierProps) {
     super({name, active})
-    this.computeName = computeName
+    this.computeName = undefined
   }
 
   runByProperty = (input: ModifierInput, output: ModifierOutput) => {
@@ -53,7 +52,7 @@ class ColorModifier extends Modifier {
     })
     const computes = input.computes
     const compute = computes.filter(c => c.name === this.computeName)[0]
-    if (!compute || !compute.getIsPerAtom()) {
+    if (!compute || !compute.isPerAtom) {
       return
     }
     
@@ -78,12 +77,14 @@ class ColorModifier extends Modifier {
       const color = colors[colorIndex]
       visualizer.setColor(realIndex, {r: 255*color[0], g: 255*color[1], b: 255*color[2]})
     })
+    return
   }
 
   runByType = (input: ModifierInput, output: ModifierOutput) => {
-    if (!input.renderState.particleStylesUpdated || !input.renderState.visualizer) {
+    if ( !input.renderState.particleStylesUpdated || !input.renderState.visualizer) {
       return
     }
+
     const particleStyles = input.renderState.particleStyles
     const visualizer = input.renderState.visualizer
     // @ts-ignore
@@ -103,8 +104,11 @@ class ColorModifier extends Modifier {
   }
 
   run = (input: ModifierInput, output: ModifierOutput) => {
-    this.runByType(input, output)
-    // this.runByProperty(state, input, output)
+    if (this.computeName) {
+      this.runByProperty(input, output)
+    } else {
+      this.runByType(input, output)
+    } 
   }
 }
 

@@ -72,6 +72,7 @@ export type LMPCompute = {
 export type Compute = {
   name: string
   type: ComputeType
+  isPerAtom: boolean
   getName: () => string
   getType: () => ComputeType
   getPerAtomData: () => number
