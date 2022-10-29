@@ -20,6 +20,7 @@ import Console from './containers/Console'
 import Examples from './containers/Examples'
 import { useStoreActions, useStoreState } from './hooks';
 import {track} from './utils/metrics'
+import Welcome from './containers/Welcome';
 const { Content, Sider } = Layout;
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -45,6 +46,8 @@ function getItem(
 const App: React.FC = () => {
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
   const [collapsed, setCollapsed] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  
   // @ts-ignore
   const wasm = window.wasm
   const running = useStoreState(state => state.simulation.running)
@@ -59,6 +62,7 @@ const App: React.FC = () => {
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   const setShowConsole = useStoreActions(actions => actions.simulation.setShowConsole)
   const run = useStoreActions(actions => actions.simulation.run)
+  const hideWelcome = useStoreState(state => state.settings.hideWelcome)
   
   useEffect(() => {
     if (width < 1000) {
@@ -178,6 +182,7 @@ const App: React.FC = () => {
               status="active"
             />
           </Modal>}
+          {!hideWelcome && showWelcome && <Welcome onClose={() => setShowWelcome(false)} />}
           </>
         </Content>
       </Layout>

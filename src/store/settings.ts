@@ -12,11 +12,14 @@ export interface SimulationSettings {
 export interface SettingsModel {
   render: RenderSettings
   simulation: SimulationSettings
+  hideWelcome: boolean
   setRender: Action<SettingsModel, RenderSettings>
   setSimulation: Action<SettingsModel, SimulationSettings>
+  setHideWelcome: Action<SettingsModel, boolean>
 }
 
 export const settingsModel: SettingsModel = {
+  hideWelcome: false,
   simulation: {
     speed: 1
   },
@@ -24,6 +27,9 @@ export const settingsModel: SettingsModel = {
     ssao: true,
     brightness: 1.0
   },
+  setHideWelcome: action((state, value: boolean) => {
+    state.hideWelcome = value
+  }),
   setRender: action((state, render: RenderSettings) => {
     state.render = render
   }),

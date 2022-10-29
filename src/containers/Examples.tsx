@@ -40,53 +40,8 @@ const Examples = () => {
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   const lammps = useStoreState(state => state.simulation.lammps)
 
-  useEffect(() => {
-    const fetchExamples = async(examplesUrl: string) => {
-      let response = await fetch(examplesUrl, {cache: "no-store"})
-      const data = await response.json()
-      const baseUrl = data["baseUrl"]
-      const title = data["title"] || "Examples"
-      const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`
-      response = await fetch(descriptionsUrl)
-      if (response.status !== 404) {
-        const description = await response.text()
-        setDescription(description)
-      }
-      
-      const examples: Example[] = data["examples"]
-      examples.forEach(example => {
-        example.imageUrl = `${baseUrl}/${example.imageUrl}`
-        example.files.forEach(file => {
-          file.url = `${baseUrl}/${file.url}`
-        })
-      })
-
-      setTitle(title)
-      setExamples(data["examples"])
-      track('Examples.Fetch', {examplesUrl})
-    }
-
-    (async () => {
-      const urlSearchParams = new URLSearchParams(window.location.search);
-      const params = Object.fromEntries(urlSearchParams.entries());
-
-      let defaultExamplesUrl = 'examples/examples.json'
-      let examplesUrl = defaultExamplesUrl
-      if (params['examplesUrl'] != null) {
-        examplesUrl = params['examplesUrl']
-      }
-      
-      try {
-        await fetchExamples(examplesUrl)
-      } catch (e) {
-        notification.error({message: `Could not fetch examples from ${examplesUrl}. Fetching default.`})
-        await fetchExamples(defaultExamplesUrl)
-      }
-      
-    })()
-  }, [])
-
   const onPlay = useCallback((example: Example) => {
+    console.log("Will play ", example.id)
     track('Example.Run', {simulationId: example.id})
     const newSimulation: Simulation = {
       files: example.files,
@@ -121,6 +76,60 @@ const Examples = () => {
       setPreferredView('file'+newSimulation.inputScript)
     }
   }, [setNewSimulation, setPreferredView, simulation?.id])
+
+  useEffect(() => {
+    const fetchExamples = async(examplesUrl: string) => {
+      let response = await fetch(examplesUrl, {cache: "no-store"})
+      const data = await response.json()
+      const baseUrl = data["baseUrl"]
+      const title = data["title"] || "Examples"
+      const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`
+      response = await fetch(descriptionsUrl)
+      if (response.status !== 404) {
+        const description = await response.text()
+        setDescription(description)
+      }
+      
+      const examples: Example[] = data["examples"]
+      examples.forEach(example => {
+        example.imageUrl = `${baseUrl}/${example.imageUrl}`
+        example.files.forEach(file => {
+          file.url = `${baseUrl}/${file.url}`
+        })
+      })
+
+      setTitle(title)
+      setExamples(data["examples"])
+      track('Examples.Fetch', {examplesUrl})
+      if (data["autoStart"] != null) {
+        // const example = (data["examples"] as Example[]).filter(example => example.id===data["autoStart"])[0]
+        // if (example) {
+        //   setTimeout(() => {
+        //     onPlay(example)
+        //   }, 500)
+        // }
+      }
+    }
+
+    (async () => {
+      const urlSearchParams = new URLSearchParams(window.location.search);
+      const params = Object.fromEntries(urlSearchParams.entries());
+
+      let defaultExamplesUrl = 'examples/examples.json'
+      let examplesUrl = defaultExamplesUrl
+      if (params['examplesUrl'] != null) {
+        examplesUrl = params['examplesUrl']
+      }
+      
+      try {
+        await fetchExamples(examplesUrl)
+      } catch (e) {
+        notification.error({message: `Could not fetch examples from ${examplesUrl}. Fetching default.`})
+        await fetchExamples(defaultExamplesUrl)
+      }
+      
+    })()
+  }, [onPlay])
 
   let keywordsSet: Set<string> = new Set()
   examples.forEach(example => {

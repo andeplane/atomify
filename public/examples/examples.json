@@ -2,6 +2,7 @@
     "baseUrl": "examples",
     "title": "Examples",
     "descriptionFile": "examples.md",
+    "autoStart": "diffusion",
     "examples": [
         {
             "id": "diffusion",

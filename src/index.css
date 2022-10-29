@@ -108,3 +108,7 @@ html, body, #root, .App {
 .simulationsummary.hover {
   opacity: 0.8
 }
+
+.welcome {
+  opacity: 0.98
+}
