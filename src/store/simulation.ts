@@ -14,27 +14,6 @@ localforage.config({
   description : 'some description'
 });
 
-const defaultAtomTypes: {[key:string]: AtomType} = {
-  '1': { shortname: "1", fullname: "1", radius: 1.20, color: new THREE.Color(255, 102, 102 ) },
-  '2': { shortname: "2", fullname: "2", radius: 1.20, color: new THREE.Color(102, 102, 255 )},
-  '3': { shortname: "3", fullname: "3", radius: 1.20, color: new THREE.Color(255, 255, 0 )},
-  '4': { shortname: "4", fullname: "4", radius: 1.20, color: new THREE.Color(255, 102, 255 )},
-  '5': { shortname: "5", fullname: "5", radius: 1.20, color: new THREE.Color(102, 255, 51 )},
-  '6': { shortname: "6", fullname: "6", radius: 1.20, color: new THREE.Color(204, 255, 179 )},
-  '7': { shortname: "7", fullname: "7", radius: 1.20, color: new THREE.Color(179, 0, 255 )},
-  '8': { shortname: "8", fullname: "8", radius: 1.20, color: new THREE.Color(51, 255, 255 )},
-  '9': { shortname: "9", fullname: "9", radius: 1.20, color: new THREE.Color(247, 247, 247)},
-  '10': { shortname: "10", fullname: "10", radius: 1.20, color: new THREE.Color(255, 102, 102 ) },
-  '11': { shortname: "11", fullname: "11", radius: 1.20, color: new THREE.Color(102, 102, 255 )},
-  '12': { shortname: "12", fullname: "12", radius: 1.20, color: new THREE.Color(255, 255, 0 )},
-  '13': { shortname: "13", fullname: "13", radius: 1.20, color: new THREE.Color(255, 102, 255 )},
-  '14': { shortname: "14", fullname: "14", radius: 1.20, color: new THREE.Color(102, 255, 51 )},
-  '15': { shortname: "15", fullname: "15", radius: 1.20, color: new THREE.Color(204, 255, 179 )},
-  '16': { shortname: "16", fullname: "16", radius: 1.20, color: new THREE.Color(179, 0, 255 )},
-  '17': { shortname: "17", fullname: "17", radius: 1.20, color: new THREE.Color(51, 255, 255 )},
-  '18': { shortname: "18", fullname: "18", radius: 1.20, color: new THREE.Color(247, 247, 247)},
-}
-
 const parseCameraPosition = (line: string) => {
   const splitted = line.split(" ")
   if (splitted[0] === 'camera' && splitted[1] === 'position' && splitted.length === 5) {
@@ -138,7 +117,6 @@ export interface SimulationModel {
   particleColors?: THREE.Color[]
   cameraPosition?: THREE.Vector3
   cameraTarget?: THREE.Vector3
-  atomTypes?: {[key: number]: AtomType}
   setTimesteps: Action<SimulationModel, number>
   setRunTimesteps: Action<SimulationModel, number>
   setRunTotalTimesteps: Action<SimulationModel, number>
@@ -150,7 +128,6 @@ export interface SimulationModel {
   setSimulationStatus: Action<SimulationModel, SimulationStatus>
   setCameraPosition: Action<SimulationModel, THREE.Vector3|undefined>
   setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
-  setAtomTypes: Action<SimulationModel, {[key: number]: AtomType}|undefined>
   setPreferredView: Action<SimulationModel, string|undefined>
   setSelectedFile: Action<SimulationModel, SimulationFile>
   setSimulation: Action<SimulationModel, Simulation>
@@ -214,9 +191,6 @@ export const simulationModel: SimulationModel = {
   }),
   setCameraTarget: action((state, cameraTarget: THREE.Vector3) => {
     state.cameraTarget = cameraTarget
-  }),
-  setAtomTypes: action((state, atomTypes: {[key: number]: AtomType}) => {
-    state.atomTypes = atomTypes
   }),
   setLammps: action((state, lammps: LammpsWeb) => {
     state.lammps = lammps
