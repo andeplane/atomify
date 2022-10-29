@@ -54,6 +54,7 @@ fix vacf_vector all vector 1 c_vacf[4]
 variable diffusioncoeff equal 0.5*dt*trap(f_vacf_vector)
 
 thermo_style	custom step temp c_vacf[4] v_diffusioncoeff
+compute displacement all displace/atom
 
 thermo 25
 run 10000

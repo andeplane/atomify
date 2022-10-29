@@ -47,6 +47,7 @@ compute msd all msd com yes
 variable diffusioncoeff equal c_msd[4]/4/(step*dt+1.0e-6)
 
 thermo_style custom step temp c_msd[4] v_diffusioncoeff
+compute displacement all displace/atom
 
 thermo 25
 run 10000

@@ -194,10 +194,10 @@ const View = ({visible}: ViewProps) => {
         </Sider>
       }
       <AnalyzeButtonContainer>
-        <AreaChartOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 70}} onClick={() => setShowAnalyze(!showAnalyze)} />
+        <AreaChartOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 70, zIndex: 1000}} onClick={() => setShowAnalyze(!showAnalyze)} />
       </AnalyzeButtonContainer>
       <SettingsButtonContainer>
-        <SettingOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 20}} onClick={() => setShowSettings(true)} />
+        <SettingOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 20, zIndex: 1000}} onClick={() => setShowSettings(true)} />
       </SettingsButtonContainer>
       </Layout>
   )
