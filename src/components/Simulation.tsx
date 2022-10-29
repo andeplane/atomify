@@ -85,6 +85,9 @@ const SimulationComponent = () => {
         })
       }
     }
+  }, [lammps, running, selectedMenu, setSimulationSettings, simulation, simulationSettings])
+
+  useEffect(() => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm && simulation) {
