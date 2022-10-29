@@ -100,10 +100,6 @@ export interface Simulation {
 }
 
 export interface SimulationModel {
-  timesteps: number
-  runTimesteps: number
-  runTotalTimesteps: number
-  lastCommand?: string
   selectedMenu: string
   running: boolean
   showConsole: boolean
@@ -117,10 +113,6 @@ export interface SimulationModel {
   particleColors?: THREE.Color[]
   cameraPosition?: THREE.Vector3
   cameraTarget?: THREE.Vector3
-  setTimesteps: Action<SimulationModel, number>
-  setRunTimesteps: Action<SimulationModel, number>
-  setRunTotalTimesteps: Action<SimulationModel, number>
-  setLastCommand: Action<SimulationModel, string|undefined>
   resetLammpsOutput: Action<SimulationModel, void>
   setSelectedMenu: Action<SimulationModel, string>
   addLammpsOutput: Action<SimulationModel, string>
@@ -145,9 +137,6 @@ export interface SimulationModel {
 }
 
 export const simulationModel: SimulationModel = {
-  timesteps: 0,
-  runTimesteps: 0,
-  runTotalTimesteps: 0,
   running: false,
   selectedMenu: 'examples',
   showConsole: false,
@@ -159,18 +148,7 @@ export const simulationModel: SimulationModel = {
   setSimulationStatus: action((state, value: SimulationStatus) => {
     state.simulationStatus = value
   }),
-  setTimesteps: action((state, timesteps: number) => {
-    state.timesteps = timesteps
-  }),
-  setRunTimesteps: action((state, runTimesteps: number) => {
-    state.runTimesteps = runTimesteps
-  }),
-  setRunTotalTimesteps: action((state, runTotalTimesteps: number) => {
-    state.runTotalTimesteps = runTotalTimesteps
-  }),
-  setLastCommand: action((state, lastCommand?: string) => {
-    state.lastCommand = lastCommand
-  }),
+  
   addLammpsOutput: action((state, output: string) => {
     state.lammpsOutput = [...state.lammpsOutput, output]
   }),
@@ -375,11 +353,13 @@ export const simulationModel: SimulationModel = {
     }
 
     // @ts-ignore
-    getStoreActions().render.resetParticleStyles()
-    actions.setLastCommand(undefined)
-    actions.setTimesteps(0)
-    actions.setRunTimesteps(0)
-    actions.setRunTotalTimesteps(0)
+    const allActions = getStoreActions() as any
+
+    allActions.render.resetParticleStyles()
+    allActions.simulationStatus.setLastCommand(undefined)
+    allActions.simulationStatus.setTimesteps(0)
+    allActions.simulationStatus.setRunTimesteps(0)
+    allActions.simulationStatus.setRunTotalTimesteps(0)
     actions.setShowConsole(false)
     actions.resetLammpsOutput()
 
@@ -421,16 +401,19 @@ export const simulationModel: SimulationModel = {
       window.postStepCallback()
     }
     actions.syncFilesJupyterLite()
-    actions.setLastCommand(undefined)
+    allActions.simulationStatus.setLastCommand(undefined)
   }),
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState, getStoreActions}) => {
     // @ts-ignore
+    const allActions = getStoreActions() as any
+
+    // @ts-ignore
     window.simulation = simulation
     // TODO: There should be a reset thunk
-    actions.setLastCommand(undefined)
-    actions.setTimesteps(0)
-    actions.setRunTimesteps(0)
-    actions.setRunTotalTimesteps(0)
+    allActions.simulationStatus.setLastCommand(undefined)
+    allActions.simulationStatus.setTimesteps(0)
+    allActions.simulationStatus.setRunTimesteps(0)
+    allActions.simulationStatus.setRunTotalTimesteps(0)
     actions.setShowConsole(false)
     actions.setSimulation(simulation)
     actions.resetLammpsOutput()
