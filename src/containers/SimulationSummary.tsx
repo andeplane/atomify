@@ -28,13 +28,15 @@ const fixesColumns: ColumnsType<Fix> = [
 const SimulationSummary = () => {
   const [visibleSettings, setVisibleSettings] = useState<string|undefined>()
   const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors"])
+  
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const modifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const colorModifier = postTimestepModifiers.filter(modifier => modifier.name==="Colors")[0] as ColorModifier
+  
+  const simulationStatus = useStoreState(state => state.simulation.simulationStatus)
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
 
-  const simulationStatus = useStoreState(state => state.simulation.simulationStatus)
   const computes = useStoreState(state => state.simulationStatus.computes)
   const fixes = useStoreState(state => state.simulationStatus.fixes)
 

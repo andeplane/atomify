@@ -133,13 +133,25 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .function("getIsPerAtom", &Compute::getIsPerAtom)
     .function("getPerAtomData", &Compute::getPerAtomData)
     .function("sync", &Compute::sync)
-    .function("execute", &Compute::execute)
-    .function("setSyncData", &Compute::setSyncData);
+    .function("getData1DNames", &Compute::getData1DNames)
+    .function("getData1D", &Compute::getData1D)
+    .function("getXLabel", &Compute::getXLabel)
+    .function("getYLabel", &Compute::getYLabel)
+    .function("execute", &Compute::execute);
+
+  class_<Data1D>("Data1D")
+    .constructor<>()
+    .function("getXValuesPointer", &Data1D::getXValuesPointer)
+    .function("getYValuesPointer", &Data1D::getYValuesPointer)
+    .function("getLabel", &Data1D::getLabel)
+    .function("getNumPoints", &Data1D::getNumPoints);
   
   class_<Fix>("Fix")
     .constructor<>()
     .function("getName", &Fix::getName)
     .function("getType", &Fix::getType);
+  register_vector<Data1D>("vector<Data1D>");
+  register_vector<std::string>("vector<std::string>");
   register_vector<Fix>("vector<Fix>");
   register_vector<Compute>("vector<Compute>");
   register_vector<float>("vector<float>");

@@ -194,28 +194,30 @@ const SimulationComponent = () => {
           text: '',
           progress: 0.3
         })
-        time_event("WASM.Load")
-        createModule({
-          print: onPrint, 
-          printErr: onPrint,
-        }).then((Module: any) => {
-          track("WASM.Load")
-          setStatus({
-            title: 'Downloading LAMMPS ...',
-            text: '',
-            progress: 0.6
-          })
-          // setWasm(Module)
-          const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
-          setLammps(lammps)
-          // @ts-ignore
-          window.wasm = Module
-          // @ts-ignore
-          window.lammps = lammps
-          // @ts-ignore
-          window.syncFrequency = 1
-          setStatus(undefined)
-        });
+        setTimeout(() => {
+          time_event("WASM.Load")
+          createModule({
+            print: onPrint, 
+            printErr: onPrint,
+          }).then((Module: any) => {
+            track("WASM.Load")
+            setStatus({
+              title: 'Downloading LAMMPS ...',
+              text: '',
+              progress: 0.6
+            })
+            // setWasm(Module)
+            const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
+            setLammps(lammps)
+            // @ts-ignore
+            window.wasm = Module
+            // @ts-ignore
+            window.lammps = lammps
+            // @ts-ignore
+            window.syncFrequency = 1
+            setStatus(undefined)
+          });
+        }, 100)
       }
     },
     [onPrint, setLammps, setStatus]
