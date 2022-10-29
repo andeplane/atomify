@@ -399,6 +399,8 @@ export const simulationModel: SimulationModel = {
     if (!lammps || lammps.getIsRunning()) {
       return
     }
+
+    await actions.syncFilesWasm(undefined)
     
     lammps.start()
     actions.setRunning(true)
@@ -482,7 +484,7 @@ export const simulationModel: SimulationModel = {
       text: "",
       progress: 0.9
     })
-    actions.syncFilesWasm(undefined)
+    
     actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)
     await actions.setStatus(undefined)
