@@ -21,7 +21,6 @@ export const processingModel: ProcessingModel = {
     }),
     new ColorModifier({
       name: 'Colors',
-      computeName: 'peAtom',
       active: true
     })
   ],
