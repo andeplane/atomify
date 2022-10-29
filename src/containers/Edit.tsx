@@ -85,7 +85,6 @@ monaco.languages.setMonarchTokensProvider('lammps', {
   },
 })
 
-
 const Edit = () => {
   const selectedFile = useStoreState(state => state.simulation.selectedFile)
   const simulation =  useStoreState(state => state.simulation.simulation)

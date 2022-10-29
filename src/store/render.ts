@@ -21,7 +21,7 @@ export interface RenderModel {
   setBondRadius: Action<RenderModel, number>
   setParticleRadius: Action<RenderModel, number>
   setParticleStylesUpdated: Action<RenderModel, boolean>
-  resetParticleStyle: Action<RenderModel, void>
+  resetParticleStyles: Action<RenderModel, void>
   addParticleStyle: Action<RenderModel, ParticleStyle>
 }
 
@@ -54,7 +54,7 @@ export const renderModel: RenderModel = {
   setParticleRadius: action((state, value: number) => {
     state.particleRadius = value
   }),
-  resetParticleStyle: action((state) => {
+  resetParticleStyles: action((state) => {
     if (state.particles) {
       state.particles.count = 0
       state.particles.markNeedsUpdate()

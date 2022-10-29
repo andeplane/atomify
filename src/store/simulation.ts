@@ -245,7 +245,7 @@ export const simulationModel: SimulationModel = {
     // Reset all settings for dynamic bonds
     const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
     const bondsDistanceMapSubarray = wasm.HEAPF32.subarray(bondsDistanceMapPointer, bondsDistanceMapPointer + 10000) as Float32Array
-    
+    console.log("Parsing files")
     lines.forEach(line => {
       line = line.trim()
       if (line.startsWith("#/")) {
@@ -388,7 +388,7 @@ export const simulationModel: SimulationModel = {
       await localforage.setItem(`${simulation.id}/${file.fileName}`, createLocalForageObject(file.fileName, `${simulation.id}/${file.fileName}`, type, content))
     }
   }),
-  run: thunk(async (actions, payload, {getStoreState}) => {
+  run: thunk(async (actions, payload, {getStoreState, getStoreActions}) => {
     // @ts-ignore
     const simulation = getStoreState().simulation.simulation as Simulation
     if (!simulation) {
@@ -400,6 +400,15 @@ export const simulationModel: SimulationModel = {
       return
     }
 
+    // @ts-ignore
+    getStoreActions().render.resetParticleStyles()
+    actions.setLastCommand(undefined)
+    actions.setTimesteps(0)
+    actions.setRunTimesteps(0)
+    actions.setRunTotalTimesteps(0)
+    actions.setShowConsole(false)
+    actions.resetLammpsOutput()
+
     await actions.syncFilesWasm(undefined)
     
     lammps.start()
@@ -408,10 +417,12 @@ export const simulationModel: SimulationModel = {
 
     const inputScriptFile = simulation.files.filter(file => file.fileName===simulation.inputScript)[0]
     if (inputScriptFile.content) {
+      console.log("Will run atomify commands now")
       actions.extractAndApplyAtomifyCommands(inputScriptFile.content)
     }
     
     await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
+
     const errorMessage = lammps.getErrorMessage()
     if (errorMessage) {
       if (errorMessage.includes("Atomify::canceled")) {
@@ -441,6 +452,7 @@ export const simulationModel: SimulationModel = {
   newSimulation: thunk(async (actions, simulation: Simulation, {getStoreState, getStoreActions}) => {
     // @ts-ignore
     window.simulation = simulation
+    // TODO: There should be a reset thunk
     actions.setLastCommand(undefined)
     actions.setTimesteps(0)
     actions.setRunTimesteps(0)
@@ -449,7 +461,7 @@ export const simulationModel: SimulationModel = {
     actions.setSimulation(simulation)
     actions.resetLammpsOutput()
     // @ts-ignore
-    getStoreActions().render.resetParticleStyle()
+    getStoreActions().render.resetParticleStyles()
 
     // @ts-ignore
     const wasm = window.wasm
