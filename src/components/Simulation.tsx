@@ -6,6 +6,7 @@ import { LammpsWeb, Compute, Fix } from '../types';
 import { notification } from 'antd';
 import {SimulationStatus} from '../store/simulation'
 import { ModifierInput, ModifierOutput } from '../modifiers/types';
+import { time_event, track } from '../utils/metrics';
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
@@ -193,10 +194,12 @@ const SimulationComponent = () => {
           text: '',
           progress: 0.3
         })
+        time_event("WASM.Load")
         createModule({
           print: onPrint, 
           printErr: onPrint,
         }).then((Module: any) => {
+          track("WASM.Load")
           setStatus({
             title: 'Downloading LAMMPS ...',
             text: '',
