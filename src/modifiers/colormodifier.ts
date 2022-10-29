@@ -68,15 +68,19 @@ class ColorModifier extends Modifier {
     const particleStyles = state.render.particleStyles
     // @ts-ignore
     const visualizer: Visualizer = window.visualizer
-    for(let i = 0; i < output.particles.count; i++) {
-      const realIndex = output.particles.indices[i]
-      const type = output.particles.types[i]
-      let atomType = particleStyles[type]
-      if (!atomType) {
-        atomType = AtomTypes[type % AtomTypes.length]
+    try {
+      for(let i = 0; i < output.particles.count; i++) {
+        const realIndex = output.particles.indices[i]
+        const type = output.particles.types[i]
+        let atomType = particleStyles[type]
+        if (!atomType) {
+          atomType = AtomTypes[type % AtomTypes.length]
+        }
+        output.particles.radii[i] = 0.25 * state.render.particleRadius * atomType.radius
+        visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
       }
-      output.particles.radii[i] = 0.25 * state.render.particleRadius * atomType.radius
-      visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
+    } catch (e) {
+      console.log("Error setting colors: ", e)
     }
   }
 
