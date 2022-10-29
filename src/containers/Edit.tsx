@@ -1,5 +1,5 @@
 import {useCallback} from 'react'
-import {useStoreActions, useStoreState} from '../hooks'
+import {useStoreState} from '../hooks'
 import MonacoEditor, {monaco} from 'react-monaco-editor'
 
 

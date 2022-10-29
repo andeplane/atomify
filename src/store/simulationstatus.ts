@@ -26,6 +26,7 @@ export interface SimulationStatusModel {
   setRunType:  Action<SimulationStatusModel, string>
   setBox: Action<SimulationStatusModel, THREE.Matrix3>
   setOrigo: Action<SimulationStatusModel, THREE.Vector3>
+  reset: Action<SimulationStatusModel>
 }
 
 export const simulationStatusModel: SimulationStatusModel = {
@@ -73,5 +74,11 @@ export const simulationStatusModel: SimulationStatusModel = {
   }),
   setOrigo: action((state, value: THREE.Vector3) => {
     state.origo = value
+  }),
+  reset: action((state) => {
+    state.lastCommand = undefined
+    state.timesteps = 0
+    state.runTimesteps = 0
+    state.runTotalTimesteps = 0
   })
 };

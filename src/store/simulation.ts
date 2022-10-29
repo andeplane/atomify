@@ -356,10 +356,7 @@ export const simulationModel: SimulationModel = {
     const allActions = getStoreActions() as any
 
     allActions.render.resetParticleStyles()
-    allActions.simulationStatus.setLastCommand(undefined)
-    allActions.simulationStatus.setTimesteps(0)
-    allActions.simulationStatus.setRunTimesteps(0)
-    allActions.simulationStatus.setRunTotalTimesteps(0)
+    allActions.simulationStatus.reset()
     actions.setShowConsole(false)
     actions.resetLammpsOutput()
 
@@ -409,11 +406,7 @@ export const simulationModel: SimulationModel = {
 
     // @ts-ignore
     window.simulation = simulation
-    // TODO: There should be a reset thunk
-    allActions.simulationStatus.setLastCommand(undefined)
-    allActions.simulationStatus.setTimesteps(0)
-    allActions.simulationStatus.setRunTimesteps(0)
-    allActions.simulationStatus.setRunTotalTimesteps(0)
+    allActions.simulationStatus.reset()
     actions.setShowConsole(false)
     actions.setSimulation(simulation)
     actions.resetLammpsOutput()
