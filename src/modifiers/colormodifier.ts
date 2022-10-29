@@ -1,6 +1,5 @@
 import Modifier from './modifier'
 import { ModifierInput, ModifierOutput } from './types'
-import {StoreModel} from '../store/model'
 import colormap from 'colormap'
 import {AtomType} from '../utils/atomtypes'
 import * as THREE from 'three'
