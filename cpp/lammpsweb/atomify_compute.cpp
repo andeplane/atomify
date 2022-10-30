@@ -41,8 +41,9 @@ Data1D &Compute::ensureExists(std::string name) {
 }
 
 bool Compute::trySync(LAMMPS_NS::ComputeTemp *compute) {
-    if(!compute) return false;
-
+  if(!compute) return false;
+  
+  if(m_compute->scalar_flag == 1) {
     double value = compute->scalar;
     m_hasScalarData = true;
     m_scalarValue = value;
@@ -53,7 +54,8 @@ bool Compute::trySync(LAMMPS_NS::ComputeTemp *compute) {
     data.label = m_name;
     float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
     data.add(simulationTime, value);
-    return true;
+  }
+  return true;
 }
 
 bool Compute::syncPerAtom() {
