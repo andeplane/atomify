@@ -42,8 +42,6 @@ const SimulationSummary = () => {
   const computes = useStoreState(state => state.simulationStatus.computes)
   const fixes = useStoreState(state => state.simulationStatus.fixes)
 
-  const showFigureForCompute = visibleFigure ? computes[visibleFigure] : undefined
-
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
       setSimulationSettings({...simulationSettings, speed: value})
@@ -58,6 +56,10 @@ const SimulationSummary = () => {
       render: (value, record) => {
         if (record.isPerAtom) {
           return <Button style={{padding: 0}} type="link" onMouseEnter={() => {colorModifier.computeName=value}} onMouseLeave={() => {colorModifier.computeName=undefined}}>{value}</Button>
+        } else if (record.data1D != null) {
+          return <Button style={{padding: 0}} type="link" onClick={() => {
+            setVisibleFigure(value)
+          }} >{value}</Button>
         } else {
           return (<>{value}</>)
         }
@@ -179,7 +181,7 @@ const SimulationSummary = () => {
       {visibleSettings==='Bonds' && <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Particles' && <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Colors' && <ColorModifierSettings onClose={() => setVisibleSettings(undefined)} />}
-      {showFigureForCompute && <Figure compute={showFigureForCompute} />}
+      {visibleFigure && computes[visibleFigure] && <Figure compute={computes[visibleFigure]} />}
     </>
   )
 }

@@ -75,14 +75,14 @@ export type LMPCompute = {
 
 export type Data1D = {
   data: number[][]
-  label: string
+  labels: string[]
 }
 
 export type Compute = {
   name: string
   type: ComputeType
   isPerAtom: boolean
-  data1D: {[key: string]: Data1D}
+  data1D?: Data1D
   xLabel: string
   yLabel: string
   lmpCompute: LMPCompute

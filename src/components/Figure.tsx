@@ -14,23 +14,28 @@ interface FigureProps {
   compute: Compute
 }
 const Figure = ({compute} : FigureProps) => {
-  // const [graph, setGraph] = useState<Dygraph|undefined>()
-  
-  // useEffect(() => { 
-  //   const data: number[][] = []
-  //   xValues.forEach((value, index) => {
-  //     data.push([value, yValues[index]])
-  //   })
+  const [graph, setGraph] = useState<Dygraph>()
 
-  //   const g = new Dygraph('graph', data, {labels: [xLabel, yLabel], xlabel: xLabel, ylabel: yLabel, title, legend: 'always'});
-  //   // setGraph(g)
+  useEffect(() => {
+    if (compute.data1D) {
+      console.log("Data: ", compute.data1D?.data)
+      console.log("Labels: ", compute.data1D.labels)
+      const g = new Dygraph('graph', compute.data1D.data, {
+        labels: compute.data1D.labels,
+        xlabel: compute.xLabel,
+        ylabel: compute.yLabel,
+        title: compute.name,
+        legend: 'always'
+      });
+      setGraph(g)
+    }
 
-  // }, [xValues, yValues, xLabel, yLabel, title])
-  // return (<Modal open>
-  //   <Container>
-  //   <div id="graph" />
-  //   </Container>
-  // </Modal>)
-  return (<></>)
+  }, [compute])
+
+  return (<Modal open>
+    <Container>
+    <div id="graph" />
+    </Container>
+  </Modal>)
 }
 export default Figure
