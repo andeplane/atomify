@@ -125,10 +125,9 @@ const SimulationComponent = () => {
         // @ts-ignore
         postTimestepModifiers.forEach(modifier => modifier.run(modifierInput, modifierOutput))
         if (modifierOutput.colorsUpdated) {
-          console.log("Colors are updated!")
           setParticleStylesUpdated(false)
         }
-        // setComputes(modifierOutput.computes)
+        setComputes(modifierOutput.computes)
         
         if (selectedMenu === 'view') {
           if (modifierOutput.particles !== particles) {

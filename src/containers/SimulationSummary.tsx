@@ -29,7 +29,7 @@ const fixesColumns: ColumnsType<Fix> = [
 const SimulationSummary = () => {
   const [visibleSettings, setVisibleSettings] = useState<string|undefined>()
   const [visibleFigure, setVisibleFigure] = useState<string|undefined>()
-  const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors"])
+  const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors", "Computes"])
 
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const modifiers = useStoreState(state => state.processing.postTimestepModifiers)
@@ -74,7 +74,6 @@ const SimulationSummary = () => {
     }
   ];
   
-  // rowSelection objects indicates the need for row selection
   const rowSelection: TableRowSelection<Modifier> = {
     onChange: (selectedRowKeys, selectedRows) => {
       modifiers.forEach(modifier => {

@@ -68,8 +68,8 @@ export type LMPCompute = {
   sync: () => void
   getXLabel: () => string
   getYLabel: () => string
-  getData1DNames: () => string
-  getData1D: () => CPPArray<Data1D>
+  getData1DNames: () => CPPArray<string>
+  getData1D: () => CPPArray<LMPData1D>
   execute: () => boolean
 }
 
@@ -86,6 +86,13 @@ export type Compute = {
   xLabel: string
   yLabel: string
   lmpCompute: LMPCompute
+}
+
+export type LMPData1D = {
+  getLabel: () => string
+  getXValuesPointer: () => number
+  getYValuesPointer: () => number
+  getNumPoints: () => number
 }
 
 export type LMPFix = {

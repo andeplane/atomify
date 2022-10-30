@@ -86,11 +86,8 @@ class ColorModifier extends Modifier {
     if ( (this.previousColoringMethod === 'type' && !input.renderState.particleStylesUpdated) || !input.renderState.visualizer) {
       return
     }
-    console.log("Cool!")
     const particleStyles = input.renderState.particleStyles
     const visualizer = input.renderState.visualizer
-    // @ts-ignore
-    window.particleStyles = particleStyles
     
     for(let i = 0; i < output.particles.count; i++) {
       const realIndex = output.particles.indices[i]
@@ -102,7 +99,6 @@ class ColorModifier extends Modifier {
       output.particles.radii[i] = 0.25 * input.renderState.particleRadius * atomType.radius
       visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
     }
-    console.log("Did actually set all colors")
     output.particles.markNeedsUpdate()
     output.colorsUpdated = true
     this.previousColoringMethod = 'type'
@@ -112,7 +108,6 @@ class ColorModifier extends Modifier {
     if (this.computeName) {
       this.runByProperty(input, output)
     } else {
-      console.log("Will color by type")
       this.runByType(input, output)
     } 
   }

@@ -77,6 +77,9 @@ bool Compute::syncPerAtom() {
 }
 
 bool Compute::execute() {
+  if( (m_compute->peflag||m_compute->peatomflag) && m_lmp->update->ntimestep != m_lmp->update->eflag_global) return false;
+  if( (m_compute->pressflag||m_compute->pressatomflag) && m_lmp->update->ntimestep != m_lmp->update->vflag_global) return false;
+  
   bool didCompute = false;
   if (m_compute->scalar_flag == 1) {
     m_compute->compute_scalar();
