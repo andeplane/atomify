@@ -2,7 +2,7 @@ import {useCallback, useEffect} from 'react'
 import {useStoreActions, useStoreState} from '../hooks'
 import * as THREE from 'three'
 import createModule from "../wasm/lammps.mjs";
-import { LammpsWeb, Compute, Fix } from '../types';
+import { LammpsWeb } from '../types';
 import { notification } from 'antd';
 import {SimulationStatus} from '../store/simulation'
 import { ModifierInput, ModifierOutput } from '../modifiers/types';
@@ -58,6 +58,9 @@ const SimulationComponent = () => {
 
   
   const onPrint = useCallback( (text: string) => {
+    if (text.includes('Atomify::canceled')) {
+      // Ignore this one
+    }
     //@ts-ignore
     addLammpsOutput(text)
     console.log(text)
@@ -94,19 +97,6 @@ const SimulationComponent = () => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm && simulation) {
-        // const lmpFixes = lammps.getFixes()
-        
-        // const fixes: Fix[] = []
-        // for (let i = 0; i < lmpFixes.size(); i++) {
-        //   const lmpFix = lmpFixes.get(i)
-
-        //   fixes.push({
-        //     name: lmpFix.getName(),
-        //     type: lmpFix.getType()
-        //   })
-        // }
-        // setFixes(fixes)
-        
         const modifierInput: ModifierInput = {
           lammps,
           wasm,
@@ -174,7 +164,7 @@ const SimulationComponent = () => {
     setParticles, setParticleStylesUpdated, setBonds, 
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
     setSimulationStatus, setComputes, setFixes, 
-    setSimulationSettings, setTimesteps
+    setSimulationSettings, setTimesteps, computes, fixes
     ])
 
   useEffect(
