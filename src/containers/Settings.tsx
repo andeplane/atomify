@@ -1,6 +1,7 @@
 import {Modal, Checkbox, Slider, Tabs, Table} from 'antd'
 import { useStoreState, useStoreActions } from '../hooks';
 import type { ColumnsType } from 'antd/es/table';
+import {track} from '../utils/metrics'
 
 interface SettingsProps {
   open?: boolean
@@ -50,13 +51,19 @@ const Settings = ({open, onClose}: SettingsProps) => {
   const renderRenderSettings = () => (
     <>
       <p>
-        <Checkbox checked={renderSettings.ssao} onChange={(e) => setRenderSettings({...renderSettings, ssao: e.target.checked})}>
+        <Checkbox checked={renderSettings.ssao} onChange={(e) => {
+          track('Settings.Render.SSAO', {value: e.target.checked})
+          setRenderSettings({...renderSettings, ssao: e.target.checked})}
+        }>
           Enable SSAO
         </Checkbox>
       </p>
       <div>
         Brightness
-        <Slider min={0.1} max={2.0} step={0.1} defaultValue={renderSettings.brightness} onChange={(value) => setRenderSettings({...renderSettings, brightness: value})} />
+        <Slider min={0.1} max={2.0} step={0.1} defaultValue={renderSettings.brightness} onChange={(value) => {
+          track('Settings.Render.Brightness', {value})
+          setRenderSettings({...renderSettings, brightness: value})}
+        }/>
       </div>
     </>
   )

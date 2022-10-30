@@ -1,6 +1,7 @@
 import { action, Action } from 'easy-peasy';
 import {Particles, Bonds, Visualizer} from 'omovi'
 import {AtomType} from '../utils/atomtypes'
+import {track} from '../utils/metrics'
 
 interface ParticleStyle {
   index: number,
@@ -49,9 +50,11 @@ export const renderModel: RenderModel = {
     state.bonds = value
   }),
   setBondRadius: action((state, value: number) => {
+    track('Settings.Render.BondRadius', {value})
     state.bondRadius = value
   }),
   setParticleRadius: action((state, value: number) => {
+    track('Settings.Render.ParticleRadius', {value})
     state.particleRadius = value
   }),
   resetParticleStyles: action((state) => {

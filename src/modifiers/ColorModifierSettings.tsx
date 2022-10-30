@@ -1,6 +1,7 @@
 import {Modal, Select} from 'antd'
 import { useStoreState, useStoreActions } from '../hooks';
 import {useCallback} from 'react'
+import {track} from '../utils/metrics'
 import ColorModifier from './colormodifier';
 const {Option, OptGroup} = Select
 
@@ -14,8 +15,10 @@ const ColorModifierSettings = ({onClose}:{onClose: () => void}) => {
   
   const onChange = useCallback((value: string) => {
     if (value !== "type") {
+      track('Settings.Render.ColorBy', {value: 'Compute', name: 'ParticleType'})
       colorModifier.computeName = value
     } else {
+      track('Settings.Render.ColorBy', {value: 'ParticleType'})
       colorModifier.computeName = undefined
       setParticleStylesUpdated(true)
     }

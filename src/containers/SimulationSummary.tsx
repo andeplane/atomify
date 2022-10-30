@@ -11,7 +11,7 @@ import SyncParticlesSettings from '../modifiers/SyncParticlesSettings';
 import ColorModifierSettings from '../modifiers/ColorModifierSettings';
 import ColorModifier from '../modifiers/colormodifier';
 import Figure from '../components/Figure';
-
+import {track} from '../utils/metrics'
 interface SimulationSummaryType {
   key: React.ReactNode
   name: string
@@ -44,6 +44,7 @@ const SimulationSummary = () => {
   const computeForFigure = visibleFigure ? computes[visibleFigure] : undefined
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
+      track('SimulationSpeed.Change', {speed: value})
       setSimulationSettings({...simulationSettings, speed: value})
     }
   }
@@ -58,6 +59,7 @@ const SimulationSummary = () => {
           return <Button style={{padding: 0}} type="link" onMouseEnter={() => {colorModifier.computeName=value}} onMouseLeave={() => {colorModifier.computeName=undefined}}>{value}</Button>
         } else if (record.data1D != null) {
           return <><Button style={{padding: 0}} type="link" onClick={() => {
+            track('Modifier.Show', {type: 'Compute', name: value})
             setVisibleFigure(value)
           }} >{value}</Button> {' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>
         } else {

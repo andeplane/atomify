@@ -8,6 +8,8 @@ import SimulationSummaryOverlay from '../components/SimulationSummaryOverlay'
 import SimulationSummary from './SimulationSummary'
 import {SettingOutlined, AreaChartOutlined} from '@ant-design/icons'
 import styled from "styled-components";
+import {track} from '../utils/metrics'
+
 const { Header, Sider } = Layout;
 
 interface ViewProps {
@@ -194,10 +196,20 @@ const View = ({visible}: ViewProps) => {
         </Sider>
       }
       <AnalyzeButtonContainer>
-        <AreaChartOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 70, zIndex: 1000}} onClick={() => setShowAnalyze(!showAnalyze)} />
+        <AreaChartOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 70, zIndex: 1000}} onClick={() => {
+          if (!showAnalyze) {
+            track('SimulationSummary.Open')
+          } else {
+            track('SimulationSummary.Close')
+          }
+          setShowAnalyze(!showAnalyze)
+        }}/>
       </AnalyzeButtonContainer>
       <SettingsButtonContainer>
-        <SettingOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 20, zIndex: 1000}} onClick={() => setShowSettings(true)} />
+        <SettingOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 20, zIndex: 1000}} onClick={() => {
+          track('Settings.Open')
+          setShowSettings(true)
+        }}/>
       </SettingsButtonContainer>
       </Layout>
   )
