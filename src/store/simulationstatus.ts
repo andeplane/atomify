@@ -80,5 +80,7 @@ export const simulationStatusModel: SimulationStatusModel = {
     state.timesteps = 0
     state.runTimesteps = 0
     state.runTotalTimesteps = 0
+    state.computes = {}
+    state.fixes = {}
   })
 };
