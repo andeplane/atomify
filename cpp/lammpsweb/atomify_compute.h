@@ -31,7 +31,7 @@ struct Compute {
   ComputeType m_type;
   std::string m_xLabel = "Time";
   std::string m_yLabel = "Value";
-  bool m_hasScalarData = true;
+  bool m_hasScalarData = false;
   float m_scalarValue = 0;
   float m_thing = 0;
   std::vector<float> m_perAtomData;
