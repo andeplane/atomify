@@ -24,6 +24,7 @@ class SyncComputesModifier extends Modifier {
       const lmpCompute = lmpComputes.get(i)
       const name = lmpCompute.getName()
       let compute = input.computes[name]
+      
       if (compute == null) {
         // Need to create a new one 
         compute = {
@@ -32,14 +33,20 @@ class SyncComputesModifier extends Modifier {
           isPerAtom: lmpCompute.getIsPerAtom(),
           xLabel: lmpCompute.getXLabel(),
           yLabel: lmpCompute.getYLabel(),
+          hasScalarData: lmpCompute.hasScalarData(),
+          scalarValue: 0,
           lmpCompute,
         }
+      } else {
+        // @ts-ignore
+        lmpCompute.delete()
       }
-      
+
       if (compute.lmpCompute.execute()) {
         compute.lmpCompute.sync()
-        compute.xLabel = lmpCompute.getXLabel()
-        compute.yLabel = lmpCompute.getYLabel()
+        compute.xLabel = compute.lmpCompute.getXLabel()
+        compute.yLabel = compute.lmpCompute.getYLabel()
+        compute.scalarValue = compute.lmpCompute.getScalarValue()
         const data1DNames = compute.lmpCompute.getData1DNames()
         const data1DVector =  compute.lmpCompute.getData1D()
         if (data1DNames.size() > 0) {
@@ -77,6 +84,8 @@ class SyncComputesModifier extends Modifier {
       }
       
       output.computes[name] = compute
+      //@ts-ignore
+      window.output = output
     }
   }
 }

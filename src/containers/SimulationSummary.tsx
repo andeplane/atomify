@@ -57,11 +57,11 @@ const SimulationSummary = () => {
         if (record.isPerAtom) {
           return <Button style={{padding: 0}} type="link" onMouseEnter={() => {colorModifier.computeName=value}} onMouseLeave={() => {colorModifier.computeName=undefined}}>{value}</Button>
         } else if (record.data1D != null) {
-          return <Button style={{padding: 0}} type="link" onClick={() => {
+          return <><Button style={{padding: 0}} type="link" onClick={() => {
             setVisibleFigure(value)
-          }} >{value}</Button>
+          }} >{value}</Button> {' ' + (record.hasScalarData ? record.scalarValue.toFixed(1).toString() : '')}</>
         } else {
-          return (<>{value}</>)
+          return (<>{value + ' ' + (record.hasScalarData ? record.scalarValue.toFixed(1).toString() : '')}</>)
         }
       }
     }

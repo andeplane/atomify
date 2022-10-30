@@ -19,7 +19,6 @@ void Compute::sync() {
     double value = m_compute->scalar;
     m_hasScalarData = true;
     m_scalarValue = value;
-
     Data1D &data = ensureExists(std::string("scalar"));
     m_xLabel = "Time";
     m_yLabel = "Value";
@@ -47,7 +46,7 @@ bool Compute::trySync(LAMMPS_NS::ComputeTemp *compute) {
     double value = compute->scalar;
     m_hasScalarData = true;
     m_scalarValue = value;
-
+    
     Data1D &data = ensureExists(std::string("Temperature"));
     m_xLabel = "Time";
     m_yLabel = "Temperature"; 
@@ -102,4 +101,8 @@ bool Compute::execute() {
     didCompute = true;
   }
   return didCompute;
+}
+
+float Compute::getScalarValue() {
+  return m_scalarValue;
 }

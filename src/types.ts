@@ -65,12 +65,16 @@ export type LMPCompute = {
   getType: () => ComputeType
   getPerAtomData: () => number
   getIsPerAtom: () => boolean
+  hasScalarData: () => boolean
+  getScalarValue: () => number
   sync: () => void
   getXLabel: () => string
   getYLabel: () => string
   getData1DNames: () => CPPArray<string>
   getData1D: () => CPPArray<LMPData1D>
   execute: () => boolean
+  thisPointer: () => number
+  delete: () => void
 }
 
 export type Data1D = {
@@ -82,6 +86,8 @@ export type Compute = {
   name: string
   type: ComputeType
   isPerAtom: boolean
+  hasScalarData: boolean
+  scalarValue: number
   data1D?: Data1D
   xLabel: string
   yLabel: string
