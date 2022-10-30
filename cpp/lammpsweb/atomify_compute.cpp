@@ -18,7 +18,6 @@ void Compute::sync() {
 
   if(m_compute->scalar_flag == 1) {
     double value = m_compute->scalar;
-    m_hasScalarData = true;
     m_scalarValue = value;
     Data1D &data = ensureExists(std::string("scalar"));
     m_xLabel = "Time";
@@ -46,7 +45,6 @@ bool Compute::trySync(LAMMPS_NS::ComputeTemp *compute) {
   
   if(m_compute->scalar_flag == 1) {
     double value = compute->scalar;
-    m_hasScalarData = true;
     m_scalarValue = value;
     
     Data1D &data = ensureExists(std::string("Temperature"));
@@ -61,6 +59,7 @@ bool Compute::trySync(LAMMPS_NS::ComputeTemp *compute) {
 
 bool Compute::trySync(LAMMPS_NS::ComputeRDF *compute) {
   if(!compute) return false;
+  m_clearPerSync = true;
   int numBins = compute->size_array_rows;         // rows in global array
   int numColumns = compute->size_array_cols;      // columns in global array
   int numPairs = (numColumns - 1)/2;

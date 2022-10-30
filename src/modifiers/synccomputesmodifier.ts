@@ -34,11 +34,12 @@ class SyncComputesModifier extends Modifier {
           xLabel: lmpCompute.getXLabel(),
           yLabel: lmpCompute.getYLabel(),
           hasScalarData: lmpCompute.hasScalarData(),
+          clearPerSync: lmpCompute.getClearPerSync(),
           scalarValue: 0,
           lmpCompute,
         }
       } else {
-        // @ts-ignore
+        // We won't need this object
         lmpCompute.delete()
       }
 
@@ -47,6 +48,7 @@ class SyncComputesModifier extends Modifier {
         compute.xLabel = compute.lmpCompute.getXLabel()
         compute.yLabel = compute.lmpCompute.getYLabel()
         compute.scalarValue = compute.lmpCompute.getScalarValue()
+        compute.clearPerSync = compute.lmpCompute.getClearPerSync()
         const data1DNames = compute.lmpCompute.getData1DNames()
         const data1DVector =  compute.lmpCompute.getData1D()
         if (data1DNames.size() === 0) {
@@ -61,7 +63,10 @@ class SyncComputesModifier extends Modifier {
         }
         
         if (compute.data1D) {
-          compute.data1D.data = []
+          if (compute.clearPerSync) {
+            // For histograms (compute rdf etc) we don't have time as x axis, so we clear every time
+            compute.data1D.data = []
+          }
           const lengthBeforeWeStart = compute.data1D.data.length // Used to avoid coping all data every time
 
           if (compute.data1D.labels.length === 0) {

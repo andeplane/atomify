@@ -32,9 +32,8 @@ struct Compute {
   ComputeType m_type;
   std::string m_xLabel = "Time";
   std::string m_yLabel = "Value";
-  bool m_hasScalarData = false;
   float m_scalarValue = 0;
-  float m_thing = 0;
+  bool m_clearPerSync = false;
   std::vector<float> m_perAtomData;
   std::vector<Data1D> m_data1D;
   std::vector<std::string> m_data1DNames;
@@ -45,13 +44,11 @@ struct Compute {
   std::string getYLabel() { return m_yLabel; }
   std::string getName() { return m_name; }
   Data1D &ensureExists(std::string name);
-  float getThing() { return m_thing; }
-  void setThing(float a) { m_thing = a;}
+  bool getClearPerSync() { return m_clearPerSync; }
   int getType() { return m_type; }
   bool getIsPerAtom() { return m_compute->peratom_flag; }
-  bool hasScalarData() { return m_hasScalarData; }
+  bool hasScalarData() { return m_compute->scalar_flag; }
   float getScalarValue();
-  long thisPointer() { return reinterpret_cast<long>(this); }
   long getPerAtomData() { return reinterpret_cast<long>(m_perAtomData.data()); }
   void sync();
   bool trySync(LAMMPS_NS::ComputeTemp *compute);
