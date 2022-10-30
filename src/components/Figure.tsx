@@ -21,7 +21,7 @@ const Figure = ({compute, onClose} : FigureProps) => {
         title: compute.name,
         width: 700,
         height: 500,
-        legend: 'always',
+        legend: 'always'
       });
       setGraph(g)
       //@ts-ignore
