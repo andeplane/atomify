@@ -1,41 +1,41 @@
-import {Modal} from 'antd'
+import {Modal, Empty} from 'antd'
 import { Compute } from '../types'
 import { useEffect, useState } from 'react'
+import {useStoreState} from '../hooks'
 import Dygraph from 'dygraphs'
-
-import styled from 'styled-components'
-const Container = styled.div`
-  #darkbg .dygraph-axis-label { color: white; }
-  .dygraph-legend { text-align: right; }
-  #darkbg .dygraph-legend { background-color: #101015; }
-`
 
 interface FigureProps {
   compute: Compute
+  onClose: () => void
 }
-const Figure = ({compute} : FigureProps) => {
+const Figure = ({compute, onClose} : FigureProps) => {
   const [graph, setGraph] = useState<Dygraph>()
+  const timesteps = useStoreState(state => state.simulationStatus.timesteps)
 
   useEffect(() => {
-    if (compute.data1D) {
-      console.log("Data: ", compute.data1D?.data)
-      console.log("Labels: ", compute.data1D.labels)
+    if (compute.data1D && !graph) {
       const g = new Dygraph('graph', compute.data1D.data, {
         labels: compute.data1D.labels,
         xlabel: compute.xLabel,
         ylabel: compute.yLabel,
         title: compute.name,
-        legend: 'always'
+        legend: 'always',
       });
       setGraph(g)
+      //@ts-ignore
+      window.compute = compute
     }
+  }, [compute, graph])
 
-  }, [compute])
-
-  return (<Modal open>
-    <Container>
-    <div id="graph" />
-    </Container>
+  useEffect(() => {
+    if (graph && compute.data1D) {
+      graph.updateOptions( { 'file': compute.data1D.data } );
+    }
+  }, [graph, compute, timesteps])
+  
+  return (<Modal open footer={null} onCancel={onClose}>
+      <div id="graph" />
+      {!graph && <Empty />}
   </Modal>)
 }
 export default Figure

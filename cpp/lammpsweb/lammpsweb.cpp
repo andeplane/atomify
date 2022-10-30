@@ -566,6 +566,7 @@ void LAMMPSWeb::stop() {
   if(m_lmp) {
     lammps_close((void*)m_lmp);
     m_lmp = nullptr;
+    m_computes.clear();
   }
 }
 

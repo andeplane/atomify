@@ -4,7 +4,7 @@ import {InputNumber, Table, Row, Col, Button} from 'antd'
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
 import {Compute, Fix} from '../types'
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import Modifier from '../modifiers/modifier'
 import SyncBondsSettings from '../modifiers/SyncBondsSettings';
 import SyncParticlesSettings from '../modifiers/SyncParticlesSettings';
@@ -41,7 +41,7 @@ const SimulationSummary = () => {
 
   const computes = useStoreState(state => state.simulationStatus.computes)
   const fixes = useStoreState(state => state.simulationStatus.fixes)
-
+  const computeForFigure = visibleFigure ? computes[visibleFigure] : undefined
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
       setSimulationSettings({...simulationSettings, speed: value})
@@ -131,14 +131,6 @@ const SimulationSummary = () => {
     ]
   }
 
-  const x = new Float32Array(100)
-  const y = new Float32Array(100)
-  for (let i = 0; i < x.length; i++) {
-    x[i] = 2 * Math.PI * i/x.length
-    y[i] = Math.sin(x[i])
-  }
-
-  
   return (            
     <>
       <Table
@@ -181,7 +173,7 @@ const SimulationSummary = () => {
       {visibleSettings==='Bonds' && <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Particles' && <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Colors' && <ColorModifierSettings onClose={() => setVisibleSettings(undefined)} />}
-      {visibleFigure && computes[visibleFigure] && <Figure compute={computes[visibleFigure]} />}
+      {computeForFigure && <Figure compute={computeForFigure} onClose={() => setVisibleFigure(undefined)} />}
     </>
   )
 }

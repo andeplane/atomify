@@ -23,7 +23,7 @@ private:
   std::map<std::string,Compute> m_computes;
   double *m_cellMatrix;
   double *m_origo;
-  float *m_bondsPosition1;
+  float *m_bondsPosition1; // TODO: use std::vector
   float *m_bondsPosition2;
   float *m_bondsDistanceMap;
   float *m_particlesPosition;

@@ -31,16 +31,16 @@ struct Compute {
   ComputeType m_type;
   bool m_hasScalarData = false;
   float m_scalarValue = 0;
-  std::string xLabel;
-  std::string yLabel;
+  std::string m_xLabel = "Time";
+  std::string m_yLabel = "Value";
   std::vector<float> m_perAtomData;
   std::vector<Data1D> m_data1D;
   std::vector<std::string> m_data1DNames;
   
   std::vector<std::string> getData1DNames() { return m_data1DNames; }
   std::vector<Data1D> getData1D() { return m_data1D; }
-  std::string getXLabel() { return xLabel; }
-  std::string getYLabel() { return yLabel; }
+  std::string getXLabel() { return m_xLabel; }
+  std::string getYLabel() { return m_yLabel; }
   std::string getName() { return m_name; }
   Data1D &ensureExists(std::string name);
   int getType() { return m_type; }

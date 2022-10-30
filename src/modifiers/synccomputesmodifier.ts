@@ -35,10 +35,11 @@ class SyncComputesModifier extends Modifier {
           lmpCompute,
         }
       }
-      compute.xLabel = lmpCompute.getXLabel()
-      compute.yLabel = lmpCompute.getYLabel()
+      
       if (compute.lmpCompute.execute()) {
         compute.lmpCompute.sync()
+        compute.xLabel = lmpCompute.getXLabel()
+        compute.yLabel = lmpCompute.getYLabel()
         const data1DNames = compute.lmpCompute.getData1DNames()
         const data1DVector =  compute.lmpCompute.getData1D()
         if (data1DNames.size() > 0) {

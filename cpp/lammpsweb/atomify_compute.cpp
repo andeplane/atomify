@@ -21,8 +21,8 @@ void Compute::sync() {
     m_scalarValue = value;
 
     Data1D &data = ensureExists(std::string("scalar"));
-    xLabel = "Time";
-    yLabel = "Value";
+    m_xLabel = "Time";
+    m_yLabel = "Value";
     data.label = m_name;
     float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
     data.add(simulationTime, value);
@@ -43,13 +43,14 @@ Data1D &Compute::ensureExists(std::string name) {
 
 bool Compute::trySync(LAMMPS_NS::ComputeTemp *compute) {
     if(!compute) return false;
+
     double value = compute->scalar;
     m_hasScalarData = true;
     m_scalarValue = value;
 
     Data1D &data = ensureExists(std::string("Temperature"));
-    xLabel = "Time";
-    yLabel = "Temperature";
+    m_xLabel = "Time";
+    m_yLabel = "Temperature"; 
     data.label = m_name;
     float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
     data.add(simulationTime, value);
