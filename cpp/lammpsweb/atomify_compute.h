@@ -3,8 +3,11 @@
 #include <string>
 #include "compute.h"
 #include "compute_ke_atom.h"
-#include "compute_temp.h"
+#include "compute_pressure.h"
+#include "compute_vacf.h"
 #include "compute_rdf.h"
+#include "compute_msd.h"
+
 #include "lammps.h"
 #include "data1d.h"
 
@@ -51,8 +54,10 @@ struct Compute {
   float getScalarValue();
   long getPerAtomData() { return reinterpret_cast<long>(m_perAtomData.data()); }
   void sync();
-  bool trySync(LAMMPS_NS::ComputeTemp *compute);
   bool trySync(LAMMPS_NS::ComputeRDF *compute);
+  bool trySync(LAMMPS_NS::ComputeMSD *compute);
+  bool trySync(LAMMPS_NS::ComputeVACF *compute);
+  bool trySync(LAMMPS_NS::ComputePressure *compute);
   bool execute();
   bool syncPerAtom();
 };

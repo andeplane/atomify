@@ -59,9 +59,9 @@ const SimulationSummary = () => {
         } else if (record.data1D != null) {
           return <><Button style={{padding: 0}} type="link" onClick={() => {
             setVisibleFigure(value)
-          }} >{value}</Button> {' ' + (record.hasScalarData ? record.scalarValue.toFixed(1).toString() : '')}</>
+          }} >{value}</Button> {' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>
         } else {
-          return (<>{value + ' ' + (record.hasScalarData ? record.scalarValue.toFixed(1).toString() : '')}</>)
+          return (<>{value + ' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>)
         }
       }
     }
