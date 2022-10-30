@@ -50,7 +50,9 @@ const SimulationComponent = () => {
   const setSimulationStatus = useStoreActions(actions => actions.simulation.setSimulationStatus)
   const setRunTotalTimesteps = useStoreActions(actions => actions.simulationStatus.setRunTotalTimesteps)
   const setLastCommand = useStoreActions(actions => actions.simulationStatus.setLastCommand)
+  const computes = useStoreState(state => state.simulationStatus.computes)
   const setComputes = useStoreActions(actions => actions.simulationStatus.setComputes)
+  const fixes = useStoreState(state => state.simulationStatus.fixes)
   const setFixes = useStoreActions(actions => actions.simulationStatus.setFixes)
   const setParticleStylesUpdated = useStoreActions(actions => actions.render.setParticleStylesUpdated)
 
@@ -92,31 +94,18 @@ const SimulationComponent = () => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm && simulation) {
-        const lmpComputes = lammps.getComputes()
-        const lmpFixes = lammps.getFixes()
-        const computes: Compute[] = []
-        for (let i = 0; i < lmpComputes.size(); i++) {
-          // This is a hack because we can't pass these functions to other objects for some reason,
-          // and we can't call the c++ functions outside main sync thread, so want to resolve name and type 
-          // so UI can render them
-          const lmpCompute = (lmpComputes.get(i) as unknown) as Compute
-          lmpCompute.name = lmpCompute.getName()
-          lmpCompute.type = lmpCompute.getType()
-          lmpCompute.isPerAtom = lmpCompute.getIsPerAtom()
-          
-          computes.push(lmpCompute)
-        }
-        const fixes: Fix[] = []
-        for (let i = 0; i < lmpFixes.size(); i++) {
-          const lmpFix = lmpFixes.get(i)
+        // const lmpFixes = lammps.getFixes()
+        
+        // const fixes: Fix[] = []
+        // for (let i = 0; i < lmpFixes.size(); i++) {
+        //   const lmpFix = lmpFixes.get(i)
 
-          fixes.push({
-            name: lmpFix.getName(),
-            type: lmpFix.getType()
-          })
-        }
-        setComputes(computes)
-        setFixes(fixes)
+        //   fixes.push({
+        //     name: lmpFix.getName(),
+        //     type: lmpFix.getType()
+        //   })
+        // }
+        // setFixes(fixes)
         
         const modifierInput: ModifierInput = {
           lammps,
@@ -129,13 +118,17 @@ const SimulationComponent = () => {
         const modifierOutput: ModifierOutput = {
           particles,
           bonds,
-          colorsUpdated: false
+          colorsUpdated: false,
+          computes: {},
+          fixes: {},
         }
         // @ts-ignore
         postTimestepModifiers.forEach(modifier => modifier.run(modifierInput, modifierOutput))
         if (modifierOutput.colorsUpdated) {
+          console.log("Colors are updated!")
           setParticleStylesUpdated(false)
         }
+        // setComputes(modifierOutput.computes)
         
         if (selectedMenu === 'view') {
           if (modifierOutput.particles !== particles) {

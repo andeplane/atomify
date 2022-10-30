@@ -42,6 +42,8 @@ const SimulationSummary = () => {
   const computes = useStoreState(state => state.simulationStatus.computes)
   const fixes = useStoreState(state => state.simulationStatus.fixes)
 
+  const showFigureForCompute = visibleFigure ? computes[visibleFigure] : undefined
+
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
       setSimulationSettings({...simulationSettings, speed: value})
@@ -162,7 +164,7 @@ const SimulationSummary = () => {
           size='small'
           showHeader={false}
           columns={computeColumns}
-          dataSource={computes}
+          dataSource={Object.values(computes)}
           pagination={{hideOnSinglePage: true}}
         />
         <Table
@@ -170,7 +172,7 @@ const SimulationSummary = () => {
           size='small'
           showHeader={false}
           columns={fixesColumns}
-          dataSource={fixes}
+          dataSource={Object.values(fixes)}
           pagination={{hideOnSinglePage: true}}
         />
         </>
@@ -178,7 +180,7 @@ const SimulationSummary = () => {
       {visibleSettings==='Bonds' && <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Particles' && <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Colors' && <ColorModifierSettings onClose={() => setVisibleSettings(undefined)} />}
-      {<Figure xLabel='PlotTime' yLabel='Temperature' title='Temperature' xValues={x} yValues={y} />}
+      {showFigureForCompute && <Figure compute={showFigureForCompute} />}
     </>
   )
 }

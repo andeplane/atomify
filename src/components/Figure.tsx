@@ -1,4 +1,5 @@
 import {Modal} from 'antd'
+import { Compute } from '../types'
 import { useEffect, useState } from 'react'
 import Dygraph from 'dygraphs'
 
@@ -10,29 +11,26 @@ const Container = styled.div`
 `
 
 interface FigureProps {
-  xValues: Float32Array
-  yValues: Float32Array
-  xLabel: string
-  yLabel: string
-  title: string
+  compute: Compute
 }
-const Figure = ({xValues, yValues, xLabel, yLabel, title} : FigureProps) => {
-  const [graph, setGraph] = useState<Dygraph|undefined>()
+const Figure = ({compute} : FigureProps) => {
+  // const [graph, setGraph] = useState<Dygraph|undefined>()
   
-  useEffect(() => { 
-    const data: number[][] = []
-    xValues.forEach((value, index) => {
-      data.push([value, yValues[index]])
-    })
+  // useEffect(() => { 
+  //   const data: number[][] = []
+  //   xValues.forEach((value, index) => {
+  //     data.push([value, yValues[index]])
+  //   })
 
-    const g = new Dygraph('graph', data, {labels: [xLabel, yLabel], xlabel: xLabel, ylabel: yLabel, title, legend: 'always'});
-    setGraph(g)
+  //   const g = new Dygraph('graph', data, {labels: [xLabel, yLabel], xlabel: xLabel, ylabel: yLabel, title, legend: 'always'});
+  //   // setGraph(g)
 
-  }, [xValues, yValues, xLabel, yLabel, title])
-  return (<Modal open>
-    <Container>
-    <div id="graph" />
-    </Container>
-  </Modal>)
+  // }, [xValues, yValues, xLabel, yLabel, title])
+  // return (<Modal open>
+  //   <Container>
+  //   <div id="graph" />
+  //   </Container>
+  // </Modal>)
+  return (<></>)
 }
 export default Figure

@@ -12,14 +12,14 @@ export interface SimulationStatusModel {
   origo?: THREE.Vector3
   runType: string
   numAtoms: number
-  computes: Compute[]
-  fixes: Fix[]
+  computes: {[key: string]: Compute}
+  fixes: {[key: string]: Fix}
   setTimesteps: Action<SimulationStatusModel, number>
   setRunTimesteps: Action<SimulationStatusModel, number>
   setRunTotalTimesteps: Action<SimulationStatusModel, number>
   setLastCommand: Action<SimulationStatusModel, string|undefined>
-  setComputes: Action<SimulationStatusModel, Compute[]>
-  setFixes: Action<SimulationStatusModel, Fix[]>
+  setComputes: Action<SimulationStatusModel, {[key: string]: Compute}>
+  setFixes: Action<SimulationStatusModel, {[key: string]: Fix}>
   setRemainingTime: Action<SimulationStatusModel, number>
   setTimestepsPerSecond: Action<SimulationStatusModel, number>
   setNumAtoms: Action<SimulationStatusModel, number>
@@ -37,12 +37,12 @@ export const simulationStatusModel: SimulationStatusModel = {
   timestepsPerSecond: 0,
   runType: "",
   numAtoms: 0,
-  computes: [],
-  fixes: [],
-  setComputes: action((state, value: Compute[]) => {
+  computes: {},
+  fixes: {},
+  setComputes: action((state, value: {[key: string]: Compute}) => {
     state.computes = value
   }),
-  setFixes: action((state, value: Fix[]) => {
+  setFixes: action((state, value: {[key: string]: Fix}) => {
     state.fixes = value
   }),
   setTimesteps: action((state, timesteps: number) => {
