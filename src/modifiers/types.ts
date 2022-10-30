@@ -6,12 +6,14 @@ export type ModifierInput = {
   wasm: any
   lammps: LammpsWeb
   renderState: any
-  computes: Compute[]
-  fixes: Fix[]
+  computes: {[key: string]: Compute}
+  fixes: {[key: string]: Fix}
 }
 
 export type ModifierOutput = {
   particles: Particles
   bonds: Bonds
   colorsUpdated: boolean
+  computes: {[key: string]: Compute}
+  fixes: {[key: string]: Fix}
 }

@@ -10,7 +10,7 @@ const ColorModifierSettings = ({onClose}:{onClose: () => void}) => {
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const setParticleStylesUpdated = useStoreActions(actions => actions.render.setParticleStylesUpdated)
   const colorModifier = postTimestepModifiers.filter(modifier => modifier.name==="Colors")[0] as ColorModifier
-  const perAtomComputes = computes.filter(compute => compute.isPerAtom)
+  const perAtomComputes = Object.values(computes).filter(compute => compute.isPerAtom)
   
   const onChange = useCallback((value: string) => {
     if (value !== "type") {

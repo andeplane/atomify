@@ -2,7 +2,7 @@ import {useCallback, useEffect} from 'react'
 import {useStoreActions, useStoreState} from '../hooks'
 import * as THREE from 'three'
 import createModule from "../wasm/lammps.mjs";
-import { LammpsWeb, Compute, Fix } from '../types';
+import { LammpsWeb } from '../types';
 import { notification } from 'antd';
 import {SimulationStatus} from '../store/simulation'
 import { ModifierInput, ModifierOutput } from '../modifiers/types';
@@ -50,12 +50,18 @@ const SimulationComponent = () => {
   const setSimulationStatus = useStoreActions(actions => actions.simulation.setSimulationStatus)
   const setRunTotalTimesteps = useStoreActions(actions => actions.simulationStatus.setRunTotalTimesteps)
   const setLastCommand = useStoreActions(actions => actions.simulationStatus.setLastCommand)
+  const computes = useStoreState(state => state.simulationStatus.computes)
   const setComputes = useStoreActions(actions => actions.simulationStatus.setComputes)
+  const fixes = useStoreState(state => state.simulationStatus.fixes)
   const setFixes = useStoreActions(actions => actions.simulationStatus.setFixes)
   const setParticleStylesUpdated = useStoreActions(actions => actions.render.setParticleStylesUpdated)
 
   
   const onPrint = useCallback( (text: string) => {
+    if (text.includes('Atomify::canceled')) {
+      // Ignore this one
+      return
+    }
     //@ts-ignore
     addLammpsOutput(text)
     console.log(text)
@@ -92,32 +98,6 @@ const SimulationComponent = () => {
     //@ts-ignore
     window.postStepCallback = () => {
       if (lammps && wasm && simulation) {
-        const lmpComputes = lammps.getComputes()
-        const lmpFixes = lammps.getFixes()
-        const computes: Compute[] = []
-        for (let i = 0; i < lmpComputes.size(); i++) {
-          // This is a hack because we can't pass these functions to other objects for some reason,
-          // and we can't call the c++ functions outside main sync thread, so want to resolve name and type 
-          // so UI can render them
-          const lmpCompute = (lmpComputes.get(i) as unknown) as Compute
-          lmpCompute.name = lmpCompute.getName()
-          lmpCompute.type = lmpCompute.getType()
-          lmpCompute.isPerAtom = lmpCompute.getIsPerAtom()
-          
-          computes.push(lmpCompute)
-        }
-        const fixes: Fix[] = []
-        for (let i = 0; i < lmpFixes.size(); i++) {
-          const lmpFix = lmpFixes.get(i)
-
-          fixes.push({
-            name: lmpFix.getName(),
-            type: lmpFix.getType()
-          })
-        }
-        setComputes(computes)
-        setFixes(fixes)
-        
         const modifierInput: ModifierInput = {
           lammps,
           wasm,
@@ -129,13 +109,16 @@ const SimulationComponent = () => {
         const modifierOutput: ModifierOutput = {
           particles,
           bonds,
-          colorsUpdated: false
+          colorsUpdated: false,
+          computes: {},
+          fixes: {},
         }
         // @ts-ignore
         postTimestepModifiers.forEach(modifier => modifier.run(modifierInput, modifierOutput))
         if (modifierOutput.colorsUpdated) {
           setParticleStylesUpdated(false)
         }
+        setComputes(modifierOutput.computes)
         
         if (selectedMenu === 'view') {
           if (modifierOutput.particles !== particles) {
@@ -182,7 +165,7 @@ const SimulationComponent = () => {
     setParticles, setParticleStylesUpdated, setBonds, 
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
     setSimulationStatus, setComputes, setFixes, 
-    setSimulationSettings, setTimesteps
+    setSimulationSettings, setTimesteps, computes, fixes
     ])
 
   useEffect(
@@ -194,28 +177,30 @@ const SimulationComponent = () => {
           text: '',
           progress: 0.3
         })
-        time_event("WASM.Load")
-        createModule({
-          print: onPrint, 
-          printErr: onPrint,
-        }).then((Module: any) => {
-          track("WASM.Load")
-          setStatus({
-            title: 'Downloading LAMMPS ...',
-            text: '',
-            progress: 0.6
-          })
-          // setWasm(Module)
-          const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
-          setLammps(lammps)
-          // @ts-ignore
-          window.wasm = Module
-          // @ts-ignore
-          window.lammps = lammps
-          // @ts-ignore
-          window.syncFrequency = 1
-          setStatus(undefined)
-        });
+        setTimeout(() => {
+          time_event("WASM.Load")
+          createModule({
+            print: onPrint, 
+            printErr: onPrint,
+          }).then((Module: any) => {
+            track("WASM.Load")
+            setStatus({
+              title: 'Downloading LAMMPS ...',
+              text: '',
+              progress: 0.6
+            })
+            // setWasm(Module)
+            const lammps = (new Module.LAMMPSWeb()) as LammpsWeb
+            setLammps(lammps)
+            // @ts-ignore
+            window.wasm = Module
+            // @ts-ignore
+            window.lammps = lammps
+            // @ts-ignore
+            window.syncFrequency = 1
+            setStatus(undefined)
+          });
+        }, 100)
       }
     },
     [onPrint, setLammps, setStatus]

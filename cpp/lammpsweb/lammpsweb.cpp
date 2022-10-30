@@ -362,32 +362,6 @@ int LAMMPSWeb::getRunTimesteps() {
   return m_lmp->update->ntimestep - m_lmp->update->firststep;
 }
 
-bool LAMMPSWeb::executeCompute(LAMMPS_NS::Compute *compute) {
-  // if ( (compute->peflag||compute->peatomflag) && m_lmp->update->ntimestep != m_lmp->update->eflag_global) return false;
-  // if ( (compute->pressflag||compute->pressatomflag) && m_lmp->update->ntimestep != m_lmp->update->vflag_global) return false;
-  bool didCompute = false;
-  if (compute->scalar_flag == 1) {
-    compute->compute_scalar();
-    didCompute = true;
-  }
-
-  if (compute->vector_flag == 1) {
-    compute->compute_vector();
-    didCompute = true;
-  }
-
-  if (compute->array_flag == 1) {
-    compute->compute_array();
-    didCompute = true;
-  }
-
-  if (compute->peratom_flag == 1) {
-    compute->compute_peratom();
-    didCompute = true;
-  }
-  return didCompute;
-}
-
 void LAMMPSWeb::syncComputes() {
   // First add all existing computes
   for(int i=0; i < m_lmp->modify->ncompute; i++) {
@@ -396,17 +370,14 @@ void LAMMPSWeb::syncComputes() {
     if (m_computes.find(computeId) == m_computes.end()) {
       // Create new compute
       Compute compute;
-      // if (dynamic_cast<LAMMPS_NS::ComputePE*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputePE };
-      // else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeTemp };
-      // else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeKE };
-      // else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputePressure };
-      // else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeRDF };
-      // else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeMSD };
-      // else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeVACF };
-      // else if (dynamic_cast<LAMMPS_NS::ComputeCOM*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeCOM };
-      // else if (dynamic_cast<LAMMPS_NS::ComputeGyration*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeGyration };
-      // else 
-      compute = { m_lmp, lmpCompute, computeId, ComputeOther};
+      if (dynamic_cast<LAMMPS_NS::ComputePE*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputePE, "Time", "Potential energy" };
+      else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeTemp, std::string("Time"), std::string("Temperature")  };
+      else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeKE, std::string("Time"), std::string("Kinetic energy")  };
+      else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputePressure, std::string("Time"), std::string("Pressure")  };
+      else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeRDF, std::string("Distance"), std::string("g(r)")  };
+      else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeMSD, std::string("Time"), std::string("Mean square displacement") };
+      else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeVACF, std::string("Time"), std::string("<v(t)*v(0)>") };
+      else compute = { m_lmp, lmpCompute, computeId, ComputeOther, std::string("Time"), std::string("Value") };
       m_computes[computeId] = compute;
     }
   }
@@ -566,6 +537,7 @@ void LAMMPSWeb::stop() {
   if(m_lmp) {
     lammps_close((void*)m_lmp);
     m_lmp = nullptr;
+    m_computes.clear();
   }
 }
 

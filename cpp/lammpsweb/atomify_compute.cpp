@@ -1,22 +1,126 @@
 #include "atomify_compute.h"
 #include "lammps.h"
 #include "atom.h"
+#include "update.h"
 #include <stdio.h>
 
 void Compute::sync() {
   if(syncPerAtom()) return;
-  // if(sync(dynamic_cast<ComputeTemp*>(lmp_compute), lammpsController)) return;
-  // if(sync(dynamic_cast<ComputeKE*>(lmp_compute), lammpsController)) return;
-  // if(sync(dynamic_cast<ComputePE*>(lmp_compute), lammpsController)) return;
-  // if(sync(dynamic_cast<ComputeRDF*>(lmp_compute), lammpsController)) return;
-  // if(sync(dynamic_cast<ComputeMSD*>(lmp_compute), lammpsController)) return;
-  // if(sync(dynamic_cast<ComputeVACF*>(lmp_compute), lammpsController)) return;
-  // if(sync(dynamic_cast<ComputeCOM*>(lmp_compute), lammpsController)) return;
+  if(trySync(dynamic_cast<LAMMPS_NS::ComputeRDF*>(m_compute))) return;
+  if(trySync(dynamic_cast<LAMMPS_NS::ComputeMSD*>(m_compute))) return;
+  if(trySync(dynamic_cast<LAMMPS_NS::ComputeVACF*>(m_compute))) return;
+  if(trySync(dynamic_cast<LAMMPS_NS::ComputePressure*>(m_compute))) return;
   // if(sync(dynamic_cast<ComputeGyration*>(lmp_compute), lammpsController)) return;
+
+  if(m_compute->scalar_flag == 1) {
+    m_scalarValue = m_compute->scalar;
+    Data1D &data = ensureExists(std::string("scalar"));
+    data.label = m_name;
+    float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
+    data.add(simulationTime, m_scalarValue);
+  }
 }
 
-bool Compute::trySync(LAMMPS_NS::ComputeKEAtom *compute) {
-  return false; 
+Data1D &Compute::ensureExists(std::string name) {
+  for (int i = 0; i < m_data1DNames.size(); i++) {
+    if (m_data1DNames[i] == name) {
+      return m_data1D[i];
+    }
+  }
+
+  m_data1DNames.push_back(name);
+  m_data1D.push_back(Data1D());
+  return m_data1D.back();
+}
+
+bool Compute::trySync(LAMMPS_NS::ComputeRDF *compute) {
+  if(!compute) return false;
+  m_clearPerSync = true;
+  int numBins = compute->size_array_rows;         // rows in global array
+  int numColumns = compute->size_array_cols;      // columns in global array
+  int numPairs = (numColumns - 1)/2;
+
+  for(int pairId=0; pairId<numPairs; pairId++) {
+      std::string key = std::string("Pair_")+std::to_string(pairId+1);
+      Data1D &data = ensureExists(key);
+      data.label = std::string("Pair_")+std::to_string(pairId+1);
+      data.clear();
+
+      for(int bin=0; bin<numBins; bin++) {
+        double r = compute->array[bin][0];
+        double rdf = compute->array[bin][1+2*pairId];
+        data.add(r,rdf);
+      }
+  }
+
+  m_xLabel = "r";
+  m_yLabel = "RDF";
+  return true;
+}
+
+bool Compute::trySync(LAMMPS_NS::ComputeMSD *compute) {
+  if(!compute) return false;
+
+  std::vector<std::string> components = {"dx2", "dy2", "dz2", "dr2"};
+  std::vector<std::string> labels = {"∆x^2", "∆y^2", "∆z^2", "∆r^2"};
+
+  int numVectorValues = 4;
+  for(int i=0; i<numVectorValues; i++) {
+    auto key = components[i];
+    Data1D &data = ensureExists(key);
+    data.label = labels[i];
+    float value = compute->vector[i];
+    float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
+    data.add(simulationTime, value);
+  }
+  m_xLabel = "Time";
+  m_yLabel = "Mean square displacement";
+  
+  return true;
+}
+
+bool Compute::trySync(LAMMPS_NS::ComputeVACF *compute) {
+  if(!compute) return false;
+  
+  std::vector<std::string> components = {"vx2", "vy2", "vz2", "vr2"};
+  std::vector<std::string> labels = {"<vx, vx0>", "<vy, vy0>", "<vz, vz0>", "<v, v0>"};
+  int numVectorValues = 4;
+  for(int i=0; i<numVectorValues; i++) {
+      auto key = components[i];
+      Data1D &data = ensureExists(key);
+      data.label = labels[i];
+      float value = compute->vector[i];
+      float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
+      data.add(simulationTime, value);
+  }
+  m_xLabel = "Time";
+  m_yLabel = "VACF";
+  return true;
+}
+
+bool Compute::trySync(LAMMPS_NS::ComputePressure *compute) {
+  if(!compute) return false;
+  
+  // First compute scalar pressure
+  m_scalarValue = compute->scalar;
+  Data1D &data = ensureExists("Pressure");
+  data.label = "Pressure";
+  m_xLabel = "Time";
+  m_yLabel = "Pressure";
+  float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
+  data.add(simulationTime, m_scalarValue);
+
+  std::vector<std::string> components = {"Pxx", "Pyy", "Pzz", "Pxy", "Pxz", "Pyz"};
+
+  int numVectorValues = 6;
+  for(int i=0; i<numVectorValues; i++) {
+      auto key = components[i];
+      Data1D &data = ensureExists(key);
+      data.label = components[i];
+      double value = compute->vector[i];
+      data.add(simulationTime, value);
+  }
+  return true;
 }
 
 bool Compute::syncPerAtom() {
@@ -40,6 +144,9 @@ bool Compute::syncPerAtom() {
 }
 
 bool Compute::execute() {
+  if( (m_compute->peflag||m_compute->peatomflag) && m_lmp->update->ntimestep != m_lmp->update->eflag_global) return false;
+  if( (m_compute->pressflag||m_compute->pressatomflag) && m_lmp->update->ntimestep != m_lmp->update->vflag_global) return false;
+  
   bool didCompute = false;
   if (m_compute->scalar_flag == 1) {
     m_compute->compute_scalar();
@@ -61,4 +168,8 @@ bool Compute::execute() {
     didCompute = true;
   }
   return didCompute;
+}
+
+float Compute::getScalarValue() {
+  return m_scalarValue;
 }

@@ -3,13 +3,14 @@ import {SettingOutlined} from '@ant-design/icons'
 import {InputNumber, Table, Row, Col, Button} from 'antd'
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
-import {Compute, Fix} from '../types'
+import {Compute} from '../types'
 import React, {useState} from 'react'
 import Modifier from '../modifiers/modifier'
 import SyncBondsSettings from '../modifiers/SyncBondsSettings';
 import SyncParticlesSettings from '../modifiers/SyncParticlesSettings';
 import ColorModifierSettings from '../modifiers/ColorModifierSettings';
 import ColorModifier from '../modifiers/colormodifier';
+import Figure from '../components/Figure';
 
 interface SimulationSummaryType {
   key: React.ReactNode
@@ -17,27 +18,30 @@ interface SimulationSummaryType {
   value: string|number
 }
 
-const fixesColumns: ColumnsType<Fix> = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-  }
-];
+// const fixesColumns: ColumnsType<Fix> = [
+//   {
+//     title: 'Name',
+//     dataIndex: 'name',
+//     key: 'name',
+//   }
+// ];
 
 const SimulationSummary = () => {
   const [visibleSettings, setVisibleSettings] = useState<string|undefined>()
-  const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors"])
+  const [visibleFigure, setVisibleFigure] = useState<string|undefined>()
+  const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors", "Computes"])
+
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const modifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const colorModifier = postTimestepModifiers.filter(modifier => modifier.name==="Colors")[0] as ColorModifier
+  
+  const simulationStatus = useStoreState(state => state.simulation.simulationStatus)
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
 
-  const simulationStatus = useStoreState(state => state.simulation.simulationStatus)
   const computes = useStoreState(state => state.simulationStatus.computes)
-  const fixes = useStoreState(state => state.simulationStatus.fixes)
-
+  // const fixes = useStoreState(state => state.simulationStatus.fixes)
+  const computeForFigure = visibleFigure ? computes[visibleFigure] : undefined
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
       setSimulationSettings({...simulationSettings, speed: value})
@@ -52,8 +56,12 @@ const SimulationSummary = () => {
       render: (value, record) => {
         if (record.isPerAtom) {
           return <Button style={{padding: 0}} type="link" onMouseEnter={() => {colorModifier.computeName=value}} onMouseLeave={() => {colorModifier.computeName=undefined}}>{value}</Button>
+        } else if (record.data1D != null) {
+          return <><Button style={{padding: 0}} type="link" onClick={() => {
+            setVisibleFigure(value)
+          }} >{value}</Button> {' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>
         } else {
-          return (<>{value}</>)
+          return (<>{value + ' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>)
         }
       }
     }
@@ -68,7 +76,6 @@ const SimulationSummary = () => {
     }
   ];
   
-  // rowSelection objects indicates the need for row selection
   const rowSelection: TableRowSelection<Modifier> = {
     onChange: (selectedRowKeys, selectedRows) => {
       modifiers.forEach(modifier => {
@@ -123,7 +130,7 @@ const SimulationSummary = () => {
       },
     ]
   }
-  
+
   return (            
     <>
       <Table
@@ -148,24 +155,27 @@ const SimulationSummary = () => {
         <Table
           title={() => <b>Computes</b>}
           size='small'
+          rowKey='name'
           showHeader={false}
           columns={computeColumns}
-          dataSource={computes}
+          dataSource={Object.values(computes)}
           pagination={{hideOnSinglePage: true}}
         />
-        <Table
+        {/* <Table
           title={() => <b>Fixes</b>}
           size='small'
+          rowKey='name'
           showHeader={false}
           columns={fixesColumns}
-          dataSource={fixes}
+          dataSource={Object.values(fixes)}
           pagination={{hideOnSinglePage: true}}
-        />
+        /> */}
         </>
       }
       {visibleSettings==='Bonds' && <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Particles' && <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Colors' && <ColorModifierSettings onClose={() => setVisibleSettings(undefined)} />}
+      {computeForFigure && <Figure compute={computeForFigure} onClose={() => setVisibleFigure(undefined)} />}
     </>
   )
 }

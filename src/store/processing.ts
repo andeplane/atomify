@@ -3,6 +3,7 @@ import Modifier from '../modifiers/modifier'
 import SyncParticlesModifier from '../modifiers/syncparticlesmodifier'
 import SyncBondsModifier from '../modifiers/syncbondsmodifier'
 import ColorModifier from '../modifiers/colormodifier'
+import SyncComputesModifier from '../modifiers/synccomputesmodifier';
 
 export interface ProcessingModel {
   postTimestepModifiers: Modifier[]
@@ -21,6 +22,10 @@ export const processingModel: ProcessingModel = {
     }),
     new ColorModifier({
       name: 'Colors',
+      active: true
+    }),
+    new SyncComputesModifier({
+      name: 'Computes',
       active: true
     })
   ],

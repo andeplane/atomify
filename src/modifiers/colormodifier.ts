@@ -52,17 +52,17 @@ class ColorModifier extends Modifier {
       alpha: 1
     })
     const computes = input.computes
-    const compute = computes.filter(c => c.name === this.computeName)[0]
+    const compute = this.computeName ? computes[this.computeName] : undefined
     if (!compute || !compute.isPerAtom) {
       return
     }
     
-    const didCompute = compute.execute()
+    const didCompute = compute.lmpCompute.execute()
     if (!didCompute) {
       return
     }
-    compute.sync()
-    const perAtomDataPtr = compute.getPerAtomData() / 4
+    compute.lmpCompute.sync()
+    const perAtomDataPtr = compute.lmpCompute.getPerAtomData() / 4
     //@ts-ignore
     const perAtomArray = wasm.HEAPF32.subarray(perAtomDataPtr, perAtomDataPtr + output.particles.count ) as Float32Array
     //@ts-ignore
@@ -86,11 +86,8 @@ class ColorModifier extends Modifier {
     if ( (this.previousColoringMethod === 'type' && !input.renderState.particleStylesUpdated) || !input.renderState.visualizer) {
       return
     }
-    
     const particleStyles = input.renderState.particleStyles
     const visualizer = input.renderState.visualizer
-    // @ts-ignore
-    window.particleStyles = particleStyles
     
     for(let i = 0; i < output.particles.count; i++) {
       const realIndex = output.particles.indices[i]
@@ -102,6 +99,7 @@ class ColorModifier extends Modifier {
       output.particles.radii[i] = 0.25 * input.renderState.particleRadius * atomType.radius
       visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
     }
+    output.particles.markNeedsUpdate()
     output.colorsUpdated = true
     this.previousColoringMethod = 'type'
   }
