@@ -10,6 +10,7 @@ import SyncBondsSettings from '../modifiers/SyncBondsSettings';
 import SyncParticlesSettings from '../modifiers/SyncParticlesSettings';
 import ColorModifierSettings from '../modifiers/ColorModifierSettings';
 import ColorModifier from '../modifiers/colormodifier';
+import Figure from '../components/Figure';
 
 interface SimulationSummaryType {
   key: React.ReactNode
@@ -27,8 +28,9 @@ const fixesColumns: ColumnsType<Fix> = [
 
 const SimulationSummary = () => {
   const [visibleSettings, setVisibleSettings] = useState<string|undefined>()
+  const [visibleFigure, setVisibleFigure] = useState<string|undefined>()
   const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors"])
-  
+
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const modifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
@@ -125,6 +127,14 @@ const SimulationSummary = () => {
       },
     ]
   }
+
+  const x = new Float32Array(100)
+  const y = new Float32Array(100)
+  for (let i = 0; i < x.length; i++) {
+    x[i] = 2 * Math.PI * i/x.length
+    y[i] = Math.sin(x[i])
+  }
+
   
   return (            
     <>
@@ -168,6 +178,7 @@ const SimulationSummary = () => {
       {visibleSettings==='Bonds' && <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Particles' && <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Colors' && <ColorModifierSettings onClose={() => setVisibleSettings(undefined)} />}
+      {<Figure xLabel='PlotTime' yLabel='Temperature' title='Temperature' xValues={x} yValues={y} />}
     </>
   )
 }

@@ -14,6 +14,19 @@ void Compute::sync() {
   // if(sync(dynamic_cast<ComputeVACF*>(lmp_compute), lammpsController)) return;
   // if(sync(dynamic_cast<ComputeCOM*>(lmp_compute), lammpsController)) return;
   // if(sync(dynamic_cast<ComputeGyration*>(lmp_compute), lammpsController)) return;
+
+  if(m_compute->scalar_flag == 1) {
+    double value = m_compute->scalar;
+    m_hasScalarData = true;
+    m_scalarValue = value;
+
+    Data1D &data = ensureExists(std::string("scalar"));
+    xLabel = "Time";
+    yLabel = "Value";
+    data.label = m_name;
+    float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
+    data.add(simulationTime, value);
+  }
 }
 
 Data1D &Compute::ensureExists(std::string name) {
@@ -37,13 +50,10 @@ bool Compute::trySync(LAMMPS_NS::ComputeTemp *compute) {
     Data1D &data = ensureExists(std::string("Temperature"));
     xLabel = "Time";
     yLabel = "Temperature";
+    data.label = m_name;
     float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
     data.add(simulationTime, value);
     return true;
-}
-
-bool Compute::trySync(LAMMPS_NS::ComputeKEAtom *compute) {
-  return false; 
 }
 
 bool Compute::syncPerAtom() {

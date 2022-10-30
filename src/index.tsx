@@ -1,5 +1,6 @@
 import './index.css'
 import 'antd/dist/antd.css';
+import 'dygraphs/dist/dygraph.css';
 import React from 'react'
 import ReactDOM from 'react-dom'
 import App from './App'

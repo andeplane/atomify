@@ -48,7 +48,6 @@ struct Compute {
   bool hasScalarData() { return m_hasScalarData; }
   long getPerAtomData() { return reinterpret_cast<long>(m_perAtomData.data()); }
   void sync();
-  bool trySync(LAMMPS_NS::ComputeKEAtom *compute);
   bool trySync(LAMMPS_NS::ComputeTemp *compute);
   bool execute();
   bool syncPerAtom();
