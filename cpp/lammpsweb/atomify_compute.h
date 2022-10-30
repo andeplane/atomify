@@ -4,6 +4,7 @@
 #include "compute.h"
 #include "compute_ke_atom.h"
 #include "compute_temp.h"
+#include "compute_rdf.h"
 #include "lammps.h"
 #include "data1d.h"
 
@@ -54,6 +55,7 @@ struct Compute {
   long getPerAtomData() { return reinterpret_cast<long>(m_perAtomData.data()); }
   void sync();
   bool trySync(LAMMPS_NS::ComputeTemp *compute);
+  bool trySync(LAMMPS_NS::ComputeRDF *compute);
   bool execute();
   bool syncPerAtom();
 };

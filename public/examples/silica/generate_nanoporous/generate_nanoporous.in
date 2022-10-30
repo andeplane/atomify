@@ -28,7 +28,7 @@ thermo_style custom step temp etotal density vol
 thermo 100
 
 write_data initial.data
-
+compute rdf all rdf 100 1 1 1 2 2 2
 timestep 0.002
 run 5000
 

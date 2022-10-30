@@ -7,6 +7,7 @@
 void Compute::sync() {
   if(syncPerAtom()) return;
   if(trySync(dynamic_cast<LAMMPS_NS::ComputeTemp*>(m_compute))) return;
+  if(trySync(dynamic_cast<LAMMPS_NS::ComputeRDF*>(m_compute))) return;
   // if(sync(dynamic_cast<ComputeKE*>(lmp_compute), lammpsController)) return;
   // if(sync(dynamic_cast<ComputePE*>(lmp_compute), lammpsController)) return;
   // if(sync(dynamic_cast<ComputeRDF*>(lmp_compute), lammpsController)) return;
@@ -55,6 +56,30 @@ bool Compute::trySync(LAMMPS_NS::ComputeTemp *compute) {
     float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
     data.add(simulationTime, value);
   }
+  return true;
+}
+
+bool Compute::trySync(LAMMPS_NS::ComputeRDF *compute) {
+  if(!compute) return false;
+  int numBins = compute->size_array_rows;         // rows in global array
+  int numColumns = compute->size_array_cols;      // columns in global array
+  int numPairs = (numColumns - 1)/2;
+
+  for(int pairId=0; pairId<numPairs; pairId++) {
+      std::string key = std::string("Pair_")+std::to_string(pairId+1);
+      Data1D &data = ensureExists(key);
+      data.label = std::string("Pair_")+std::to_string(pairId+1);
+      data.clear();
+
+      for(int bin=0; bin<numBins; bin++) {
+        double r = compute->array[bin][0];
+        double rdf = compute->array[bin][1+2*pairId];
+        data.add(r,rdf);
+      }
+  }
+
+  m_xLabel = "r";
+  m_yLabel = "RDF";
   return true;
 }
 

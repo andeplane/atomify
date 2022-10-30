@@ -20,6 +20,8 @@ const Figure = ({compute, onClose} : FigureProps) => {
         ylabel: compute.yLabel,
         title: compute.name,
         width: 700,
+        height: 500,
+        legend: 'always',
       });
       setGraph(g)
       //@ts-ignore

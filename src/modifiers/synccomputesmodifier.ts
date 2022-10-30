@@ -49,23 +49,30 @@ class SyncComputesModifier extends Modifier {
         compute.scalarValue = compute.lmpCompute.getScalarValue()
         const data1DNames = compute.lmpCompute.getData1DNames()
         const data1DVector =  compute.lmpCompute.getData1D()
-        if (data1DNames.size() > 0) {
-          if (compute.data1D == null) {
-            compute.data1D = {
-              data: [],
-              labels: []
-            }
-          }
+        if (data1DNames.size() === 0) {
+          continue
         }
 
+        if (compute.data1D == null) {
+          compute.data1D = {
+            data: [],
+            labels: []
+          }
+        }
+        
         if (compute.data1D) {
+          compute.data1D.data = []
+          const lengthBeforeWeStart = compute.data1D.data.length // Used to avoid coping all data every time
+
           if (compute.data1D.labels.length === 0) {
             compute.data1D.labels.push('x')
           }
+          
           for (let j = 0; j < data1DNames.size(); j++) {
             const lmpData = data1DVector.get(j)
             
             if (compute.data1D.labels.length-1 === j) {
+              // Add missing labels
               compute.data1D.labels.push(lmpData.getLabel())
             }
             
@@ -73,7 +80,7 @@ class SyncComputesModifier extends Modifier {
             const yValuesPointer = lmpData.getYValuesPointer() / 4
             const xValues = input.wasm.HEAPF32.subarray(xValuesPointer, xValuesPointer + lmpData.getNumPoints()) as Float32Array
             const yValues = input.wasm.HEAPF32.subarray(yValuesPointer, yValuesPointer + lmpData.getNumPoints()) as Float32Array
-            for (let k = compute.data1D.data.length; k < xValues.length; k++) {
+            for (let k = lengthBeforeWeStart; k < xValues.length; k++) {
               if (j === 0) {
                 compute.data1D.data.push([xValues[k]])
               }
