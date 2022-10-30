@@ -3,8 +3,8 @@ import {SettingOutlined} from '@ant-design/icons'
 import {InputNumber, Table, Row, Col, Button} from 'antd'
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
-import {Compute, Fix} from '../types'
-import React, {useEffect, useState} from 'react'
+import {Compute} from '../types'
+import React, {useState} from 'react'
 import Modifier from '../modifiers/modifier'
 import SyncBondsSettings from '../modifiers/SyncBondsSettings';
 import SyncParticlesSettings from '../modifiers/SyncParticlesSettings';
@@ -18,13 +18,13 @@ interface SimulationSummaryType {
   value: string|number
 }
 
-const fixesColumns: ColumnsType<Fix> = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-  }
-];
+// const fixesColumns: ColumnsType<Fix> = [
+//   {
+//     title: 'Name',
+//     dataIndex: 'name',
+//     key: 'name',
+//   }
+// ];
 
 const SimulationSummary = () => {
   const [visibleSettings, setVisibleSettings] = useState<string|undefined>()
@@ -40,7 +40,7 @@ const SimulationSummary = () => {
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
 
   const computes = useStoreState(state => state.simulationStatus.computes)
-  const fixes = useStoreState(state => state.simulationStatus.fixes)
+  // const fixes = useStoreState(state => state.simulationStatus.fixes)
   const computeForFigure = visibleFigure ? computes[visibleFigure] : undefined
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
@@ -155,19 +155,21 @@ const SimulationSummary = () => {
         <Table
           title={() => <b>Computes</b>}
           size='small'
+          rowKey='name'
           showHeader={false}
           columns={computeColumns}
           dataSource={Object.values(computes)}
           pagination={{hideOnSinglePage: true}}
         />
-        <Table
+        {/* <Table
           title={() => <b>Fixes</b>}
           size='small'
+          rowKey='name'
           showHeader={false}
           columns={fixesColumns}
           dataSource={Object.values(fixes)}
           pagination={{hideOnSinglePage: true}}
-        />
+        /> */}
         </>
       }
       {visibleSettings==='Bonds' && <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />}
