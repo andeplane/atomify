@@ -60,6 +60,7 @@ const SimulationComponent = () => {
   const onPrint = useCallback( (text: string) => {
     if (text.includes('Atomify::canceled')) {
       // Ignore this one
+      return
     }
     //@ts-ignore
     addLammpsOutput(text)
