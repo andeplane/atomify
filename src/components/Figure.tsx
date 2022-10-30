@@ -19,7 +19,7 @@ const Figure = ({compute, onClose} : FigureProps) => {
         xlabel: compute.xLabel,
         ylabel: compute.yLabel,
         title: compute.name,
-        legend: 'always',
+        width: 700,
       });
       setGraph(g)
       //@ts-ignore
@@ -33,7 +33,7 @@ const Figure = ({compute, onClose} : FigureProps) => {
     }
   }, [graph, compute, timesteps])
   
-  return (<Modal open footer={null} onCancel={onClose}>
+  return (<Modal open width={750} footer={null} onCancel={onClose}>
       <div id="graph" />
       {!graph && <Empty />}
   </Modal>)
