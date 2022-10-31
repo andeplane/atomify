@@ -392,14 +392,16 @@ void LAMMPSWeb::syncComputes() {
   }
 }
 
-std::vector<Compute> LAMMPSWeb::getComputes() {
-  syncComputes();
-  auto v = std::vector<Compute>();
+std::vector<std::string> LAMMPSWeb::getComputeNames() {
+  auto v = std::vector<std::string>();
   for (const auto& [key, value] : m_computes) {
-    v.push_back(value);
+    v.push_back(key);
   }
-  
   return v;
+}
+
+Compute LAMMPSWeb::getCompute(std::string name) {
+  return m_computes[name];
 }
 
 std::vector<Fix> LAMMPSWeb::getFixes() {
@@ -544,6 +546,7 @@ void LAMMPSWeb::stop() {
 void LAMMPSWeb::runFile(std::string path) {
   lammps_file((void*)m_lmp, path.c_str());
 }
+
 
 void LAMMPSWeb::step() {
   const char *script = "run 1 pre no post no\n";

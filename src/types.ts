@@ -11,8 +11,10 @@ export type LammpsWeb = {
   getTimestepsPerSecond: () => number
   getCPURemain: () => number
   getWhichFlag: () => number
-  getComputes: () => CPPArray<LMPCompute>
+  getCompute: (name: string) => LMPCompute
+  getComputeNames: () => CPPArray<string>
   getFixes: () => CPPArray<LMPFix>
+  syncComputes: () => void
 
   getPositionsPointer: () => number
   getIdPointer: () => number
@@ -22,6 +24,7 @@ export type LammpsWeb = {
   getBondsPosition1Pointer: () => number
   getBondsPosition2Pointer: () => number
   getBondsDistanceMapPointer: () => number
+  getExceptionMessage: (address: number) => string
   
   step: () => void
   stop: () => boolean

@@ -6,10 +6,10 @@
 
 void Compute::sync() {
   if(syncPerAtom()) return;
-  if(trySync(dynamic_cast<LAMMPS_NS::ComputeRDF*>(m_compute))) return;
-  if(trySync(dynamic_cast<LAMMPS_NS::ComputeMSD*>(m_compute))) return;
-  if(trySync(dynamic_cast<LAMMPS_NS::ComputeVACF*>(m_compute))) return;
-  if(trySync(dynamic_cast<LAMMPS_NS::ComputePressure*>(m_compute))) return;
+  // if(trySync(dynamic_cast<LAMMPS_NS::ComputeRDF*>(m_compute))) return;
+  // if(trySync(dynamic_cast<LAMMPS_NS::ComputeMSD*>(m_compute))) return;
+  // if(trySync(dynamic_cast<LAMMPS_NS::ComputeVACF*>(m_compute))) return;
+  // if(trySync(dynamic_cast<LAMMPS_NS::ComputePressure*>(m_compute))) return;
   // if(sync(dynamic_cast<ComputeGyration*>(lmp_compute), lammpsController)) return;
 
   if(m_compute->scalar_flag == 1) {
@@ -18,6 +18,9 @@ void Compute::sync() {
     data.label = m_name;
     float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
     data.add(simulationTime, m_scalarValue);
+    if (data.xValues.size() % 100 == 0) {
+      printf("I am %s and got data with num values %ld\n", m_name.c_str(), data.xValues.size());
+    }
   }
 }
 
@@ -124,20 +127,22 @@ bool Compute::trySync(LAMMPS_NS::ComputePressure *compute) {
 }
 
 bool Compute::syncPerAtom() {
-  if(!m_compute || !m_compute->peratom_flag) return false;
+  if(!m_compute->peratom_flag) return false;
   
   int numCols = m_compute->size_peratom_cols;
   int numAtoms = m_lmp->atom->natoms;
-  if(numCols == 0) {
-    double *values = m_compute->vector_atom;
+
+  if (numAtoms > m_perAtomData.size()) {
     m_perAtomData.resize(numAtoms);
+  }
+
+  if(numCols == 0) {
     for (int i = 0; i < numAtoms; i++) {
-      m_perAtomData[i] = values[i];
+      m_perAtomData[i] = m_compute->vector_atom[i];
     }
   } else {
-    m_perAtomData.resize(numAtoms);
-    for(int atomIndex=0; atomIndex<numAtoms; atomIndex++) {
-      m_perAtomData[atomIndex] = m_compute->array_atom[atomIndex][0];
+    for(int i=0; i<numAtoms; i++) {
+      m_perAtomData[i] = m_compute->array_atom[i][0];
     }
   }
   return true;
