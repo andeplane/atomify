@@ -60,7 +60,7 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
       start: startImmediately
     }
     const fileNames = files.map(file => file.fileName)
-    track('Simulation.Create', {numFiles: files.length, fileNames, simulationId: name, startImmediately})
+    track('Simulation.Create.OK', {numFiles: files.length, fileNames, simulationId: name, startImmediately})
     setNewSimulation(newSimulation)
     if (startImmediately) {
       setPreferredView('view')
@@ -72,7 +72,11 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
     <Modal open title="Create new simulation" footer={[
       <>
         <Checkbox onChange={(e) => setStartImmediately(e.target.checked) }>Start simulation immediately</Checkbox>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={() => {
+          const fileNames = files.map(file => file.fileName)
+          track('Simulation.Create.Cancel', {numFiles: files.length, fileNames, simulationId: name, startImmediately})
+          onClose()
+        }}>Cancel</Button>
         <Tooltip title="You must specify a simulation name, upload at least one file and select the input script.">
           <Button onClick={onOk} disabled={!validSimulation}>OK</Button>
         </Tooltip>
