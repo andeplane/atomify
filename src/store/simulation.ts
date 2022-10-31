@@ -370,7 +370,6 @@ export const simulationModel: SimulationModel = {
 
     const inputScriptFile = simulation.files.filter(file => file.fileName===simulation.inputScript)[0]
     if (inputScriptFile.content) {
-      console.log("Will run atomify commands now")
       actions.extractAndApplyAtomifyCommands(inputScriptFile.content)
     }
     
@@ -382,7 +381,7 @@ export const simulationModel: SimulationModel = {
         // Simulation got canceled.
         actions.setRunning(false)
         actions.setShowConsole(true)
-        track('Simulation.Run', {simulationId: simulation?.id, canceled: true, numAtoms: lammps.getNumAtoms()})
+        track('Simulation.Run', {simulationId: simulation?.id, stopReason: "canceled", numAtoms: lammps.getNumAtoms()})
       } else {
         notification.error({
           message: errorMessage,
@@ -390,12 +389,12 @@ export const simulationModel: SimulationModel = {
         })
         actions.setRunning(false)
         actions.setShowConsole(true)
-        track('Simulation.Run', {simulationId: simulation?.id, failed: true, errorMessage, numAtoms: lammps.getNumAtoms()})
+        track('Simulation.Run', {simulationId: simulation?.id, stopReason: "failed", errorMessage, numAtoms: lammps.getNumAtoms()})
       }
     } else {
       actions.setRunning(false)
       actions.setShowConsole(true)
-      track('Simulation.Run', {simulationId: simulation?.id, completed: true, numAtoms: lammps.getNumAtoms()})
+      track('Simulation.Run', {simulationId: simulation?.id, stopReason: "completed", numAtoms: lammps.getNumAtoms()})
       //@ts-ignore
       window.postStepCallback()
     }
