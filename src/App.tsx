@@ -16,8 +16,7 @@ import Simulation from './components/Simulation'
 import Main from './containers/Main'
 import { useStoreActions, useStoreState } from './hooks';
 import {track} from './utils/metrics'
-import { Route, Routes } from "react-router-dom"
-const { Content, Sider } = Layout;
+const { Sider } = Layout;
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -131,9 +130,7 @@ const App: React.FC = () => {
       </Sider>
       <Layout className="site-layout">
         <Simulation />
-        <Routes>
-          <Route path="/:id" element={<Main />} />
-        </Routes>
+        <Main />
       </Layout>
     </Layout>
     </>

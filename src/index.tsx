@@ -8,7 +8,6 @@ import { StoreProvider } from 'easy-peasy';
 import store from './store';
 import mixpanel from 'mixpanel-browser';
 import {track} from './utils/metrics'
-import { BrowserRouter } from "react-router-dom"
 
 mixpanel.init('b5022dd7fe5b3cd0396d84284ae647e6', {debug: false}); 
 
@@ -16,8 +15,6 @@ track('Page.Load')
 
 ReactDOM.render(
   <StoreProvider store={store}>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <App />
   </StoreProvider>,
 document.getElementById('root'))
