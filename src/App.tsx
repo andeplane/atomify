@@ -11,7 +11,7 @@ import {
 import { useMeasure } from 'react-use';
 import React, { useState, useEffect, useCallback } from 'react';
 import type { MenuProps } from 'antd';
-import { Layout, Menu, Modal, Tabs, Progress, Button } from 'antd';
+import { Layout, Menu } from 'antd';
 import Simulation from './components/Simulation'
 import Main from './containers/Main'
 import { useStoreActions, useStoreState } from './hooks';
@@ -59,29 +59,29 @@ const App: React.FC = () => {
       setCollapsed(false)
     }
   }, [width])
+  const editMenuLabel = 'Edit '+ (simulation ? simulation?.id : '')
+  const runStopButtonTitle = running ? "Stop" : "Run"
 
   const items: MenuItem[] = [
     getItem('View', 'view', <AlignLeftOutlined />),
     getItem('Console', 'console', <BorderOuterOutlined />),
     getItem('Notebook', 'notebook', <LineChartOutlined />),
-    getItem('Edit', 'edit', <EditOutlined />, simulation ? simulation.files.map(file => {
+    getItem(editMenuLabel, 'edit', <EditOutlined />, simulation ? simulation.files.map(file => {
       return getItem(file.fileName, 'file'+file.fileName, <FileOutlined />)
     }): [], undefined, selectedFile==null),
-    getItem('Examples', 'examples', <InsertRowAboveOutlined />)
+    getItem('Examples', 'examples', <InsertRowAboveOutlined />),
+    {type: 'divider'},
+    getItem(runStopButtonTitle, 'run', running ? <BorderOutlined /> : <PlaySquareOutlined />, undefined, () => {
+      if (running) {
+        // @ts-ignore
+        window.cancel = true
+      } else {
+        run()
+        setPreferredView('view')
+      }
+    }, simulation == null)
   ];
-  const runStopButtonTitle = running ? "Stop" : "Run"
 
-  items.push({type: 'divider'})
-  items.push(getItem(runStopButtonTitle, 'run', running ? <BorderOutlined /> : <PlaySquareOutlined />, undefined, () => {
-    if (running) {
-      // @ts-ignore
-      window.cancel = true
-    } else {
-      run()
-      setPreferredView('view')
-    }
-  }, simulation == null))
-  
   useEffect(() => {
     if (preferredView) {
       setSelectedMenu(preferredView)
