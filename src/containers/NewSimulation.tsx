@@ -1,14 +1,12 @@
-import {Input, Layout} from 'antd'
 import { InboxOutlined } from '@ant-design/icons';
-import {useCallback, useEffect, useState} from 'react'
-import { useStoreState, useStoreActions } from '../hooks';
-import { message, Upload, Modal, Button, Select, Divider, Tooltip } from 'antd';
+import {useCallback, useState} from 'react'
+import { useStoreActions } from '../hooks';
+import { message, Upload, Modal, Button, Select, Divider, Tooltip, Input } from 'antd';
 import type { UploadProps } from 'antd';
 import { Simulation, SimulationFile } from '../store/simulation';
 const { Option } = Select;
 
 const { Dragger } = Upload;
-const {Header} = Layout
 
 interface NewSimulationProps {
   onClose: () => void
