@@ -5,7 +5,9 @@
 
 ➡️ **https://andeplane.github.io/atomify**
 
-➡️ **[Customize content for e.g. teaching (takes 2 minutes)](https://github.com/andeplane/atomify-examples-template)**
+➡️ **[Customize Atomify with your own simulations for e.g. teaching](https://github.com/andeplane/atomify-examples-template)** (this only takes a few minutes if you have simulations).
+
+To see the latest changes, please check the [change log](CHANGELOG.md).
 
 ![Atomify](atomify.gif)
 

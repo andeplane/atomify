@@ -79,7 +79,7 @@ interface Status {
 export interface SimulationFile {
   fileName: string
   content?: string
-  url: string
+  url?: string
 }
 
 export interface SimulationStatus {
@@ -456,9 +456,18 @@ export const simulationModel: SimulationModel = {
         progress: 0.2 + 0.8 * counter / simulation.files.length
       })
       
-      const response = await fetch(file.url)
-      const content = await response.text()
-      file.content = content
+      if (!file.content) {
+        if (file.url) {
+          const response = await fetch(file.url)
+          const content = await response.text()
+          file.content = content
+        } else {
+          notification.error({
+            message: `Could not download ${file.fileName}. URL is missing.`
+          })
+          return
+        }
+      }
       counter += 1
     }
     await actions.setStatus({
