@@ -1,6 +1,7 @@
 import {useState} from 'react'
 import {useStoreState, useStoreActions} from '../hooks'
 import {InputNumber} from 'antd'
+import {track} from '../utils/metrics'
 
 const SimulationSummary = () => {
   const [isHovering, setIsHovering] = useState(false);
@@ -17,6 +18,7 @@ const SimulationSummary = () => {
   };
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
+      track('SimulationSpeed.Change', {speed: value})
       setSimulationSettings({...simulationSettings, speed: value})
     }
   }
