@@ -5,7 +5,6 @@ import Edit from './Edit'
 import Console from './Console'
 import Examples from './Examples'
 import {useStoreActions, useStoreState} from '../hooks'
-import NewSimulation from './NewSimulation';
 const { Content } = Layout;
 
 const Main = () => {
