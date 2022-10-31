@@ -1,9 +1,11 @@
 import { InboxOutlined } from '@ant-design/icons';
 import {useCallback, useState} from 'react'
 import { useStoreActions } from '../hooks';
-import { message, Upload, Modal, Button, Select, Divider, Tooltip, Input } from 'antd';
+import { message, Upload, Modal, Button, Select, Divider, Tooltip, Input, Checkbox } from 'antd';
 import type { UploadProps } from 'antd';
 import { Simulation, SimulationFile } from '../store/simulation';
+import {track} from '../utils/metrics'
+
 const { Option } = Select;
 
 const { Dragger } = Upload;
@@ -15,10 +17,11 @@ interface NewSimulationProps {
 const NewSimulation = ({onClose}: NewSimulationProps) => {
   const [name, setName] = useState<string>()
   const [files, setFiles] = useState<SimulationFile[]>([])
+  const [startImmediately, setStartImmediately] = useState(false)
   const [inputScript, setInputScript] = useState<string>()
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
-
+  
   const validSimulation = (name != null && name.length > 0) && inputScript
 
   const props: UploadProps = {
@@ -26,6 +29,7 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
     beforeUpload: () => false,
     multiple: true,
     onDrop: async (e) => {
+      // It's a bit weird. I have to convert to a regular array of File[] to be able to do await file.text()
       const files: SimulationFile[] = []
       const fileList: File[] = []
       for (let i = 0; i < e.dataTransfer.files.length; i++) {
@@ -48,20 +52,26 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
     if (!name || !inputScript) {
       return
     }
+    
     const newSimulation: Simulation = {
       files: files,
       id: name,
       inputScript: inputScript,
-      start: false
+      start: startImmediately
     }
+    const fileNames = files.map(file => file.fileName)
+    track('Simulation.Create', {fileNames, simulationId: name})
     setNewSimulation(newSimulation)
-    setPreferredView('view')
+    if (startImmediately) {
+      setPreferredView('view')
+    }
     onClose()
-  }, [files, inputScript, name, setNewSimulation, setPreferredView, onClose])
+  }, [files, inputScript, name, onClose, startImmediately, setPreferredView, setNewSimulation])
   
   return (
     <Modal open title="Create new simulation" footer={[
       <>
+        <Checkbox onChange={(e) => setStartImmediately(e.target.checked) }>Start simulation immediately</Checkbox>
         <Button onClick={onClose}>Cancel</Button>
         <Tooltip title="You must specify a simulation name, upload at least one file and select the input script.">
           <Button onClick={onOk} disabled={!validSimulation}>OK</Button>
