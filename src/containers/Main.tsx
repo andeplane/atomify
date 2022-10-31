@@ -5,6 +5,7 @@ import Edit from './Edit'
 import Console from './Console'
 import Examples from './Examples'
 import {useStoreActions, useStoreState} from '../hooks'
+import NewSimulation from './NewSimulation';
 const { Content } = Layout;
 
 const Main = () => {
@@ -28,6 +29,9 @@ const Main = () => {
         </Tabs.TabPane>
         <Tabs.TabPane tab="Notebook" key="notebook">
           <Notebook />
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="New simulation" key="newsimulation">
+          <NewSimulation />
         </Tabs.TabPane>
         <Tabs.TabPane tab="Edit" key="editfile">
           <Edit />

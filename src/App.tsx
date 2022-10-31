@@ -6,7 +6,8 @@ import {
   FileOutlined,
   PlaySquareOutlined,
   BorderOutlined,
-  AlignLeftOutlined
+  AlignLeftOutlined,
+  PlusSquareOutlined
 } from '@ant-design/icons';
 import { useMeasure } from 'react-use';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -69,6 +70,8 @@ const App: React.FC = () => {
     getItem(editMenuLabel, 'edit', <EditOutlined />, simulation ? simulation.files.map(file => {
       return getItem(file.fileName, 'file'+file.fileName, <FileOutlined />)
     }): [], undefined, selectedFile==null),
+    {type: 'divider'},
+    getItem('New simulation', 'newsimulation', <PlusSquareOutlined />),
     getItem('Examples', 'examples', <InsertRowAboveOutlined />),
     {type: 'divider'},
     getItem(runStopButtonTitle, 'run', running ? <BorderOutlined /> : <PlaySquareOutlined />, undefined, () => {
