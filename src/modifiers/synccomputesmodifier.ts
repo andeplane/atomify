@@ -17,15 +17,16 @@ class SyncComputesModifier extends Modifier {
     if (!this.active) {
       return
     }
-
-    const lmpComputes = input.lammps.getComputes()
-
-    for (let i = 0; i < lmpComputes.size(); i++) {
-      const lmpCompute = lmpComputes.get(i)
-      const name = lmpCompute.getName()
+    input.lammps.syncComputes()
+    const computeNames = input.lammps.getComputeNames()
+    for (let i = 0; i < computeNames.size(); i++) {
+      const name = computeNames.get(i)
       let compute = input.computes[name]
       
       if (compute == null) {
+        // console.log("I did not have it")
+        const lmpCompute = input.lammps.getCompute(name)
+        // console.log("Created ", lmpCompute)
         // Need to create a new one 
         compute = {
           name: lmpCompute.getName(),
@@ -38,9 +39,6 @@ class SyncComputesModifier extends Modifier {
           scalarValue: 0,
           lmpCompute,
         }
-      } else {
-        // We won't need this object
-        lmpCompute.delete()
       }
 
       if (compute.lmpCompute.execute()) {
@@ -94,7 +92,6 @@ class SyncComputesModifier extends Modifier {
           }
         }
       }
-      
       output.computes[name] = compute
       //@ts-ignore
       window.output = output
