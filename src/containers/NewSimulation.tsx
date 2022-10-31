@@ -1,5 +1,5 @@
 import { InboxOutlined } from '@ant-design/icons';
-import {useCallback, useState} from 'react'
+import {useCallback, useEffect, useState} from 'react'
 import { useStoreActions } from '../hooks';
 import { message, Upload, Modal, Button, Select, Divider, Tooltip, Input, Checkbox } from 'antd';
 import type { UploadProps } from 'antd';
@@ -24,28 +24,28 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
   
   const validSimulation = (name != null && name.length > 0) && inputScript
 
+  useEffect(() => {
+    //@ts-ignore
+    window.files = []
+  }, [])
+
+  const onChange = useCallback(async (info: any) => {
+    const file: SimulationFile = {
+      fileName: info.file.name,
+      content: await info.file.text()
+    }
+    //@ts-ignore
+    window.files = [...window.files, file]
+    //@ts-ignore
+    setFiles(window.files)
+    message.success(`${file.fileName} uploaded successfully.`);
+  }, [setFiles])
+
   const props: UploadProps = {
     name: 'file',
     beforeUpload: () => false,
     multiple: true,
-    onDrop: async (e) => {
-      // It's a bit weird. I have to convert to a regular array of File[] to be able to do await file.text()
-      const files: SimulationFile[] = []
-      const fileList: File[] = []
-      for (let i = 0; i < e.dataTransfer.files.length; i++) {
-        const file = e.dataTransfer.files[i]
-        fileList.push(file)
-      }
-      for (let rawFile of fileList) {
-        const file: SimulationFile = {
-          fileName: rawFile.name,
-          content: await rawFile.text()
-        }
-        files.push(file)
-      }
-      setFiles(files)
-      message.success(`${files.length} files uploaded successfully.`);
-    },
+    onChange: onChange
   };
   
   const onOk = useCallback(() => {

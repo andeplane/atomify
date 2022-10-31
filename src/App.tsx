@@ -78,7 +78,7 @@ const App: React.FC = () => {
   const newSimulationButton = getItem('New simulation', 'newsimulation', <PlusSquareOutlined />, undefined, () => {
     setShowNewSimulation(true)
     setPreferredView(selectedMenu) // This is another hack. Should really rethink menu system.
-  })
+  }, running)
 
   const items: MenuItem[] = [
     getItem('View', 'view', <AlignLeftOutlined />),
@@ -113,7 +113,7 @@ const App: React.FC = () => {
 
   const onMenuSelect = useCallback((selected: string) => {
     track('MenuClick', {selected, simulationId: simulation?.id, running})
-    
+
     if (selected === "run") {
       return
     }
