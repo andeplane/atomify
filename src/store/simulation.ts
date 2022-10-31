@@ -365,6 +365,7 @@ export const simulationModel: SimulationModel = {
     
     lammps.start()
     actions.setRunning(true)
+    track('Simulation.Start', {simulationId: simulation?.id})
     time_event('Simulation.Run');
 
     const inputScriptFile = simulation.files.filter(file => file.fileName===simulation.inputScript)[0]
