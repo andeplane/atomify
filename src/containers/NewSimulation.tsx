@@ -60,7 +60,7 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
       start: startImmediately
     }
     const fileNames = files.map(file => file.fileName)
-    track('Simulation.Create', {fileNames, simulationId: name})
+    track('Simulation.Create', {numFiles: files.length, fileNames, simulationId: name, startImmediately})
     setNewSimulation(newSimulation)
     if (startImmediately) {
       setPreferredView('view')
