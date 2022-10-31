@@ -22,16 +22,15 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   
-  const validSimulation = (name != null && name.length > 0) && inputScript && files.length > 0
-  console.log("Our files: ", files)
-
+  const validSimulation = (name != null && name.length > 0) && inputScript && files.filter(file => file.fileName === inputScript).length > 0
+  
   useEffect(() => {
     //@ts-ignore
     window.files = []
   }, [])
 
   const onChange = useCallback(async (info: any) => {
-    // Need to use window.files because these async functions can't seem to agree on the state
+    // Need to use window.files because these async functions can't seem to agree on the state  
     if (info.file.status === 'removed') {
       const newFiles = files.filter(file => file.fileName !== info.file.name)
       //@ts-ignore
