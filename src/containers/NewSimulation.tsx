@@ -2,7 +2,7 @@ import {Input, Layout} from 'antd'
 import { InboxOutlined } from '@ant-design/icons';
 import {useCallback, useEffect, useState} from 'react'
 import { useStoreState, useStoreActions } from '../hooks';
-import { message, Upload, Modal, Button, Select, Divider } from 'antd';
+import { message, Upload, Modal, Button, Select, Divider, Tooltip } from 'antd';
 import type { UploadProps } from 'antd';
 import { Simulation, SimulationFile } from '../store/simulation';
 const { Option } = Select;
@@ -63,8 +63,13 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
   
   return (
     <Modal open title="Create new simulation" footer={[
-      <Button onClick={onOk} disabled={!validSimulation}>OK</Button>
-    ]}>
+      <>
+        <Button onClick={onClose}>Cancel</Button>
+        <Tooltip title="You must specify a simulation name, upload at least one file and select the input script.">
+          <Button onClick={onOk} disabled={!validSimulation}>OK</Button>
+        </Tooltip>
+      </>
+    ]} onCancel={onClose}>
       <p><b>Name</b></p>
       <Input onChange={(e) => setName(e.target.value)} placeholder='Simulation name'></Input>
       <Divider />
@@ -75,7 +80,7 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
         </p>
         <p className="ant-upload-text">Click or drag file to this area to upload</p>
         <p className="ant-upload-hint">
-          Upload files required for your simulation. Note that these files are not stored across Atomify sessions yet.
+          Upload the files you need for your simulation. Note that these files are not stored across Atomify sessions yet.
         </p>
       </Dragger>
       {files.length > 0 && <>
