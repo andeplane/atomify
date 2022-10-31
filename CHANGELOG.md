@@ -1,5 +1,8 @@
 # Change Log
 
+## [0.4.5] Oct 31st 2022
+- Added feature to create new simulations where you can upload your own files
+
 ## [0.4.4] Oct 30th 2022
 - Added plotting of computes (e.g. kinetic energy vs time or compute RDF)
 
