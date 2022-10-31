@@ -124,20 +124,22 @@ bool Compute::trySync(LAMMPS_NS::ComputePressure *compute) {
 }
 
 bool Compute::syncPerAtom() {
-  if(!m_compute || !m_compute->peratom_flag) return false;
+  if(!m_compute->peratom_flag) return false;
   
   int numCols = m_compute->size_peratom_cols;
   int numAtoms = m_lmp->atom->natoms;
-  if(numCols == 0) {
-    double *values = m_compute->vector_atom;
+
+  if (numAtoms > m_perAtomData.size()) {
     m_perAtomData.resize(numAtoms);
+  }
+
+  if(numCols == 0) {
     for (int i = 0; i < numAtoms; i++) {
-      m_perAtomData[i] = values[i];
+      m_perAtomData[i] = m_compute->vector_atom[i];
     }
   } else {
-    m_perAtomData.resize(numAtoms);
-    for(int atomIndex=0; atomIndex<numAtoms; atomIndex++) {
-      m_perAtomData[atomIndex] = m_compute->array_atom[atomIndex][0];
+    for(int i=0; i<numAtoms; i++) {
+      m_perAtomData[i] = m_compute->array_atom[i][0];
     }
   }
   return true;

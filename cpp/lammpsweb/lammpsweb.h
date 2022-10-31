@@ -49,7 +49,8 @@ public:
   int getTimesteps();
   int getRunTotalTimesteps();
   int getRunTimesteps();
-  std::vector<Compute> getComputes();
+  std::vector<std::string> getComputeNames();
+  Compute getCompute(std::string name);
   std::vector<Fix> getFixes();
 
   // Pointer getters
@@ -84,6 +85,7 @@ public:
   int findFixIndex(std::string identifier);
   int findComputeIndex(std::string identifier);
   bool fixExists(std::string identifier);
+  std::string getExceptionMessage(intptr_t exceptionPtr) { return std::string(reinterpret_cast<std::exception *>(exceptionPtr)->what()); }
 };
 
 #ifdef __EMSCRIPTEN__
@@ -103,7 +105,9 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("getTimestepsPerSecond", &LAMMPSWeb::getTimestepsPerSecond)
       .function("getCPURemain", &LAMMPSWeb::getCPURemain)
       .function("getWhichFlag", &LAMMPSWeb::getWhichFlag)
-      .function("getComputes", &LAMMPSWeb::getComputes)
+      .function("getCompute", &LAMMPSWeb::getCompute)
+      .function("getComputeNames", &LAMMPSWeb::getComputeNames)
+      .function("syncComputes", &LAMMPSWeb::syncComputes)
       .function("getFixes", &LAMMPSWeb::getFixes)
 
       .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
@@ -114,6 +118,7 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
       .function("getBondsPosition1Pointer", &LAMMPSWeb::getBondsPosition1Pointer)
       .function("getBondsPosition2Pointer", &LAMMPSWeb::getBondsPosition2Pointer)
+      .function("getExceptionMessage", &LAMMPSWeb::getExceptionMessage)
       
       .function("step", &LAMMPSWeb::step)
       .function("start", &LAMMPSWeb::start)
@@ -153,6 +158,7 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .constructor<>()
     .function("getName", &Fix::getName)
     .function("getType", &Fix::getType);
+  
   register_vector<Data1D>("vector<Data1D>");
   register_vector<std::string>("vector<std::string>");
   register_vector<Fix>("vector<Fix>");
