@@ -6,10 +6,10 @@
 
 void Compute::sync() {
   if(syncPerAtom()) return;
-  // if(trySync(dynamic_cast<LAMMPS_NS::ComputeRDF*>(m_compute))) return;
-  // if(trySync(dynamic_cast<LAMMPS_NS::ComputeMSD*>(m_compute))) return;
-  // if(trySync(dynamic_cast<LAMMPS_NS::ComputeVACF*>(m_compute))) return;
-  // if(trySync(dynamic_cast<LAMMPS_NS::ComputePressure*>(m_compute))) return;
+  if(trySync(dynamic_cast<LAMMPS_NS::ComputeRDF*>(m_compute))) return;
+  if(trySync(dynamic_cast<LAMMPS_NS::ComputeMSD*>(m_compute))) return;
+  if(trySync(dynamic_cast<LAMMPS_NS::ComputeVACF*>(m_compute))) return;
+  if(trySync(dynamic_cast<LAMMPS_NS::ComputePressure*>(m_compute))) return;
   // if(sync(dynamic_cast<ComputeGyration*>(lmp_compute), lammpsController)) return;
 
   if(m_compute->scalar_flag == 1) {
@@ -18,9 +18,6 @@ void Compute::sync() {
     data.label = m_name;
     float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
     data.add(simulationTime, m_scalarValue);
-    if (data.xValues.size() % 100 == 0) {
-      printf("I am %s and got data with num values %ld\n", m_name.c_str(), data.xValues.size());
-    }
   }
 }
 
