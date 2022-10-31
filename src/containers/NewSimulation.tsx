@@ -22,7 +22,8 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
   
-  const validSimulation = (name != null && name.length > 0) && inputScript
+  const validSimulation = (name != null && name.length > 0) && inputScript && files.length > 0
+  console.log("Our files: ", files)
 
   useEffect(() => {
     //@ts-ignore
@@ -30,6 +31,15 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
   }, [])
 
   const onChange = useCallback(async (info: any) => {
+    // Need to use window.files because these async functions can't seem to agree on the state
+    if (info.file.status === 'removed') {
+      const newFiles = files.filter(file => file.fileName !== info.file.name)
+      //@ts-ignore
+      window.files = newFiles
+      setFiles(newFiles)
+      return
+    }
+
     const file: SimulationFile = {
       fileName: info.file.name,
       content: await info.file.text()
@@ -39,7 +49,7 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
     //@ts-ignore
     setFiles(window.files)
     message.success(`${file.fileName} uploaded successfully.`);
-  }, [setFiles])
+  }, [files, setFiles])
 
   const props: UploadProps = {
     name: 'file',
