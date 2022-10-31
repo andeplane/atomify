@@ -326,31 +326,6 @@
             ]
         },
         {
-            "id": "amorphous_carbon",
-            "title": "Amorphous carbon liquid quench",
-            "description": "The simulation consists of carbon atoms, initially in the liquid state (high temperature). The temperature of the system is decreased progressively until hexagonal rings form. It results in an amorphous nanoporous structure of carbon. Warning: heavy and long simulation.",
-            "imageUrl": "simongravelle/solids/amorphous-carbon/amorphous-carbon.jpeg",
-            "inputScript": "amorphous-carbon.in",
-            "keywords": [
-                "airebo",
-                "carbon",
-                "amorphous",
-                "simongravelle"
-            ],
-            "author": "Simon Gravelle",
-            "authorUrl": "https://simongravelle.github.io/",
-            "files": [
-                {
-                    "fileName": "amorphous-carbon.in",
-                    "url": "simongravelle/solids/amorphous-carbon/amorphous-carbon.in"
-                },
-                {
-                    "fileName": "CH.airebo",
-                    "url": "simongravelle/solids/shared/CH.airebo"
-                }
-            ]
-        },
-        {
             "id": "go-nanoparticle",
             "title": "Graphene Oxcide nanoparticle",
             "description": "The simulation consists of a single graphene oxide particle with a few water molecules. The initial GO nanoparticle has been generated using [make graphitics].",
