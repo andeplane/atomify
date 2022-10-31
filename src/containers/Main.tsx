@@ -30,9 +30,6 @@ const Main = () => {
         <Tabs.TabPane tab="Notebook" key="notebook">
           <Notebook />
         </Tabs.TabPane>
-        <Tabs.TabPane tab="New simulation" key="newsimulation">
-          <NewSimulation />
-        </Tabs.TabPane>
         <Tabs.TabPane tab="Edit" key="editfile">
           <Edit />
         </Tabs.TabPane>

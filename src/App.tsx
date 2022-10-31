@@ -17,6 +17,7 @@ import Simulation from './components/Simulation'
 import Main from './containers/Main'
 import { useStoreActions, useStoreState } from './hooks';
 import {track} from './utils/metrics'
+import NewSimulation from './containers/NewSimulation';
 const { Sider } = Layout;
 
 type MenuItem = Required<MenuProps>['items'][number];
@@ -42,6 +43,7 @@ function getItem(
 const App: React.FC = () => {
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
   const [collapsed, setCollapsed] = useState(false);
+  const [showNewSimulation, setShowNewSimulation] = useState(false);
   const running = useStoreState(state => state.simulation.running)
   const simulation = useStoreState(state => state.simulation.simulation)
   const selectedFile = useStoreState(state => state.simulation.selectedFile)
@@ -63,6 +65,21 @@ const App: React.FC = () => {
   const editMenuLabel = 'Edit '+ (simulation ? simulation?.id : '')
   const runStopButtonTitle = running ? "Stop" : "Run"
 
+  const runStopButton = getItem(runStopButtonTitle, 'run', running ? <BorderOutlined /> : <PlaySquareOutlined />, undefined, () => {
+    if (running) {
+      // @ts-ignore
+      window.cancel = true
+    } else {
+      run()
+      setPreferredView('view')
+    }
+  }, simulation == null)
+
+  const newSimulationButton = getItem('New simulation', 'newsimulation', <PlusSquareOutlined />, undefined, () => {
+    setShowNewSimulation(true)
+    setPreferredView(selectedMenu) // This is another hack. Should really rethink menu system.
+  })
+
   const items: MenuItem[] = [
     getItem('View', 'view', <AlignLeftOutlined />),
     getItem('Console', 'console', <BorderOuterOutlined />),
@@ -71,21 +88,17 @@ const App: React.FC = () => {
       return getItem(file.fileName, 'file'+file.fileName, <FileOutlined />)
     }): [], undefined, selectedFile==null),
     {type: 'divider'},
-    getItem('New simulation', 'newsimulation', <PlusSquareOutlined />),
+    newSimulationButton,
     getItem('Examples', 'examples', <InsertRowAboveOutlined />),
     {type: 'divider'},
-    getItem(runStopButtonTitle, 'run', running ? <BorderOutlined /> : <PlaySquareOutlined />, undefined, () => {
-      if (running) {
-        // @ts-ignore
-        window.cancel = true
-      } else {
-        run()
-        setPreferredView('view')
-      }
-    }, simulation == null)
+    runStopButton
   ];
 
   useEffect(() => {
+    if (preferredView === 'newsimulation') {
+      return
+    }
+
     if (preferredView) {
       setSelectedMenu(preferredView)
       setPreferredView(undefined)
@@ -99,6 +112,8 @@ const App: React.FC = () => {
   }, [selectedFile, setSelectedMenu])
 
   const onMenuSelect = useCallback((selected: string) => {
+    track('MenuClick', {selected, simulationId: simulation?.id, running})
+    
     if (selected === "run") {
       return
     }
@@ -115,7 +130,6 @@ const App: React.FC = () => {
       }
     }
     
-    track('MenuClick', {selected, simulationId: simulation?.id, running})
   }, [simulation, setSelectedFile, running, setSelectedMenu])
   
   return (
@@ -136,6 +150,7 @@ const App: React.FC = () => {
         <Main />
       </Layout>
     </Layout>
+    {showNewSimulation && <NewSimulation onClose={() => setShowNewSimulation(false)} />}
     </>
   );
 };
