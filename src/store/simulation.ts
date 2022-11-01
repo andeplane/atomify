@@ -366,7 +366,7 @@ export const simulationModel: SimulationModel = {
     lammps.start()
     actions.setRunning(true)
     track('Simulation.Start', {simulationId: simulation?.id})
-    time_event('Simulation.Run');
+    time_event('Simulation.Stop');
 
     const inputScriptFile = simulation.files.filter(file => file.fileName===simulation.inputScript)[0]
     if (inputScriptFile.content) {
@@ -374,7 +374,7 @@ export const simulationModel: SimulationModel = {
     }
     
     let errorMessage: string|undefined = undefined
-
+    const startTime = performance.now()
     try {
       await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
     } catch(exception: any) {
@@ -385,13 +385,20 @@ export const simulationModel: SimulationModel = {
     if (!errorMessage) {
       errorMessage = lammps.getErrorMessage()
     }
-
+    const endTime = performance.now()
+    const duration = (endTime - startTime) / 1000 // seconds
+    const metricsData = {
+      timesteps: lammps.getTimesteps(),
+      timestepsPerSecond: (lammps.getTimesteps() / duration).toFixed(3),
+      numAtoms: lammps.getNumAtoms()
+    }
+    
     if (errorMessage) {
       if (errorMessage.includes("Atomify::canceled")) {
         // Simulation got canceled.
         actions.setRunning(false)
         actions.setShowConsole(true)
-        track('Simulation.Run', {simulationId: simulation?.id, stopReason: "canceled", numAtoms: lammps.getNumAtoms()})
+        track('Simulation.Stop', {simulationId: simulation?.id, stopReason: "canceled", ...metricsData})
       } else {
         notification.error({
           message: errorMessage,
@@ -399,12 +406,12 @@ export const simulationModel: SimulationModel = {
         })
         actions.setRunning(false)
         actions.setShowConsole(true)
-        track('Simulation.Run', {simulationId: simulation?.id, stopReason: "failed", errorMessage, numAtoms: lammps.getNumAtoms()})
+        track('Simulation.Stop', {simulationId: simulation?.id, stopReason: "failed", errorMessage, ...metricsData})
       }
     } else {
       actions.setRunning(false)
       actions.setShowConsole(true)
-      track('Simulation.Run', {simulationId: simulation?.id, stopReason: "completed", numAtoms: lammps.getNumAtoms()})
+      track('Simulation.Stop', {simulationId: simulation?.id, stopReason: "completed", ...metricsData})
       //@ts-ignore
       window.postStepCallback()
     }

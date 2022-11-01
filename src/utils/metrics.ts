@@ -11,6 +11,7 @@ export const track = (event_name: string, properties?: Dict) => {
   }
   
   if (location.hostname === "localhost" || location.hostname === "127.0.0.1") { //eslint-disable-line no-restricted-globals
+    console.log("Tracking ", event_name, properties)
     return
   }
 
