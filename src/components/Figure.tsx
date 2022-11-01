@@ -11,8 +11,15 @@ interface FigureProps {
 const Figure = ({compute, onClose} : FigureProps) => {
   const [graph, setGraph] = useState<Dygraph>()
   const timesteps = useStoreState(state => state.simulationStatus.timesteps)
-  const width = window.innerWidth * 0.6+50 // Extra 50 is padding outside figure
+  const width = window.innerWidth * 0.6
   const height = window.innerWidth * 0.4
+
+  useEffect(() => {
+    compute.syncDataPoints = true
+    return () => {
+      compute.syncDataPoints = false
+    }
+  }, [compute])
   
   useEffect(() => {
     if (compute.data1D && !graph) {
@@ -21,7 +28,7 @@ const Figure = ({compute, onClose} : FigureProps) => {
         xlabel: compute.xLabel,
         ylabel: compute.yLabel,
         title: compute.name,
-        width,
+        width: width-50, // Extra 50 is padding for the figure
         height,
         legend: 'always'
       });

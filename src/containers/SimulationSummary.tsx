@@ -58,7 +58,7 @@ const SimulationSummary = () => {
       render: (value, record) => {
         if (record.isPerAtom) {
           return <Button style={{padding: 0}} type="link" onMouseEnter={() => {colorModifier.computeName=value}} onMouseLeave={() => {colorModifier.computeName=undefined}}>{value}</Button>
-        } else if (record.data1D != null) {
+        } else if (record.hasData1D) {
           return <><Button style={{padding: 0}} type="link" onClick={() => {
             track('Modifier.Show', {type: 'Compute', name: value})
             setVisibleFigure(value)
