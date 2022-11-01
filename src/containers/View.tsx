@@ -204,7 +204,7 @@ const View = ({visible}: ViewProps) => {
         }}/>
       </SettingsButtonContainer>
       {showAnalyze && 
-        <Sider collapsible onCollapse={() => setShowAnalyze(false)} width={300}>
+        <Sider reverseArrow collapsible onCollapse={() => setShowAnalyze(false)} width={300}>
           <Container>
             <SimulationSummary />
           </Container>
