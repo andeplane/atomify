@@ -434,19 +434,25 @@ void LAMMPSWeb::setBuildNeighborlist(bool buildNeighborlist) {
 }
 
 void LAMMPSWeb::synchronizeLAMMPS(int mode) {
-    if(mode == 1000) {
-      // Just a small sleep to not block UI
+  while (m_paused) {
 #ifdef __EMSCRIPTEN__
-      emscripten_sleep(1);
+    emscripten_sleep(100);
 #endif
-      return;
-    }
+  }
+  
+  if(mode == 1000) {
+  // Just a small sleep to not block UI
+#ifdef __EMSCRIPTEN__
+    emscripten_sleep(1);
+#endif
+    return;
+  }
 
-    if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
+  if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
 
 #ifdef __EMSCRIPTEN__
-    postStepCallback();
-    emscripten_sleep(1);
+  postStepCallback();
+  emscripten_sleep(1);
 #endif
 }
 
@@ -510,11 +516,15 @@ LAMMPS_NS::Compute* LAMMPSWeb::findComputeByIdentifier(std::string identifier) {
   }
 }
 
+void LAMMPSWeb::setPaused(bool paused) {
+  m_paused = paused;
+}
+
 void LAMMPSWeb::start() {
   if(m_lmp) {
       stop();
   }
-
+  m_paused = false;
   int nargs = 1;
   char **argv = new char*[nargs];
   for(int i=0; i<nargs; i++) {
