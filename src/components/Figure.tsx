@@ -11,7 +11,16 @@ interface FigureProps {
 const Figure = ({compute, onClose} : FigureProps) => {
   const [graph, setGraph] = useState<Dygraph>()
   const timesteps = useStoreState(state => state.simulationStatus.timesteps)
+  const width = window.innerWidth * 0.6
+  const height = window.innerWidth * 0.4
 
+  useEffect(() => {
+    compute.syncDataPoints = true
+    return () => {
+      compute.syncDataPoints = false
+    }
+  }, [compute])
+  
   useEffect(() => {
     if (compute.data1D && !graph) {
       const g = new Dygraph('graph', compute.data1D.data, {
@@ -19,15 +28,15 @@ const Figure = ({compute, onClose} : FigureProps) => {
         xlabel: compute.xLabel,
         ylabel: compute.yLabel,
         title: compute.name,
-        width: 700,
-        height: 500,
+        width: width-50, // Extra 50 is padding for the figure
+        height,
         legend: 'always'
       });
       setGraph(g)
       //@ts-ignore
       window.compute = compute
     }
-  }, [compute, graph])
+  }, [compute, graph, height, width])
 
   useEffect(() => {
     if (graph && compute.data1D) {
@@ -35,7 +44,7 @@ const Figure = ({compute, onClose} : FigureProps) => {
     }
   }, [graph, compute, timesteps])
   
-  return (<Modal open width={750} footer={null} onCancel={onClose}>
+  return (<Modal open width={width} footer={null} onCancel={onClose}>
       <div id="graph" />
       {!graph && <Empty />}
   </Modal>)

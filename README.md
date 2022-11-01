@@ -1,6 +1,12 @@
 # Atomify - real time molecular dynamics simulations in the browser
 [![Deploy](https://github.com/andeplane/atomify/actions/workflows/deploy.yaml/badge.svg?branch=main)](https://github.com/andeplane/atomify/actions/workflows/deploy.yaml)
 
+TL;DR: 
+ - Run molecular dynamics (LAMMPS) in the browser
+ - Upload your own scripts or run one of the built-in examples
+ - Watch the simulation while it happens and view plots of real time physical quantities such as temperature and pressure
+ - Analyze the simulation in a Jupyter notebook
+
 ## ⚛️ Try it in your browser ⚛️
 
 ➡️ **https://andeplane.github.io/atomify**

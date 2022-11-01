@@ -24,9 +24,8 @@ class SyncComputesModifier extends Modifier {
       let compute = input.computes[name]
       
       if (compute == null) {
-        // console.log("I did not have it")
         const lmpCompute = input.lammps.getCompute(name)
-        // console.log("Created ", lmpCompute)
+        
         // Need to create a new one 
         compute = {
           name: lmpCompute.getName(),
@@ -37,6 +36,8 @@ class SyncComputesModifier extends Modifier {
           hasScalarData: lmpCompute.hasScalarData(),
           clearPerSync: lmpCompute.getClearPerSync(),
           scalarValue: 0,
+          syncDataPoints: false,
+          hasData1D: false,
           lmpCompute,
         }
       }
@@ -46,48 +47,52 @@ class SyncComputesModifier extends Modifier {
         compute.xLabel = compute.lmpCompute.getXLabel()
         compute.yLabel = compute.lmpCompute.getYLabel()
         compute.scalarValue = compute.lmpCompute.getScalarValue()
-        compute.clearPerSync = compute.lmpCompute.getClearPerSync()
-        const data1DNames = compute.lmpCompute.getData1DNames()
-        const data1DVector =  compute.lmpCompute.getData1D()
-        if (data1DNames.size() === 0) {
-          continue
-        }
-
-        if (compute.data1D == null) {
-          compute.data1D = {
-            data: [],
-            labels: []
-          }
-        }
         
-        if (compute.data1D) {
-          if (compute.clearPerSync) {
-            // For histograms (compute rdf etc) we don't have time as x axis, so we clear every time
-            compute.data1D.data = []
-          }
-          const lengthBeforeWeStart = compute.data1D.data.length // Used to avoid coping all data every time
+        const data1DNames = compute.lmpCompute.getData1DNames()
+        compute.hasData1D = data1DNames.size() > 0
 
-          if (compute.data1D.labels.length === 0) {
-            compute.data1D.labels.push('x')
-          }
+        if (data1DNames.size() > 0) {
+          compute.clearPerSync = compute.lmpCompute.getClearPerSync()
+          const data1DVector = compute.lmpCompute.getData1D()
           
-          for (let j = 0; j < data1DNames.size(); j++) {
-            const lmpData = data1DVector.get(j)
-            
-            if (compute.data1D.labels.length-1 === j) {
-              // Add missing labels
-              compute.data1D.labels.push(lmpData.getLabel())
+          if (compute.data1D == null) {
+            compute.data1D = {
+              data: [],
+              labels: []
+            }
+          }
+
+          if (compute.syncDataPoints && compute.data1D) { // Data points is only for plotting figures
+            if (compute.clearPerSync) {
+              // For histograms (compute rdf etc) we don't have time as x axis, so we clear every time
+              compute.data1D.data = []
+            }
+
+            const lengthBeforeWeStart = compute.data1D.data.length // Used to avoid coping all data every time
+
+            if (compute.data1D.labels.length === 0) {
+              // First label is never visible
+              compute.data1D.labels.push('x')
             }
             
-            const xValuesPointer = lmpData.getXValuesPointer() / 4
-            const yValuesPointer = lmpData.getYValuesPointer() / 4
-            const xValues = input.wasm.HEAPF32.subarray(xValuesPointer, xValuesPointer + lmpData.getNumPoints()) as Float32Array
-            const yValues = input.wasm.HEAPF32.subarray(yValuesPointer, yValuesPointer + lmpData.getNumPoints()) as Float32Array
-            for (let k = lengthBeforeWeStart; k < xValues.length; k++) {
-              if (j === 0) {
-                compute.data1D.data.push([xValues[k]])
+            for (let j = 0; j < data1DNames.size(); j++) {
+              const lmpData = data1DVector.get(j)
+              
+              if (compute.data1D.labels.length-1 === j) {
+                // Add missing labels
+                compute.data1D.labels.push(lmpData.getLabel())
               }
-              compute.data1D.data[k].push(yValues[k])
+              
+              const xValuesPointer = lmpData.getXValuesPointer() / 4
+              const yValuesPointer = lmpData.getYValuesPointer() / 4
+              const xValues = input.wasm.HEAPF32.subarray(xValuesPointer, xValuesPointer + lmpData.getNumPoints()) as Float32Array
+              const yValues = input.wasm.HEAPF32.subarray(yValuesPointer, yValuesPointer + lmpData.getNumPoints()) as Float32Array
+              for (let k = lengthBeforeWeStart; k < xValues.length; k++) {
+                if (j === 0) {
+                  compute.data1D.data.push([xValues[k]])
+                }
+                compute.data1D.data[k].push(yValues[k])
+              }
             }
           }
         }
