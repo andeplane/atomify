@@ -11,8 +11,8 @@ interface FigureProps {
 const Figure = ({compute, onClose} : FigureProps) => {
   const [graph, setGraph] = useState<Dygraph>()
   const timesteps = useStoreState(state => state.simulationStatus.timesteps)
-  const width = window.innerWidth * 0.6
-  const height = window.innerWidth * 0.4
+  const width = window.innerWidth < 1000 ? window.innerWidth * 0.8 : window.innerWidth * 0.6
+  const height = width * 3/4
 
   useEffect(() => {
     compute.syncDataPoints = true
