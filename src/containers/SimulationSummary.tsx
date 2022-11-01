@@ -29,12 +29,13 @@ interface SimulationSummaryType {
 const SimulationSummary = () => {
   const [visibleSettings, setVisibleSettings] = useState<string|undefined>()
   const [visibleFigure, setVisibleFigure] = useState<string|undefined>()
-  const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors", "Computes"])
+  // const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors", "Computes"])
 
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const modifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const colorModifier = postTimestepModifiers.filter(modifier => modifier.name==="Colors")[0] as ColorModifier
+  const selectedModifiers = postTimestepModifiers.filter(m => m.active).map(m => m.name)
   
   const simulationStatus = useStoreState(state => state.simulation.simulationStatus)
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
@@ -57,7 +58,7 @@ const SimulationSummary = () => {
       render: (value, record) => {
         if (record.isPerAtom) {
           return <Button style={{padding: 0}} type="link" onMouseEnter={() => {colorModifier.computeName=value}} onMouseLeave={() => {colorModifier.computeName=undefined}}>{value}</Button>
-        } else if (record.data1D != null) {
+        } else if (record.hasData1D) {
           return <><Button style={{padding: 0}} type="link" onClick={() => {
             track('Modifier.Show', {type: 'Compute', name: value})
             setVisibleFigure(value)
@@ -83,7 +84,6 @@ const SimulationSummary = () => {
       modifiers.forEach(modifier => {
         modifier.active = selectedRows.indexOf(modifier) >= 0
       })
-      setSelectedModifiers(selectedRowKeys)
     },
   };
 

@@ -95,6 +95,8 @@ export type Compute = {
   xLabel: string
   yLabel: string
   clearPerSync: boolean
+  syncDataPoints: boolean
+  hasData1D: boolean
   lmpCompute: LMPCompute
 }
 

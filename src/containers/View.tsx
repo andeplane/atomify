@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import {Layout, Row, Col, Progress} from 'antd'
+import {Layout, Row, Col, Progress, Modal, Button} from 'antd'
 
 import { useStoreState, useStoreActions } from '../hooks';
 import {Particles, Bonds, Visualizer} from 'omovi'
@@ -31,13 +31,13 @@ const AnalyzeButtonContainer = styled.div`
 `
 
 const Container = styled.div`
-  padding: 5px;
   color: #ffffff;
   height: 100vh;
 `
 
 const View = ({visible}: ViewProps) => {
   const [loading, setLoading] = useState(false)
+  const [hideNoSimulation, setHideNoSimulation] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showAnalyze, setShowAnalyze] = useState(false)
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
@@ -168,6 +168,7 @@ const View = ({visible}: ViewProps) => {
       title += `> ${lastCommand}` 
     }
   }
+  
   return (
     <Layout>
     <Header className="site-layout-background" style={{ backgroundColor: 'rgba(0,0,0,0)', fontSize: '1.5vw', position: 'fixed' }}>
@@ -188,13 +189,6 @@ const View = ({visible}: ViewProps) => {
           {!showAnalyze && <SimulationSummaryOverlay />}
         </div>
       </div>
-      {showAnalyze && 
-        <Sider width={300}>
-          <Container>
-            <SimulationSummary />
-          </Container>
-        </Sider>
-      }
       <AnalyzeButtonContainer>
         <AreaChartOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 70, zIndex: 1000}} onClick={() => {
           if (!showAnalyze) {
@@ -211,6 +205,14 @@ const View = ({visible}: ViewProps) => {
           setShowSettings(true)
         }}/>
       </SettingsButtonContainer>
+      {showAnalyze && 
+        <Sider reverseArrow collapsible onCollapse={() => setShowAnalyze(false)} width={300}>
+          <Container>
+            <SimulationSummary />
+          </Container>
+        </Sider>
+      }
+      {simulation==null && !hideNoSimulation && <Modal open onCancel={() => setHideNoSimulation(true)} footer={[<Button onClick={() => setHideNoSimulation(true)}>OK</Button>]} title='No simulation'>You can create a new simulation or run one of the built-in examples.</Modal>}
       </Layout>
   )
 }

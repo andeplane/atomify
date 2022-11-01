@@ -1,10 +1,10 @@
 # Change Log
 
-## [0.4.5] Oct 31st 2022
+## [0.4.5] Nov 1st 2022
 - Added feature to create new simulations where you can upload your own files
-
-## [0.4.4] Oct 30th 2022
 - Added plotting of computes (e.g. kinetic energy vs time or compute RDF)
+- Fixed so sidebar can be collapsed on mobile devices
+- Fixed so modifier active state is preserved when simulation summary is reopened
 
 ## [0.4.3] Oct 29th 2022
 - Showing modifiers (syncing of particles and bonds etc) in simulation summary
@@ -12,11 +12,11 @@
 - Can color atoms by per atom compute (kinetic energy etc)
 
 ## [0.4.2] Oct 27th 2022
-- Removed simd optimization since this breaks on Safari (both Mac and iOS)
 - Added simulation summary sidebar
+- Added simulation summary overlay
 - Added Voro++ package to LAMMPS
 - If analysis notebook is specified in the example, open it directly when Notebook is clicked
-- Added simulation summary overlay
+- Removed simd optimization since this breaks on Safari (both Mac and iOS)
 
 ## [0.4.1] Oct 19th 2022
 - Added support for ## [customizing simulations](https://github.com/andeplane/atomify-examples-template)
@@ -43,8 +43,8 @@
 
 ## [0.1.4] Oct 15th 2022
 - Added stop button
-- Handling exceptions from LAMMPS to show command errors
 - Added console to show LAMMPS output
+- Handling exceptions from LAMMPS to show command errors
 
 ## [0.1.3] Oct 10th 2022
 - Added rendering of dynamic bonds using LAMMPS neighbor lists
