@@ -31,7 +31,6 @@ const AnalyzeButtonContainer = styled.div`
 `
 
 const Container = styled.div`
-  padding: 5px;
   color: #ffffff;
   height: 100vh;
 `
@@ -188,13 +187,6 @@ const View = ({visible}: ViewProps) => {
           {!showAnalyze && <SimulationSummaryOverlay />}
         </div>
       </div>
-      {showAnalyze && 
-        <Sider width={300}>
-          <Container>
-            <SimulationSummary />
-          </Container>
-        </Sider>
-      }
       <AnalyzeButtonContainer>
         <AreaChartOutlined style={{ fontSize: '32px', color: '#fff', marginRight: 70, zIndex: 1000}} onClick={() => {
           if (!showAnalyze) {
@@ -211,6 +203,13 @@ const View = ({visible}: ViewProps) => {
           setShowSettings(true)
         }}/>
       </SettingsButtonContainer>
+      {showAnalyze && 
+        <Sider collapsible onCollapse={() => setShowAnalyze(false)} width={300}>
+          <Container>
+            <SimulationSummary />
+          </Container>
+        </Sider>
+      }
       </Layout>
   )
 }
