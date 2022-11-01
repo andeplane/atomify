@@ -39,7 +39,7 @@ const View = ({visible}: ViewProps) => {
   const [loading, setLoading] = useState(false)
   const [hideNoSimulation, setHideNoSimulation] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [showAnalyze, setShowAnalyze] = useState(false)
+  const [showAnalyze, setShowAnalyze] = useState(true)
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(state => state.simulation.cameraPosition)
