@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
-import {Layout, Row, Col, Progress} from 'antd'
+import {Layout, Row, Col, Progress, Modal, Button} from 'antd'
 
 import { useStoreState, useStoreActions } from '../hooks';
 import {Particles, Bonds, Visualizer} from 'omovi'
@@ -37,6 +37,7 @@ const Container = styled.div`
 
 const View = ({visible}: ViewProps) => {
   const [loading, setLoading] = useState(false)
+  const [hideNoSimulation, setHideNoSimulation] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showAnalyze, setShowAnalyze] = useState(false)
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
@@ -167,6 +168,7 @@ const View = ({visible}: ViewProps) => {
       title += `> ${lastCommand}` 
     }
   }
+  
   return (
     <Layout>
     <Header className="site-layout-background" style={{ backgroundColor: 'rgba(0,0,0,0)', fontSize: '1.5vw', position: 'fixed' }}>
@@ -210,6 +212,7 @@ const View = ({visible}: ViewProps) => {
           </Container>
         </Sider>
       }
+      {simulation==null && !hideNoSimulation && <Modal open onCancel={() => setHideNoSimulation(true)} footer={[<Button onClick={() => setHideNoSimulation(true)}>OK</Button>]} title='No simulation'>You can create a new simulation or run one of the built-in examples.</Modal>}
       </Layout>
   )
 }
