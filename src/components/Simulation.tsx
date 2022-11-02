@@ -75,11 +75,8 @@ const SimulationComponent = () => {
         return
       }
       
-      if (lammps != null && simulation != null && !running && ev.key === " ") {
-        setSimulationSettings({...simulationSettings, speed: 1})
-        lammps.setSyncFrequency(1)
-        //@ts-ignore
-        lammps.step()
+      if (running && ev.key === " ") {
+        setPaused(!paused)
       }
 
       if (ev.key === "c" && !ev.metaKey && !ev.ctrlKey) {
@@ -94,7 +91,7 @@ const SimulationComponent = () => {
         })
       }
     }
-  }, [lammps, running, selectedMenu, setSimulationSettings, simulation, simulationSettings])
+  }, [lammps, running, selectedMenu, paused, setPaused, setSimulationSettings, simulation, simulationSettings])
 
   useEffect(() => {
     //@ts-ignore

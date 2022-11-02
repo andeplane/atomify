@@ -41,9 +41,9 @@ const Settings = ({open, onClose}: SettingsProps) => {
       keyboardshortcut: 'c'
     },
     {
-      key: 'simulationstep',
-      name: 'Step simulation',
-      description: 'Run one single timestep (only works after simulation is finished)',
+      key: 'togglepause',
+      name: 'Toggle pause',
+      description: 'Toggle pause (on/off)',
       keyboardshortcut: 'space'
     }
   ];
