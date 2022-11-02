@@ -31,8 +31,7 @@ private:
   int m_particlesCapacity;
   int m_numBonds;
   bool m_buildNeighborlist;
-  bool m_paused;
-
+  
 public:
   LAMMPSWeb();
   ~LAMMPSWeb();
@@ -72,7 +71,6 @@ public:
 
   // Actions to control LAMMPS
   void cancel();
-  void setPaused(bool paused);
   void step();
   void start();
   void stop();
@@ -124,7 +122,6 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
       
       .function("step", &LAMMPSWeb::step)
       .function("start", &LAMMPSWeb::start)
-      .function("setPaused", &LAMMPSWeb::setPaused)
       .function("cancel", &LAMMPSWeb::cancel)
       .function("stop", &LAMMPSWeb::stop)
       .function("getNumAtoms", &LAMMPSWeb::getNumAtoms)

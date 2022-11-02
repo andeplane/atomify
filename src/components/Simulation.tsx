@@ -101,6 +101,7 @@ const SimulationComponent = () => {
     window.postStepCallback = () => {
       // @ts-ignore
       if (paused && !window.cancel) {
+        // Gah this state hack is growing. 
         return true
       }
       if (lammps && wasm && simulation) {
@@ -159,7 +160,6 @@ const SimulationComponent = () => {
           window.cancel = false;
           lammps.setPaused(false)
           setPaused(false)
-          console.log("Will cancel")
           lammps.cancel()
         } else {
           lammps.setPaused(paused)

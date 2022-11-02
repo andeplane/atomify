@@ -445,7 +445,6 @@ void LAMMPSWeb::synchronizeLAMMPS(int mode) {
 
 #ifdef __EMSCRIPTEN__
   while (postStepCallback()) {
-    printf("Paused, sleeping...");
     emscripten_sleep(100);
   }
   emscripten_sleep(1);
@@ -512,15 +511,10 @@ LAMMPS_NS::Compute* LAMMPSWeb::findComputeByIdentifier(std::string identifier) {
   }
 }
 
-void LAMMPSWeb::setPaused(bool paused) {
-  m_paused = paused;
-}
-
 void LAMMPSWeb::start() {
   if(m_lmp) {
       stop();
   }
-  m_paused = false;
   int nargs = 1;
   char **argv = new char*[nargs];
   for(int i=0; i<nargs; i++) {
