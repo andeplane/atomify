@@ -103,6 +103,7 @@ export interface Simulation {
 export interface SimulationModel {
   selectedMenu: string
   running: boolean
+  paused: boolean
   showConsole: boolean
   simulation?: Simulation
   status?: Status
@@ -118,6 +119,7 @@ export interface SimulationModel {
   setSelectedMenu: Action<SimulationModel, string>
   addLammpsOutput: Action<SimulationModel, string>
   setShowConsole: Action<SimulationModel, boolean>
+  setPaused: Action<SimulationModel, boolean>
   setSimulationStatus: Action<SimulationModel, SimulationStatus>
   setCameraPosition: Action<SimulationModel, THREE.Vector3|undefined>
   setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
@@ -139,6 +141,7 @@ export interface SimulationModel {
 
 export const simulationModel: SimulationModel = {
   running: false,
+  paused: false,
   selectedMenu: 'examples',
   showConsole: false,
   files: [],
@@ -149,7 +152,6 @@ export const simulationModel: SimulationModel = {
   setSimulationStatus: action((state, value: SimulationStatus) => {
     state.simulationStatus = value
   }),
-  
   addLammpsOutput: action((state, output: string) => {
     state.lammpsOutput = [...state.lammpsOutput, output]
   }),
@@ -164,6 +166,9 @@ export const simulationModel: SimulationModel = {
   }),
   setShowConsole: action((state, showConsole: boolean) => {
     state.showConsole = showConsole
+  }),
+  setPaused: action((state, value: boolean) => {
+    state.paused = value
   }),
   setCameraPosition: action((state, cameraPosition: THREE.Vector3) => {
     state.cameraPosition = cameraPosition
@@ -377,7 +382,9 @@ export const simulationModel: SimulationModel = {
     const startTime = performance.now()
     try {
       await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
+
     } catch(exception: any) {
+      console.log("Exception: ", exception)
       errorMessage = lammps.getExceptionMessage(exception)
       console.log("Got error running LAMMPS: ", errorMessage)
     }
@@ -392,7 +399,8 @@ export const simulationModel: SimulationModel = {
       timestepsPerSecond: (lammps.getTimesteps() / duration).toFixed(3),
       numAtoms: lammps.getNumAtoms()
     }
-    
+    actions.setPaused(false)
+
     if (errorMessage) {
       if (errorMessage.includes("Atomify::canceled")) {
         // Simulation got canceled.
@@ -428,7 +436,7 @@ export const simulationModel: SimulationModel = {
     actions.setShowConsole(false)
     actions.setSimulation(simulation)
     actions.resetLammpsOutput()
-
+    
     // Reset potentially chosen per atom coloring
     // @ts-ignore
     const postTimestepModifiers = getStoreState().processing.postTimestepModifiers

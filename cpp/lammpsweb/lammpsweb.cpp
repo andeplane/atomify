@@ -26,13 +26,12 @@
 using namespace std;
 
 #ifdef __EMSCRIPTEN__
-EM_JS(void, call_js_agrs, (), {
-    postStepCallback();
+EM_JS(bool, call_js_agrs, (), {
+    return postStepCallback();
 });
 
 bool postStepCallback() {
-    call_js_agrs();
-    return true;
+    return call_js_agrs();
 }
 
 EMSCRIPTEN_BINDINGS(module) {
@@ -433,20 +432,22 @@ void LAMMPSWeb::setBuildNeighborlist(bool buildNeighborlist) {
   m_buildNeighborlist = buildNeighborlist;
 }
 
-void LAMMPSWeb::synchronizeLAMMPS(int mode) {
-    if(mode == 1000) {
-      // Just a small sleep to not block UI
+void LAMMPSWeb::synchronizeLAMMPS(int mode) {  
+  if(mode == 1000) {
+  // Just a small sleep to not block UI
 #ifdef __EMSCRIPTEN__
-      emscripten_sleep(1);
-#endif
-      return;
-    }
-
-    if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
-
-#ifdef __EMSCRIPTEN__
-    postStepCallback();
     emscripten_sleep(1);
+#endif
+    return;
+  }
+
+  if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
+
+#ifdef __EMSCRIPTEN__
+  while (postStepCallback()) {
+    emscripten_sleep(100);
+  }
+  emscripten_sleep(1);
 #endif
 }
 
@@ -514,7 +515,6 @@ void LAMMPSWeb::start() {
   if(m_lmp) {
       stop();
   }
-
   int nargs = 1;
   char **argv = new char*[nargs];
   for(int i=0; i<nargs; i++) {

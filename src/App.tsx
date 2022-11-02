@@ -7,7 +7,9 @@ import {
   PlaySquareOutlined,
   BorderOutlined,
   AlignLeftOutlined,
-  PlusSquareOutlined
+  PlusSquareOutlined,
+  CaretRightOutlined,
+  PauseOutlined
 } from '@ant-design/icons';
 import { useMeasure } from 'react-use';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -51,6 +53,8 @@ const App: React.FC = () => {
   const setSelectedMenu = useStoreActions(actions => actions.simulation.setSelectedMenu)
   const preferredView = useStoreState(state => state.simulation.preferredView)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
+  const paused = useStoreState(state => state.simulation.paused)
+  const setPaused = useStoreActions(actions => actions.simulation.setPaused)
   const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
 
   const run = useStoreActions(actions => actions.simulation.run)
@@ -67,6 +71,8 @@ const App: React.FC = () => {
 
   const runStopButton = getItem(runStopButtonTitle, 'run', running ? <BorderOutlined /> : <PlaySquareOutlined />, undefined, () => {
     if (running) {
+      // Need to unpause to reach cancel. TODO: improve this state
+      setPaused(false)
       // @ts-ignore
       window.cancel = true
     } else {
@@ -74,6 +80,12 @@ const App: React.FC = () => {
       setPreferredView('view')
     }
   }, simulation == null)
+
+  const pauseButtonTitle = paused ? "Continue" : "Pause"
+  const pauseButton = getItem(pauseButtonTitle, 'pause', paused ? <CaretRightOutlined /> : <PauseOutlined />, undefined, () => {
+    setPaused(!paused)
+    setPreferredView(selectedMenu) // This is another hack. Should really rethink menu system.
+  }, running === false)
 
   const newSimulationButton = getItem('New simulation', 'newsimulation', <PlusSquareOutlined />, undefined, () => {
     setShowNewSimulation(true)
@@ -91,7 +103,8 @@ const App: React.FC = () => {
     newSimulationButton,
     getItem('Examples', 'examples', <InsertRowAboveOutlined />),
     {type: 'divider'},
-    runStopButton
+    runStopButton,
+    pauseButton
   ];
 
   useEffect(() => {

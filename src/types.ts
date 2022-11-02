@@ -30,6 +30,7 @@ export type LammpsWeb = {
   stop: () => boolean
   start: () => boolean
   cancel: () => void
+  setPaused: (paused: boolean) => void
   runCommand: (command: string) => void
   runFile: (path: string) => void
   

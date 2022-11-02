@@ -31,7 +31,7 @@ private:
   int m_particlesCapacity;
   int m_numBonds;
   bool m_buildNeighborlist;
-
+  
 public:
   LAMMPSWeb();
   ~LAMMPSWeb();

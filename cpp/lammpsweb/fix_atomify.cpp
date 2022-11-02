@@ -114,7 +114,7 @@ void FixAtomify::update_computes()
         }
     }
 }
-#include <iostream>
+
 void FixAtomify::end_of_step()
 {
     if (m_cancel) {

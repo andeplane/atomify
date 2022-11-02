@@ -34,6 +34,8 @@ const SimulationComponent = () => {
   const particles = useStoreState(state => state.render.particles)
   const bonds = useStoreState(state => state.render.bonds)
   const simulation = useStoreState(state => state.simulation.simulation)
+  const paused = useStoreState(state => state.simulation.paused)
+  const setPaused = useStoreActions(actions => actions.simulation.setPaused)
   const renderState = useStoreState(state => state.render)
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
@@ -73,11 +75,8 @@ const SimulationComponent = () => {
         return
       }
       
-      if (lammps != null && simulation != null && !running && ev.key === " ") {
-        setSimulationSettings({...simulationSettings, speed: 1})
-        lammps.setSyncFrequency(1)
-        //@ts-ignore
-        lammps.step()
+      if (running && ev.key === " ") {
+        setPaused(!paused)
       }
 
       if (ev.key === "c" && !ev.metaKey && !ev.ctrlKey) {
@@ -92,11 +91,16 @@ const SimulationComponent = () => {
         })
       }
     }
-  }, [lammps, running, selectedMenu, setSimulationSettings, simulation, simulationSettings])
+  }, [lammps, running, selectedMenu, paused, setPaused, setSimulationSettings, simulation, simulationSettings])
 
   useEffect(() => {
     //@ts-ignore
     window.postStepCallback = () => {
+      // @ts-ignore
+      if (paused && !window.cancel) {
+        // Gah this state hack is growing. 
+        return true
+      }
       if (lammps && wasm && simulation) {
         const modifierInput: ModifierInput = {
           lammps,
@@ -151,6 +155,7 @@ const SimulationComponent = () => {
         if (window.cancel) {
           // @ts-ignore
           window.cancel = false;
+          setPaused(false)
           lammps.cancel()
         }
 
@@ -159,13 +164,14 @@ const SimulationComponent = () => {
         setRunTotalTimesteps(lammps.getRunTotalTimesteps())
         setLastCommand(lammps.getLastCommand())
       }
+      return false
     }
   }, [wasm, lammps, particles, bonds, simulation, selectedMenu, renderState,
     running, simulationSettings, postTimestepModifiers, 
-    setParticles, setParticleStylesUpdated, setBonds, 
+    setParticles, setParticleStylesUpdated, setBonds, setPaused,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
     setSimulationStatus, setComputes, setFixes, 
-    setSimulationSettings, setTimesteps, computes, fixes
+    setSimulationSettings, setTimesteps, computes, fixes, paused
     ])
 
   useEffect(
