@@ -155,11 +155,8 @@ const SimulationComponent = () => {
         if (window.cancel) {
           // @ts-ignore
           window.cancel = false;
-          lammps.setPaused(false)
           setPaused(false)
           lammps.cancel()
-        } else {
-          lammps.setPaused(paused)
         }
 
         setTimesteps(lammps.getTimesteps())

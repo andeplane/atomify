@@ -384,6 +384,7 @@ export const simulationModel: SimulationModel = {
       await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
 
     } catch(exception: any) {
+      console.log("Exception: ", exception)
       errorMessage = lammps.getExceptionMessage(exception)
       console.log("Got error running LAMMPS: ", errorMessage)
     }
