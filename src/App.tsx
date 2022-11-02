@@ -125,7 +125,7 @@ const App: React.FC = () => {
   }, [selectedFile, setSelectedMenu])
 
   const onMenuSelect = useCallback((selected: string) => {
-    track('MenuClick', {selected, simulationId: simulation?.id, running})
+    track('MenuClick', {selected, simulationId: simulation?.id, running, paused})
 
     if (selected === "run") {
       return
@@ -143,7 +143,7 @@ const App: React.FC = () => {
       }
     }
     
-  }, [simulation, setSelectedFile, running, setSelectedMenu])
+  }, [simulation, setSelectedFile, running, paused, setSelectedMenu])
   
   return (
     <>
