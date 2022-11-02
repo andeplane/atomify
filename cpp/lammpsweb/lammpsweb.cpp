@@ -26,13 +26,12 @@
 using namespace std;
 
 #ifdef __EMSCRIPTEN__
-EM_JS(void, call_js_agrs, (), {
-    postStepCallback();
+EM_JS(bool, call_js_agrs, (), {
+    return postStepCallback();
 });
 
 bool postStepCallback() {
-    call_js_agrs();
-    return true;
+    return call_js_agrs();
 }
 
 EMSCRIPTEN_BINDINGS(module) {
@@ -433,13 +432,7 @@ void LAMMPSWeb::setBuildNeighborlist(bool buildNeighborlist) {
   m_buildNeighborlist = buildNeighborlist;
 }
 
-void LAMMPSWeb::synchronizeLAMMPS(int mode) {
-  while (m_paused) {
-#ifdef __EMSCRIPTEN__
-    emscripten_sleep(100);
-#endif
-  }
-  
+void LAMMPSWeb::synchronizeLAMMPS(int mode) {  
   if(mode == 1000) {
   // Just a small sleep to not block UI
 #ifdef __EMSCRIPTEN__
@@ -451,7 +444,10 @@ void LAMMPSWeb::synchronizeLAMMPS(int mode) {
   if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
 
 #ifdef __EMSCRIPTEN__
-  postStepCallback();
+  while (postStepCallback()) {
+    printf("Paused, sleeping...");
+    emscripten_sleep(100);
+  }
   emscripten_sleep(1);
 #endif
 }

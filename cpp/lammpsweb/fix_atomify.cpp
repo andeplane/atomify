@@ -114,7 +114,7 @@ void FixAtomify::update_computes()
         }
     }
 }
-#include <iostream>
+
 void FixAtomify::end_of_step()
 {
     if (m_cancel) {
@@ -149,6 +149,7 @@ void FixAtomify::cancel()
 
 void FixAtomify::min_post_force(int vflag)
 {
+    printf("FixAtomify::min_post_force. Cancel: %d\n", m_cancel);
     if (m_cancel) {
         error->all(FLERR, "Atomify::canceled");
     }

@@ -169,7 +169,6 @@ export const simulationModel: SimulationModel = {
   }),
   setPaused: action((state, value: boolean) => {
     state.paused = value
-    state.lammps?.setPaused(value)
   }),
   setCameraPosition: action((state, cameraPosition: THREE.Vector3) => {
     state.cameraPosition = cameraPosition
@@ -383,6 +382,7 @@ export const simulationModel: SimulationModel = {
     const startTime = performance.now()
     try {
       await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
+
     } catch(exception: any) {
       errorMessage = lammps.getExceptionMessage(exception)
       console.log("Got error running LAMMPS: ", errorMessage)
@@ -398,7 +398,8 @@ export const simulationModel: SimulationModel = {
       timestepsPerSecond: (lammps.getTimesteps() / duration).toFixed(3),
       numAtoms: lammps.getNumAtoms()
     }
-    
+    actions.setPaused(false)
+
     if (errorMessage) {
       if (errorMessage.includes("Atomify::canceled")) {
         // Simulation got canceled.
@@ -434,7 +435,7 @@ export const simulationModel: SimulationModel = {
     actions.setShowConsole(false)
     actions.setSimulation(simulation)
     actions.resetLammpsOutput()
-
+    
     // Reset potentially chosen per atom coloring
     // @ts-ignore
     const postTimestepModifiers = getStoreState().processing.postTimestepModifiers
