@@ -414,35 +414,6 @@
             ]
         },
         {
-            "id": "salt-dissolution-water",
-            "title": "Salt dissolution",
-            "description": "The simulation consists of a cluster of NaCl in water in the NPT ensemble, at a temperature of 360 K and pressure of 1 atm.",
-            "imageUrl": "simongravelle/liquids/salt-dissolution-water/salt-dissolution-water.png",
-            "inputScript": "salt-dissolution-water.in",
-            "keywords": [
-                "lennard jones",
-                "salt",
-                "water",
-                "tip4p"
-            ],
-            "author": "Simon Gravelle",
-            "authorUrl": "https://simongravelle.github.io/",
-            "files": [
-                {
-                    "fileName": "salt-dissolution-water.in",
-                    "url": "simongravelle/liquids/salt-dissolution-water/salt-dissolution-water.in"
-                },
-                {
-                    "fileName": "salt-dissolution-water.data",
-                    "url": "simongravelle/liquids/salt-dissolution-water/salt-dissolution-water.data"
-                },
-                {
-                    "fileName": "PARM.lammps",
-                    "url": "simongravelle/liquids/salt-dissolution-water/PARM.lammps"
-                }
-            ]
-        },
-        {
             "id": "reversibly-adsorbing-particles",
             "title": "Adsorption combined with diffusion create pink noise in nanopore",
             "description": "The simulation consists of particles diffusing inside a cylindrical nanopore. The surface of the nanopore is covered with adsorbing sites, and the particles reversibly adsorb at the inner surface of the nanopore. The adsorption/desorption processes are modelled using bond/create and bond/break commands respectively. A bond forms if a particle comes close enough to a trap. An additional harmonic potential is added to trapped particles. The wall of the cylinder is modelled using the wall/region command.",
