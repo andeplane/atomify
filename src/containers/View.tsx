@@ -73,7 +73,7 @@ const View = ({visible}: ViewProps) => {
       document.body.removeChild(newVisualizer.cpuStats.dom)
       document.body.removeChild(newVisualizer.memoryStats.dom)
       newVisualizer.materials.particles.shininess = 50
-      newVisualizer.ambientLight.intensity = 0.5
+      newVisualizer.ambientLight.intensity = 0.4
       newVisualizer.pointLight.intensity = 0.6
       newVisualizer.pointLight.decay = 2
     }
@@ -155,7 +155,7 @@ const View = ({visible}: ViewProps) => {
     if (visualizer) {
       visualizer.renderer.renderSsao = renderSettings.ssao
       visualizer.pointLight.intensity = 0.6 * renderSettings.brightness
-      visualizer.ambientLight.intensity = 0.5 * renderSettings.brightness
+      visualizer.ambientLight.intensity = 0.4 * renderSettings.brightness
     }
   }, [renderSettings, visualizer])
 
