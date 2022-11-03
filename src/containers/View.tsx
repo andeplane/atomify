@@ -39,7 +39,7 @@ const View = ({visible}: ViewProps) => {
   const [loading, setLoading] = useState(false)
   const [hideNoSimulation, setHideNoSimulation] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [showAnalyze, setShowAnalyze] = useState(true)
+  const [showAnalyze, setShowAnalyze] = useState(window.innerWidth > 900)
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(state => state.simulation.cameraPosition)
@@ -170,7 +170,7 @@ const View = ({visible}: ViewProps) => {
   }
   
   return (
-    <Layout style={{height:"100vh"}}>
+    <Layout>
     <Header className="site-layout-background" style={{ backgroundColor: 'rgba(0,0,0,0)', fontSize: '1.5vw', position: 'fixed' }}>
       <Col>
         <Row>
