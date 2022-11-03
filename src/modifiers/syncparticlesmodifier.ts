@@ -36,6 +36,11 @@ class SyncParticlesModifier extends Modifier {
       newParticles.types = new Float32Array(newCapacity)
       newParticles.radii.fill(0.33 * particleRadius)
       output.particles = newParticles
+    } else {
+      if (numParticles !== newParticles.count) {
+        // Need to update colors
+        output.colorsUpdated = true
+      }
     }
 
     const positionsPtr = input.lammps.getPositionsPointer() / 4;

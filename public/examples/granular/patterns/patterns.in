@@ -1,8 +1,8 @@
 #/camera position 0.9 -26.5 70.5
 #/camera target 1.6 2.0 -0.9
 
-#/atom 1 2.0 #b5c2f5
-#/atom 2 2.0 #b5c2f5
+#/atom 1 4.0 #b5c2f5
+#/atom 2 4.0 #b5c2f5
 
 atom_style	sphere
 boundary	fm fm fm
