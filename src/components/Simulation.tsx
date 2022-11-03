@@ -78,6 +78,27 @@ const SimulationComponent = () => {
       if (selectedMenu !== 'view') {
         return
       }
+
+      const syncFrequencyMap = {
+        '1': 1,
+        '2': 2,
+        '3': 4,
+        '4': 6,
+        '5': 10,
+        '6': 20,
+        '7': 50,
+        '8': 100,
+        '9': 200,
+      }
+      if (Object.keys(syncFrequencyMap).indexOf(ev.key) >= 0) {
+        // @ts-ignore
+        const value: number = syncFrequencyMap[ev.key]
+        setSimulationSettings({...simulationSettings, speed: value})
+        notification.info({
+          message: `Setting simulation speed to ${value}.`
+        })
+      }
+
       
       if (running && ev.key === " ") {
         setPaused(!paused)

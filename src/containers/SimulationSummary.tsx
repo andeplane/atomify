@@ -1,6 +1,6 @@
 import {useStoreState, useStoreActions} from '../hooks'
 import {SettingOutlined} from '@ant-design/icons'
-import {InputNumber, Table, Row, Col, Button} from 'antd'
+import {Table, Row, Col, Button, Slider} from 'antd'
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
 import {Compute} from '../types'
@@ -40,6 +40,7 @@ const SimulationSummary = () => {
   const runType = useStoreState(state => state.simulationStatus.runType)
   const numAtoms = useStoreState(state => state.simulationStatus.numAtoms)
   const numBonds = useStoreState(state => state.simulationStatus.numBonds)
+  const timesteps = useStoreState(state => state.simulationStatus.timesteps)
   const remainingTime = useStoreState(state => state.simulationStatus.remainingTime)
   const timestepsPerSecond = useStoreState(state => state.simulationStatus.timestepsPerSecond)
 
@@ -105,7 +106,7 @@ const SimulationSummary = () => {
       key: 'value',
       render: (text, record) => {
         if (record.key === "simulationspeed") {
-          return <InputNumber min={1} max={200} defaultValue={simulationSettings.speed} onChange={(value) => setSyncFrequency(value)} />
+          return <Slider min={1} step={2} max={200} defaultValue={simulationSettings.speed} onChange={(value) => setSyncFrequency(value)} />
         }
         return <>{text}</>
       }
@@ -117,6 +118,16 @@ const SimulationSummary = () => {
   if (simulation) {
     simulationStatusData = [
       {
+        key: "type",
+        name: "Run type",
+        value: runType
+      },
+      {
+        key: "timesteps",
+        name: "Timesteps",
+        value: Math.ceil(timesteps)
+      },
+      {
         key: "numatoms",
         name: "Number of atoms",
         value: Math.ceil(numAtoms)
@@ -125,11 +136,6 @@ const SimulationSummary = () => {
         key: "numbonds",
         name: "Number of bonds",
         value: Math.ceil(numBonds)
-      },
-      {
-        key: "type",
-        name: "Run type",
-        value: runType
       },
       {
         key: "timeremain",

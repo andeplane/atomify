@@ -40,6 +40,11 @@ const Settings = ({open, onClose}: SettingsProps) => {
       keyboardshortcut: 'space'
     },
     {
+      key: 'simulationspeed',
+      name: 'Set simulation speed',
+      keyboardshortcut: '1, 2, 3, 4, 5, 6, 7, 8, 9'
+    },
+    {
       key: 'w',
       name: 'Move camera forward',
       keyboardshortcut: 'w'
