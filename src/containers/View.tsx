@@ -186,7 +186,7 @@ const View = ({visible}: ViewProps) => {
       <div id="canvas-container" style={{ height: '100%', width: '100%' }}>
         <div style={{ height: '100vh', width: '100%'  }} ref={domElement}> 
           <Settings open={showSettings} onClose={() => setShowSettings(false)} />
-          {!showAnalyze && <SimulationSummaryOverlay />}
+          {!showAnalyze && window.innerWidth>900 && <SimulationSummaryOverlay />}
         </div>
       </div>
       <AnalyzeButtonContainer>
