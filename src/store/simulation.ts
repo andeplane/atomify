@@ -382,7 +382,6 @@ export const simulationModel: SimulationModel = {
     const startTime = performance.now()
     try {
       await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`)
-
     } catch(exception: any) {
       console.log("Got exception: ", exception)
       errorMessage = lammps.getExceptionMessage(exception)

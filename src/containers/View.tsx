@@ -170,7 +170,7 @@ const View = ({visible}: ViewProps) => {
   }
   
   return (
-    <Layout>
+    <Layout style={{height:"100vh"}}>
     <Header className="site-layout-background" style={{ backgroundColor: 'rgba(0,0,0,0)', fontSize: '1.5vw', position: 'fixed' }}>
       <Col>
         <Row>
@@ -184,7 +184,7 @@ const View = ({visible}: ViewProps) => {
       </Col>
     </Header>
       <div id="canvas-container" style={{ height: '100%', width: '100%' }}>
-        <div style={{ height: '100%', width: '100%'  }} ref={domElement}> 
+        <div style={{ height: '100vh', width: '100%'  }} ref={domElement}> 
           <Settings open={showSettings} onClose={() => setShowSettings(false)} />
           {!showAnalyze && <SimulationSummaryOverlay />}
         </div>
