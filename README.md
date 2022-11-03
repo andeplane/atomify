@@ -19,7 +19,7 @@ To see the latest changes, please check the [change log](CHANGELOG.md).
 
 The typical workflow when developing scripts for LAMMPS includes working with several programs. A text editor is needed to modify the scripts, the terminal to run LAMMPS, and programs like VMD or Ovito reading trajectories from a file dumped to the disk to visualize the system over time. If physical quantities are computed with LAMMPS, the data is often plotted with MATLAB or Python. This is a tedious process, especially for teaching purposes and for people who are new to LAMMPS. 
 
-We here introduce Atomify, a web editor running LAMMPS with real time visualization with stunning graphics. After a simulation is finished, all files are available in a jupyter notebook that also runs in the browser. Atomify will soon also support real time plotting of LAMMPS variables and computes.
+We here introduce Atomify, a web editor running LAMMPS with real time visualization with stunning graphics, access to real time plotting of physical quantities and much more. After a simulation is finished, all files are available in a jupyter notebook that also runs in the browser. 
 
 ## How does it work?
 LAMMPS is compiled to [Webassembly](https://webassembly.org/) using [Emscripten](https://emscripten.org/) so it can run in the browser. It runs with about 50% of the speed of natively compiled LAMMPS (single threaded). The visualization is built on top of [three.js](https://threejs.org/), with specialized high performance rendering of spheres and cylinders. The Jupyter notebook is [Jupyterlite](https://jupyterlite.readthedocs.io/), and uses [Pyodide](https://pyodide.org/en/stable/), a Python runtime running entirely in the browser.
