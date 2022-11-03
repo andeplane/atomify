@@ -15,7 +15,6 @@ const Settings = ({open, onClose}: SettingsProps) => {
   interface KeyboardShortcutsDataType {
     key: React.Key;
     name: string;
-    description: string;
     keyboardshortcut: string;
   }
 
@@ -23,10 +22,6 @@ const Settings = ({open, onClose}: SettingsProps) => {
     {
       title: 'Name',
       dataIndex: 'name',
-    },
-    {
-      title: 'Description',
-      dataIndex: 'description',
     },
     {
       title: 'Keyboard shortcut',
@@ -37,14 +32,62 @@ const Settings = ({open, onClose}: SettingsProps) => {
     {
       key: 'camera',
       name: 'Copy camera position',
-      description: 'Copies current camera position and target to clipboard',
       keyboardshortcut: 'c'
     },
     {
       key: 'togglepause',
       name: 'Toggle pause',
-      description: 'Toggle pause (on/off)',
       keyboardshortcut: 'space'
+    },
+    {
+      key: 'w',
+      name: 'Move camera forward',
+      keyboardshortcut: 'w'
+    },
+    {
+      key: 'a',
+      name: 'Move camera left',
+      keyboardshortcut: 'a'
+    },
+    {
+      key: 's',
+      name: 'Move camera backward',
+      keyboardshortcut: 's'
+    },
+    {
+      key: 'd',
+      name: 'Move camera right',
+      keyboardshortcut: 'd'
+    },
+    {
+      key: 'q',
+      name: 'Move camera down',
+      keyboardshortcut: 'q'
+    },
+    {
+      key: 'e',
+      name: 'Move camera up',
+      keyboardshortcut: 'e'
+    },
+    {
+      key: 'up',
+      name: 'Rotate camera up',
+      keyboardshortcut: '↑'
+    },
+    {
+      key: 'left',
+      name: 'Rotate camera left',
+      keyboardshortcut: '←'
+    },
+    {
+      key: 'down',
+      name: 'Rotate camera down',
+      keyboardshortcut: '↓'
+    },
+    {
+      key: 'right',
+      name: 'Rotate camera right',
+      keyboardshortcut: '→'
     }
   ];
 
@@ -75,7 +118,7 @@ const Settings = ({open, onClose}: SettingsProps) => {
           {renderRenderSettings()}
         </Tabs.TabPane>
         <Tabs.TabPane tab="Keybord shortcuts" key="keybordshortcuts">
-        <Table columns={columns} dataSource={data} />
+        <Table pagination={{pageSize: 50, hideOnSinglePage: true}} columns={columns} dataSource={data} />
         </Tabs.TabPane>
       </Tabs>
     </Modal>
