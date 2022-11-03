@@ -37,9 +37,9 @@ const Examples = () => {
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
   const simulation = useStoreState(state => state.simulation.simulation)
+  const running = useStoreState(state => state.simulation.running)
   const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
-  const lammps = useStoreState(state => state.simulation.lammps)
-
+  
   useEffect(() => {
     const fetchExamples = async(examplesUrl: string) => {
       let response = await fetch(examplesUrl, {cache: "no-store"})
@@ -96,7 +96,7 @@ const Examples = () => {
       analysisScript: example.analysisScript,
       start: true
     }
-    if (lammps?.getIsRunning()) {
+    if (running) {
       notification.info({
         message: 'Simulation already running',
         description: "You can't start a new simulation while another one is running.",
@@ -105,7 +105,7 @@ const Examples = () => {
       setNewSimulation(newSimulation)
       setPreferredView('view')
     }
-  }, [lammps, setNewSimulation, setPreferredView])
+  }, [running, setNewSimulation, setPreferredView])
 
   const onEdit = useCallback((example: Example) => {
     track('Example.Edit', {simulationId: example.id})
