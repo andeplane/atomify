@@ -1,8 +1,9 @@
 # Change Log
 
-## [0.4.5] Nov 1st 2022
+## [1.0.0] Nov 3rd 2022
 - Added feature to create new simulations where you can upload your own files
 - Added plotting of computes (e.g. kinetic energy vs time or compute RDF)
+- Improved SSAO and lighting settings
 - Fixed so sidebar can be collapsed on mobile devices
 - Fixed so modifier active state is preserved when simulation summary is reopened
 
