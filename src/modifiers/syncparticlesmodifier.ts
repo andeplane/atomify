@@ -34,7 +34,7 @@ class SyncParticlesModifier extends Modifier {
 
       newParticles = new Particles(newCapacity);
       newParticles.types = new Float32Array(newCapacity)
-      newParticles.radii.fill(0.25 * particleRadius)
+      newParticles.radii.fill(0.33 * particleRadius)
       output.particles = newParticles
     }
 

@@ -6,7 +6,7 @@
 
 # Set atom size and color
 #/atom 1 1.0 #ffffff
-#/atom 2 1.0 #ff0000
+#/atom 2 1.5 #ff0000
 
 variable L equal 20.0
 variable Lhalf equal $(0.5*v_L)
