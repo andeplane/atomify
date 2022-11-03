@@ -166,6 +166,7 @@ const SimulationComponent = () => {
     setParticles, setParticleStylesUpdated, setBonds, setPaused,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
     setComputes, setFixes, setBox, setOrigo, setRunType,
+    setNumAtoms, setNumBonds, setRemainingTime, setTimestepsPerSecond,
     setSimulationSettings, setTimesteps, computes, fixes, paused
     ])
 
