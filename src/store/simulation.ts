@@ -82,15 +82,6 @@ export interface SimulationFile {
   url?: string
 }
 
-export interface SimulationStatus {
-  remainingTime: number
-  timestepsPerSecond: number
-  box?: THREE.Matrix3
-  origo?: THREE.Vector3
-  runType: string
-  numAtoms: number
-}
-
 export interface Simulation {
   id: string
   files: SimulationFile[]
@@ -111,7 +102,6 @@ export interface SimulationModel {
   files: string[]
   lammpsOutput: string[]
   selectedFile?: SimulationFile
-  simulationStatus?: SimulationStatus
   particleColors?: THREE.Color[]
   cameraPosition?: THREE.Vector3
   cameraTarget?: THREE.Vector3
@@ -120,7 +110,6 @@ export interface SimulationModel {
   addLammpsOutput: Action<SimulationModel, string>
   setShowConsole: Action<SimulationModel, boolean>
   setPaused: Action<SimulationModel, boolean>
-  setSimulationStatus: Action<SimulationModel, SimulationStatus>
   setCameraPosition: Action<SimulationModel, THREE.Vector3|undefined>
   setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
   setPreferredView: Action<SimulationModel, string|undefined>
@@ -148,9 +137,6 @@ export const simulationModel: SimulationModel = {
   lammpsOutput: [],
   resetLammpsOutput: action((state) => {
     state.lammpsOutput = []
-  }),
-  setSimulationStatus: action((state, value: SimulationStatus) => {
-    state.simulationStatus = value
   }),
   addLammpsOutput: action((state, output: string) => {
     state.lammpsOutput = [...state.lammpsOutput, output]

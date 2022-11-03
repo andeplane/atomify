@@ -12,6 +12,7 @@ export interface SimulationStatusModel {
   origo?: THREE.Vector3
   runType: string
   numAtoms: number
+  numBonds: number
   computes: {[key: string]: Compute}
   fixes: {[key: string]: Fix}
   setTimesteps: Action<SimulationStatusModel, number>
@@ -23,6 +24,7 @@ export interface SimulationStatusModel {
   setRemainingTime: Action<SimulationStatusModel, number>
   setTimestepsPerSecond: Action<SimulationStatusModel, number>
   setNumAtoms: Action<SimulationStatusModel, number>
+  setNumBonds: Action<SimulationStatusModel, number>
   setRunType:  Action<SimulationStatusModel, string>
   setBox: Action<SimulationStatusModel, THREE.Matrix3>
   setOrigo: Action<SimulationStatusModel, THREE.Vector3>
@@ -37,6 +39,7 @@ export const simulationStatusModel: SimulationStatusModel = {
   timestepsPerSecond: 0,
   runType: "",
   numAtoms: 0,
+  numBonds: 0,
   computes: {},
   fixes: {},
   setComputes: action((state, value: {[key: string]: Compute}) => {
@@ -66,6 +69,9 @@ export const simulationStatusModel: SimulationStatusModel = {
   setNumAtoms: action((state, value: number) => {
     state.numAtoms = value
   }),
+  setNumBonds: action((state, value: number) => {
+    state.numBonds = value
+  }),
   setRunType: action((state, value: string) => {
     state.runType = value
   }),
@@ -80,6 +86,11 @@ export const simulationStatusModel: SimulationStatusModel = {
     state.timesteps = 0
     state.runTimesteps = 0
     state.runTotalTimesteps = 0
+    state.remainingTime = 0
+    state.timestepsPerSecond = 0
+    state.runType = ""
+    state.numAtoms = 0
+    state.numBonds = 0
     state.computes = {}
     state.fixes = {}
   })

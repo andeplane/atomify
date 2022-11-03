@@ -4,7 +4,6 @@ import * as THREE from 'three'
 import createModule from "../wasm/lammps.mjs";
 import { LammpsWeb } from '../types';
 import { notification } from 'antd';
-import {SimulationStatus} from '../store/simulation'
 import { ModifierInput, ModifierOutput } from '../modifiers/types';
 import { time_event, track } from '../utils/metrics';
 
@@ -48,8 +47,14 @@ const SimulationComponent = () => {
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
   const setStatus = useStoreActions(actions => actions.simulation.setStatus)
   const setTimesteps = useStoreActions(actions => actions.simulationStatus.setTimesteps)
+  const setNumAtoms = useStoreActions(actions => actions.simulationStatus.setNumAtoms)
+  const setNumBonds = useStoreActions(actions => actions.simulationStatus.setNumBonds)
+  const setBox = useStoreActions(actions => actions.simulationStatus.setBox)
+  const setRunType = useStoreActions(actions => actions.simulationStatus.setRunType)
+  const setOrigo = useStoreActions(actions => actions.simulationStatus.setOrigo)
   const setRunTimesteps = useStoreActions(actions => actions.simulationStatus.setRunTimesteps)
-  const setSimulationStatus = useStoreActions(actions => actions.simulation.setSimulationStatus)
+  const setRemainingTime = useStoreActions(actions => actions.simulationStatus.setRemainingTime)
+  const setTimestepsPerSecond = useStoreActions(actions => actions.simulationStatus.setTimestepsPerSecond)
   const setRunTotalTimesteps = useStoreActions(actions => actions.simulationStatus.setRunTotalTimesteps)
   const setLastCommand = useStoreActions(actions => actions.simulationStatus.setLastCommand)
   const computes = useStoreState(state => state.simulationStatus.computes)
@@ -57,7 +62,6 @@ const SimulationComponent = () => {
   const fixes = useStoreState(state => state.simulationStatus.fixes)
   const setFixes = useStoreActions(actions => actions.simulationStatus.setFixes)
   const setParticleStylesUpdated = useStoreActions(actions => actions.render.setParticleStylesUpdated)
-
   
   const onPrint = useCallback( (text: string) => {
     if (text.includes('Atomify::canceled')) {
@@ -117,12 +121,14 @@ const SimulationComponent = () => {
           computes: {},
           fixes: {},
         }
+        
         // @ts-ignore
         postTimestepModifiers.forEach(modifier => modifier.run(modifierInput, modifierOutput))
         if (modifierOutput.colorsUpdated) {
           setParticleStylesUpdated(false)
         }
         setComputes(modifierOutput.computes)
+        setNumBonds(modifierOutput.bonds.count)
         
         if (selectedMenu === 'view') {
           if (modifierOutput.particles !== particles) {
@@ -132,23 +138,7 @@ const SimulationComponent = () => {
             setBonds(modifierOutput.bonds)
           }
         }
-
-        const whichFlag = lammps.getWhichFlag()
-        let runType = ""
-
-        if (whichFlag) {
-          runType = whichFlag===1 ? "Dynamics" : "Minimization"
-        }
-        const simulationStatus: SimulationStatus = {
-          remainingTime: lammps.getCPURemain(),
-          timestepsPerSecond: lammps.getTimestepsPerSecond(),
-          runType,
-          origo: getSimulationOrigo(lammps, wasm),
-          box: getSimulationBox(lammps, wasm),
-          numAtoms: lammps.getNumAtoms()
-        }
-        setSimulationStatus(simulationStatus)
-
+        
         // @ts-ignore
         lammps.setSyncFrequency(window.syncFrequency)
         // @ts-ignore
@@ -158,10 +148,15 @@ const SimulationComponent = () => {
           setPaused(false)
           lammps.cancel()
         }
-
+        setBox(getSimulationBox(lammps, wasm))
+        setRunType(lammps.getWhichFlag()===1 ? "Dynamics" : "Minimization")
+        setOrigo(getSimulationOrigo(lammps, wasm))
         setTimesteps(lammps.getTimesteps())
+        setNumAtoms(lammps.getNumAtoms())
         setRunTimesteps(lammps.getRunTimesteps())
         setRunTotalTimesteps(lammps.getRunTotalTimesteps())
+        setRemainingTime(lammps.getCPURemain())
+        setTimestepsPerSecond(lammps.getTimestepsPerSecond())
         setLastCommand(lammps.getLastCommand())
       }
       return false
@@ -170,7 +165,7 @@ const SimulationComponent = () => {
     running, simulationSettings, postTimestepModifiers, 
     setParticles, setParticleStylesUpdated, setBonds, setPaused,
     setRunTimesteps, setRunTotalTimesteps, setLastCommand,
-    setSimulationStatus, setComputes, setFixes, 
+    setComputes, setFixes, setBox, setOrigo, setRunType,
     setSimulationSettings, setTimesteps, computes, fixes, paused
     ])
 

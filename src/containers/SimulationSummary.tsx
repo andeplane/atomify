@@ -36,8 +36,14 @@ const SimulationSummary = () => {
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const colorModifier = postTimestepModifiers.filter(modifier => modifier.name==="Colors")[0] as ColorModifier
   const selectedModifiers = postTimestepModifiers.filter(m => m.active).map(m => m.name)
+  const simulation = useStoreState(state => state.simulation.simulation)
+  const runType = useStoreState(state => state.simulationStatus.runType)
+  const numAtoms = useStoreState(state => state.simulationStatus.numAtoms)
+  const numBonds = useStoreState(state => state.simulationStatus.numBonds)
+  const remainingTime = useStoreState(state => state.simulationStatus.remainingTime)
+  const timestepsPerSecond = useStoreState(state => state.simulationStatus.timestepsPerSecond)
+
   
-  const simulationStatus = useStoreState(state => state.simulation.simulationStatus)
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
 
   const computes = useStoreState(state => state.simulationStatus.computes)
@@ -108,22 +114,32 @@ const SimulationSummary = () => {
 
   let simulationStatusData: SimulationSummaryType[] = []
   
-  if (simulationStatus) {
+  if (simulation) {
     simulationStatusData = [
       {
         key: "numatoms",
         name: "Number of atoms",
-        value: Math.ceil(simulationStatus.numAtoms)
+        value: Math.ceil(numAtoms)
+      },
+      {
+        key: "numbonds",
+        name: "Number of bonds",
+        value: Math.ceil(numBonds)
+      },
+      {
+        key: "type",
+        name: "Run type",
+        value: runType
       },
       {
         key: "timeremain",
         name: "Remaining time",
-        value: Math.ceil(simulationStatus.remainingTime).toString()+' s'
+        value: Math.ceil(remainingTime).toString()+' s'
       },
       {
         key: "tsps",
         name: "Timesteps per second",
-        value: Math.ceil(simulationStatus.timestepsPerSecond)
+        value: Math.ceil(timestepsPerSecond)
       },
       {
         key: "simulationspeed",
@@ -144,7 +160,7 @@ const SimulationSummary = () => {
         dataSource={modifiers}
         pagination={{hideOnSinglePage: true}}
       />
-      {simulationStatus && 
+      {simulation && 
         <>
         <Table
           title={() => <b>Summary</b>}
