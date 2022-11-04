@@ -13,10 +13,11 @@ class SyncComputesModifier extends Modifier {
     super({name, active})
   }
 
-  run = (input: ModifierInput, output: ModifierOutput) => {
+  run = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => {
     if (!this.active) {
       return
     }
+
     input.lammps.syncComputes()
     const computeNames = input.lammps.getComputeNames()
     for (let i = 0; i < computeNames.size(); i++) {
@@ -62,7 +63,7 @@ class SyncComputesModifier extends Modifier {
             }
           }
 
-          if (compute.syncDataPoints && compute.data1D) { // Data points is only for plotting figures
+          if ( (everything || compute.syncDataPoints) && compute.data1D) { // Data points is only for plotting figures
             if (compute.clearPerSync) {
               // For histograms (compute rdf etc) we don't have time as x axis, so we clear every time
               compute.data1D.data = []

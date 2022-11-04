@@ -1,13 +1,36 @@
-import { action, Action } from 'easy-peasy';
+import { action, thunk, Action, Thunk } from 'easy-peasy';
 import Modifier from '../modifiers/modifier'
 import SyncParticlesModifier from '../modifiers/syncparticlesmodifier'
 import SyncBondsModifier from '../modifiers/syncbondsmodifier'
 import ColorModifier from '../modifiers/colormodifier'
 import SyncComputesModifier from '../modifiers/synccomputesmodifier';
+import { ModifierInput, ModifierOutput } from '../modifiers/types';
+import { LammpsWeb } from '../types';
+import * as THREE from 'three'
+
+const cellMatrix = new THREE.Matrix3()
+const origo = new THREE.Vector3()
+
+const getSimulationBox = (lammps: LammpsWeb, wasm: any) => {
+  const cellMatrixPointer = lammps.getCellMatrixPointer() / 8;
+  const cellMatrixSubArray = wasm.HEAPF64.subarray(cellMatrixPointer, cellMatrixPointer + 9) as Float64Array
+  cellMatrix.set(cellMatrixSubArray[0], cellMatrixSubArray[1], cellMatrixSubArray[2],
+                 cellMatrixSubArray[3], cellMatrixSubArray[4], cellMatrixSubArray[5],
+                 cellMatrixSubArray[6], cellMatrixSubArray[7], cellMatrixSubArray[8])
+  return cellMatrix
+}
+
+const getSimulationOrigo = (lammps: LammpsWeb, wasm: any) => {
+  const origoPointer = lammps.getOrigoPointer() / 8;
+  const origoPointerSubArray = wasm.HEAPF64.subarray(origoPointer, origoPointer + 3) as Float64Array
+  origo.set(origoPointerSubArray[0], origoPointerSubArray[1], origoPointerSubArray[2])
+  return origo
+}
 
 export interface ProcessingModel {
   postTimestepModifiers: Modifier[]
   setPostTimestepModifiers: Action<ProcessingModel, Modifier[]>
+  runPostTimestep: Thunk<ProcessingModel, boolean>
 }
 
 export const processingModel: ProcessingModel = {
@@ -31,5 +54,65 @@ export const processingModel: ProcessingModel = {
   ],
   setPostTimestepModifiers: action((state, value: Modifier[]) => {
     state.postTimestepModifiers = value
+  }),
+  runPostTimestep: thunk(async (actions, everything: boolean, {getStoreState, getStoreActions}) => {
+    // @ts-ignore
+    const wasm = window.wasm
+    // @ts-ignore
+    const lammps = getStoreState().simulation.lammps
+    // @ts-ignore
+    const renderState = getStoreState().render
+    // @ts-ignore
+    const computes = getStoreState().simulationStatus.computes
+    // @ts-ignore
+    const fixes = getStoreState().simulationStatus.fixes
+    const particles = renderState.particles
+    const bonds = renderState.bonds
+    const allActions = getStoreActions() as any
+
+    const modifierInput: ModifierInput = {
+      lammps,
+      wasm,
+      renderState,
+      computes,
+      fixes
+    }
+    
+    const modifierOutput: ModifierOutput = {
+      particles,
+      bonds,
+      colorsUpdated: false,
+      computes: {},
+      fixes: {},
+    }
+    // @ts-ignore
+    getStoreState().processing.postTimestepModifiers.forEach(modifier => modifier.run(modifierInput, modifierOutput, true))
+    if (modifierOutput.colorsUpdated) {
+      allActions.render.setParticleStylesUpdated(false)
+    }
+    allActions.simulationStatus.setComputes(modifierOutput.computes)
+    allActions.simulationStatus.setNumBonds(modifierOutput.bonds.count)
+
+    // @ts-ignore
+    if (everything || getStoreState().simulation.selectedMenu === 'view') {
+      if (modifierOutput.particles !== particles) {
+        allActions.render.setParticles(modifierOutput.particles)
+      }
+      if (modifierOutput.bonds !== bonds) {
+        allActions.render.setBonds(modifierOutput.bonds)
+      }
+    }
+
+    allActions.simulationStatus.setBox(getSimulationBox(lammps, wasm))
+    allActions.simulationStatus.setRunType(lammps.getWhichFlag()===1 ? "Dynamics" : "Minimization")
+    allActions.simulationStatus.setOrigo(getSimulationOrigo(lammps, wasm))
+    allActions.simulationStatus.setTimesteps(lammps.getTimesteps())
+    allActions.simulationStatus.setNumAtoms(lammps.getNumAtoms())
+    allActions.simulationStatus.setRunTimesteps(lammps.getRunTimesteps())
+    allActions.simulationStatus.setRunTotalTimesteps(lammps.getRunTotalTimesteps())
+    allActions.simulationStatus.setRemainingTime(lammps.getCPURemain())
+    allActions.simulationStatus.setTimestepsPerSecond(lammps.getTimestepsPerSecond())
+    allActions.simulationStatus.setLastCommand(lammps.getLastCommand())
+    
   })
 };

@@ -377,17 +377,23 @@ export const simulationModel: SimulationModel = {
     if (!errorMessage) {
       errorMessage = lammps.getErrorMessage()
     }
+
+    // @ts-ignore
+    const computes = getStoreState().simulationStatus.computes as Compute[]
+    
     const endTime = performance.now()
     const duration = (endTime - startTime) / 1000 // seconds
     const metricsData = {
       timesteps: lammps.getTimesteps(),
       timestepsPerSecond: (lammps.getTimesteps() / duration).toFixed(3),
-      numAtoms: lammps.getNumAtoms()
+      numAtoms: lammps.getNumAtoms(),
+      computes: Object.keys(computes)
     }
     actions.setPaused(false)
-
+    
     if (errorMessage) {
       if (errorMessage.includes("Atomify::canceled")) {
+        allActions.processing.runPostTimestep(true)
         // Simulation got canceled.
         actions.setRunning(false)
         actions.setShowConsole(true)
@@ -402,6 +408,7 @@ export const simulationModel: SimulationModel = {
         track('Simulation.Stop', {simulationId: simulation?.id, stopReason: "failed", errorMessage, ...metricsData})
       }
     } else {
+      allActions.processing.runPostTimestep(true)
       actions.setRunning(false)
       actions.setShowConsole(true)
       track('Simulation.Stop', {simulationId: simulation?.id, stopReason: "completed", ...metricsData})
