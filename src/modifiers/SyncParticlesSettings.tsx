@@ -12,17 +12,12 @@ interface SettingsType {
 const SyncParticlesSettings = ({onClose}:{onClose: () => void}) => {
   const particleRadius = useStoreState(state => state.render.particleRadius)
   const setParticleRadius = useStoreActions(actions => actions.render.setParticleRadius)
-  const particles = useStoreState(state => state.render.particles)
+  const setParticleStylesUpdated = useStoreActions(actions => actions.render.setParticleStylesUpdated)
 
   const onParticleRadiusChanged = useCallback((value: number) => {
-    const oldValue = particleRadius
-    const factor = value / oldValue
-    for (let i = 0; i < particles.count; i++) {
-      particles.radii[i] *= factor
-    }
     setParticleRadius(value)
-    particles.markNeedsUpdate()
-  }, [particleRadius, setParticleRadius, particles])
+    setParticleStylesUpdated(true)
+  }, [setParticleStylesUpdated, setParticleRadius])
 
   const columns: ColumnsType<SettingsType> = [
     {
