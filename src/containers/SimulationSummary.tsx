@@ -99,6 +99,7 @@ const SimulationSummary = () => {
       title: 'Name',
       dataIndex: 'name',
       key: 'name',
+      width: '160px'
     },
     {
       title: 'Value',
