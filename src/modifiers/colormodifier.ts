@@ -83,7 +83,7 @@ class ColorModifier extends Modifier {
   }
 
   runByType = (input: ModifierInput, output: ModifierOutput) => {
-    if ((this.previousColoringMethod === 'type' && !input.renderState.particleStylesUpdated) || !input.renderState.visualizer) {
+    if ( (this.previousColoringMethod === 'type' && !input.renderState.particleStylesUpdated) || !input.renderState.visualizer) {
       return
     }
     
@@ -97,10 +97,10 @@ class ColorModifier extends Modifier {
       if (!atomType) {
         atomType = defaultAtomTypes[ type % defaultAtomTypes.length]
       }
-      visualizer.setRadius(realIndex, 0.33 * input.renderState.particleRadius * atomType.radius)
+      const radius = 0.33 * input.renderState.particleRadius * atomType.radius
+      visualizer.setRadius(realIndex, radius)
       visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
     }
-    output.particles.markNeedsUpdate()
     output.colorsUpdated = true
     this.previousColoringMethod = 'type'
   }

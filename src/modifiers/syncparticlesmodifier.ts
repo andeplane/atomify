@@ -22,7 +22,7 @@ class SyncParticlesModifier extends Modifier {
       }
       return
     }
-    const particleRadius = input.renderState.particleRadius
+    
     const numParticles = input.lammps.computeParticles()
     let newParticles = output.particles
     if (!newParticles || newParticles.capacity < numParticles) {
@@ -33,12 +33,10 @@ class SyncParticlesModifier extends Modifier {
       }
 
       newParticles = new Particles(newCapacity);
-      newParticles.types = new Float32Array(newCapacity)
-      newParticles.radii.fill(0.33 * particleRadius)
       output.particles = newParticles
     } else {
       if (numParticles !== newParticles.count) {
-        // Need to update colors
+        // Need to update colors and radius
         output.colorsUpdated = true
       }
     }
