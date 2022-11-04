@@ -14,8 +14,7 @@ const SimulationSummary = () => {
   const timesteps = useStoreState(state => state.simulationStatus.timesteps)
   const remainingTime = useStoreState(state => state.simulationStatus.remainingTime)
   const timestepsPerSecond = useStoreState(state => state.simulationStatus.timestepsPerSecond)
-  console.log("numAtoms: ", numAtoms)
-
+  
   const handleMouseOver = () => {
     setIsHovering(true);
   };
