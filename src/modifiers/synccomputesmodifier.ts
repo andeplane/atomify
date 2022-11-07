@@ -14,7 +14,7 @@ class SyncComputesModifier extends Modifier {
   }
 
   run = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => {
-    if (!this.active) {
+    if (!this.active || !input.hasSynchronized) {
       return
     }
 

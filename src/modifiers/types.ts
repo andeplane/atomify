@@ -8,6 +8,7 @@ export type ModifierInput = {
   renderState: any
   computes: {[key: string]: Compute}
   fixes: {[key: string]: Fix}
+  hasSynchronized: boolean
 }
 
 export type ModifierOutput = {

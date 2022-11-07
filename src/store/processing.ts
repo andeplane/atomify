@@ -65,6 +65,8 @@ export const processingModel: ProcessingModel = {
     // @ts-ignore
     const computes = getStoreState().simulationStatus.computes
     // @ts-ignore
+    const hasSynchronized = getStoreState().simulationStatus.hasSynchronized
+    // @ts-ignore
     const fixes = getStoreState().simulationStatus.fixes
     const particles = renderState.particles
     const bonds = renderState.bonds
@@ -75,7 +77,8 @@ export const processingModel: ProcessingModel = {
       wasm,
       renderState,
       computes,
-      fixes
+      fixes,
+      hasSynchronized
     }
     
     const modifierOutput: ModifierOutput = {
@@ -113,6 +116,5 @@ export const processingModel: ProcessingModel = {
     allActions.simulationStatus.setRemainingTime(lammps.getCPURemain())
     allActions.simulationStatus.setTimestepsPerSecond(lammps.getTimestepsPerSecond())
     allActions.simulationStatus.setLastCommand(lammps.getLastCommand())
-    
   })
 };

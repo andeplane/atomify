@@ -412,8 +412,6 @@ export const simulationModel: SimulationModel = {
       actions.setRunning(false)
       actions.setShowConsole(true)
       track('Simulation.Stop', {simulationId: simulation?.id, stopReason: "completed", ...metricsData})
-      //@ts-ignore
-      window.postStepCallback()
     }
     actions.syncFilesJupyterLite()
     allActions.simulationStatus.setLastCommand(undefined)
