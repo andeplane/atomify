@@ -443,7 +443,7 @@ void LAMMPSWeb::synchronizeLAMMPS(int mode) {
 
   if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
 
-  while (postStepCallback()) {
+  while (postStepCallback()) { // Returns true if paused
     emscripten_sleep(100);
   }
   emscripten_sleep(1);
