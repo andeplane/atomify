@@ -15,8 +15,8 @@ def copy_mpi_files_and_patch():
   shutil.copyfile("mpi.cpp", "lammps/src/mpi.cpp")
   shutil.copyfile("lammps/src/STUBS/mpi.h", "lammps/src/mpi.h")
   shutil.copyfile("lammps.patch", "lammps/src/lammps.patch")
-  shutil.copyfile("fix_atomify.cpp", "lammps/src/fix_atomify.cpp")
-  shutil.copyfile("fix_atomify.h", "lammps/src/fix_atomify.h")
+  shutil.copyfile("lammpsweb/fix_atomify.cpp", "lammps/src/fix_atomify.cpp")
+  shutil.copyfile("lammpsweb/fix_atomify.h", "lammps/src/fix_atomify.h")
 
 def file_content(path):
   if not os.path.exists(path):
