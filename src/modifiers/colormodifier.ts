@@ -82,7 +82,7 @@ class ColorModifier extends Modifier {
     return
   }
 
-  runByType = (input: ModifierInput, output: ModifierOutput) => {
+  runByType = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => {
     if ( (this.previousColoringMethod === 'type' && !input.renderState.particleStylesUpdated) || !input.renderState.visualizer) {
       return
     }

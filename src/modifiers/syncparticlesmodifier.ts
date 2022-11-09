@@ -12,7 +12,7 @@ class SyncParticlesModifier extends Modifier {
     super({name, active})
   }
 
-  run = (input: ModifierInput, output: ModifierOutput) => {
+  run = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => {
     if (!this.active) {
       if (output.particles) {
         output.particles.count = 0

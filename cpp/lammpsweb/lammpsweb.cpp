@@ -195,9 +195,10 @@ void LAMMPSWeb::computeBondsFromNeighborlist() {
   }
   bool fixWillBuildNeighborlist = fixAtomify->build_neighborlist;
   fixAtomify->build_neighborlist = m_buildNeighborlist;
-  if(!m_buildNeighborlist || !fixWillBuildNeighborlist) {
+  if(!m_buildNeighborlist || !fixWillBuildNeighborlist || fixAtomify->neighborlist_built_at_timestep != m_lmp->update->ntimestep) {
       return;
   }
+
 
   LAMMPS_NS::Domain *domain = m_lmp->domain;
   domain->box_corners();
@@ -432,19 +433,17 @@ void LAMMPSWeb::setBuildNeighborlist(bool buildNeighborlist) {
   m_buildNeighborlist = buildNeighborlist;
 }
 
-void LAMMPSWeb::synchronizeLAMMPS(int mode) {  
+void LAMMPSWeb::synchronizeLAMMPS(int mode) {
+#ifdef __EMSCRIPTEN__
   if(mode == 1000) {
   // Just a small sleep to not block UI
-#ifdef __EMSCRIPTEN__
     emscripten_sleep(1);
-#endif
     return;
   }
 
   if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
 
-#ifdef __EMSCRIPTEN__
-  while (postStepCallback()) {
+  while (postStepCallback()) { // Returns true if paused
     emscripten_sleep(100);
   }
   emscripten_sleep(1);
@@ -515,6 +514,7 @@ void LAMMPSWeb::start() {
   if(m_lmp) {
       stop();
   }
+
   int nargs = 1;
   char **argv = new char*[nargs];
   for(int i=0; i<nargs; i++) {

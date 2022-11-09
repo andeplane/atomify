@@ -22,6 +22,7 @@ FixStyle(atomify,FixAtomify)
 
 namespace LAMMPS_NS {
 
+
 class FixAtomify : public Fix {
  public:
   FixAtomify(class LAMMPS *, int, char **);
@@ -43,6 +44,7 @@ class FixAtomify : public Fix {
   int step_count;
   void *ptr_caller;
   bool build_neighborlist;
+  int neighborlist_built_at_timestep;
   bool m_cancel;
   int sync_frequency; // how often to perform expensive sync of positions and computes
 };

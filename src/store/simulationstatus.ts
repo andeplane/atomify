@@ -8,6 +8,7 @@ export interface SimulationStatusModel {
   lastCommand?: string
   remainingTime: number
   timestepsPerSecond: number
+  hasSynchronized: boolean
   box?: THREE.Matrix3
   origo?: THREE.Vector3
   runType: string
@@ -16,6 +17,7 @@ export interface SimulationStatusModel {
   computes: {[key: string]: Compute}
   fixes: {[key: string]: Fix}
   setTimesteps: Action<SimulationStatusModel, number>
+  setHasSynchronized: Action<SimulationStatusModel, boolean>
   setRunTimesteps: Action<SimulationStatusModel, number>
   setRunTotalTimesteps: Action<SimulationStatusModel, number>
   setLastCommand: Action<SimulationStatusModel, string|undefined>
@@ -32,6 +34,7 @@ export interface SimulationStatusModel {
 }
 
 export const simulationStatusModel: SimulationStatusModel = {
+  hasSynchronized: false,
   timesteps: 0,
   runTimesteps: 0,
   runTotalTimesteps: 0,
@@ -47,6 +50,9 @@ export const simulationStatusModel: SimulationStatusModel = {
   }),
   setFixes: action((state, value: {[key: string]: Fix}) => {
     state.fixes = value
+  }),
+  setHasSynchronized: action((state, value: boolean) => {
+    state.hasSynchronized = value
   }),
   setTimesteps: action((state, timesteps: number) => {
     state.timesteps = timesteps
@@ -82,6 +88,7 @@ export const simulationStatusModel: SimulationStatusModel = {
     state.origo = value
   }),
   reset: action((state) => {
+    state.hasSynchronized = false
     state.lastCommand = undefined
     state.timesteps = 0
     state.runTimesteps = 0

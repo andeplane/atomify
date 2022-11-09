@@ -142,6 +142,32 @@
             ]
         },
         {
+            "id": "nanoporous_sio2",
+            "title": "Large nanoporous SiO2",
+            "description": "A nanoporous (porosity 0.75) silica glass with 1.5 million atoms. ",
+            "imageUrl": "silica/nanoporous_sio2/nanoporous_sio2.png",
+            "inputScript": "nanoporous_sio2.in",
+            "keywords": [
+                "vashishta",
+                "sio2",
+                "nanoporous_sio2"
+            ],
+            "files": [
+                {
+                    "fileName": "nanoporous_sio2.in",
+                    "url": "silica/nanoporous_sio2/nanoporous_sio2.in"
+                },
+                {
+                    "fileName": "nanoporous_sio2.data",
+                    "url": "silica/nanoporous_sio2/nanoporous_sio2.data"
+                },
+                {
+                    "fileName": "SiO2.vashishta",
+                    "url": "silica/nanoporous_sio2/SiO2.vashishta"
+                }
+            ]
+        },
+        {
             "id": "generate_nanoporous",
             "title": "Generate nanoporous silica",
             "description": "Generate a nanoporous silica structure from betacristobalite using the vashishta potential.",

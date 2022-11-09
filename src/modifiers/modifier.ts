@@ -16,6 +16,6 @@ class Modifier {
     this.active = active
   }
 
-  run = (input: ModifierInput, output: ModifierOutput) => { }
+  run = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => { }
 }
 export default Modifier

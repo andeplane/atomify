@@ -11,7 +11,7 @@ const Notebook = () => {
       setAnalysisScriptPath(`${simulation.id}/${simulation.analysisScript}`)
     }
     setInitialized(true)
-  }, [setAnalysisScriptPath, initialized, simulation])
+  }, [setInitialized, setAnalysisScriptPath, initialized, simulation])
   
   let notebookUrl = `/atomify/jupyter/lab/index.html?path=analyze.ipynb`
   if (analysisScriptPath) {

@@ -43,6 +43,7 @@ FixAtomify::FixAtomify(LAMMPS *lmp, int narg, char **arg)
     , build_neighborlist(false)
     , sync_frequency(1)
     , m_cancel(false)
+    , neighborlist_built_at_timestep(-1)
 {
 }
 
@@ -123,8 +124,8 @@ void FixAtomify::end_of_step()
     step_count++;
     if(build_neighborlist) {
         neighbor->build_one(list);
+        neighborlist_built_at_timestep = update->ntimestep;
     }
-
     lost_atoms();
     bool will_sync_next = (step_count+1) % sync_frequency == 0;
     if (will_sync_next) {
@@ -152,11 +153,11 @@ void FixAtomify::min_post_force(int vflag)
     if (m_cancel) {
         error->all(FLERR, "Atomify::canceled");
     }
-    
     step_count++;
 
     if(build_neighborlist) {
         neighbor->build_one(list);
+        neighborlist_built_at_timestep = update->ntimestep;
     }
     lost_atoms();
     bool should_sync = step_count % sync_frequency == 0;
