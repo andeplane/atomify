@@ -7,8 +7,8 @@ LAMMPS_OBJ_FILES := $(addprefix obj/,$(notdir $(LAMMPS_SOURCE:.cpp=.o)))
 
 #LD_FLAGS := -O1 --pre-js locateFile.js --no-entry -gsource-map --source-map-base="http://localhost:3000/atomify/" -lembind
 #CC_FLAGS := -O0 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -gsource-map # -DNDEBUG
-LD_FLAGS := -O2 --pre-js locateFile.js --no-entry -lembind
-CC_FLAGS := -O2 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -s NO_DISABLE_EXCEPTION_CATCHING=1
+LD_FLAGS := -O1 --pre-js locateFile.js --no-entry -lembind -fsanitize=undefined
+CC_FLAGS := -O1 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -s NO_DISABLE_EXCEPTION_CATCHING=1 -fsanitize=undefined
 INCLUDE_FLAGS := -Ilammps/src
 SYMBOLS :=        -s ENVIRONMENT='web' \
 									-s NO_DISABLE_EXCEPTION_CATCHING=1 \
@@ -18,11 +18,11 @@ SYMBOLS :=        -s ENVIRONMENT='web' \
 									-s EXPORTED_RUNTIME_METHODS="['getValue', 'FS']" \
 									-s EXPORT_NAME='createModule' \
 									-s USE_ES6_IMPORT_META=0 \
-									-s FORCE_FILESYSTEM=1
+									-s FORCE_FILESYSTEM=1 \
+									-s ASSERTIONS=1 
                   # -s NO_DISABLE_EXCEPTION_CATCHING=1 \
 									# -s SAFE_HEAP=1 \
 									# -s STACK_OVERFLOW_CHECK=1
-									# -s ASSERTIONS=1 
 
 default: wasm
 wasm: obj lammps.mjs

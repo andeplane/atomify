@@ -14,7 +14,8 @@ localforage.config({
   storeName   : 'files', // Should be alphanumeric, with underscores.
   description : 'some description'
 });
-
+//@ts-ignore
+window.localforage = localforage
 const parseCameraPosition = (line: string) => {
   const splitted = line.split(" ")
   if (splitted[0] === 'camera' && splitted[1] === 'position' && splitted.length === 5) {
@@ -393,7 +394,7 @@ export const simulationModel: SimulationModel = {
     
     if (errorMessage) {
       if (errorMessage.includes("Atomify::canceled")) {
-        allActions.processing.runPostTimestep(true)
+        // allActions.processing.runPostTimestep(true)
         // Simulation got canceled.
         actions.setRunning(false)
         actions.setShowConsole(true)
@@ -408,7 +409,7 @@ export const simulationModel: SimulationModel = {
         track('Simulation.Stop', {simulationId: simulation?.id, stopReason: "failed", errorMessage, ...metricsData})
       }
     } else {
-      allActions.processing.runPostTimestep(true)
+      // allActions.processing.runPostTimestep(true)
       actions.setRunning(false)
       actions.setShowConsole(true)
       track('Simulation.Stop', {simulationId: simulation?.id, stopReason: "completed", ...metricsData})

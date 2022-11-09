@@ -22,6 +22,7 @@ FixStyle(atomify,FixAtomify)
 
 namespace LAMMPS_NS {
 
+
 class FixAtomify : public Fix {
  public:
   FixAtomify(class LAMMPS *, int, char **);

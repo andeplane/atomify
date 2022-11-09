@@ -12,7 +12,7 @@ class SyncBondsModifier extends Modifier {
     super({name, active})
   }
 
-  run = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => {
+  run = (input: ModifierInput, output: ModifierOutput) => {
     if (!this.active) {
       if (output.bonds) {
         output.bonds.count = 0

@@ -539,9 +539,11 @@ void LAMMPSWeb::start() {
 
 void LAMMPSWeb::stop() {
   if(m_lmp) {
+    printf("Will close lammps\n");
     lammps_close((void*)m_lmp);
     m_lmp = nullptr;
     m_computes.clear();
+    printf("DID close lammps!!\n");
   }
 }
 

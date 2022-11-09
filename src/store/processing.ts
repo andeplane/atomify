@@ -41,16 +41,16 @@ export const processingModel: ProcessingModel = {
     }),
     new SyncBondsModifier({
       name: 'Bonds',
-      active: true
+      active: false
     }),
     new ColorModifier({
       name: 'Colors',
       active: true
     }),
-    new SyncComputesModifier({
-      name: 'Computes',
-      active: true
-    })
+    // new SyncComputesModifier({
+    //   name: 'Computes',
+    //   active: true
+    // })
   ],
   setPostTimestepModifiers: action((state, value: Modifier[]) => {
     state.postTimestepModifiers = value
@@ -94,7 +94,11 @@ export const processingModel: ProcessingModel = {
       allActions.render.setParticleStylesUpdated(false)
     }
     allActions.simulationStatus.setComputes(modifierOutput.computes)
-    allActions.simulationStatus.setNumBonds(modifierOutput.bonds.count)
+    if (modifierOutput.bonds) {
+      allActions.simulationStatus.setNumBonds(modifierOutput.bonds.count)
+    } else {
+      allActions.simulationStatus.setNumBonds(0)
+    }
 
     // @ts-ignore
     if (everything || getStoreState().simulation.selectedMenu === 'view') {
