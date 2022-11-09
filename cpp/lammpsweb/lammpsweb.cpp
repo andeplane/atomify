@@ -434,21 +434,21 @@ void LAMMPSWeb::setBuildNeighborlist(bool buildNeighborlist) {
 }
 
 void LAMMPSWeb::synchronizeLAMMPS(int mode) {
-    if(mode == 1000) {
-      // Just a small sleep to not block UI
+  if(mode == 1000) {
+    // Just a small sleep to not block UI
 #ifdef __EMSCRIPTEN__
-      emscripten_sleep(1);
-#endif
-      return;
-    }
-
-    if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
-
-#ifdef __EMSCRIPTEN__
-    while (postStepCallback()) {
-      emscripten_sleep(100);
-    }
     emscripten_sleep(1);
+#endif
+    return;
+  }
+
+  if(mode != LAMMPS_NS::FixConst::END_OF_STEP && mode != LAMMPS_NS::FixConst::MIN_POST_FORCE) return;
+
+#ifdef __EMSCRIPTEN__
+  while (postStepCallback()) {
+    emscripten_sleep(100);
+  }
+  emscripten_sleep(1);
 #endif
 }
 
