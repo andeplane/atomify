@@ -38,7 +38,7 @@ mass 2 4.0
 velocity all create 3.00 1337 loop geom
 
 # Choose LJ with 2.5sigma cutoff
-pair_style lj/cut/opt 2.5
+pair_style lj/cut 2.5
 pair_coeff * * 1.0 1.0 2.5
 neigh_modify every 1 delay 0 check yes
 
@@ -56,7 +56,7 @@ variable msd_heavy equal c_msd_heavy[4]
 variable diffusion_coeff_heavy equal c_msd_heavy[4]/6/(step*dt+1.0e-6)
 
 thermo 100
-thermo_style custom step v_diffusion_coeff_light v_msd_light v_diffusion_coeff_heavy v_msd_heavy cpuremain
+thermo_style custom step v_diffusion_coeff_light v_msd_light v_diffusion_coeff_heavy v_msd_heavy
 fix 1 all nve
 compute displace all displace/atom
-run 5000
+run 10000

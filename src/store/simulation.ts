@@ -394,7 +394,7 @@ export const simulationModel: SimulationModel = {
     
     if (errorMessage) {
       if (errorMessage.includes("Atomify::canceled")) {
-        // allActions.processing.runPostTimestep(true)
+        allActions.processing.runPostTimestep(true)
         // Simulation got canceled.
         actions.setRunning(false)
         actions.setShowConsole(true)
@@ -409,7 +409,7 @@ export const simulationModel: SimulationModel = {
         track('Simulation.Stop', {simulationId: simulation?.id, stopReason: "failed", errorMessage, ...metricsData})
       }
     } else {
-      // allActions.processing.runPostTimestep(true)
+      allActions.processing.runPostTimestep(true)
       actions.setRunning(false)
       actions.setShowConsole(true)
       track('Simulation.Stop', {simulationId: simulation?.id, stopReason: "completed", ...metricsData})

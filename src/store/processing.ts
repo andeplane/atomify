@@ -41,16 +41,16 @@ export const processingModel: ProcessingModel = {
     }),
     new SyncBondsModifier({
       name: 'Bonds',
-      active: false
+      active: true
     }),
     new ColorModifier({
       name: 'Colors',
       active: true
     }),
-    // new SyncComputesModifier({
-    //   name: 'Computes',
-    //   active: true
-    // })
+    new SyncComputesModifier({
+      name: 'Computes',
+      active: true
+    })
   ],
   setPostTimestepModifiers: action((state, value: Modifier[]) => {
     state.postTimestepModifiers = value
