@@ -7,8 +7,8 @@ LAMMPS_OBJ_FILES := $(addprefix obj/,$(notdir $(LAMMPS_SOURCE:.cpp=.o)))
 
 #LD_FLAGS := -O1 --pre-js locateFile.js --no-entry -gsource-map --source-map-base="http://localhost:3000/atomify/" -lembind
 #CC_FLAGS := -O0 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -gsource-map # -DNDEBUG
-LD_FLAGS := -Os --pre-js locateFile.js --no-entry -lembind
-CC_FLAGS := -Os -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -s NO_DISABLE_EXCEPTION_CATCHING=1
+LD_FLAGS := -Oz --pre-js locateFile.js --no-entry -lembind
+CC_FLAGS := -Oz -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -s NO_DISABLE_EXCEPTION_CATCHING=1
 INCLUDE_FLAGS := -Ilammps/src
 SYMBOLS :=        -s ENVIRONMENT='web' \
 									-s NO_DISABLE_EXCEPTION_CATCHING=1 \
