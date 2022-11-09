@@ -18,9 +18,9 @@ SYMBOLS :=        -s ENVIRONMENT='web' \
 									-s EXPORTED_RUNTIME_METHODS="['getValue', 'FS']" \
 									-s EXPORT_NAME='createModule' \
 									-s USE_ES6_IMPORT_META=0 \
-									-s FORCE_FILESYSTEM=1 \
-									-s ASSERTIONS=1 \
-									-s TOTAL_MEMORY=1310720000
+									-s FORCE_FILESYSTEM=1 
+									# -s ASSERTIONS=1 \
+									# -s TOTAL_MEMORY=1310720000
                   # -s NO_DISABLE_EXCEPTION_CATCHING=1 \
 									# -s SAFE_HEAP=1 \
 									# -s STACK_OVERFLOW_CHECK=1
