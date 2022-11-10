@@ -12,10 +12,10 @@ const Main = () => {
   const wasm = window.wasm // TODO: This is an ugly hack because wasm object is so big that Redux debugger hangs.
   const showConsole = useStoreState(state => state.simulation.showConsole)
   const setShowConsole = useStoreActions(actions => actions.simulation.setShowConsole)
-  const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
+  const selectedMenu = useStoreState(state => state.app.selectedMenu)
   
-  const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
-  const status = useStoreState(state => state.simulation.status)
+  const setPreferredView = useStoreActions(actions => actions.app.setPreferredView)
+  const status = useStoreState(state => state.app.status)
 
   return (
     <Content>

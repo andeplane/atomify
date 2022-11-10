@@ -48,14 +48,14 @@ const App: React.FC = () => {
   const [showNewSimulation, setShowNewSimulation] = useState(false);
   const running = useStoreState(state => state.simulation.running)
   const simulation = useStoreState(state => state.simulation.simulation)
-  const selectedFile = useStoreState(state => state.simulation.selectedFile)
-  const setSelectedFile = useStoreActions(actions => actions.simulation.setSelectedFile)
-  const setSelectedMenu = useStoreActions(actions => actions.simulation.setSelectedMenu)
-  const preferredView = useStoreState(state => state.simulation.preferredView)
-  const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
+  const selectedFile = useStoreState(state => state.app.selectedFile)
+  const setSelectedFile = useStoreActions(actions => actions.app.setSelectedFile)
+  const setSelectedMenu = useStoreActions(actions => actions.app.setSelectedMenu)
+  const preferredView = useStoreState(state => state.app.preferredView)
+  const setPreferredView = useStoreActions(actions => actions.app.setPreferredView)
   const paused = useStoreState(state => state.simulation.paused)
   const setPaused = useStoreActions(actions => actions.simulation.setPaused)
-  const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
+  const selectedMenu = useStoreState(state => state.app.selectedMenu)
 
   const run = useStoreActions(actions => actions.simulation.run)
   

@@ -7,6 +7,7 @@ import {track, time_event} from '../utils/metrics'
 import * as THREE from 'three'
 import localforage from 'localforage'
 import ColorModifier from '../modifiers/colormodifier';
+import { SimulationFile } from './app';
 
 localforage.config({
   driver      : localforage.INDEXEDDB,
@@ -71,18 +72,6 @@ const parseAtomSizeAndColor = (line: string) => {
   }
 }
 
-interface Status {
-  title: String
-  text: String
-  progress: number
-}
-
-export interface SimulationFile {
-  fileName: string
-  content?: string
-  url?: string
-}
-
 export interface Simulation {
   id: string
   files: SimulationFile[]
@@ -93,32 +82,23 @@ export interface Simulation {
 }
 
 export interface SimulationModel {
-  selectedMenu: string
   running: boolean
   paused: boolean
   showConsole: boolean
   simulation?: Simulation
-  status?: Status
-  preferredView?: string
   files: string[]
   lammpsOutput: string[]
-  selectedFile?: SimulationFile
-  particleColors?: THREE.Color[]
   cameraPosition?: THREE.Vector3
   cameraTarget?: THREE.Vector3
   resetLammpsOutput: Action<SimulationModel, void>
-  setSelectedMenu: Action<SimulationModel, string>
   addLammpsOutput: Action<SimulationModel, string>
   setShowConsole: Action<SimulationModel, boolean>
   setPaused: Action<SimulationModel, boolean>
   setCameraPosition: Action<SimulationModel, THREE.Vector3|undefined>
   setCameraTarget: Action<SimulationModel, THREE.Vector3|undefined>
-  setPreferredView: Action<SimulationModel, string|undefined>
-  setSelectedFile: Action<SimulationModel, SimulationFile>
   setSimulation: Action<SimulationModel, Simulation>
   setRunning: Action<SimulationModel, boolean>
   setFiles: Action<SimulationModel, string[]>
-  setStatus: Action<SimulationModel, Status|undefined>
   setLammps: Action<SimulationModel, LammpsWeb>
   extractAndApplyAtomifyCommands: Thunk<SimulationModel, string>
   syncFilesWasm: Thunk<SimulationModel, string|undefined>
@@ -132,7 +112,6 @@ export interface SimulationModel {
 export const simulationModel: SimulationModel = {
   running: false,
   paused: false,
-  selectedMenu: 'examples',
   showConsole: false,
   files: [],
   lammpsOutput: [],
@@ -141,15 +120,6 @@ export const simulationModel: SimulationModel = {
   }),
   addLammpsOutput: action((state, output: string) => {
     state.lammpsOutput = [...state.lammpsOutput, output]
-  }),
-  setSelectedMenu: action((state, selectedMenu: string) => {
-    state.selectedMenu = selectedMenu
-  }),
-  setPreferredView: action((state, preferredView?: string) => {
-    state.preferredView = preferredView
-  }),
-  setSelectedFile: action((state, selectedFile?: SimulationFile) => {
-    state.selectedFile = selectedFile
   }),
   setShowConsole: action((state, showConsole: boolean) => {
     state.showConsole = showConsole
@@ -174,9 +144,6 @@ export const simulationModel: SimulationModel = {
   }),
   setFiles: action((state, files: string[]) => {
     state.files = files
-  }),
-  setStatus: action((state, status?: Status) => {
-    state.status = status
   }),
   // @ts-ignore
   extractAndApplyAtomifyCommands: thunk((actions, inputScript: string, {getStoreActions, getStoreState}) => {
@@ -456,7 +423,7 @@ export const simulationModel: SimulationModel = {
     
     let counter = 0
     for (const file of simulation.files) {
-      await actions.setStatus({
+      await allActions.app.setStatus({
         title: `Downloading file (${counter+1}/${simulation.files.length})`,
         text: file.fileName,
         progress: 0.2 + 0.8 * counter / simulation.files.length
@@ -476,7 +443,7 @@ export const simulationModel: SimulationModel = {
       }
       counter += 1
     }
-    await actions.setStatus({
+    await allActions.app.setStatus({
       title: `Uploading files to VM ...`,
       text: "",
       progress: 0.9
@@ -484,12 +451,12 @@ export const simulationModel: SimulationModel = {
     
     actions.setSimulation(simulation) // Set it again now that files are updated
     wasm.FS.chdir(`/${simulation.id}`)
-    await actions.setStatus(undefined)
+    await allActions.app.setStatus(undefined)
     if (simulation.start) {
       actions.run()
     } else {
       const inputScriptFile = simulation.files.filter(file => file.fileName  === simulation.inputScript)[0]
-      actions.setSelectedFile(inputScriptFile)
+      allActions.app.setSelectedFile(inputScriptFile)
     }
     track('Simulation.New', {simulationId: simulation?.id})
   }),
