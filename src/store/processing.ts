@@ -101,7 +101,7 @@ export const processingModel: ProcessingModel = {
     }
 
     // @ts-ignore
-    if (everything || getStoreState().simulation.selectedMenu === 'view') {
+    if (everything || getStoreState().app.selectedMenu === 'view') {
       if (modifierOutput.particles !== particles) {
         allActions.render.setParticles(modifierOutput.particles)
       }

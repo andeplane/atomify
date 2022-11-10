@@ -46,7 +46,6 @@ const View = ({visible}: ViewProps) => {
   const cameraTarget = useStoreState(state => state.simulation.cameraTarget)
   const particles = useStoreState(state => state.render.particles)
   const bonds = useStoreState(state => state.render.bonds)
-  const particleColors = useStoreState(state => state.simulation.particleColors)
   const visualizer = useStoreState(state => state.render.visualizer)
   const setVisualizer = useStoreActions(actions => actions.render.setVisualizer)
   
@@ -63,7 +62,6 @@ const View = ({visible}: ViewProps) => {
       setLoading(true)
       const newVisualizer = new Visualizer({
         domElement: domElement.current,
-        initialColors: particleColors,
         // onCameraChanged: (position: THREE.Vector3, target: THREE.Vector3) => {console.log(position, target)}
       })
       setVisualizer(newVisualizer)
@@ -77,7 +75,7 @@ const View = ({visible}: ViewProps) => {
       newVisualizer.pointLight.intensity = 0.6
       newVisualizer.pointLight.decay = 2
     }
-  }, [domElement, setVisualizer, visualizer, loading, particleColors])
+  }, [domElement, setVisualizer, visualizer, loading])
 
   useEffect(() => {
     if (visible && domElement.current) {
@@ -94,20 +92,6 @@ const View = ({visible}: ViewProps) => {
     prevParticlesRef.current = particles
   })
   const prevParticles = prevParticlesRef.current
-
-  const prevColorsRef = useRef<THREE.Color[]>()
-  useEffect(() => {
-    prevColorsRef.current = particleColors
-  })
-  // const prevColors = prevColorsRef.current
-
-  useEffect(() => {
-    if (visualizer) {
-      particleColors?.forEach((color, index) => {
-        visualizer.setColor(index, color)
-      })
-    }
-  }, [particleColors, visualizer])
 
   useEffect(() => {
     if (cameraPosition && visualizer) {

@@ -1,7 +1,8 @@
 import {useCallback, useState, useEffect} from 'react'
 import { useMeasure } from 'react-use';
 import { Select, Button, Divider } from 'antd';
-import {Simulation, SimulationFile} from '../store/simulation'
+import {Simulation} from '../store/simulation'
+import {SimulationFile} from '../store/app'
 import {useStoreActions, useStoreState} from '../hooks'
 import { CaretRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Card, Layout, Skeleton, Row, Col, notification } from 'antd';
@@ -38,7 +39,7 @@ const Examples = () => {
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
   const simulation = useStoreState(state => state.simulation.simulation)
   const running = useStoreState(state => state.simulation.running)
-  const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
+  const setPreferredView = useStoreActions(actions => actions.app.setPreferredView)
   
   useEffect(() => {
     const fetchExamples = async(examplesUrl: string) => {

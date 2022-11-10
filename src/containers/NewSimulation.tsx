@@ -3,7 +3,8 @@ import {useCallback, useEffect, useState} from 'react'
 import { useStoreActions } from '../hooks';
 import { message, Upload, Modal, Button, Select, Divider, Tooltip, Input, Checkbox } from 'antd';
 import type { UploadProps } from 'antd';
-import { Simulation, SimulationFile } from '../store/simulation';
+import { Simulation } from '../store/simulation';
+import { SimulationFile } from '../store/app';
 import {track} from '../utils/metrics'
 
 const { Option } = Select;
@@ -20,7 +21,7 @@ const NewSimulation = ({onClose}: NewSimulationProps) => {
   const [startImmediately, setStartImmediately] = useState(false)
   const [inputScript, setInputScript] = useState<string>()
   const setNewSimulation = useStoreActions(actions => actions.simulation.newSimulation)
-  const setPreferredView = useStoreActions(actions => actions.simulation.setPreferredView)
+  const setPreferredView = useStoreActions(actions => actions.app.setPreferredView)
   
   const validSimulation = (name != null && name.length > 0) && inputScript && files.filter(file => file.fileName === inputScript).length > 0
   

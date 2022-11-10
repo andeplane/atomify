@@ -16,9 +16,9 @@ const SimulationComponent = () => {
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
   const running = useStoreState(state => state.simulation.running)
   const addLammpsOutput = useStoreActions(actions => actions.simulation.addLammpsOutput)
-  const selectedMenu = useStoreState(state => state.simulation.selectedMenu)
+  const selectedMenu = useStoreState(state => state.app.selectedMenu)
   const setLammps = useStoreActions(actions => actions.simulation.setLammps)
-  const setStatus = useStoreActions(actions => actions.simulation.setStatus)
+  const setStatus = useStoreActions(actions => actions.app.setStatus)
   const runPostTimestep = useStoreActions(actions => actions.processing.runPostTimestep)
   const setHasSynchronized = useStoreActions(actions => actions.simulationStatus.setHasSynchronized)
   
