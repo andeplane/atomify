@@ -121,7 +121,7 @@ export const processingModel: ProcessingModel = {
     const whichFlag = lammps.getWhichFlag()
     allActions.simulationStatus.setRunType(whichFlag===1 ? "Dynamics" : "Minimization")
     
-    if (whichFlag != 0) {
+    if (whichFlag !== 0) {
       // We are not allowed to ask for these values unless whichFlag is 0
       allActions.simulationStatus.setTimestepsPerSecond(lammps.getTimestepsPerSecond())
       allActions.simulationStatus.setRemainingTime(lammps.getCPURemain())
