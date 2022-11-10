@@ -111,14 +111,20 @@ export const processingModel: ProcessingModel = {
     }
 
     allActions.simulationStatus.setBox(getSimulationBox(lammps, wasm))
-    allActions.simulationStatus.setRunType(lammps.getWhichFlag()===1 ? "Dynamics" : "Minimization")
     allActions.simulationStatus.setOrigo(getSimulationOrigo(lammps, wasm))
     allActions.simulationStatus.setTimesteps(lammps.getTimesteps())
     allActions.simulationStatus.setNumAtoms(lammps.getNumAtoms())
     allActions.simulationStatus.setRunTimesteps(lammps.getRunTimesteps())
     allActions.simulationStatus.setRunTotalTimesteps(lammps.getRunTotalTimesteps())
-    allActions.simulationStatus.setRemainingTime(lammps.getCPURemain())
-    allActions.simulationStatus.setTimestepsPerSecond(lammps.getTimestepsPerSecond())
     allActions.simulationStatus.setLastCommand(lammps.getLastCommand())
+    
+    const whichFlag = lammps.getWhichFlag()
+    allActions.simulationStatus.setRunType(whichFlag===1 ? "Dynamics" : "Minimization")
+    
+    if (whichFlag != 0) {
+      // We are not allowed to ask for these values unless whichFlag is 0
+      allActions.simulationStatus.setTimestepsPerSecond(lammps.getTimestepsPerSecond())
+      allActions.simulationStatus.setRemainingTime(lammps.getCPURemain())
+    }
   })
 };
