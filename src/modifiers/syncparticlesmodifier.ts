@@ -57,7 +57,7 @@ class SyncParticlesModifier extends Modifier {
       newParticles.mesh.count = numParticles
       newParticles.geometry.setDrawRange(0, numParticles)
     }
-
+    
     newParticles.markNeedsUpdate()
     return newParticles
   }
