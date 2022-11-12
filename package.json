@@ -19,7 +19,7 @@
     "easy-peasy": "^5.1.0",
     "localforage": "^1.10.0",
     "mixpanel-browser": "^2.45.0",
-    "omovi": "^0.7.3",
+    "omovi": "^0.7.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-fetch-hook": "^1.9.5",
