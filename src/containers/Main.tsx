@@ -5,6 +5,7 @@ import Edit from './Edit'
 import Console from './Console'
 import Examples from './Examples'
 import {useStoreActions, useStoreState} from '../hooks'
+import Simulations from './Simulations';
 const { Content } = Layout;
 
 const Main = () => {
@@ -31,6 +32,9 @@ const Main = () => {
         </Tabs.TabPane>
         <Tabs.TabPane tab="Edit" key="editfile">
           <Edit />
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Simulations" key="simulations">
+          <Simulations />
         </Tabs.TabPane>
         <Tabs.TabPane tab="Examples" key="examples">
           <Examples />
