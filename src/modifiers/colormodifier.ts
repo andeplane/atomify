@@ -86,7 +86,6 @@ class ColorModifier extends Modifier {
     if ( (this.previousColoringMethod === 'type' && !output.colorsDirty) || !input.renderState.visualizer) {
       return
     }
-    console.log("Will update colors")
     const particleStyles = input.renderState.particleStyles
     const visualizer = input.renderState.visualizer
     
