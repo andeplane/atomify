@@ -4,6 +4,13 @@
 #include "update.h"
 #include <stdio.h>
 
+Compute::Compute(LAMMPS_NS::LAMMPS *lmp, LAMMPS_NS::Compute *compute, std::string computeId, ModifierType type, std::string xLabel, std::string yLabel)
+  : Modifier(lmp, computeId, type, xLabel, yLabel),
+   m_compute(compute)
+{
+
+}
+
 void Compute::sync() {
   if(syncPerAtom()) return;
   if(trySync(dynamic_cast<LAMMPS_NS::ComputeRDF*>(m_compute))) return;
@@ -19,18 +26,6 @@ void Compute::sync() {
     float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
     data.add(simulationTime, m_scalarValue);
   }
-}
-
-Data1D &Compute::ensureExists(std::string name) {
-  for (int i = 0; i < m_data1DNames.size(); i++) {
-    if (m_data1DNames[i] == name) {
-      return m_data1D[i];
-    }
-  }
-
-  m_data1DNames.push_back(name);
-  m_data1D.push_back(Data1D());
-  return m_data1D.back();
 }
 
 bool Compute::trySync(LAMMPS_NS::ComputeRDF *compute) {
@@ -170,8 +165,4 @@ bool Compute::execute() {
     didCompute = true;
   }
   return didCompute;
-}
-
-float Compute::getScalarValue() {
-  return m_scalarValue;
 }

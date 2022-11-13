@@ -369,16 +369,41 @@ void LAMMPSWeb::syncComputes() {
     auto computeId = std::string(lmpCompute->id);
     if (m_computes.find(computeId) == m_computes.end()) {
       // Create new compute
-      Compute compute;
-      if (dynamic_cast<LAMMPS_NS::ComputePE*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputePE, "Time", "Potential energy" };
-      else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeTemp, std::string("Time"), std::string("Temperature")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeKE, std::string("Time"), std::string("Kinetic energy")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputePressure, std::string("Time"), std::string("Pressure")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeRDF, std::string("Distance"), std::string("g(r)")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeMSD, std::string("Time"), std::string("Mean square displacement") };
-      else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(lmpCompute) == nullptr) compute = { m_lmp, lmpCompute, computeId, ComputeVACF, std::string("Time"), std::string("<v(t)*v(0)>") };
-      else compute = { m_lmp, lmpCompute, computeId, ComputeOther, std::string("Time"), std::string("Value") };
-      m_computes[computeId] = compute;
+      Compute *compute = nullptr;
+      if (dynamic_cast<LAMMPS_NS::ComputePE*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputePE, "Time", "Potential energy" };
+      else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeTemp, std::string("Time"), std::string("Temperature")  };
+      else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeKE, std::string("Time"), std::string("Kinetic energy")  };
+      else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputePressure, std::string("Time"), std::string("Pressure")  };
+      else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeRDF, std::string("Distance"), std::string("g(r)")  };
+      else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeMSD, std::string("Time"), std::string("Mean square displacement") };
+      else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeVACF, std::string("Time"), std::string("<v(t)*v(0)>") };
+      else *compute = { m_lmp, lmpCompute, computeId, ComputeOther, std::string("Time"), std::string("Value") };
+      m_computes[computeId] = *compute;
+    }
+  }
+
+  // See if we have any compute that no longer is in LAMMPS
+  for (auto it = m_computes.cbegin(); it != m_computes.cend();) {
+    if (!findComputeByIdentifier(it->first)) {
+      m_computes.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+}
+
+void LAMMPSWeb::syncFixes() {
+  // First add all existing computes
+  for(int i=0; i < m_lmp->modify->nfix; i++) {
+    LAMMPS_NS::Fix *lmpFix = m_lmp->modify->fix[i];
+    auto fixId = std::string(lmpFix->id);
+    if (m_fixes.find(fixId) == m_fixes.end()) {
+      // Create new compute
+      Fix *fix = nullptr;
+      if (dynamic_cast<LAMMPS_NS::FixAveChunk*>(lmpFix) == nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveChunk, "", "" };
+      else if (dynamic_cast<LAMMPS_NS::FixAveHisto*>(lmpFix) == nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveHisto, "", ""};
+      else if (dynamic_cast<LAMMPS_NS::FixAveTime*>(lmpFix) == nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveTime, std::string("Time"), std::string("Value")  };
+      m_fixes[fixId] = *fix;
     }
   }
 
@@ -404,19 +429,15 @@ Compute LAMMPSWeb::getCompute(std::string name) {
   return m_computes[name];
 }
 
-std::vector<Fix> LAMMPSWeb::getFixes() {
-  auto v = std::vector<Fix>();
-  if (!m_lmp) {
-    return v;
+Fix LAMMPSWeb::getFix(std::string name) {
+  return m_fixes[name];
+}
+
+std::vector<std::string> LAMMPSWeb::getFixNames() {
+  auto v = std::vector<std::string>();
+  for (const auto& [key, value] : m_fixes) {
+    v.push_back(key);
   }
-  for(int i=0; i < m_lmp->modify->nfix; i++) {
-    LAMMPS_NS::Fix *f = m_lmp->modify->fix[i];
-    if (dynamic_cast<LAMMPS_NS::FixAveChunk*>(f) == nullptr) v.push_back({ std::string(f->id), FixAveChunk });
-    else if (dynamic_cast<LAMMPS_NS::FixAveHisto*>(f) == nullptr) v.push_back({ std::string(f->id), FixAveHisto });
-    else if (dynamic_cast<LAMMPS_NS::FixAveTime*>(f) == nullptr) v.push_back({ std::string(f->id), FixAveTime });
-    else v.push_back({ std::string(f->id), FixOther});
-  }
-  
   return v;
 }
 
