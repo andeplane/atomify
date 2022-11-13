@@ -84,15 +84,15 @@ export const processingModel: ProcessingModel = {
     const modifierOutput: ModifierOutput = {
       particles,
       bonds,
-      colorsUpdated: false,
+      // @ts-ignore
+      colorsDirty: getStoreState().render.particleStylesUpdated,
       computes: {},
       fixes: {},
     }
     // @ts-ignore
     getStoreState().processing.postTimestepModifiers.forEach(modifier => modifier.run(modifierInput, modifierOutput, true))
-    if (modifierOutput.colorsUpdated) {
-      allActions.render.setParticleStylesUpdated(false)
-    }
+    allActions.render.setParticleStylesUpdated(false)
+
     allActions.simulationStatus.setComputes(modifierOutput.computes)
     if (modifierOutput.bonds) {
       allActions.simulationStatus.setNumBonds(modifierOutput.bonds.count)

@@ -14,7 +14,7 @@ export type ModifierInput = {
 export type ModifierOutput = {
   particles: Particles
   bonds: Bonds
-  colorsUpdated: boolean
+  colorsDirty: boolean
   computes: {[key: string]: Compute}
   fixes: {[key: string]: Fix}
 }
