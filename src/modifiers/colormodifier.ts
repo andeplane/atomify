@@ -83,10 +83,9 @@ class ColorModifier extends Modifier {
   }
 
   runByType = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => {
-    if ( (this.previousColoringMethod === 'type' && !input.renderState.particleStylesUpdated) || !input.renderState.visualizer) {
+    if ( (this.previousColoringMethod === 'type' && !output.colorsDirty) || !input.renderState.visualizer) {
       return
     }
-    
     const particleStyles = input.renderState.particleStyles
     const visualizer = input.renderState.visualizer
     
@@ -101,7 +100,7 @@ class ColorModifier extends Modifier {
       visualizer.setRadius(realIndex, radius)
       visualizer.setColor(realIndex, {r: atomType.color.r, g: atomType.color.g, b: atomType.color.b})
     }
-    output.colorsUpdated = true
+    
     this.previousColoringMethod = 'type'
   }
 

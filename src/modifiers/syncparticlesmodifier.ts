@@ -34,10 +34,11 @@ class SyncParticlesModifier extends Modifier {
 
       newParticles = new Particles(newCapacity);
       output.particles = newParticles
+      output.colorsDirty = true
     } else {
       if (numParticles !== newParticles.count) {
         // Need to update colors and radius
-        output.colorsUpdated = true
+        output.colorsDirty = true
       }
     }
 
@@ -51,11 +52,14 @@ class SyncParticlesModifier extends Modifier {
     newParticles.positions.set(positionsSubarray)
     newParticles.types.set(typeSubarray)
     newParticles.indices.set(idSubarray)
+    if (newParticles.count !== numParticles) {
+      output.colorsDirty = true
+    }
+
     newParticles.count = numParticles
     
     if (newParticles.mesh) {
       newParticles.mesh.count = numParticles
-      newParticles.geometry.setDrawRange(0, numParticles)
     }
     
     newParticles.markNeedsUpdate()
