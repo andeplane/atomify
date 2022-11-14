@@ -8,13 +8,13 @@
 #include "compute_rdf.h"
 #include "compute_msd.h"
 
-#include "atomify_modifier.h"
+#include "atomify_modify.h"
 
 #include "lammps.h"
 #include "data1d.h"
 
-struct Compute : public Modifier {
-  Compute(LAMMPS_NS::LAMMPS *lmp, LAMMPS_NS::Compute *compute, std::string computeId, ModifierType type, std::string xLabel, std::string yLabel);
+struct Compute : public Modify {
+  Compute(LAMMPS_NS::LAMMPS *lmp, LAMMPS_NS::Compute *compute, std::string computeId, ModifyType type, std::string xLabel, std::string yLabel);
   Compute() {};
   ~Compute() {};
   LAMMPS_NS::Compute *m_compute = nullptr;

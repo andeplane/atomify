@@ -1,11 +1,11 @@
-#ifndef ATOMIFY_MODIFIER_H
-#define ATOMIFY_MODIFIER_H
+#ifndef ATOMIFY_MODIFY_H
+#define ATOMIFY_MODIFY_H
 #include <string>
 
 #include "lammps.h"
 #include "data1d.h"
 
-enum ModifierType {
+enum ModifyType {
   ComputePressure,
   ComputeTemp,
   ComputePE,
@@ -26,17 +26,17 @@ enum ModifierType {
   FixOther
 };
 
-struct Modifier {
-  Modifier() {};
-  Modifier(LAMMPS_NS::LAMMPS *lmp, std::string modifierId, ModifierType type, std::string xLabel, std::string yLabel);
+struct Modify {
+  Modify() {};
+  Modify(LAMMPS_NS::LAMMPS *lmp, std::string modifyId, ModifyType type, std::string xLabel, std::string yLabel);
 
-  ~Modifier() {
+  ~Modify() {
     m_data1D.clear();
     m_perAtomData.clear();
   };
   LAMMPS_NS::LAMMPS *m_lmp = nullptr;
   std::string m_name;
-  ModifierType m_type;
+  ModifyType m_type;
   std::string m_xLabel = "Time";
   std::string m_yLabel = "Value";
   float m_scalarValue = 0;

@@ -1,14 +1,14 @@
-#include "atomify_modifier.h"
+#include "atomify_modify.h"
 
-Modifier::Modifier(LAMMPS_NS::LAMMPS *lmp, std::string modifierId, ModifierType type, std::string xLabel, std::string yLabel) :
+Modify::Modify(LAMMPS_NS::LAMMPS *lmp, std::string modifyId, ModifyType type, std::string xLabel, std::string yLabel) :
   m_lmp(lmp),
-  m_name(modifierId),
+  m_name(modifyId),
   m_type(type),
   m_xLabel(xLabel),
   m_yLabel(yLabel)
 {}
 
-Data1D &Modifier::ensureExists(std::string name) {
+Data1D &Modify::ensureExists(std::string name) {
   for (int i = 0; i < m_data1DNames.size(); i++) {
     if (m_data1DNames[i] == name) {
       return m_data1D[i];

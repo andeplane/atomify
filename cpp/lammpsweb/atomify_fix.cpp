@@ -5,8 +5,8 @@
 #include "modify.h"
 #include "arg_info.h"
 
-Fix::Fix(LAMMPS_NS::LAMMPS *lmp, LAMMPS_NS::Fix *fix, std::string fixId, ModifierType type, std::string xLabel, std::string yLabel)
-  : Modifier(lmp, fixId, type, xLabel, yLabel),
+Fix::Fix(LAMMPS_NS::LAMMPS *lmp, LAMMPS_NS::Fix *fix, std::string fixId, ModifyType type, std::string xLabel, std::string yLabel)
+  : Modify(lmp, fixId, type, xLabel, yLabel),
    m_fix(fix)
 {
 
@@ -20,7 +20,7 @@ bool Fix::trySync(LAMMPS_NS::FixAveHisto *fix) {
     return false;
 }
 
-ModifierType Fix::getType(int which, std::string identifier) {
+ModifyType Fix::getType(int which, std::string identifier) {
   if(which == LAMMPS_NS::ArgInfo::COMPUTE) {
     LAMMPS_NS::Compute *compute = m_lmp->modify->get_compute_by_id(identifier);
 

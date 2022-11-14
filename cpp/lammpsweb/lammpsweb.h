@@ -136,21 +136,21 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     
     .function("computeBonds", &LAMMPSWeb::computeBonds)
     .function("computeParticles", &LAMMPSWeb::computeParticles);
-  class_<Modifier>("Modifier")
-    .function("getName", &Modifier::getName)
-    .function("getClearPerSync", &Modifier::getClearPerSync)
-    .function("getType", &Modifier::getType)
-    .function("getIsPerAtom", &Modifier::getIsPerAtom)
-    .function("getPerAtomData", &Modifier::getPerAtomData)
-    .function("hasScalarData", &Modifier::hasScalarData)
-    .function("getScalarValue", &Modifier::getScalarValue)
-    .function("getData1DNames", &Modifier::getData1DNames)
-    .function("getData1D", &Modifier::getData1D)
-    .function("getXLabel", &Modifier::getXLabel)
-    .function("getYLabel", &Modifier::getYLabel)
-    .function("sync", &Modifier::sync);
+  class_<Modify>("Modify")
+    .function("getName", &Modify::getName)
+    .function("getClearPerSync", &Modify::getClearPerSync)
+    .function("getType", &Modify::getType)
+    .function("getIsPerAtom", &Modify::getIsPerAtom)
+    .function("getPerAtomData", &Modify::getPerAtomData)
+    .function("hasScalarData", &Modify::hasScalarData)
+    .function("getScalarValue", &Modify::getScalarValue)
+    .function("getData1DNames", &Modify::getData1DNames)
+    .function("getData1D", &Modify::getData1D)
+    .function("getXLabel", &Modify::getXLabel)
+    .function("getYLabel", &Modify::getYLabel)
+    .function("sync", &Modify::sync);
 
-  class_<Compute, base<Modifier>>("Compute")
+  class_<Compute, base<Modify>>("Compute")
     .function("execute", &Compute::execute);
 
   class_<Data1D>("Data1D")
@@ -160,7 +160,7 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .function("getLabel", &Data1D::getLabel)
     .function("getNumPoints", &Data1D::getNumPoints);
   
-  class_<Fix, base<Modifier>>("Fix");
+  class_<Fix, base<Modify>>("Fix");
   
   register_vector<Data1D>("vector<Data1D>");
   register_vector<std::string>("vector<std::string>");

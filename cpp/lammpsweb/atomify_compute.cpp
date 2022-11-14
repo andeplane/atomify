@@ -4,8 +4,8 @@
 #include "update.h"
 #include <stdio.h>
 
-Compute::Compute(LAMMPS_NS::LAMMPS *lmp, LAMMPS_NS::Compute *compute, std::string computeId, ModifierType type, std::string xLabel, std::string yLabel)
-  : Modifier(lmp, computeId, type, xLabel, yLabel),
+Compute::Compute(LAMMPS_NS::LAMMPS *lmp, LAMMPS_NS::Compute *compute, std::string computeId, ModifyType type, std::string xLabel, std::string yLabel)
+  : Modify(lmp, computeId, type, xLabel, yLabel),
    m_compute(compute)
 {
 
@@ -36,9 +36,9 @@ bool Compute::trySync(LAMMPS_NS::ComputeRDF *compute) {
   int numPairs = (numColumns - 1)/2;
 
   for(int pairId=0; pairId<numPairs; pairId++) {
-      std::string key = std::string("Pair_")+std::to_string(pairId+1);
+      std::string key = std::string("g(r) pair ")+std::to_string(pairId+1);
       Data1D &data = ensureExists(key);
-      data.label = std::string("Pair_")+std::to_string(pairId+1);
+      data.label = key;
       data.clear();
 
       for(int bin=0; bin<numBins; bin++) {
