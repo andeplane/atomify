@@ -6,7 +6,7 @@
 #include "data1d.h"
 
 enum ModifierType {
-    ComputePressure,
+  ComputePressure,
   ComputeTemp,
   ComputePE,
   ComputeKE,
@@ -59,8 +59,6 @@ struct Modifier {
   virtual bool getIsPerAtom() = 0;
   virtual bool hasScalarData() = 0;
   virtual void sync() = 0;
-  virtual bool syncPerAtom() = 0;
-  virtual bool execute() = 0;
 };
 
 #endif

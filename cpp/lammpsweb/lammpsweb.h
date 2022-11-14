@@ -147,10 +147,10 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .function("getData1DNames", &Modifier::getData1DNames)
     .function("getData1D", &Modifier::getData1D)
     .function("getXLabel", &Modifier::getXLabel)
-    .function("getYLabel", &Modifier::getYLabel);
+    .function("getYLabel", &Modifier::getYLabel)
+    .function("sync", &Modifier::sync);
 
   class_<Compute, base<Modifier>>("Compute")
-    .function("sync", &Compute::sync)
     .function("execute", &Compute::execute);
 
   class_<Data1D>("Data1D")
@@ -160,8 +160,7 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .function("getLabel", &Data1D::getLabel)
     .function("getNumPoints", &Data1D::getNumPoints);
   
-  class_<Fix, base<Modifier>>("Fix")
-    .function("sync", &Compute::sync);
+  class_<Fix, base<Modifier>>("Fix");
   
   register_vector<Data1D>("vector<Data1D>");
   register_vector<std::string>("vector<std::string>");

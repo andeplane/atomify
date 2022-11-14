@@ -7,8 +7,6 @@ interface SyncComputesModifierProps {
 }
 
 class SyncComputesModifier extends Modifier {
-  private previousColoringMethod?: string
-
   constructor({name, active}: SyncComputesModifierProps) {
     super({name, active})
   }

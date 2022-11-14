@@ -13,15 +13,16 @@ struct Fix : public Modifier {
   ~Fix() {};
 
   LAMMPS_NS::Fix *m_fix = nullptr;
+  long m_nextValidTimestep = -1;
+  bool m_hasScalarData = false;
   
+  ModifierType getType(int which, std::string identifier);
   bool trySync(LAMMPS_NS::FixAveChunk *fix);
   bool trySync(LAMMPS_NS::FixAveHisto *fix);
   bool trySync(LAMMPS_NS::FixAveTime *fix);
   bool getIsPerAtom() { return false; }
-  bool hasScalarData() { return false; }
+  bool hasScalarData() { return m_hasScalarData; }
   void sync();
-  bool syncPerAtom();
-  bool execute();
 };
 
 #endif
