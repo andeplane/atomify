@@ -18,6 +18,17 @@ class SyncFixesModifier extends Modifier {
     
     input.lammps.syncFixes()
     const fixNames = input.lammps.getFixNames()
+    
+    Object.keys(output.fixes).forEach(name => {
+      for (let i = 0; i < fixNames.size(); i++) {
+        if (fixNames.get(i) === name) {
+          return
+        }
+      }
+      // Remove all fixes that are removed from LAMMPS
+      delete output.fixes[name]
+    })
+
     for (let i = 0; i < fixNames.size(); i++) {
       const name = fixNames.get(i)
       let fix = input.fixes[name]

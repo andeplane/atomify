@@ -408,9 +408,9 @@ void LAMMPSWeb::syncFixes() {
   }
 
   // See if we have any compute that no longer is in LAMMPS
-  for (auto it = m_computes.cbegin(); it != m_computes.cend();) {
-    if (!findComputeByIdentifier(it->first)) {
-      m_computes.erase(it++);
+  for (auto it = m_fixes.cbegin(); it != m_fixes.cend();) {
+    if (!findFixByIdentifier(it->first)) {
+      m_fixes.erase(it++);
     } else {
       ++it;
     }

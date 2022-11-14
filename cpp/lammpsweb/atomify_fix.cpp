@@ -122,7 +122,7 @@ bool Fix::trySync(LAMMPS_NS::FixAveTime *fix) {
 }
 
 void Fix::sync() {
-  if(trySync(dynamic_cast<LAMMPS_NS::FixAveTime*>(m_fix))) return;
+  // if(trySync(dynamic_cast<LAMMPS_NS::FixAveTime*>(m_fix))) return;
   if(trySync(dynamic_cast<LAMMPS_NS::FixAveHisto*>(m_fix))) return;
   if(trySync(dynamic_cast<LAMMPS_NS::FixAveChunk*>(m_fix))) return;
 }
