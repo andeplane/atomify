@@ -99,6 +99,7 @@ export const processingModel: ProcessingModel = {
     allActions.render.setParticleStylesUpdated(false)
 
     allActions.simulationStatus.setComputes(modifierOutput.computes)
+    allActions.simulationStatus.setFixes(modifierOutput.fixes)
     if (modifierOutput.bonds) {
       allActions.simulationStatus.setNumBonds(modifierOutput.bonds.count)
     } else {
