@@ -23,7 +23,6 @@ class SyncFixesModifier extends Modifier {
       let fix = input.fixes[name]
       
       if (fix == null) {
-        console.log("name: ", name)
         const lmpFix = input.lammps.getFix(name)
         
         // Need to create a new one 
@@ -53,7 +52,6 @@ class SyncFixesModifier extends Modifier {
       if (data1DNames.size() > 0) {
         fix.clearPerSync = fix.lmpFix.getClearPerSync()
         const data1DVector = fix.lmpFix.getData1D()
-        
         if (fix.data1D == null) {
           fix.data1D = {
             data: [],
