@@ -41,20 +41,15 @@ bool Fix::trySync(LAMMPS_NS::FixAveTime *fix) {
       // Not ready to measure yet
       return true;
   }
-
   enum{SCALAR,VECTOR};
   int nrows, nvalues, dim, mode;
-  int *value = reinterpret_cast<int*>(fix->extract("nrows", dim));
-  nrows = *value;
-  value = reinterpret_cast<int*>(fix->extract("nvalues", dim));
-  nvalues = *value;
-  value = reinterpret_cast<int*>(fix->extract("mode", dim));
-  mode = *value;
-
-  LAMMPS_NS::bigint *nextValidTimestep = reinterpret_cast<LAMMPS_NS::bigint*>(fix->extract("nvalid", dim));
+  nrows = fix->getnrows();
+  nvalues = fix->getnvalues();
+  mode = fix->getmode();
+  
+  auto nextValidTimestep = fix->nextvalid();
   float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
-  if(m_nextValidTimestep+1 == m_lmp->update->ntimestep) {
-    // +1 because fix_atomify is invoked before all other fixes, so we need the next timestep
+  if(m_nextValidTimestep+1 == m_lmp->update->ntimestep) { // m_nextValidTimestep+1 because fix_atomify is invoked before all other fixes, so we need the next timestep
     if(mode == SCALAR) {
       // Time dependent solution with 1 or more values
       if(nvalues == 1) {
@@ -79,8 +74,8 @@ bool Fix::trySync(LAMMPS_NS::FixAveTime *fix) {
       m_yLabel = "Value";
       return true;
     } else {
-      char **ids = reinterpret_cast<char**>(fix->extract("ids", dim));
-      int *which = reinterpret_cast<int*>(fix->extract("which", dim));
+      char **ids = fix->getids();
+      int *which = fix->getwhich();
 
       for(int i=0; i<nvalues; i++) {
         auto type = getType(which[i], ids[i]);
@@ -103,7 +98,7 @@ bool Fix::trySync(LAMMPS_NS::FixAveTime *fix) {
     }
   }
 
-  m_nextValidTimestep = *nextValidTimestep;
+  m_nextValidTimestep = nextValidTimestep;
   return true;
 }
 

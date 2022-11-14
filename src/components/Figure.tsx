@@ -33,8 +33,6 @@ const Figure = ({modifier, onClose} : FigureProps) => {
         legend: 'always'
       });
       setGraph(g)
-      //@ts-ignore
-      window.compute = compute
     }
   }, [modifier, graph, height, width])
 

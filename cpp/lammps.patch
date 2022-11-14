@@ -13,6 +13,31 @@ index 912093c..da78f2e 100644
  
    if (universe->nworlds > 1) {
      throw LAMMPSAbortException(msg, universe->uworld);
+diff --git a/src/fix_ave_time.h b/src/fix_ave_time.h
+index 55df82c..7df4801 100644
+--- a/src/fix_ave_time.h
++++ b/src/fix_ave_time.h
+@@ -38,6 +38,12 @@ class FixAveTime : public Fix {
+   double compute_scalar() override;
+   double compute_vector(int) override;
+   double compute_array(int, int) override;
++  bigint nextvalid();
++  int getmode() { return mode; }
++  int getnvalues() { return nvalues; }
++  int getnrows() { return nrows; }
++  char **getids() { return ids; }
++  int *getwhich() { return which; }
+ 
+  private:
+   int me, nvalues;
+@@ -77,7 +83,6 @@ class FixAveTime : public Fix {
+   void invoke_vector(bigint);
+   void options(int, int, char **);
+   void allocate_arrays();
+-  bigint nextvalid();
+ };
+ 
+ }    // namespace LAMMPS_NS
 diff --git a/src/info.cpp b/src/info.cpp
 index 2261b1d..71e340e 100644
 --- a/src/info.cpp

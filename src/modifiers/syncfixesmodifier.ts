@@ -23,6 +23,7 @@ class SyncFixesModifier extends Modifier {
       let fix = input.fixes[name]
       
       if (fix == null) {
+        console.log("name: ", name)
         const lmpFix = input.lammps.getFix(name)
         
         // Need to create a new one 
