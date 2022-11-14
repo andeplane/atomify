@@ -19,16 +19,6 @@ class SyncComputesModifier extends Modifier {
     input.lammps.syncComputes()
     const computeNames = input.lammps.getComputeNames()
     
-    // Remove all fixes that are removed from LAMMPS
-    Object.keys(output.computes).forEach(name => {
-      for (let i = 0; i < computeNames.size(); i++) {
-        if (computeNames.get(i) === name) {
-          return
-        }
-      }
-      delete output.computes[name]
-    })
-
     for (let i = 0; i < computeNames.size(); i++) {
       const name = computeNames.get(i)
       let compute = input.computes[name]
