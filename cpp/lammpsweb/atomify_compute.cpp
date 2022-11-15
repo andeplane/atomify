@@ -4,6 +4,13 @@
 #include "update.h"
 #include <stdio.h>
 
+Compute::Compute(LAMMPS_NS::LAMMPS *lmp, LAMMPS_NS::Compute *compute, std::string computeId, ModifyType type, std::string xLabel, std::string yLabel)
+  : Modify(lmp, computeId, type, xLabel, yLabel),
+   m_compute(compute)
+{
+
+}
+
 void Compute::sync() {
   if(syncPerAtom()) return;
   if(trySync(dynamic_cast<LAMMPS_NS::ComputeRDF*>(m_compute))) return;
@@ -21,18 +28,6 @@ void Compute::sync() {
   }
 }
 
-Data1D &Compute::ensureExists(std::string name) {
-  for (int i = 0; i < m_data1DNames.size(); i++) {
-    if (m_data1DNames[i] == name) {
-      return m_data1D[i];
-    }
-  }
-
-  m_data1DNames.push_back(name);
-  m_data1D.push_back(Data1D());
-  return m_data1D.back();
-}
-
 bool Compute::trySync(LAMMPS_NS::ComputeRDF *compute) {
   if(!compute) return false;
   m_clearPerSync = true;
@@ -41,9 +36,9 @@ bool Compute::trySync(LAMMPS_NS::ComputeRDF *compute) {
   int numPairs = (numColumns - 1)/2;
 
   for(int pairId=0; pairId<numPairs; pairId++) {
-      std::string key = std::string("Pair_")+std::to_string(pairId+1);
+      std::string key = std::string("g(r) pair ")+std::to_string(pairId+1);
       Data1D &data = ensureExists(key);
-      data.label = std::string("Pair_")+std::to_string(pairId+1);
+      data.label = key;
       data.clear();
 
       for(int bin=0; bin<numBins; bin++) {
@@ -170,8 +165,4 @@ bool Compute::execute() {
     didCompute = true;
   }
   return didCompute;
-}
-
-float Compute::getScalarValue() {
-  return m_scalarValue;
 }

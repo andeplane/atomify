@@ -3,6 +3,7 @@
 #include "lammps.h"
 #include "fix.h"
 #include "compute.h"
+#include "fix.h"
 #include "atomify_compute.h"
 #include "atomify_fix.h"
 #include <iostream>
@@ -21,6 +22,7 @@ class LAMMPSWeb
 private:
   LAMMPS_NS::LAMMPS *m_lmp;
   std::map<std::string,Compute> m_computes;
+  std::map<std::string,Fix> m_fixes;
   double *m_cellMatrix;
   double *m_origo;
   float *m_bondsPosition1; // TODO: use std::vector
@@ -51,8 +53,9 @@ public:
   int getRunTimesteps();
   std::vector<std::string> getComputeNames();
   Compute getCompute(std::string name);
-  std::vector<Fix> getFixes();
-
+  std::vector<std::string> getFixNames();
+  Fix getFix(std::string name);
+  
   // Pointer getters
   long getBondsDistanceMapPointer();
   long getPositionsPointer();
@@ -79,6 +82,7 @@ public:
   
   void synchronizeLAMMPS(int mode);
   void syncComputes();
+  void syncFixes();
 
   LAMMPS_NS::Fix* findFixByIdentifier(std::string identifier);
   LAMMPS_NS::Compute* findComputeByIdentifier(std::string identifier);
@@ -93,58 +97,60 @@ public:
 EMSCRIPTEN_BINDINGS(LAMMPSWeb)
 {
   class_<LAMMPSWeb>("LAMMPSWeb")
-      .constructor<>()
-      .function("setBuildNeighborlist", &LAMMPSWeb::setBuildNeighborlist)
-      .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency)
-      .function("getIsRunning", &LAMMPSWeb::getIsRunning)
-      .function("getErrorMessage", &LAMMPSWeb::getErrorMessage)
-      .function("getLastCommand", &LAMMPSWeb::getLastCommand)
-      .function("getTimesteps", &LAMMPSWeb::getTimesteps)
-      .function("getRunTimesteps", &LAMMPSWeb::getRunTimesteps)
-      .function("getRunTotalTimesteps", &LAMMPSWeb::getRunTotalTimesteps)
-      .function("getTimestepsPerSecond", &LAMMPSWeb::getTimestepsPerSecond)
-      .function("getCPURemain", &LAMMPSWeb::getCPURemain)
-      .function("getWhichFlag", &LAMMPSWeb::getWhichFlag)
-      .function("getCompute", &LAMMPSWeb::getCompute)
-      .function("getComputeNames", &LAMMPSWeb::getComputeNames)
-      .function("syncComputes", &LAMMPSWeb::syncComputes)
-      .function("getFixes", &LAMMPSWeb::getFixes)
-
-      .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
-      .function("getBondsDistanceMapPointer", &LAMMPSWeb::getBondsDistanceMapPointer)
-      .function("getIdPointer", &LAMMPSWeb::getIdPointer)
-      .function("getTypePointer", &LAMMPSWeb::getTypePointer)
-      .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
-      .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
-      .function("getBondsPosition1Pointer", &LAMMPSWeb::getBondsPosition1Pointer)
-      .function("getBondsPosition2Pointer", &LAMMPSWeb::getBondsPosition2Pointer)
-      .function("getExceptionMessage", &LAMMPSWeb::getExceptionMessage)
-      
-      .function("step", &LAMMPSWeb::step)
-      .function("start", &LAMMPSWeb::start)
-      .function("cancel", &LAMMPSWeb::cancel)
-      .function("stop", &LAMMPSWeb::stop)
-      .function("getNumAtoms", &LAMMPSWeb::getNumAtoms)
-      .function("runFile", &LAMMPSWeb::runFile)
-      .function("runCommand", &LAMMPSWeb::runCommand)
-      
-      .function("computeBonds", &LAMMPSWeb::computeBonds)
-      .function("computeParticles", &LAMMPSWeb::computeParticles);
-
-  class_<Compute>("Compute")
     .constructor<>()
-    .function("getName", &Compute::getName)
-    .function("getClearPerSync", &Compute::getClearPerSync)
-    .function("getType", &Compute::getType)
-    .function("getIsPerAtom", &Compute::getIsPerAtom)
-    .function("getPerAtomData", &Compute::getPerAtomData)
-    .function("hasScalarData", &Compute::hasScalarData)
-    .function("getScalarValue", &Compute::getScalarValue)
-    .function("sync", &Compute::sync)
-    .function("getData1DNames", &Compute::getData1DNames)
-    .function("getData1D", &Compute::getData1D)
-    .function("getXLabel", &Compute::getXLabel)
-    .function("getYLabel", &Compute::getYLabel)
+    .function("setBuildNeighborlist", &LAMMPSWeb::setBuildNeighborlist)
+    .function("setSyncFrequency", &LAMMPSWeb::setSyncFrequency)
+    .function("getIsRunning", &LAMMPSWeb::getIsRunning)
+    .function("getErrorMessage", &LAMMPSWeb::getErrorMessage)
+    .function("getLastCommand", &LAMMPSWeb::getLastCommand)
+    .function("getTimesteps", &LAMMPSWeb::getTimesteps)
+    .function("getRunTimesteps", &LAMMPSWeb::getRunTimesteps)
+    .function("getRunTotalTimesteps", &LAMMPSWeb::getRunTotalTimesteps)
+    .function("getTimestepsPerSecond", &LAMMPSWeb::getTimestepsPerSecond)
+    .function("getCPURemain", &LAMMPSWeb::getCPURemain)
+    .function("getWhichFlag", &LAMMPSWeb::getWhichFlag)
+    .function("getCompute", &LAMMPSWeb::getCompute)
+    .function("getComputeNames", &LAMMPSWeb::getComputeNames)
+    .function("getFix", &LAMMPSWeb::getFix)
+    .function("getFixNames", &LAMMPSWeb::getFixNames)
+    .function("syncComputes", &LAMMPSWeb::syncComputes)
+    .function("syncFixes", &LAMMPSWeb::syncFixes)
+    
+    .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
+    .function("getBondsDistanceMapPointer", &LAMMPSWeb::getBondsDistanceMapPointer)
+    .function("getIdPointer", &LAMMPSWeb::getIdPointer)
+    .function("getTypePointer", &LAMMPSWeb::getTypePointer)
+    .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
+    .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
+    .function("getBondsPosition1Pointer", &LAMMPSWeb::getBondsPosition1Pointer)
+    .function("getBondsPosition2Pointer", &LAMMPSWeb::getBondsPosition2Pointer)
+    .function("getExceptionMessage", &LAMMPSWeb::getExceptionMessage)
+    
+    .function("step", &LAMMPSWeb::step)
+    .function("start", &LAMMPSWeb::start)
+    .function("cancel", &LAMMPSWeb::cancel)
+    .function("stop", &LAMMPSWeb::stop)
+    .function("getNumAtoms", &LAMMPSWeb::getNumAtoms)
+    .function("runFile", &LAMMPSWeb::runFile)
+    .function("runCommand", &LAMMPSWeb::runCommand)
+    
+    .function("computeBonds", &LAMMPSWeb::computeBonds)
+    .function("computeParticles", &LAMMPSWeb::computeParticles);
+  class_<Modify>("Modify")
+    .function("getName", &Modify::getName)
+    .function("getClearPerSync", &Modify::getClearPerSync)
+    .function("getType", &Modify::getType)
+    .function("getIsPerAtom", &Modify::getIsPerAtom)
+    .function("getPerAtomData", &Modify::getPerAtomData)
+    .function("hasScalarData", &Modify::hasScalarData)
+    .function("getScalarValue", &Modify::getScalarValue)
+    .function("getData1DNames", &Modify::getData1DNames)
+    .function("getData1D", &Modify::getData1D)
+    .function("getXLabel", &Modify::getXLabel)
+    .function("getYLabel", &Modify::getYLabel)
+    .function("sync", &Modify::sync);
+
+  class_<Compute, base<Modify>>("Compute")
     .function("execute", &Compute::execute);
 
   class_<Data1D>("Data1D")
@@ -154,10 +160,7 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .function("getLabel", &Data1D::getLabel)
     .function("getNumPoints", &Data1D::getNumPoints);
   
-  class_<Fix>("Fix")
-    .constructor<>()
-    .function("getName", &Fix::getName)
-    .function("getType", &Fix::getType);
+  class_<Fix, base<Modify>>("Fix");
   
   register_vector<Data1D>("vector<Data1D>");
   register_vector<std::string>("vector<std::string>");

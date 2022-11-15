@@ -108,3 +108,8 @@ html, body, #root, .App {
 .simulationsummary.hover {
   opacity: 0.8
 }
+
+.ant-layout-sider-children {
+  height: 100%;
+  overflow: auto;
+}

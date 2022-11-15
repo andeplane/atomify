@@ -11,10 +11,12 @@ export type LammpsWeb = {
   getTimestepsPerSecond: () => number
   getCPURemain: () => number
   getWhichFlag: () => number
-  getCompute: (name: string) => LMPCompute
+  getCompute: (name: string) => LMPModifier
   getComputeNames: () => CPPArray<string>
-  getFixes: () => CPPArray<LMPFix>
+  getFix: (name: string) => LMPModifier
+  getFixNames: () => CPPArray<string>
   syncComputes: () => void
+  syncFixes: () => void
 
   getPositionsPointer: () => number
   getIdPointer: () => number
@@ -38,7 +40,7 @@ export type LammpsWeb = {
   computeParticles: () => number
 }
 
-enum ComputeType {
+enum ModifierType {
   ComputePressure,
   ComputeTemp,
   ComputePE,
@@ -53,9 +55,9 @@ enum ComputeType {
   ComputeClusterAtom,
   ComputeCNAAtom,
   ComputeOther,
-}
-
-enum FixType {
+  FixAveChunk,
+  FixAveHisto,
+  FixAveTime,
   FixOther
 }
 
@@ -64,9 +66,9 @@ type CPPArray<T> = {
   size: () => number
 }
 
-export type LMPCompute = {
+export type LMPModifier = {
   getName: () => string
-  getType: () => ComputeType
+  getType: () => ModifierType
   getPerAtomData: () => number
   getIsPerAtom: () => boolean
   hasScalarData: () => boolean
@@ -88,7 +90,7 @@ export type Data1D = {
 
 export type Compute = {
   name: string
-  type: ComputeType
+  type: ModifierType
   isPerAtom: boolean
   hasScalarData: boolean
   scalarValue: number
@@ -98,7 +100,22 @@ export type Compute = {
   clearPerSync: boolean
   syncDataPoints: boolean
   hasData1D: boolean
-  lmpCompute: LMPCompute
+  lmpCompute: LMPModifier
+}
+
+export type Fix = {
+  name: string
+  type: ModifierType
+  isPerAtom: boolean
+  hasScalarData: boolean
+  scalarValue: number
+  data1D?: Data1D
+  xLabel: string
+  yLabel: string
+  clearPerSync: boolean
+  syncDataPoints: boolean
+  hasData1D: boolean
+  lmpFix: LMPModifier
 }
 
 export type LMPData1D = {
@@ -106,16 +123,6 @@ export type LMPData1D = {
   getXValuesPointer: () => number
   getYValuesPointer: () => number
   getNumPoints: () => number
-}
-
-export type LMPFix = {
-  getName: () => string
-  getType: () => FixType
-}
-
-export type Fix = {
-  name: string
-  type: FixType
 }
 
 export type LammpsOutput = {

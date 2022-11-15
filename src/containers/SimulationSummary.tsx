@@ -3,7 +3,7 @@ import {SettingOutlined} from '@ant-design/icons'
 import {Table, Row, Col, Button, Slider} from 'antd'
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
-import {Compute} from '../types'
+import {Compute, Fix} from '../types'
 import React, {useState} from 'react'
 import Modifier from '../modifiers/modifier'
 import SyncBondsSettings from '../modifiers/SyncBondsSettings';
@@ -18,19 +18,11 @@ interface SimulationSummaryType {
   value: string|number
 }
 
-// const fixesColumns: ColumnsType<Fix> = [
-//   {
-//     title: 'Name',
-//     dataIndex: 'name',
-//     key: 'name',
-//   }
-// ];
-
 const SimulationSummary = () => {
   const [visibleSettings, setVisibleSettings] = useState<string|undefined>()
-  const [visibleFigure, setVisibleFigure] = useState<string|undefined>()
-  // const [selectedModifiers, setSelectedModifiers] = useState<React.Key[]>(["Particles", "Bonds", "Colors", "Computes"])
-
+  const [visibleCompute, setVisibleCompute] = useState<Compute|undefined>()
+  const [visibleFix, setVisibleFix] = useState<Fix|undefined>()
+  
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const modifiers = useStoreState(state => state.processing.postTimestepModifiers)
   const postTimestepModifiers = useStoreState(state => state.processing.postTimestepModifiers)
@@ -44,12 +36,11 @@ const SimulationSummary = () => {
   const remainingTime = useStoreState(state => state.simulationStatus.remainingTime)
   const timestepsPerSecond = useStoreState(state => state.simulationStatus.timestepsPerSecond)
 
-  
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
 
   const computes = useStoreState(state => state.simulationStatus.computes)
-  // const fixes = useStoreState(state => state.simulationStatus.fixes)
-  const computeForFigure = visibleFigure ? computes[visibleFigure] : undefined
+  const fixes = useStoreState(state => state.simulationStatus.fixes)
+  
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
       track('SimulationSpeed.Change', {speed: value})
@@ -68,7 +59,25 @@ const SimulationSummary = () => {
         } else if (record.hasData1D) {
           return <><Button style={{padding: 0}} type="link" onClick={() => {
             track('Modifier.Show', {type: 'Compute', name: value})
-            setVisibleFigure(value)
+            setVisibleCompute(record)
+          }} >{value}</Button> {' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>
+        } else {
+          return (<>{value + ' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>)
+        }
+      }
+    }
+  ];
+
+  const fixColumns: ColumnsType<Fix> = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (value, record) => {
+        if (record.hasData1D) {
+          return <><Button style={{padding: 0}} type="link" onClick={() => {
+            track('Modifier.Show', {type: 'Fix', name: value})
+            setVisibleFix(record)
           }} >{value}</Button> {' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>
         } else {
           return (<>{value + ' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>)
@@ -84,7 +93,7 @@ const SimulationSummary = () => {
       key: 'name',
       render: (text, record) => <Row justify="space-between"><Col span={8}>{text}</Col> <Col span={2}><SettingOutlined onClick={() => setVisibleSettings(text)} /></Col></Row>
     }
-  ];
+  ]
   
   const rowSelection: TableRowSelection<Modifier> = {
     onChange: (selectedRowKeys, selectedRows) => {
@@ -169,38 +178,39 @@ const SimulationSummary = () => {
       />
       {simulation && 
         <>
-        <Table
-          title={() => <b>Summary</b>}
-          size='small'
-          showHeader={false}
-          columns={simulationSummaryColumns}
-          dataSource={simulationStatusData}
-          pagination={{hideOnSinglePage: true}}
-        />
-        <Table
-          title={() => <b>Computes</b>}
-          size='small'
-          rowKey='name'
-          showHeader={false}
-          columns={computeColumns}
-          dataSource={Object.values(computes)}
-          pagination={{hideOnSinglePage: true}}
-        />
-        {/* <Table
-          title={() => <b>Fixes</b>}
-          size='small'
-          rowKey='name'
-          showHeader={false}
-          columns={fixesColumns}
-          dataSource={Object.values(fixes)}
-          pagination={{hideOnSinglePage: true}}
-        /> */}
+          <Table
+            title={() => <b>Summary</b>}
+            size='small'
+            showHeader={false}
+            columns={simulationSummaryColumns}
+            dataSource={simulationStatusData}
+            pagination={{hideOnSinglePage: true}}
+          />
+          <Table
+            title={() => <b>Computes</b>}
+            size='small'
+            rowKey='name'
+            showHeader={false}
+            columns={computeColumns}
+            dataSource={Object.values(computes)}
+            pagination={{hideOnSinglePage: true}}
+          />
+          <Table
+            title={() => <b>Fixes</b>}
+            size='small'
+            rowKey='name'
+            showHeader={false}
+            columns={fixColumns}
+            dataSource={Object.values(fixes)}
+            pagination={{hideOnSinglePage: true}}
+          />
         </>
       }
       {visibleSettings==='Bonds' && <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Particles' && <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleSettings==='Colors' && <ColorModifierSettings onClose={() => setVisibleSettings(undefined)} />}
-      {computeForFigure && <Figure compute={computeForFigure} onClose={() => setVisibleFigure(undefined)} />}
+      {visibleCompute && <Figure modifier={visibleCompute} onClose={() => setVisibleCompute(undefined)} />}
+      {visibleFix && <Figure modifier={visibleFix} onClose={() => setVisibleFix(undefined)} />}
     </>
   )
 }

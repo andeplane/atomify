@@ -7,8 +7,6 @@ interface SyncComputesModifierProps {
 }
 
 class SyncComputesModifier extends Modifier {
-  private previousColoringMethod?: string
-
   constructor({name, active}: SyncComputesModifierProps) {
     super({name, active})
   }
@@ -20,6 +18,7 @@ class SyncComputesModifier extends Modifier {
 
     input.lammps.syncComputes()
     const computeNames = input.lammps.getComputeNames()
+    
     for (let i = 0; i < computeNames.size(); i++) {
       const name = computeNames.get(i)
       let compute = input.computes[name]
@@ -99,8 +98,6 @@ class SyncComputesModifier extends Modifier {
         }
       }
       output.computes[name] = compute
-      //@ts-ignore
-      window.output = output
     }
   }
 }
