@@ -457,7 +457,7 @@ void LAMMPSWeb::setBuildNeighborlist(bool buildNeighborlist) {
 void LAMMPSWeb::synchronizeLAMMPS(int mode) {
 #ifdef __EMSCRIPTEN__
   if(mode == 1000) {
-  // Just a small sleep to not block UI
+    // Just a small sleep to not block UI
     emscripten_sleep(1);
     return;
   }
