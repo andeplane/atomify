@@ -22,7 +22,6 @@ class SyncFixesModifier extends Modifier {
     for (let i = 0; i < fixNames.size(); i++) {
       const name = fixNames.get(i)
       let fix = input.fixes[name]
-      
       if (fix == null) {
         const lmpFix = input.lammps.getFix(name)
         
@@ -38,10 +37,9 @@ class SyncFixesModifier extends Modifier {
           scalarValue: 0,
           syncDataPoints: false,
           hasData1D: false,
-          lmpFix: lmpFix,
+          lmpFix,
         }
       }
-      
       fix.lmpFix.sync()
       fix.xLabel = fix.lmpFix.getXLabel()
       fix.yLabel = fix.lmpFix.getYLabel()

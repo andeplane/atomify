@@ -63,7 +63,7 @@ bool Fix::trySync(LAMMPS_NS::FixAveTime *fix) {
         // Multiple values
         for(int i=0; i<nvalues; i++) {
           double value = fix->compute_vector(i);
-          std::string key = std::string("Pair_")+std::to_string(i+1);
+          std::string key = std::string("Value ")+std::to_string(i+1);
           Data1D &data = ensureExists(key);
           data.label = key;
           data.add(simulationTime, value);
