@@ -98,8 +98,6 @@ class SyncComputesModifier extends Modifier {
         }
       }
       output.computes[name] = compute
-      //@ts-ignore
-      window.output = output
     }
   }
 }

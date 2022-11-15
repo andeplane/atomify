@@ -93,8 +93,6 @@ class SyncFixesModifier extends Modifier {
         }
       }
       output.fixes[name] = fix
-      //@ts-ignore
-      window.output = output
     }
   }
 }
