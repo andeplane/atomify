@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.1.0] Nov 17th 2022
+- Added synchronization of fix ave/time. Useful for smooth RDF time averaging or other time averages.
+- Fixed bad radii for particles after LAMMPS sorting
+- Fixed bug where dynamic number of particles and bonds did not work
+
 ## [1.0.0] Nov 3rd 2022
 - Added feature to create new simulations where you can upload your own files
 - Added plotting of computes (e.g. kinetic energy vs time or compute RDF)
