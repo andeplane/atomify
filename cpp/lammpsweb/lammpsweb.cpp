@@ -400,9 +400,9 @@ void LAMMPSWeb::syncFixes() {
     if (m_fixes.find(fixId) == m_fixes.end()) {
       // Create new compute
       Fix *fix = nullptr;
-      if (dynamic_cast<LAMMPS_NS::FixAveChunk*>(lmpFix) == nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveChunk, "", "" };
-      else if (dynamic_cast<LAMMPS_NS::FixAveHisto*>(lmpFix) == nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveHisto, "", ""};
-      else if (dynamic_cast<LAMMPS_NS::FixAveTime*>(lmpFix) == nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveTime, std::string("Time"), std::string("Value")  };
+      if (dynamic_cast<LAMMPS_NS::FixAveChunk*>(lmpFix) != nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveChunk, "", "" };
+      else if (dynamic_cast<LAMMPS_NS::FixAveHisto*>(lmpFix) != nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveHisto, "", ""};
+      else if (dynamic_cast<LAMMPS_NS::FixAveTime*>(lmpFix) != nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveTime, std::string("Time"), std::string("Value")  };
       m_fixes[fixId] = *fix;
     }
   }
