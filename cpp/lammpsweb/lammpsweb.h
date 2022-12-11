@@ -6,6 +6,7 @@
 #include "fix.h"
 #include "atomify_compute.h"
 #include "atomify_fix.h"
+#include "atomify_variable.h"
 #include <iostream>
 #include <string>
 #include <map>
@@ -23,6 +24,7 @@ private:
   LAMMPS_NS::LAMMPS *m_lmp;
   std::map<std::string,Compute> m_computes;
   std::map<std::string,Fix> m_fixes;
+  std::map<std::string,Variable> m_variables;
   double *m_cellMatrix;
   double *m_origo;
   float *m_bondsPosition1; // TODO: use std::vector
@@ -55,6 +57,8 @@ public:
   Compute getCompute(std::string name);
   std::vector<std::string> getFixNames();
   Fix getFix(std::string name);
+  std::vector<std::string> getVariableNames();
+  Variable getVariable(std::string name);
   
   // Pointer getters
   long getBondsDistanceMapPointer();
@@ -83,6 +87,7 @@ public:
   void synchronizeLAMMPS(int mode);
   void syncComputes();
   void syncFixes();
+  void syncVariables();
 
   LAMMPS_NS::Fix* findFixByIdentifier(std::string identifier);
   LAMMPS_NS::Compute* findComputeByIdentifier(std::string identifier);
@@ -113,8 +118,11 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .function("getComputeNames", &LAMMPSWeb::getComputeNames)
     .function("getFix", &LAMMPSWeb::getFix)
     .function("getFixNames", &LAMMPSWeb::getFixNames)
+    .function("getVariable", &LAMMPSWeb::getVariable)
+    .function("getVariableNames", &LAMMPSWeb::getVariableNames)
     .function("syncComputes", &LAMMPSWeb::syncComputes)
     .function("syncFixes", &LAMMPSWeb::syncFixes)
+    .function("syncVariables", &LAMMPSWeb::syncVariables)
     
     .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
     .function("getBondsDistanceMapPointer", &LAMMPSWeb::getBondsDistanceMapPointer)

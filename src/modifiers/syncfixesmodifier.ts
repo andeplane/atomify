@@ -94,6 +94,7 @@ class SyncFixesModifier extends Modifier {
       }
       output.fixes[name] = fix
     }
+    console.log("Got output fixes ", output.fixes)
   }
 }
 

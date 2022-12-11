@@ -23,8 +23,7 @@ void Compute::sync() {
     m_scalarValue = m_compute->scalar;
     Data1D &data = ensureExists(std::string("scalar"));
     data.label = m_name;
-    float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
-    data.add(simulationTime, m_scalarValue);
+    data.add(simulationTime(), m_scalarValue);
   }
 }
 
@@ -65,8 +64,7 @@ bool Compute::trySync(LAMMPS_NS::ComputeMSD *compute) {
     Data1D &data = ensureExists(key);
     data.label = labels[i];
     float value = compute->vector[i];
-    float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
-    data.add(simulationTime, value);
+    data.add(simulationTime(), value);
   }
   m_xLabel = "Time";
   m_yLabel = "Mean square displacement";
@@ -85,8 +83,7 @@ bool Compute::trySync(LAMMPS_NS::ComputeVACF *compute) {
       Data1D &data = ensureExists(key);
       data.label = labels[i];
       float value = compute->vector[i];
-      float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
-      data.add(simulationTime, value);
+      data.add(simulationTime(), value);
   }
   m_xLabel = "Time";
   m_yLabel = "VACF";
@@ -102,8 +99,8 @@ bool Compute::trySync(LAMMPS_NS::ComputePressure *compute) {
   data.label = "Pressure";
   m_xLabel = "Time";
   m_yLabel = "Pressure";
-  float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
-  data.add(simulationTime, m_scalarValue);
+  float simulationTimeValue = simulationTime();
+  data.add(simulationTimeValue, m_scalarValue);
 
   std::vector<std::string> components = {"Pxx", "Pyy", "Pzz", "Pxy", "Pxz", "Pyz"};
 
@@ -113,7 +110,7 @@ bool Compute::trySync(LAMMPS_NS::ComputePressure *compute) {
       Data1D &data = ensureExists(key);
       data.label = components[i];
       double value = compute->vector[i];
-      data.add(simulationTime, value);
+      data.add(simulationTimeValue, value);
   }
   return true;
 }

@@ -70,9 +70,11 @@ export const processingModel: ProcessingModel = {
     // @ts-ignore
     const computes = getStoreState().simulationStatus.computes
     // @ts-ignore
-    const hasSynchronized = getStoreState().simulationStatus.hasSynchronized
-    // @ts-ignore
     const fixes = getStoreState().simulationStatus.fixes
+    // @ts-ignore
+    const variables = getStoreState().simulationStatus.variables
+    // @ts-ignore
+    const hasSynchronized = getStoreState().simulationStatus.hasSynchronized
     const particles = renderState.particles
     const bonds = renderState.bonds
     const allActions = getStoreActions() as any
@@ -81,6 +83,7 @@ export const processingModel: ProcessingModel = {
       lammps,
       wasm,
       renderState,
+      variables,
       computes,
       fixes,
       hasSynchronized
@@ -93,6 +96,7 @@ export const processingModel: ProcessingModel = {
       colorsDirty: getStoreState().render.particleStylesUpdated,
       computes: {},
       fixes: {},
+      variables: {},
     }
     // @ts-ignore
     getStoreState().processing.postTimestepModifiers.forEach(modifier => modifier.run(modifierInput, modifierOutput, true))

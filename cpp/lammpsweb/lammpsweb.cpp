@@ -6,6 +6,7 @@
 #include "force.h"
 #include "update.h"
 #include "modify.h"
+#include "info.h"
 #include "fix_ave_chunk.h"
 #include "fix_ave_histo.h"
 #include "fix_ave_time.h"
@@ -19,6 +20,7 @@
 #include "compute_com.h"
 #include "compute_gyration.h"
 #include "compute.h"
+#include "variable.h"
 #include "error.h"
 #include "neigh_list.h"
 #include "fix_atomify.h"
@@ -393,7 +395,7 @@ void LAMMPSWeb::syncComputes() {
 }
 
 void LAMMPSWeb::syncFixes() {
-  // First add all existing computes
+  // First add all existing fixes
   for(int i=0; i < m_lmp->modify->nfix; i++) {
     LAMMPS_NS::Fix *lmpFix = m_lmp->modify->fix[i];
     auto fixId = std::string(lmpFix->id);
@@ -407,10 +409,45 @@ void LAMMPSWeb::syncFixes() {
     }
   }
 
-  // See if we have any compute that no longer is in LAMMPS
+  // See if we have any fix that no longer is in LAMMPS
   for (auto it = m_fixes.cbegin(); it != m_fixes.cend();) {
     if (!findFixByIdentifier(it->first)) {
       m_fixes.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+}
+
+void LAMMPSWeb::syncVariables() {
+  LAMMPS_NS::Variable *variable = reinterpret_cast<LAMMPS_NS::Variable*>(m_lmp->input->variable);
+  
+  int nvar;
+  LAMMPS_NS::Info info(m_lmp);
+  char **names = info.get_variable_names(nvar);
+  bool anyChanges = false;
+  
+  // First loop through all variables in LAMMPS to find new variables
+  for(int i=0; i<nvar; i++) {
+    char *name = names[i];
+    int ivar = variable->find(name);
+    bool equalStyle = variable->equalstyle(ivar);
+    bool atomStyle = variable->atomstyle(ivar);
+    if (!equalStyle && !atomStyle) {
+      // We only support equal style and atom style variables
+      continue;
+    }
+    auto identifier = std::string(name);
+    if (m_variables.find(identifier) == m_variables.end()) {
+      Variable *variable = new Variable(m_lmp, identifier, VariableOther, "Time", "Value");
+      m_variables[identifier] = *variable;
+    }
+  }
+  
+  // See if we have any variables that no longer is in LAMMPS
+  for (auto it = m_variables.cbegin(); it != m_variables.cend();) {
+    if (variable->find(it->first.c_str()) == -1) {
+      m_variables.erase(it++);
     } else {
       ++it;
     }
@@ -425,8 +462,20 @@ std::vector<std::string> LAMMPSWeb::getComputeNames() {
   return v;
 }
 
+std::vector<std::string> LAMMPSWeb::getVariableNames() {
+  auto v = std::vector<std::string>();
+  for (const auto& [key, value] : m_variables) {
+    v.push_back(key);
+  }
+  return v;
+}
+
 Compute LAMMPSWeb::getCompute(std::string name) {
   return m_computes[name];
+}
+
+Variable LAMMPSWeb::getVariable(std::string name) {
+  return m_variables[name];
 }
 
 Fix LAMMPSWeb::getFix(std::string name) {
