@@ -33,8 +33,6 @@ class SyncParticlesModifier extends Modifier {
       }
 
       newParticles = new Particles(newCapacity);
-      //@ts-ignore
-      window.particles = newParticles
       output.particles = newParticles
       output.colorsDirty = true
     } else {
