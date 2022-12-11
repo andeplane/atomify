@@ -99,8 +99,7 @@ bool Compute::trySync(LAMMPS_NS::ComputePressure *compute) {
   data.label = "Pressure";
   m_xLabel = "Time";
   m_yLabel = "Pressure";
-  float simulationTimeValue = simulationTime();
-  data.add(simulationTimeValue, m_scalarValue);
+  data.add(simulationTime(), m_scalarValue);
 
   std::vector<std::string> components = {"Pxx", "Pyy", "Pzz", "Pxy", "Pxz", "Pyz"};
 
@@ -110,7 +109,7 @@ bool Compute::trySync(LAMMPS_NS::ComputePressure *compute) {
       Data1D &data = ensureExists(key);
       data.label = components[i];
       double value = compute->vector[i];
-      data.add(simulationTimeValue, value);
+      data.add(simulationTime(), value);
   }
   return true;
 }
