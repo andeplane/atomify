@@ -36,7 +36,7 @@ const SimulationSummary = () => {
   const timesteps = useStoreState(state => state.simulationStatus.timesteps)
   const remainingTime = useStoreState(state => state.simulationStatus.remainingTime)
   const timestepsPerSecond = useStoreState(state => state.simulationStatus.timestepsPerSecond)
-
+  
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
 
   const computes = useStoreState(state => state.simulationStatus.computes)
@@ -240,6 +240,7 @@ const SimulationSummary = () => {
       {visibleSettings==='Colors' && <ColorModifierSettings onClose={() => setVisibleSettings(undefined)} />}
       {visibleCompute && <Figure modifier={visibleCompute} onClose={() => setVisibleCompute(undefined)} />}
       {visibleFix && <Figure modifier={visibleFix} onClose={() => setVisibleFix(undefined)} />}
+      {visibleVariable && <Figure modifier={visibleVariable} onClose={() => setVisibleVariable(undefined)} />}
     </>
   )
 }
