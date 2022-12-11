@@ -3,6 +3,7 @@ import {Compute, Fix, Variable} from '../types'
 
 export interface SimulationStatusModel {
   timesteps: number
+  memoryUsage: number
   runTimesteps: number
   runTotalTimesteps: number
   lastCommand?: string
@@ -18,6 +19,7 @@ export interface SimulationStatusModel {
   fixes: {[key: string]: Fix}
   variables: {[key: string]: Variable}
   setTimesteps: Action<SimulationStatusModel, number>
+  setMemoryUsage: Action<SimulationStatusModel, number>
   setHasSynchronized: Action<SimulationStatusModel, boolean>
   setRunTimesteps: Action<SimulationStatusModel, number>
   setRunTotalTimesteps: Action<SimulationStatusModel, number>
@@ -38,6 +40,7 @@ export interface SimulationStatusModel {
 export const simulationStatusModel: SimulationStatusModel = {
   hasSynchronized: false,
   timesteps: 0,
+  memoryUsage: 0,
   runTimesteps: 0,
   runTotalTimesteps: 0,
   remainingTime: 0,
@@ -62,6 +65,9 @@ export const simulationStatusModel: SimulationStatusModel = {
   }),
   setTimesteps: action((state, timesteps: number) => {
     state.timesteps = timesteps
+  }),
+  setMemoryUsage: action((state, memoryUsage: number) => {
+    state.memoryUsage = memoryUsage
   }),
   setRunTimesteps: action((state, runTimesteps: number) => {
     state.runTimesteps = runTimesteps
@@ -97,6 +103,7 @@ export const simulationStatusModel: SimulationStatusModel = {
     state.hasSynchronized = false
     state.lastCommand = undefined
     state.timesteps = 0
+    state.memoryUsage = 0
     state.runTimesteps = 0
     state.runTotalTimesteps = 0
     state.remainingTime = 0

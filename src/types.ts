@@ -20,6 +20,7 @@ export type LammpsWeb = {
   syncComputes: () => void
   syncFixes: () => void
   syncVariables: () => void
+  getMemoryUsage: () => number
 
   getPositionsPointer: () => number
   getIdPointer: () => number
