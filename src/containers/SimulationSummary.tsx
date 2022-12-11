@@ -3,7 +3,7 @@ import {SettingOutlined} from '@ant-design/icons'
 import {Table, Row, Col, Button, Slider} from 'antd'
 import type { ColumnsType } from 'antd/es/table';
 import type { TableRowSelection } from 'antd/es/table/interface';
-import {Compute, Fix} from '../types'
+import {Compute, Fix, Variable} from '../types'
 import React, {useState} from 'react'
 import Modifier from '../modifiers/modifier'
 import SyncBondsSettings from '../modifiers/SyncBondsSettings';
@@ -22,6 +22,7 @@ const SimulationSummary = () => {
   const [visibleSettings, setVisibleSettings] = useState<string|undefined>()
   const [visibleCompute, setVisibleCompute] = useState<Compute|undefined>()
   const [visibleFix, setVisibleFix] = useState<Fix|undefined>()
+  const [visibleVariable, setVisibleVariable] = useState<Variable|undefined>()
   
   const simulationSettings = useStoreState(state => state.settings.simulation)
   const modifiers = useStoreState(state => state.processing.postTimestepModifiers)
@@ -40,6 +41,7 @@ const SimulationSummary = () => {
 
   const computes = useStoreState(state => state.simulationStatus.computes)
   const fixes = useStoreState(state => state.simulationStatus.fixes)
+  const variables = useStoreState(state => state.simulationStatus.variables)
   
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
@@ -78,6 +80,24 @@ const SimulationSummary = () => {
           return <><Button style={{padding: 0}} type="link" onClick={() => {
             track('Modifier.Show', {type: 'Fix', name: value})
             setVisibleFix(record)
+          }} >{value}</Button> {' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>
+        } else {
+          return (<>{value + ' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>)
+        }
+      }
+    }
+  ];
+
+  const variableColumns: ColumnsType<Variable> = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+      render: (value, record) => {
+        if (record.hasData1D) {
+          return <><Button style={{padding: 0}} type="link" onClick={() => {
+            track('Modifier.Show', {type: 'Variable', name: value})
+            setVisibleVariable(record)
           }} >{value}</Button> {' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>
         } else {
           return (<>{value + ' ' + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : '')}</>)
@@ -193,6 +213,15 @@ const SimulationSummary = () => {
             showHeader={false}
             columns={computeColumns}
             dataSource={Object.values(computes)}
+            pagination={{hideOnSinglePage: true}}
+          />
+          <Table
+            title={() => <b>Variables</b>}
+            size='small'
+            rowKey='name'
+            showHeader={false}
+            columns={variableColumns}
+            dataSource={Object.values(variables)}
             pagination={{hideOnSinglePage: true}}
           />
           <Table

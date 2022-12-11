@@ -612,6 +612,7 @@ void LAMMPSWeb::stop() {
     m_lmp = nullptr;
     m_computes.clear();
     m_fixes.clear();
+    m_variables.clear();
   }
 }
 

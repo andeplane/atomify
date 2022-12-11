@@ -11,9 +11,8 @@ Variable::Variable(LAMMPS_NS::LAMMPS *lmp, std::string variableId, ModifyType ty
 
 void Variable::sync() {
     LAMMPS_NS::Variable *variable = m_lmp->input->variable;
-    
     int ivar = variable->find(m_name.c_str());
-    if (ivar < 0) return; // Didn't find it. Weird! TODO: handle this
+    if (ivar < 0) return;
 
     if (variable->equalstyle(ivar)) {
         Data1D &data = ensureExists("scalar");

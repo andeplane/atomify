@@ -8,6 +8,7 @@ import { ModifierInput, ModifierOutput } from '../modifiers/types';
 import { LammpsWeb } from '../types';
 import * as THREE from 'three'
 import SyncFixesModifier from '../modifiers/syncfixesmodifier';
+import SyncVariablesModifier from '../modifiers/syncvariablesmodifier';
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
@@ -54,6 +55,10 @@ export const processingModel: ProcessingModel = {
     }),
     new SyncFixesModifier({
       name: 'Fixes',
+      active: true
+    }),
+    new SyncVariablesModifier({
+      name: 'Variables',
       active: true
     })
   ],
@@ -104,6 +109,7 @@ export const processingModel: ProcessingModel = {
 
     allActions.simulationStatus.setComputes(modifierOutput.computes)
     allActions.simulationStatus.setFixes(modifierOutput.fixes)
+    allActions.simulationStatus.setVariables(modifierOutput.variables)
     if (modifierOutput.bonds) {
       allActions.simulationStatus.setNumBonds(modifierOutput.bonds.count)
     } else {

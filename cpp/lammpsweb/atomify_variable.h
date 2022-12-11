@@ -14,7 +14,7 @@ struct Variable : public Modify {
   
   bool getIsPerAtom() { return m_hasPerAtomData; }
   bool hasScalarData() { return m_hasScalarData; }
-  void sync();
+  virtual void sync();
 };
 
 #endif

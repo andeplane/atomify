@@ -161,6 +161,8 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
   class_<Compute, base<Modify>>("Compute")
     .function("execute", &Compute::execute);
 
+  class_<Variable, base<Modify>>("Variable");
+
   class_<Data1D>("Data1D")
     .constructor<>()
     .function("getXValuesPointer", &Data1D::getXValuesPointer)

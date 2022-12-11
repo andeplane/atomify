@@ -40,13 +40,14 @@ class SyncVariablesModifier extends Modifier {
           lmpVariable,
         }
       }
+      variable.lmpVariable.sync()
+      
       variable.xLabel = variable.lmpVariable.getXLabel()
       variable.yLabel = variable.lmpVariable.getYLabel()
       variable.scalarValue = variable.lmpVariable.getScalarValue()
       
       const data1DNames = variable.lmpVariable.getData1DNames()
       variable.hasData1D = data1DNames.size() > 0
-      
       if (data1DNames.size() > 0) {
         variable.clearPerSync = variable.lmpVariable.getClearPerSync()
         const data1DVector = variable.lmpVariable.getData1D()
