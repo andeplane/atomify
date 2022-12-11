@@ -1,5 +1,10 @@
 # Change Log
 
+## [1.2.0] Dec 11th 2022
+ - Added plotting of variables (equal style variables)
+ - Added plotting of fixes (currently only plotting fix ave/time)
+ - Fixed bad labels on compute plots
+
 ## [1.1.0] Nov 17th 2022
 - Added synchronization of fix ave/time. Useful for smooth RDF time averaging or other time averages.
 - Fixed bad radii for particles after LAMMPS sorting

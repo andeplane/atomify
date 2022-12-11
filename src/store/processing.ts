@@ -8,6 +8,7 @@ import { ModifierInput, ModifierOutput } from '../modifiers/types';
 import { LammpsWeb } from '../types';
 import * as THREE from 'three'
 import SyncFixesModifier from '../modifiers/syncfixesmodifier';
+import SyncVariablesModifier from '../modifiers/syncvariablesmodifier';
 
 const cellMatrix = new THREE.Matrix3()
 const origo = new THREE.Vector3()
@@ -55,6 +56,10 @@ export const processingModel: ProcessingModel = {
     new SyncFixesModifier({
       name: 'Fixes',
       active: true
+    }),
+    new SyncVariablesModifier({
+      name: 'Variables',
+      active: true
     })
   ],
   setPostTimestepModifiers: action((state, value: Modifier[]) => {
@@ -70,9 +75,11 @@ export const processingModel: ProcessingModel = {
     // @ts-ignore
     const computes = getStoreState().simulationStatus.computes
     // @ts-ignore
-    const hasSynchronized = getStoreState().simulationStatus.hasSynchronized
-    // @ts-ignore
     const fixes = getStoreState().simulationStatus.fixes
+    // @ts-ignore
+    const variables = getStoreState().simulationStatus.variables
+    // @ts-ignore
+    const hasSynchronized = getStoreState().simulationStatus.hasSynchronized
     const particles = renderState.particles
     const bonds = renderState.bonds
     const allActions = getStoreActions() as any
@@ -81,6 +88,7 @@ export const processingModel: ProcessingModel = {
       lammps,
       wasm,
       renderState,
+      variables,
       computes,
       fixes,
       hasSynchronized
@@ -93,6 +101,7 @@ export const processingModel: ProcessingModel = {
       colorsDirty: getStoreState().render.particleStylesUpdated,
       computes: {},
       fixes: {},
+      variables: {},
     }
     // @ts-ignore
     getStoreState().processing.postTimestepModifiers.forEach(modifier => modifier.run(modifierInput, modifierOutput, true))
@@ -100,6 +109,7 @@ export const processingModel: ProcessingModel = {
 
     allActions.simulationStatus.setComputes(modifierOutput.computes)
     allActions.simulationStatus.setFixes(modifierOutput.fixes)
+    allActions.simulationStatus.setVariables(modifierOutput.variables)
     if (modifierOutput.bonds) {
       allActions.simulationStatus.setNumBonds(modifierOutput.bonds.count)
     } else {

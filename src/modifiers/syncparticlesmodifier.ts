@@ -55,7 +55,6 @@ class SyncParticlesModifier extends Modifier {
     if (newParticles.count !== numParticles) {
       output.colorsDirty = true
     }
-
     newParticles.count = numParticles
     
     if (newParticles.mesh) {

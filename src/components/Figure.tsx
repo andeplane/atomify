@@ -1,11 +1,11 @@
 import {Modal, Empty} from 'antd'
-import { Compute, Fix } from '../types'
+import { Compute, Fix, Variable } from '../types'
 import { useEffect, useState } from 'react'
 import {useStoreState} from '../hooks'
 import Dygraph from 'dygraphs'
 
 interface FigureProps {
-  modifier: Fix | Compute
+  modifier: Fix | Compute | Variable
   onClose: () => void
 }
 const Figure = ({modifier, onClose} : FigureProps) => {

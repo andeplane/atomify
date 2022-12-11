@@ -16,8 +16,10 @@ const SyncBondsSettings = ({onClose}:{onClose: () => void}) => {
 
   const onBondRadiusChanged = useCallback((value: number) => {
     setBondRadius(value)
-    bonds.radii.fill(0.25 * value)
-    bonds.markNeedsUpdate()
+    if (bonds) {
+      bonds.radii.fill(0.25 * value)
+      bonds.markNeedsUpdate()
+    }
   }, [setBondRadius, bonds])
 
   const columns: ColumnsType<SettingsType> = [

@@ -47,7 +47,6 @@ bool Fix::trySync(LAMMPS_NS::FixAveTime *fix) {
   mode = fix->getmode();
   
   auto nextValidTimestep = fix->nextvalid();
-  float simulationTime = m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep);
   if(m_nextValidTimestep+1 == m_lmp->update->ntimestep) { // m_nextValidTimestep+1 because fix_atomify is invoked before all other fixes, so we need the next timestep
     if(mode == SCALAR) {
       // Time dependent solution with 1 or more values
@@ -58,7 +57,7 @@ bool Fix::trySync(LAMMPS_NS::FixAveTime *fix) {
 
         Data1D &data = ensureExists("scalar");
         data.label = m_name;
-        data.add(simulationTime, m_scalarValue);
+        data.add(simulationTime(), m_scalarValue);
       } else {
         // Multiple values
         for(int i=0; i<nvalues; i++) {
@@ -66,7 +65,7 @@ bool Fix::trySync(LAMMPS_NS::FixAveTime *fix) {
           std::string key = std::string("Value ")+std::to_string(i+1);
           Data1D &data = ensureExists(key);
           data.label = key;
-          data.add(simulationTime, value);
+          data.add(simulationTime(), value);
         }
       }
       m_xLabel = "Time";
