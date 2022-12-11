@@ -41,10 +41,11 @@ class SyncVariablesModifier extends Modifier {
         }
       }
       variable.lmpVariable.sync()
-      
+
       variable.xLabel = variable.lmpVariable.getXLabel()
       variable.yLabel = variable.lmpVariable.getYLabel()
       variable.scalarValue = variable.lmpVariable.getScalarValue()
+      variable.hasScalarData = variable.lmpVariable.hasScalarData()
       
       const data1DNames = variable.lmpVariable.getData1DNames()
       variable.hasData1D = data1DNames.size() > 0
