@@ -372,14 +372,14 @@ void LAMMPSWeb::syncComputes() {
     if (m_computes.find(computeId) == m_computes.end()) {
       // Create new compute
       Compute *compute = nullptr;
-      if (dynamic_cast<LAMMPS_NS::ComputePE*>(lmpCompute) != nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputePE, "Time", "Potential energy" };
-      else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(lmpCompute) != nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeTemp, std::string("Time"), std::string("Temperature")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(lmpCompute) != nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeKE, std::string("Time"), std::string("Kinetic energy")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(lmpCompute) != nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputePressure, std::string("Time"), std::string("Pressure")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(lmpCompute) != nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeRDF, std::string("Distance"), std::string("g(r)")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(lmpCompute) != nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeMSD, std::string("Time"), std::string("Mean square displacement") };
-      else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(lmpCompute) != nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeVACF, std::string("Time"), std::string("<v(t)*v(0)>") };
-      else *compute = { m_lmp, lmpCompute, computeId, ComputeOther, std::string("Time"), std::string("Value") };
+      if (dynamic_cast<LAMMPS_NS::ComputePE*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputePE, "Time", "Potential energy");
+      else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputeTemp, std::string("Time"), std::string("Temperature"));
+      else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputeKE, std::string("Time"), std::string("Kinetic energy"));
+      else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputePressure, std::string("Time"), std::string("Pressure"));
+      else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputeRDF, std::string("Distance"), std::string("g(r)"));
+      else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputeMSD, std::string("Time"), std::string("Mean square displacement"));
+      else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputeVACF, std::string("Time"), std::string("<v(t)*v(0)>"));
+      else compute = new Compute(m_lmp, lmpCompute, computeId, ComputeOther, std::string("Time"), std::string("Value"));
       m_computes[computeId] = *compute;
     }
   }
@@ -400,11 +400,12 @@ void LAMMPSWeb::syncFixes() {
     LAMMPS_NS::Fix *lmpFix = m_lmp->modify->fix[i];
     auto fixId = std::string(lmpFix->id);
     if (m_fixes.find(fixId) == m_fixes.end()) {
-      // Create new compute
+      // Create new fix
       Fix *fix = nullptr;
-      if (dynamic_cast<LAMMPS_NS::FixAveChunk*>(lmpFix) != nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveChunk, "", "" };
-      else if (dynamic_cast<LAMMPS_NS::FixAveHisto*>(lmpFix) != nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveHisto, "", ""};
-      else if (dynamic_cast<LAMMPS_NS::FixAveTime*>(lmpFix) != nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveTime, std::string("Time"), std::string("Value")  };
+      if (dynamic_cast<LAMMPS_NS::FixAveChunk*>(lmpFix) != nullptr) fix = new Fix(m_lmp, lmpFix, fixId,FixAveChunk, "", "");
+      else if (dynamic_cast<LAMMPS_NS::FixAveHisto*>(lmpFix) != nullptr) fix = new Fix(m_lmp, lmpFix, fixId, FixAveHisto, "", "");
+      else if (dynamic_cast<LAMMPS_NS::FixAveTime*>(lmpFix) != nullptr) fix = new Fix(m_lmp, lmpFix, fixId, FixAveTime, std::string("Time"), std::string("Value"));
+      else fix = new Fix(m_lmp, lmpFix, fixId, FixOther, "", "");
       m_fixes[fixId] = *fix;
     }
   }

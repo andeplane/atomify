@@ -40,7 +40,6 @@ const SimulationSummary = () => {
 
   const computes = useStoreState(state => state.simulationStatus.computes)
   const fixes = useStoreState(state => state.simulationStatus.fixes)
-  console.log("I have the fixes ", fixes)
   
   const setSyncFrequency = (value: number|null) => {
     if (value && value > 0) {
