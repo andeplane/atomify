@@ -6,6 +6,7 @@
 #include "force.h"
 #include "update.h"
 #include "modify.h"
+#include "info.h"
 #include "fix_ave_chunk.h"
 #include "fix_ave_histo.h"
 #include "fix_ave_time.h"
@@ -19,6 +20,7 @@
 #include "compute_com.h"
 #include "compute_gyration.h"
 #include "compute.h"
+#include "variable.h"
 #include "error.h"
 #include "neigh_list.h"
 #include "fix_atomify.h"
@@ -74,6 +76,51 @@ void LAMMPSWeb::cancel() {
       return;
   }
   fixAtomify->cancel();
+}
+
+long LAMMPSWeb::getMemoryUsage() {
+  long memoryUsage = 0;
+  if (m_lmp) {
+    double meminfo[3];
+    LAMMPS_NS::Info info(m_lmp);
+    info.get_memory_info(meminfo);
+    double mbytes = meminfo[0];
+    memoryUsage += mbytes * 1024 * 1024;
+  }
+  
+  // Computes
+  for (const auto& [key, value] : m_computes) {
+    memoryUsage += value.m_perAtomData.size() * sizeof(double);
+    for (int i = 0; i < value.m_data1D.size(); i++) {
+      const Data1D &data1D = value.m_data1D[i];
+      memoryUsage += data1D.xValues.size() * sizeof(float);
+      memoryUsage += data1D.yValues.size() * sizeof(float);
+    }
+  }
+
+  // Variables
+  for (const auto& [key, value] : m_variables) {
+    memoryUsage += value.m_perAtomData.size() * sizeof(double);
+    for (int i = 0; i < value.m_data1D.size(); i++) {
+      const Data1D &data1D = value.m_data1D[i];
+      memoryUsage += data1D.xValues.size() * sizeof(float);
+      memoryUsage += data1D.yValues.size() * sizeof(float);
+    }
+  }
+
+  // Fixes
+  for (const auto& [key, value] : m_fixes) {
+    memoryUsage += value.m_perAtomData.size() * sizeof(double);
+    for (int i = 0; i < value.m_data1D.size(); i++) {
+      const Data1D &data1D = value.m_data1D[i];
+      memoryUsage += data1D.xValues.size() * sizeof(float);
+      memoryUsage += data1D.yValues.size() * sizeof(float);
+    }
+  }
+
+  memoryUsage += 3 * m_particlesCapacity * sizeof(float); // 3 positions per particle
+  memoryUsage += 2 * 3 * m_bondsCapacity * sizeof(float); // 2 x 3 positions per bond
+  return memoryUsage;
 }
 
 void LAMMPSWeb::reallocateBondsData(int newCapacity) {
@@ -370,14 +417,14 @@ void LAMMPSWeb::syncComputes() {
     if (m_computes.find(computeId) == m_computes.end()) {
       // Create new compute
       Compute *compute = nullptr;
-      if (dynamic_cast<LAMMPS_NS::ComputePE*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputePE, "Time", "Potential energy" };
-      else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeTemp, std::string("Time"), std::string("Temperature")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeKE, std::string("Time"), std::string("Kinetic energy")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputePressure, std::string("Time"), std::string("Pressure")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeRDF, std::string("Distance"), std::string("g(r)")  };
-      else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeMSD, std::string("Time"), std::string("Mean square displacement") };
-      else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(lmpCompute) == nullptr) *compute = { m_lmp, lmpCompute, computeId, ComputeVACF, std::string("Time"), std::string("<v(t)*v(0)>") };
-      else *compute = { m_lmp, lmpCompute, computeId, ComputeOther, std::string("Time"), std::string("Value") };
+      if (dynamic_cast<LAMMPS_NS::ComputePE*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputePE, "Time", "Potential energy");
+      else if (dynamic_cast<LAMMPS_NS::ComputeTemp*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputeTemp, std::string("Time"), std::string("Temperature"));
+      else if (dynamic_cast<LAMMPS_NS::ComputeKE*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputeKE, std::string("Time"), std::string("Kinetic energy"));
+      else if (dynamic_cast<LAMMPS_NS::ComputePressure*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputePressure, std::string("Time"), std::string("Pressure"));
+      else if (dynamic_cast<LAMMPS_NS::ComputeRDF*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputeRDF, std::string("Distance"), std::string("g(r)"));
+      else if (dynamic_cast<LAMMPS_NS::ComputeMSD*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputeMSD, std::string("Time"), std::string("Mean square displacement"));
+      else if (dynamic_cast<LAMMPS_NS::ComputeVACF*>(lmpCompute) != nullptr) compute = new Compute(m_lmp, lmpCompute, computeId, ComputeVACF, std::string("Time"), std::string("<v(t)*v(0)>"));
+      else compute = new Compute(m_lmp, lmpCompute, computeId, ComputeOther, std::string("Time"), std::string("Value"));
       m_computes[computeId] = *compute;
     }
   }
@@ -393,24 +440,60 @@ void LAMMPSWeb::syncComputes() {
 }
 
 void LAMMPSWeb::syncFixes() {
-  // First add all existing computes
+  // First add all existing fixes
   for(int i=0; i < m_lmp->modify->nfix; i++) {
     LAMMPS_NS::Fix *lmpFix = m_lmp->modify->fix[i];
     auto fixId = std::string(lmpFix->id);
     if (m_fixes.find(fixId) == m_fixes.end()) {
-      // Create new compute
+      // Create new fix
       Fix *fix = nullptr;
-      if (dynamic_cast<LAMMPS_NS::FixAveChunk*>(lmpFix) == nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveChunk, "", "" };
-      else if (dynamic_cast<LAMMPS_NS::FixAveHisto*>(lmpFix) == nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveHisto, "", ""};
-      else if (dynamic_cast<LAMMPS_NS::FixAveTime*>(lmpFix) == nullptr) *fix = { m_lmp, lmpFix, fixId, FixAveTime, std::string("Time"), std::string("Value")  };
+      if (dynamic_cast<LAMMPS_NS::FixAveChunk*>(lmpFix) != nullptr) fix = new Fix(m_lmp, lmpFix, fixId,FixAveChunk, "", "");
+      else if (dynamic_cast<LAMMPS_NS::FixAveHisto*>(lmpFix) != nullptr) fix = new Fix(m_lmp, lmpFix, fixId, FixAveHisto, "", "");
+      else if (dynamic_cast<LAMMPS_NS::FixAveTime*>(lmpFix) != nullptr) fix = new Fix(m_lmp, lmpFix, fixId, FixAveTime, std::string("Time"), std::string("Value"));
+      else fix = new Fix(m_lmp, lmpFix, fixId, FixOther, "", "");
       m_fixes[fixId] = *fix;
     }
   }
 
-  // See if we have any compute that no longer is in LAMMPS
+  // See if we have any fix that no longer is in LAMMPS
   for (auto it = m_fixes.cbegin(); it != m_fixes.cend();) {
     if (!findFixByIdentifier(it->first)) {
       m_fixes.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+}
+
+void LAMMPSWeb::syncVariables() {
+  LAMMPS_NS::Variable *variable = reinterpret_cast<LAMMPS_NS::Variable*>(m_lmp->input->variable);
+  
+  int nvar;
+  LAMMPS_NS::Info info(m_lmp);
+  char **names = info.get_variable_names(nvar);
+  bool anyChanges = false;
+  
+  // First loop through all variables in LAMMPS to find new variables
+  for(int i=0; i<nvar; i++) {
+    char *name = names[i];
+    int ivar = variable->find(name);
+    bool equalStyle = variable->equalstyle(ivar);
+    bool atomStyle = variable->atomstyle(ivar);
+    if (!equalStyle && !atomStyle) {
+      // We only support equal style and atom style variables
+      continue;
+    }
+    auto identifier = std::string(name);
+    if (m_variables.find(identifier) == m_variables.end()) {
+      Variable *variable = new Variable(m_lmp, identifier, VariableOther, "Time", "Value");
+      m_variables[identifier] = *variable;
+    }
+  }
+  
+  // See if we have any variables that no longer is in LAMMPS
+  for (auto it = m_variables.cbegin(); it != m_variables.cend();) {
+    if (variable->find(it->first.c_str()) == -1) {
+      m_variables.erase(it++);
     } else {
       ++it;
     }
@@ -425,8 +508,20 @@ std::vector<std::string> LAMMPSWeb::getComputeNames() {
   return v;
 }
 
+std::vector<std::string> LAMMPSWeb::getVariableNames() {
+  auto v = std::vector<std::string>();
+  for (const auto& [key, value] : m_variables) {
+    v.push_back(key);
+  }
+  return v;
+}
+
 Compute LAMMPSWeb::getCompute(std::string name) {
   return m_computes[name];
+}
+
+Variable LAMMPSWeb::getVariable(std::string name) {
+  return m_variables[name];
 }
 
 Fix LAMMPSWeb::getFix(std::string name) {
@@ -562,6 +657,7 @@ void LAMMPSWeb::stop() {
     m_lmp = nullptr;
     m_computes.clear();
     m_fixes.clear();
+    m_variables.clear();
   }
 }
 

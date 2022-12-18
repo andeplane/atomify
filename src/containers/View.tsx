@@ -66,14 +66,10 @@ const View = ({visible}: ViewProps) => {
       })
       setVisualizer(newVisualizer)
       setLoading(false)
-      // @ts-ignore
-      window.visualizer = newVisualizer
-      document.body.removeChild(newVisualizer.cpuStats.dom)
-      document.body.removeChild(newVisualizer.memoryStats.dom)
       newVisualizer.materials.particles.shininess = 50
-      newVisualizer.ambientLight.intensity = 0.4
-      newVisualizer.pointLight.intensity = 0.6
-      newVisualizer.pointLight.decay = 2
+      newVisualizer.ambientLight.intensity = 0.5
+      newVisualizer.pointLight.intensity = 0.5
+      // newVisualizer.pointLight.decay = 2
     }
   }, [domElement, setVisualizer, visualizer, loading])
 
@@ -137,9 +133,10 @@ const View = ({visible}: ViewProps) => {
 
   useEffect(() => {
     if (visualizer) {
+      // ts-ignore
       visualizer.renderer.renderSsao = renderSettings.ssao
-      visualizer.pointLight.intensity = 0.6 * renderSettings.brightness
-      visualizer.ambientLight.intensity = 0.4 * renderSettings.brightness
+      visualizer.pointLight.intensity = 0.5 * renderSettings.brightness
+      visualizer.ambientLight.intensity = 0.5 * renderSettings.brightness
     }
   }, [renderSettings, visualizer])
 

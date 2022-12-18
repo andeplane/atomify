@@ -15,8 +15,12 @@ export type LammpsWeb = {
   getComputeNames: () => CPPArray<string>
   getFix: (name: string) => LMPModifier
   getFixNames: () => CPPArray<string>
+  getVariable: (name: string) => LMPModifier
+  getVariableNames: () => CPPArray<string>
   syncComputes: () => void
   syncFixes: () => void
+  syncVariables: () => void
+  getMemoryUsage: () => number
 
   getPositionsPointer: () => number
   getIdPointer: () => number
@@ -58,7 +62,8 @@ enum ModifierType {
   FixAveChunk,
   FixAveHisto,
   FixAveTime,
-  FixOther
+  FixOther,
+  VariableOther
 }
 
 type CPPArray<T> = {
@@ -116,6 +121,21 @@ export type Fix = {
   syncDataPoints: boolean
   hasData1D: boolean
   lmpFix: LMPModifier
+}
+
+export type Variable = {
+  name: string
+  type: ModifierType
+  isPerAtom: boolean
+  hasScalarData: boolean
+  scalarValue: number
+  data1D?: Data1D
+  xLabel: string
+  yLabel: string
+  clearPerSync: boolean
+  syncDataPoints: boolean
+  hasData1D: boolean
+  lmpVariable: LMPModifier
 }
 
 export type LMPData1D = {

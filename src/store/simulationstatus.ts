@@ -1,8 +1,9 @@
 import { action, Action } from 'easy-peasy';
-import {Compute, Fix} from '../types'
+import {Compute, Fix, Variable} from '../types'
 
 export interface SimulationStatusModel {
   timesteps: number
+  memoryUsage: number
   runTimesteps: number
   runTotalTimesteps: number
   lastCommand?: string
@@ -16,13 +17,16 @@ export interface SimulationStatusModel {
   numBonds: number
   computes: {[key: string]: Compute}
   fixes: {[key: string]: Fix}
+  variables: {[key: string]: Variable}
   setTimesteps: Action<SimulationStatusModel, number>
+  setMemoryUsage: Action<SimulationStatusModel, number>
   setHasSynchronized: Action<SimulationStatusModel, boolean>
   setRunTimesteps: Action<SimulationStatusModel, number>
   setRunTotalTimesteps: Action<SimulationStatusModel, number>
   setLastCommand: Action<SimulationStatusModel, string|undefined>
   setComputes: Action<SimulationStatusModel, {[key: string]: Compute}>
   setFixes: Action<SimulationStatusModel, {[key: string]: Fix}>
+  setVariables: Action<SimulationStatusModel, {[key: string]: Variable}>
   setRemainingTime: Action<SimulationStatusModel, number>
   setTimestepsPerSecond: Action<SimulationStatusModel, number>
   setNumAtoms: Action<SimulationStatusModel, number>
@@ -36,6 +40,7 @@ export interface SimulationStatusModel {
 export const simulationStatusModel: SimulationStatusModel = {
   hasSynchronized: false,
   timesteps: 0,
+  memoryUsage: 0,
   runTimesteps: 0,
   runTotalTimesteps: 0,
   remainingTime: 0,
@@ -45,17 +50,24 @@ export const simulationStatusModel: SimulationStatusModel = {
   numBonds: 0,
   computes: {},
   fixes: {},
+  variables: {},
   setComputes: action((state, value: {[key: string]: Compute}) => {
     state.computes = value
   }),
   setFixes: action((state, value: {[key: string]: Fix}) => {
     state.fixes = value
   }),
+  setVariables: action((state, value: {[key: string]: Variable}) => {
+    state.variables = value
+  }),
   setHasSynchronized: action((state, value: boolean) => {
     state.hasSynchronized = value
   }),
   setTimesteps: action((state, timesteps: number) => {
     state.timesteps = timesteps
+  }),
+  setMemoryUsage: action((state, memoryUsage: number) => {
+    state.memoryUsage = memoryUsage
   }),
   setRunTimesteps: action((state, runTimesteps: number) => {
     state.runTimesteps = runTimesteps
@@ -91,6 +103,7 @@ export const simulationStatusModel: SimulationStatusModel = {
     state.hasSynchronized = false
     state.lastCommand = undefined
     state.timesteps = 0
+    state.memoryUsage = 0
     state.runTimesteps = 0
     state.runTotalTimesteps = 0
     state.remainingTime = 0
@@ -100,5 +113,6 @@ export const simulationStatusModel: SimulationStatusModel = {
     state.numBonds = 0
     state.computes = {}
     state.fixes = {}
+    state.variables = {}
   })
 };

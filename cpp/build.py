@@ -24,7 +24,7 @@ def file_content(path):
   return open(path, 'r').read()
 
 def copy_atomify_files():
-  files = ["atomify_compute", "atomify_modify", "atomify_fix", "fix_atomify", "lammpsweb", "data1d"]
+  files = ["atomify_compute", "atomify_modify", "atomify_fix", "atomify_variable", "fix_atomify", "lammpsweb", "data1d"]
   for file in files:
     cpp_new_path = os.path.join('lammpsweb', file+".cpp")
     cpp_lmp_path = os.path.join('lammps/src', file+".cpp")

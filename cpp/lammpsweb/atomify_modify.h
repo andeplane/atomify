@@ -3,6 +3,7 @@
 #include <string>
 
 #include "lammps.h"
+#include "update.h"
 #include "data1d.h"
 
 enum ModifyType {
@@ -23,7 +24,8 @@ enum ModifyType {
   FixAveChunk,
   FixAveHisto,
   FixAveTime,
-  FixOther
+  FixOther,
+  VariableOther
 };
 
 struct Modify {
@@ -41,7 +43,7 @@ struct Modify {
   std::string m_yLabel = "Value";
   float m_scalarValue = 0;
   bool m_clearPerSync = false;
-  std::vector<float> m_perAtomData;
+  std::vector<double> m_perAtomData;
   std::vector<Data1D> m_data1D;
   std::vector<std::string> m_data1DNames;
   
@@ -55,7 +57,7 @@ struct Modify {
   int getType() { return m_type; }
   float getScalarValue() { return m_scalarValue; }
   long getPerAtomData() { return reinterpret_cast<long>(m_perAtomData.data()); }
-  
+  float simulationTime() { return m_lmp->update->atime + m_lmp->update->dt*(m_lmp->update->ntimestep - m_lmp->update->atimestep); }
   virtual bool getIsPerAtom() = 0;
   virtual bool hasScalarData() = 0;
   virtual void sync() = 0;
