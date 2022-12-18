@@ -78,6 +78,51 @@ void LAMMPSWeb::cancel() {
   fixAtomify->cancel();
 }
 
+long LAMMPSWeb::getMemoryUsage() {
+  long memoryUsage = 0;
+  if (m_lmp) {
+    double meminfo[3];
+    LAMMPS_NS::Info info(m_lmp);
+    info.get_memory_info(meminfo);
+    double mbytes = meminfo[0];
+    memoryUsage += mbytes * 1024 * 1024;
+  }
+  
+  // Computes
+  for (const auto& [key, value] : m_computes) {
+    memoryUsage += value.m_perAtomData.size() * sizeof(double);
+    for (int i = 0; i < value.m_data1D.size(); i++) {
+      const Data1D &data1D = value.m_data1D[i];
+      memoryUsage += data1D.xValues.size() * sizeof(float);
+      memoryUsage += data1D.yValues.size() * sizeof(float);
+    }
+  }
+
+  // Variables
+  for (const auto& [key, value] : m_variables) {
+    memoryUsage += value.m_perAtomData.size() * sizeof(double);
+    for (int i = 0; i < value.m_data1D.size(); i++) {
+      const Data1D &data1D = value.m_data1D[i];
+      memoryUsage += data1D.xValues.size() * sizeof(float);
+      memoryUsage += data1D.yValues.size() * sizeof(float);
+    }
+  }
+
+  // Fixes
+  for (const auto& [key, value] : m_fixes) {
+    memoryUsage += value.m_perAtomData.size() * sizeof(double);
+    for (int i = 0; i < value.m_data1D.size(); i++) {
+      const Data1D &data1D = value.m_data1D[i];
+      memoryUsage += data1D.xValues.size() * sizeof(float);
+      memoryUsage += data1D.yValues.size() * sizeof(float);
+    }
+  }
+
+  memoryUsage += 3 * m_particlesCapacity * sizeof(float); // 3 positions per particle
+  memoryUsage += 2 * 3 * m_bondsCapacity * sizeof(float); // 2 x 3 positions per bond
+  return memoryUsage;
+}
+
 void LAMMPSWeb::reallocateBondsData(int newCapacity) {
   bool copyData = m_bondsCapacity > 0;
   int oldCapacity = m_bondsCapacity;

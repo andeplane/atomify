@@ -36,7 +36,8 @@ const SimulationSummary = () => {
   const timesteps = useStoreState(state => state.simulationStatus.timesteps)
   const remainingTime = useStoreState(state => state.simulationStatus.remainingTime)
   const timestepsPerSecond = useStoreState(state => state.simulationStatus.timestepsPerSecond)
-  
+  const memoryUsage = useStoreState(state => state.simulationStatus.memoryUsage)
+
   const setSimulationSettings = useStoreActions(actions => actions.settings.setSimulation)
 
   const computes = useStoreState(state => state.simulationStatus.computes)
@@ -176,6 +177,11 @@ const SimulationSummary = () => {
         key: "tsps",
         name: "Timesteps per second",
         value: Math.ceil(timestepsPerSecond)
+      },
+      {
+        key: "memory",
+        name: "Memory usage",
+        value: (memoryUsage / 1024 / 1024).toFixed(2).toString() + ' MB'
       },
       {
         key: "simulationspeed",

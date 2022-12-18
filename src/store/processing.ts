@@ -133,6 +133,7 @@ export const processingModel: ProcessingModel = {
     allActions.simulationStatus.setRunTimesteps(lammps.getRunTimesteps())
     allActions.simulationStatus.setRunTotalTimesteps(lammps.getRunTotalTimesteps())
     allActions.simulationStatus.setLastCommand(lammps.getLastCommand())
+    allActions.simulationStatus.setMemoryUsage(lammps.getMemoryUsage())
     
     const whichFlag = lammps.getWhichFlag()
     allActions.simulationStatus.setRunType(whichFlag===1 ? "Dynamics" : "Minimization")
