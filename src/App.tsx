@@ -9,6 +9,7 @@ import {
   AlignLeftOutlined,
   PlusSquareOutlined,
   CaretRightOutlined,
+  CloudOutlined,
   PauseOutlined
 } from '@ant-design/icons';
 import { useMeasure } from 'react-use';
@@ -105,6 +106,7 @@ const App: React.FC = () => {
     getItem('Examples', 'examples', <InsertRowAboveOutlined />),
     {type: 'divider'},
     runStopButton,
+    getItem('Run in cloud', 'runincloud', <CloudOutlined />,undefined, undefined, simulation == null),
     pauseButton
   ];
 

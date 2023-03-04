@@ -4,6 +4,7 @@ import Notebook from './Notebook'
 import Edit from './Edit'
 import Console from './Console'
 import Examples from './Examples'
+import RunInCloud from './RunInCloud'
 import {useStoreActions, useStoreState} from '../hooks'
 import Simulations from './Simulations';
 const { Content } = Layout;
@@ -38,6 +39,9 @@ const Main = () => {
         </Tabs.TabPane>
         <Tabs.TabPane tab="Examples" key="examples">
           <Examples />
+        </Tabs.TabPane>
+        <Tabs.TabPane tab="Run in cloud" key="runincloud">
+          <RunInCloud />
         </Tabs.TabPane>
       </Tabs>
         {showConsole && <Modal className='console-modal' bodyStyle={{backgroundColor: '#1E1E1E'}} width={'80%'} footer={[
