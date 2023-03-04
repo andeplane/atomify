@@ -70,7 +70,7 @@ const RunInCloud = () => {
                 <>
                     How many such GPUs would you want?
                     <Form.Item name="gpu" valuePropName="checked">
-                        <Select onChange={(value) => {setNumGPU(value)}} defaultValue={"1gpu"}>
+                        <Select onChange={(value) => {setNumGPU(value)}} defaultValue={"1"}>
                             <Select.Option value="1">1</Select.Option>
                             <Select.Option value="2">2</Select.Option>
                             <Select.Option value="4">4</Select.Option>
