@@ -3,6 +3,7 @@ import { SettingsModel, settingsModel } from './settings'
 import { SimulationStatusModel, simulationStatusModel } from './simulationstatus'
 import { ProcessingModel, processingModel } from './processing'
 import { RenderModel, renderModel } from './render'
+import { FilesModel, filesModel } from './files'
 import { AppModel, appModel } from './app'
 import { persist } from 'easy-peasy';
 
@@ -13,6 +14,7 @@ export interface StoreModel {
   processing: ProcessingModel,
   app: AppModel,
   render: RenderModel
+  files: FilesModel
 }
 
 export const storeModel: StoreModel = {
@@ -21,5 +23,6 @@ export const storeModel: StoreModel = {
   simulationStatus: simulationStatusModel,
   processing: processingModel,
   app: appModel,
-  render: renderModel
+  render: renderModel,
+  files: filesModel
 };
