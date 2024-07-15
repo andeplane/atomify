@@ -25,7 +25,7 @@ export interface AppModel {
 }
 
 export const appModel: AppModel = {
-  selectedMenu: 'examples',
+  selectedMenu: 'simulations',
   setSelectedMenu: action((state, selectedMenu: string) => {
     state.selectedMenu = selectedMenu
   }),
