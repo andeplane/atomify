@@ -71,7 +71,7 @@ pip install -r jupyterlite/requirements.txt
 Build JupyterLite
 
 ```
-jupyter lite build --contents jupyterlite/content --output-dir public/jupyter
+jupyter lite build --contents jupyterlite/content --output-dir public/jupyterlite
 ```
 
 ### Run locally

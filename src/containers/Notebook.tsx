@@ -3,10 +3,10 @@ import { useStoreState } from '../hooks';
 const Notebook = () => {
   const simulation = useStoreState(state => state.simulation.simulation)
   
-  let notebookUrl = `/atomify/jupyter/lab/index.html?path=analyze.ipynb`
+  let notebookUrl = `/atomify/jupyterlite/lab/index.html?path=analyze.ipynb`
   if (simulation?.analysisScript) {
     const analysisScriptPath = `${simulation.id}/${simulation.analysisScript}`
-    notebookUrl = `/atomify/jupyter/lab/index.html?path=${analysisScriptPath}`
+    notebookUrl = `/atomify/jupyterlite/lab/index.html?path=${analysisScriptPath}`
   }
   
   return (
