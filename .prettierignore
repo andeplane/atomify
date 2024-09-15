@@ -5,3 +5,4 @@ cpp
 jupyterlite
 public
 src/wasm
+.github/dependabot.yml
