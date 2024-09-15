@@ -1,40 +1,41 @@
-import { action, Action } from 'easy-peasy';
-import {Compute, Fix, Variable} from '../types'
+import { action, Action } from "easy-peasy";
+import { Compute, Fix, Variable } from "../types";
+import * as THREE from "three";
 
 export interface SimulationStatusModel {
-  timesteps: number
-  memoryUsage: number
-  runTimesteps: number
-  runTotalTimesteps: number
-  lastCommand?: string
-  remainingTime: number
-  timestepsPerSecond: number
-  hasSynchronized: boolean
-  box?: THREE.Matrix3
-  origo?: THREE.Vector3
-  runType: string
-  numAtoms: number
-  numBonds: number
-  computes: {[key: string]: Compute}
-  fixes: {[key: string]: Fix}
-  variables: {[key: string]: Variable}
-  setTimesteps: Action<SimulationStatusModel, number>
-  setMemoryUsage: Action<SimulationStatusModel, number>
-  setHasSynchronized: Action<SimulationStatusModel, boolean>
-  setRunTimesteps: Action<SimulationStatusModel, number>
-  setRunTotalTimesteps: Action<SimulationStatusModel, number>
-  setLastCommand: Action<SimulationStatusModel, string|undefined>
-  setComputes: Action<SimulationStatusModel, {[key: string]: Compute}>
-  setFixes: Action<SimulationStatusModel, {[key: string]: Fix}>
-  setVariables: Action<SimulationStatusModel, {[key: string]: Variable}>
-  setRemainingTime: Action<SimulationStatusModel, number>
-  setTimestepsPerSecond: Action<SimulationStatusModel, number>
-  setNumAtoms: Action<SimulationStatusModel, number>
-  setNumBonds: Action<SimulationStatusModel, number>
-  setRunType:  Action<SimulationStatusModel, string>
-  setBox: Action<SimulationStatusModel, THREE.Matrix3>
-  setOrigo: Action<SimulationStatusModel, THREE.Vector3>
-  reset: Action<SimulationStatusModel>
+  timesteps: number;
+  memoryUsage: number;
+  runTimesteps: number;
+  runTotalTimesteps: number;
+  lastCommand?: string;
+  remainingTime: number;
+  timestepsPerSecond: number;
+  hasSynchronized: boolean;
+  box?: THREE.Matrix3;
+  origo?: THREE.Vector3;
+  runType: string;
+  numAtoms: number;
+  numBonds: number;
+  computes: { [key: string]: Compute };
+  fixes: { [key: string]: Fix };
+  variables: { [key: string]: Variable };
+  setTimesteps: Action<SimulationStatusModel, number>;
+  setMemoryUsage: Action<SimulationStatusModel, number>;
+  setHasSynchronized: Action<SimulationStatusModel, boolean>;
+  setRunTimesteps: Action<SimulationStatusModel, number>;
+  setRunTotalTimesteps: Action<SimulationStatusModel, number>;
+  setLastCommand: Action<SimulationStatusModel, string | undefined>;
+  setComputes: Action<SimulationStatusModel, { [key: string]: Compute }>;
+  setFixes: Action<SimulationStatusModel, { [key: string]: Fix }>;
+  setVariables: Action<SimulationStatusModel, { [key: string]: Variable }>;
+  setRemainingTime: Action<SimulationStatusModel, number>;
+  setTimestepsPerSecond: Action<SimulationStatusModel, number>;
+  setNumAtoms: Action<SimulationStatusModel, number>;
+  setNumBonds: Action<SimulationStatusModel, number>;
+  setRunType: Action<SimulationStatusModel, string>;
+  setBox: Action<SimulationStatusModel, THREE.Matrix3>;
+  setOrigo: Action<SimulationStatusModel, THREE.Vector3>;
+  reset: Action<SimulationStatusModel>;
 }
 
 export const simulationStatusModel: SimulationStatusModel = {
