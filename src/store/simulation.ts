@@ -470,8 +470,8 @@ export const simulationModel: SimulationModel = {
       actions.resetLammpsOutput();
 
       // Reset potentially chosen per atom coloring
-      // @ts-ignore
       const postTimestepModifiers =
+        // @ts-ignore
         getStoreState().processing.postTimestepModifiers;
       const colorModifier = postTimestepModifiers.filter(
         (modifier: any) => modifier.name === "Colors",
