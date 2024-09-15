@@ -169,7 +169,7 @@ export const simulationModel: SimulationModel = {
       const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
       const bondsDistanceMapSubarray = wasm.HEAPF32.subarray(
         bondsDistanceMapPointer,
-        bondsDistanceMapPointer + 10000
+        bondsDistanceMapPointer + 10000,
       ) as Float32Array;
 
       lines.forEach((line) => {
@@ -180,7 +180,7 @@ export const simulationModel: SimulationModel = {
           const parsedAtomType = parseAtomType(line);
           if (parsedAtomType) {
             const atomType: AtomType | undefined = AtomTypes.filter(
-              (at) => at.fullname === parsedAtomType.atomName
+              (at) => at.fullname === parsedAtomType.atomName,
             )[0];
 
             if (atomType) {
@@ -228,7 +228,7 @@ export const simulationModel: SimulationModel = {
           }
         }
       });
-    }
+    },
   ),
   syncFilesWasm: thunk(
     async (actions, fileName: string | undefined, { getStoreState }) => {
@@ -246,7 +246,7 @@ export const simulationModel: SimulationModel = {
           wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content);
         }
       }
-    }
+    },
   ),
   syncFilesJupyterLite: thunk(
     async (actions, dummy: undefined, { getStoreState }) => {
@@ -279,7 +279,7 @@ export const simulationModel: SimulationModel = {
         name: string,
         path: string,
         type: JupyterFileType,
-        content?: string | Object
+        content?: string | Object,
       ) => {
         let mimetype = "text/plain";
         let format = "text";
@@ -325,13 +325,13 @@ export const simulationModel: SimulationModel = {
           analyzeFileName,
           analyzeFileName,
           "notebook",
-          AnalyzeNotebook(simulation)
-        )
+          AnalyzeNotebook(simulation),
+        ),
       );
 
       await localforage.setItem(
         simulation.id,
-        createLocalForageObject(simulation.id, simulation.id, "directory")
+        createLocalForageObject(simulation.id, simulation.id, "directory"),
       );
       for (const file of Object.values(files)) {
         let type: JupyterFileType = "file";
@@ -341,7 +341,7 @@ export const simulationModel: SimulationModel = {
           content = JSON.parse(content);
         }
         const existingNotebook = await localforage.getItem(
-          `${simulation.id}/${file.fileName}`
+          `${simulation.id}/${file.fileName}`,
         );
         if (!existingNotebook) {
           // We don't want to overwrite existing files since user might
@@ -352,12 +352,12 @@ export const simulationModel: SimulationModel = {
               file.fileName,
               `${simulation.id}/${file.fileName}`,
               type,
-              content
-            )
+              content,
+            ),
           );
         }
       }
-    }
+    },
   ),
   run: thunk(async (actions, payload, { getStoreState, getStoreActions }) => {
     // @ts-ignore
@@ -387,7 +387,7 @@ export const simulationModel: SimulationModel = {
     time_event("Simulation.Stop");
 
     const inputScriptFile = simulation.files.filter(
-      (file) => file.fileName === simulation.inputScript
+      (file) => file.fileName === simulation.inputScript,
     )[0];
     if (inputScriptFile.content) {
       actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
@@ -462,7 +462,7 @@ export const simulationModel: SimulationModel = {
     async (
       actions,
       simulation: Simulation,
-      { getStoreState, getStoreActions }
+      { getStoreState, getStoreActions },
     ) => {
       // @ts-ignore
       const allActions = getStoreActions() as any;
@@ -479,7 +479,7 @@ export const simulationModel: SimulationModel = {
         // @ts-ignore
         getStoreState().processing.postTimestepModifiers;
       const colorModifier = postTimestepModifiers.filter(
-        (modifier: any) => modifier.name === "Colors"
+        (modifier: any) => modifier.name === "Colors",
       )[0] as ColorModifier;
       if (colorModifier) {
         colorModifier.computeName = undefined;
@@ -501,7 +501,7 @@ export const simulationModel: SimulationModel = {
       const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
       const bondsDistanceMapSubarray = wasm.HEAPF32.subarray(
         bondsDistanceMapPointer,
-        bondsDistanceMapPointer + 10000
+        bondsDistanceMapPointer + 10000,
       ) as Float32Array;
       bondsDistanceMapSubarray.fill(0);
       lammps.setBuildNeighborlist(false);
@@ -541,12 +541,12 @@ export const simulationModel: SimulationModel = {
         actions.run();
       } else {
         const inputScriptFile = simulation.files.filter(
-          (file) => file.fileName === simulation.inputScript
+          (file) => file.fileName === simulation.inputScript,
         )[0];
         allActions.app.setSelectedFile(inputScriptFile);
       }
       track("Simulation.New", { simulationId: simulation?.id });
-    }
+    },
   ),
   reset: action((state) => {
     state.files = [];

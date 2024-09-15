@@ -4,3 +4,4 @@ coverage
 cpp
 jupyterlite
 public
+src/wasm

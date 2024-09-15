@@ -1,26 +1,28 @@
-import Iframe from 'react-iframe'
-import { useStoreState } from '../hooks';
+import Iframe from "react-iframe";
+import { useStoreState } from "../hooks";
 const Notebook = () => {
-  const simulation = useStoreState(state => state.simulation.simulation)
-  
-  let notebookUrl = `/atomify/jupyter/lab/index.html?path=analyze.ipynb`
+  const simulation = useStoreState((state) => state.simulation.simulation);
+
+  let notebookUrl = `/atomify/jupyter/lab/index.html?path=analyze.ipynb`;
   if (simulation?.analysisScript) {
-    const analysisScriptPath = `${simulation.id}/${simulation.analysisScript}`
-    notebookUrl = `/atomify/jupyter/lab/index.html?path=${analysisScriptPath}`
+    const analysisScriptPath = `${simulation.id}/${simulation.analysisScript}`;
+    notebookUrl = `/atomify/jupyter/lab/index.html?path=${analysisScriptPath}`;
   }
-  
+
   return (
     <>
-      <div style={{height: '100vh', width: '100%'}}>
-      <Iframe url={notebookUrl}
+      <div style={{ height: "100vh", width: "100%" }}>
+        <Iframe
+          url={notebookUrl}
           width="100%"
           height="100%"
           id=""
           className=""
           display="block"
-          position="relative"/>
+          position="relative"
+        />
       </div>
     </>
-  )
-}
-export default Notebook
+  );
+};
+export default Notebook;

@@ -28,6 +28,8 @@ jobs:
           node-version: "18.x"
       - name: Install Packages
         run: npm install
+      - name: Run Prettier
+        run: npx prettier .
       - name: Build app
         run: npm run predeploy
       - name: Upload artifact

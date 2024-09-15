@@ -1,35 +1,35 @@
-import { action, Action } from 'easy-peasy';
+import { action, Action } from "easy-peasy";
 
 export interface RenderSettings {
-  ssao: boolean
-  brightness: number
+  ssao: boolean;
+  brightness: number;
 }
 
 export interface SimulationSettings {
-  speed: number
+  speed: number;
 }
 
 export interface SettingsModel {
-  render: RenderSettings
-  simulation: SimulationSettings
-  setRender: Action<SettingsModel, RenderSettings>
-  setSimulation: Action<SettingsModel, SimulationSettings>
+  render: RenderSettings;
+  simulation: SimulationSettings;
+  setRender: Action<SettingsModel, RenderSettings>;
+  setSimulation: Action<SettingsModel, SimulationSettings>;
 }
 
 export const settingsModel: SettingsModel = {
   simulation: {
-    speed: 1
+    speed: 1,
   },
   render: {
     ssao: true,
-    brightness: 1.0
+    brightness: 1.0,
   },
   setRender: action((state, render: RenderSettings) => {
-    state.render = render
+    state.render = render;
   }),
   setSimulation: action((state, simulation: SimulationSettings) => {
-    state.simulation = simulation
+    state.simulation = simulation;
     // @ts-ignore
-    window.syncFrequency = simulation.speed
+    window.syncFrequency = simulation.speed;
   }),
 };
