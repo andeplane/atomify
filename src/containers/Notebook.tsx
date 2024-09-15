@@ -1,20 +1,11 @@
 import Iframe from 'react-iframe'
-import {useEffect, useState} from 'react'
 import { useStoreState } from '../hooks';
 const Notebook = () => {
-  const [initialized, setInitialized] = useState(false)
-  const [analysisScriptPath, setAnalysisScriptPath] = useState<string|undefined>()
   const simulation = useStoreState(state => state.simulation.simulation)
   
-  useEffect(() => {
-    if (!initialized && simulation?.analysisScript != null) {
-      setAnalysisScriptPath(`${simulation.id}/${simulation.analysisScript}`)
-    }
-    setInitialized(true)
-  }, [setInitialized, setAnalysisScriptPath, initialized, simulation])
-  
   let notebookUrl = `/atomify/jupyter/lab/index.html?path=analyze.ipynb`
-  if (analysisScriptPath) {
+  if (simulation?.analysisScript) {
+    const analysisScriptPath = `${simulation.id}/${simulation.analysisScript}`
     notebookUrl = `/atomify/jupyter/lab/index.html?path=${analysisScriptPath}`
   }
   
