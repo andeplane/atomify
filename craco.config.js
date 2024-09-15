@@ -1,5 +1,5 @@
-const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
-const path = require('path');
+const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
+const path = require("path");
 const wasmExtensionRegExp = /\.wasm$/;
 
 module.exports = {
@@ -8,12 +8,12 @@ module.exports = {
       // Emscripten uses import.meta
       webpackConfig.module.rules.push({
         test: /\.js$/,
-        loader: require.resolve('@open-wc/webpack-import-meta-loader'),
+        loader: require.resolve("@open-wc/webpack-import-meta-loader"),
       });
 
-      webpackConfig.module.rules.forEach(rule => {
-        (rule.oneOf || []).forEach(oneOf => {
-          if (oneOf.loader && oneOf.loader.indexOf('file-loader') >= 0) {
+      webpackConfig.module.rules.forEach((rule) => {
+        (rule.oneOf || []).forEach((oneOf) => {
+          if (oneOf.loader && oneOf.loader.indexOf("file-loader") >= 0) {
             // make default file-loader ignore WASM files
             oneOf.exclude.push(wasmExtensionRegExp);
           }
@@ -24,11 +24,11 @@ module.exports = {
       // This makes sure files required this way are not altered.
       webpackConfig.module.rules.push({
         test: /\.wasm$/,
-        type: 'javascript/auto',
-        include: path.resolve(__dirname, 'src'),
-        loaders: 'file-loader',
+        type: "javascript/auto",
+        include: path.resolve(__dirname, "src"),
+        loaders: "file-loader",
         options: {
-          name: '[name].[hash:8].[ext]',
+          name: "[name].[hash:8].[ext]",
         },
       });
 
@@ -38,14 +38,14 @@ module.exports = {
       add: [
         new MonacoWebpackPlugin({
           // available options are documented at https://github.com/Microsoft/monaco-editor-webpack-plugin#options
-          languages: ['json', 'javascript']
-        })
-      ]
-    }
+          languages: ["json", "javascript"],
+        }),
+      ],
+    },
   },
   eslint: {
     configure: {
-      "ignorePatterns": ["src/wasm/*"],
+      ignorePatterns: ["src/wasm/*"],
     },
   },
-}
+};

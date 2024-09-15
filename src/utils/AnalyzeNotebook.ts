@@ -54,7 +54,7 @@ const AnalyzeNotebook = (simulation: Simulation) => {
 
   notebook["cells"][1]["source"] = notebook["cells"][1]["source"].replace(
     "###SIMULATIONID###",
-    simulation.id
+    simulation.id,
   );
   if (simulation.analysisDescription) {
     // @ts-ignore

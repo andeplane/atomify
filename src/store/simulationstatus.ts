@@ -52,68 +52,68 @@ export const simulationStatusModel: SimulationStatusModel = {
   computes: {},
   fixes: {},
   variables: {},
-  setComputes: action((state, value: {[key: string]: Compute}) => {
-    state.computes = value
+  setComputes: action((state, value: { [key: string]: Compute }) => {
+    state.computes = value;
   }),
-  setFixes: action((state, value: {[key: string]: Fix}) => {
-    state.fixes = value
+  setFixes: action((state, value: { [key: string]: Fix }) => {
+    state.fixes = value;
   }),
-  setVariables: action((state, value: {[key: string]: Variable}) => {
-    state.variables = value
+  setVariables: action((state, value: { [key: string]: Variable }) => {
+    state.variables = value;
   }),
   setHasSynchronized: action((state, value: boolean) => {
-    state.hasSynchronized = value
+    state.hasSynchronized = value;
   }),
   setTimesteps: action((state, timesteps: number) => {
-    state.timesteps = timesteps
+    state.timesteps = timesteps;
   }),
   setMemoryUsage: action((state, memoryUsage: number) => {
-    state.memoryUsage = memoryUsage
+    state.memoryUsage = memoryUsage;
   }),
   setRunTimesteps: action((state, runTimesteps: number) => {
-    state.runTimesteps = runTimesteps
+    state.runTimesteps = runTimesteps;
   }),
   setRunTotalTimesteps: action((state, runTotalTimesteps: number) => {
-    state.runTotalTimesteps = runTotalTimesteps
+    state.runTotalTimesteps = runTotalTimesteps;
   }),
   setLastCommand: action((state, lastCommand?: string) => {
-    state.lastCommand = lastCommand
+    state.lastCommand = lastCommand;
   }),
   setRemainingTime: action((state, value: number) => {
-    state.remainingTime = value
+    state.remainingTime = value;
   }),
   setTimestepsPerSecond: action((state, value: number) => {
-    state.timestepsPerSecond = value
+    state.timestepsPerSecond = value;
   }),
   setNumAtoms: action((state, value: number) => {
-    state.numAtoms = value
+    state.numAtoms = value;
   }),
   setNumBonds: action((state, value: number) => {
-    state.numBonds = value
+    state.numBonds = value;
   }),
   setRunType: action((state, value: string) => {
-    state.runType = value
+    state.runType = value;
   }),
   setBox: action((state, value: THREE.Matrix3) => {
-    state.box = value
+    state.box = value;
   }),
   setOrigo: action((state, value: THREE.Vector3) => {
-    state.origo = value
+    state.origo = value;
   }),
   reset: action((state) => {
-    state.hasSynchronized = false
-    state.lastCommand = undefined
-    state.timesteps = 0
-    state.memoryUsage = 0
-    state.runTimesteps = 0
-    state.runTotalTimesteps = 0
-    state.remainingTime = 0
-    state.timestepsPerSecond = 0
-    state.runType = ""
-    state.numAtoms = 0
-    state.numBonds = 0
-    state.computes = {}
-    state.fixes = {}
-    state.variables = {}
-  })
+    state.hasSynchronized = false;
+    state.lastCommand = undefined;
+    state.timesteps = 0;
+    state.memoryUsage = 0;
+    state.runTimesteps = 0;
+    state.runTotalTimesteps = 0;
+    state.remainingTime = 0;
+    state.timestepsPerSecond = 0;
+    state.runType = "";
+    state.numAtoms = 0;
+    state.numBonds = 0;
+    state.computes = {};
+    state.fixes = {};
+    state.variables = {};
+  }),
 };

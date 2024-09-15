@@ -1,0 +1,7 @@
+# Ignore artifacts:
+build
+coverage
+cpp
+jupyterlite
+public
+src/wasm
