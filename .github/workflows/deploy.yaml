@@ -21,11 +21,7 @@ jobs:
           python -m pip install -r jupyterlite/requirements.txt
       - name: Build JupyterLite site
         run: |
-          jupyter lite build --contents jupyterlite/content --output-dir jupyterlite/dist
-      - name: Copy JupyterLite build to Node.js app
-        run: |
-          mkdir -p public/jupyter
-          cp -r jupyterlite/dist/* public/jupyter/
+          jupyter lite build --contents jupyterlite/content --output-dir public/jupyter
       - name: Use Node.js 18.x
         uses: actions/setup-node@v1
         with:
