@@ -340,22 +340,15 @@ export const simulationModel: SimulationModel = {
           type = "notebook";
           content = JSON.parse(content);
         }
-        const existingNotebook = await localforage.getItem(
+        await localforage.setItem(
           `${simulation.id}/${file.fileName}`,
-        );
-        if (!existingNotebook) {
-          // We don't want to overwrite existing files since user might
-          // have made changes to them and would like to keep them.
-          await localforage.setItem(
+          createLocalForageObject(
+            file.fileName,
             `${simulation.id}/${file.fileName}`,
-            createLocalForageObject(
-              file.fileName,
-              `${simulation.id}/${file.fileName}`,
-              type,
-              content,
-            ),
-          );
-        }
+            type,
+            content,
+          ),
+        );
       }
     },
   ),
@@ -475,8 +468,8 @@ export const simulationModel: SimulationModel = {
       actions.resetLammpsOutput();
 
       // Reset potentially chosen per atom coloring
+      // @ts-ignore
       const postTimestepModifiers =
-        // @ts-ignore
         getStoreState().processing.postTimestepModifiers;
       const colorModifier = postTimestepModifiers.filter(
         (modifier: any) => modifier.name === "Colors",
