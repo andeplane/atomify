@@ -336,18 +336,20 @@ export const simulationModel: SimulationModel = {
       for (const file of Object.values(files)) {
         let type: JupyterFileType = "file";
         let content: any = file.content;
+        const filePath = `${simulation.id}/${file.fileName}`;
+
         if (file.fileName.endsWith("ipynb")) {
           type = "notebook";
           content = JSON.parse(content);
+          const existingNotebook = await localforage.getItem(filePath);
+          if (existingNotebook) {
+            // We don't want to overwrite the content of the notebook
+            continue;
+          }
         }
         await localforage.setItem(
-          `${simulation.id}/${file.fileName}`,
-          createLocalForageObject(
-            file.fileName,
-            `${simulation.id}/${file.fileName}`,
-            type,
-            content,
-          ),
+          filePath,
+          createLocalForageObject(file.fileName, filePath, type, content),
         );
       }
     },
@@ -468,8 +470,8 @@ export const simulationModel: SimulationModel = {
       actions.resetLammpsOutput();
 
       // Reset potentially chosen per atom coloring
-      // @ts-ignore
       const postTimestepModifiers =
+        // @ts-ignore
         getStoreState().processing.postTimestepModifiers;
       const colorModifier = postTimestepModifiers.filter(
         (modifier: any) => modifier.name === "Colors",
