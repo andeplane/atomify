@@ -18,6 +18,12 @@ def copy_mpi_files_and_patch():
   shutil.copyfile("lammpsweb/fix_atomify.cpp", "lammps/src/fix_atomify.cpp")
   shutil.copyfile("lammpsweb/fix_atomify.h", "lammps/src/fix_atomify.h")
 
+def copy_colvars_files():
+  colvars_lib_dir = 'lammps/lib/colvars'
+  for file in os.listdir(colvars_lib_dir):
+    if file.endswith('.h') or file.endswith('.cpp'):
+      shutil.copyfile(f"{colvars_lib_dir}/{file}", f"lammps/src/{file}")
+  
 def file_content(path):
   if not os.path.exists(path):
     return ""
@@ -50,6 +56,7 @@ if not os.path.exists('lammps'):
   copy_mpi_files_and_patch() # First compile, it is not with emscripten, so we should not include lammpsweb
   copy_moltemplate_files()
   copy_voronoi_files()
+  copy_colvars_files()
 
   cwd = os.getcwd()
   print("Changing directory ...")
@@ -57,7 +64,7 @@ if not os.path.exists('lammps'):
   print("Applying patch ...")
   subprocess.call("git apply lammps.patch", shell=True)
   print("Installing LAMMPS packages ...")
-  subprocess.call("make yes-rigid yes-class2 yes-manybody yes-mc yes-molecule yes-granular yes-kspace yes-shock yes-misc yes-qeq yes-reaxff yes-extra-molecule yes-voronoi", shell=True)
+  subprocess.call("make yes-rigid yes-class2 yes-manybody yes-mc yes-molecule yes-granular yes-kspace yes-shock yes-misc yes-qeq yes-reaxff yes-extra-molecule yes-voronoi yes-colvars", shell=True)
 
   if os.path.isfile('fix_imd.cpp'):
     print("Deleting non-functioning files fix_imd ...")
