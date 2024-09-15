@@ -1,28 +1,28 @@
-import MonacoEditor from 'react-monaco-editor'
-import {useEffect, useRef} from 'react'
-import { useStoreState } from '../hooks';
+import MonacoEditor from "react-monaco-editor";
+import { useEffect, useRef } from "react";
+import { useStoreState } from "../hooks";
 
 interface ConsoleProps {
-  width?: number|string
-  height?: number|string
+  width?: number | string;
+  height?: number | string;
 }
-const Console = ({width, height}: ConsoleProps) => {
+const Console = ({ width, height }: ConsoleProps) => {
   if (!height) {
-    height = '100vh'
+    height = "100vh";
   }
 
-  const lammpsOutput = useStoreState(state => state.simulation.lammpsOutput)
-  const editorRef = useRef<any>(null)
+  const lammpsOutput = useStoreState((state) => state.simulation.lammpsOutput);
+  const editorRef = useRef<any>(null);
   const options = {
     selectOnLineNumbers: true,
-    readOnly: true
+    readOnly: true,
   };
   useEffect(() => {
-    const editor = editorRef.current?.editor
+    const editor = editorRef.current?.editor;
     if (editor) {
-      editor.revealLine(editor.getModel().getLineCount())
+      editor.revealLine(editor.getModel().getLineCount());
     }
-  }, [lammpsOutput])
+  }, [lammpsOutput]);
 
   return (
     <MonacoEditor
@@ -34,6 +34,6 @@ const Console = ({width, height}: ConsoleProps) => {
       options={options}
       ref={editorRef}
     />
-  )
-}
-export default Console
+  );
+};
+export default Console;
