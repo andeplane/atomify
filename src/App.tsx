@@ -102,6 +102,7 @@ const App: React.FC = () => {
     }): [], undefined, selectedFile==null),
     {type: 'divider'},
     newSimulationButton,
+    getItem('Simulations', 'simulations', <InsertRowAboveOutlined />),
     getItem('Examples', 'examples', <InsertRowAboveOutlined />),
     {type: 'divider'},
     runStopButton,
