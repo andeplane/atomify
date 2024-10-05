@@ -21,7 +21,7 @@ jobs:
           python -m pip install -r jupyterlite/requirements.txt
       - name: Build JupyterLite site
         run: |
-          jupyter lite build --contents jupyterlite/content --output-dir public/jupyter
+          jupyter lite build --contents jupyterlite/content --output-dir public/jupyterlite
       - name: Use Node.js 18.x
         uses: actions/setup-node@v1
         with:
