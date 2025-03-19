@@ -48,7 +48,7 @@ const AutoStartSimulation = () => {
       const embeddedSimulationUrl = urlSearchParams.get('embeddedSimulationUrl');
       const simulationIndex = parseInt(urlSearchParams.get('simulationIndex') || '0', 10);
 
-      if (!embeddedSimulationUrl) {
+      if (!embeddedSimulationUrl || !simulationIndex) {
         return;
       }
       
