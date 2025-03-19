@@ -84,12 +84,13 @@ const AutoStartSimulation = () => {
             setPreferredView("view");
           }
         }
-      } catch (error) {
+      } catch (error: any) { // Explicitly type 'error' as 'any'
         console.error("Error fetching examples data:", error);
         notification.error({
           message: "Error loading simulation",
-          description: "Could not load the simulation data from the provided URL.",
+          description: `Could not load the simulation data from the provided URL. Details: ${error.message || error}`, // Include error message
         });
+      }
       }
     };
 
