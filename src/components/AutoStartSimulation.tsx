@@ -93,16 +93,16 @@ const AutoStartSimulation = () => {
       }
       }
     };
+const checkWasmAndStart = () => {
+  if (!window.wasm) {
+    const timeoutId = setTimeout(checkWasmAndStart, 500);
+    return () => clearTimeout(timeoutId);
+  }
 
-    const checkWasmAndStart = () => {
-      if (!window.wasm) {
-        setTimeout(checkWasmAndStart, 500);
-        return;
-      }
-
-      if (!hasInitiatedStart.current && !running) {
-        fetchAndStartSimulation();
-      }
+  if (!hasInitiatedStart.current && !running) {
+    fetchAndStartSimulation();
+  }
+};
     };
 
     checkWasmAndStart();
