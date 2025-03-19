@@ -67,6 +67,12 @@ const App: React.FC = () => {
 
   const run = useStoreActions((actions) => actions.simulation.run);
 
+  // Check if we're in embedded mode
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  const embeddedSimulationUrl = urlSearchParams.get('embeddedSimulationUrl');
+  const simulationIndex = parseInt(urlSearchParams.get('simulationIndex') || '0', 10);
+  const isEmbeddedMode = Boolean(embeddedSimulationUrl && simulationIndex);
+
   useEffect(() => {
     if (width < 1000) {
       setCollapsed(true);
@@ -207,28 +213,30 @@ const App: React.FC = () => {
   return (
     <>
       <Layout style={{ minHeight: "100vh" }} ref={myRef}>
-        <Sider
-          width={300}
-          collapsible
-          collapsedWidth={50}
-          collapsed={collapsed}
-          onCollapse={(value) => setCollapsed(value)}
-        >
-          <div className="logo" />
-          <Menu
-            theme="dark"
-            selectedKeys={[selectedMenu]}
-            defaultOpenKeys={["edit"]}
-            defaultSelectedKeys={["examples"]}
-            mode="inline"
-            items={items}
-            onSelect={(info) => onMenuSelect(info.key)}
-          />
-        </Sider>
+        {!isEmbeddedMode && (
+          <Sider
+            width={300}
+            collapsible
+            collapsedWidth={50}
+            collapsed={collapsed}
+            onCollapse={(value) => setCollapsed(value)}
+          >
+            <div className="logo" />
+            <Menu
+              theme="dark"
+              selectedKeys={[selectedMenu]}
+              defaultOpenKeys={["edit"]}
+              defaultSelectedKeys={["examples"]}
+              mode="inline"
+              items={items}
+              onSelect={(info) => onMenuSelect(info.key)}
+            />
+          </Sider>
+        )}
         <Layout className="site-layout">
           <AutoStartSimulation />
           <Simulation />
-          <Main />
+          <Main isEmbedded={isEmbeddedMode} />
         </Layout>
       </Layout>
       {showNewSimulation && (

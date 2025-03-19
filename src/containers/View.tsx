@@ -14,6 +14,7 @@ const { Header, Sider } = Layout;
 
 interface ViewProps {
   visible: boolean;
+  isEmbeddedMode?: boolean;
 }
 
 const SettingsButtonContainer = styled.div`
@@ -35,7 +36,7 @@ const Container = styled.div`
   height: 100vh;
 `;
 
-const View = ({ visible }: ViewProps) => {
+const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
@@ -157,13 +158,8 @@ const View = ({ visible }: ViewProps) => {
       }
     };
   }, [visualizer]);
-  let title = "";
-  if (simulation) {
-    title = `${simulation?.inputScript}`;
-    if (lastCommand) {
-      title += `> ${lastCommand}`;
-    }
-  }
+
+  const title = simulation ? simulation.id : "No simulation";
 
   return (
     <Layout style={{ height: "100vh" }}>
@@ -203,39 +199,43 @@ const View = ({ visible }: ViewProps) => {
           )}
         </div>
       </div>
-      <AnalyzeButtonContainer>
-        <AreaChartOutlined
-          style={{
-            fontSize: "32px",
-            color: "#fff",
-            marginRight: 70,
-            zIndex: 1000,
-          }}
-          onClick={() => {
-            if (!showAnalyze) {
-              track("SimulationSummary.Open");
-            } else {
-              track("SimulationSummary.Close");
-            }
-            setShowAnalyze(!showAnalyze);
-          }}
-        />
-      </AnalyzeButtonContainer>
-      <SettingsButtonContainer>
-        <SettingOutlined
-          style={{
-            fontSize: "32px",
-            color: "#fff",
-            marginRight: 20,
-            zIndex: 1000,
-          }}
-          onClick={() => {
-            track("Settings.Open");
-            setShowSettings(true);
-          }}
-        />
-      </SettingsButtonContainer>
-      {showAnalyze && (
+      {!isEmbeddedMode && (
+        <>
+          <AnalyzeButtonContainer>
+            <AreaChartOutlined
+              style={{
+                fontSize: "32px",
+                color: "#fff",
+                marginRight: 70,
+                zIndex: 1000,
+              }}
+              onClick={() => {
+                if (!showAnalyze) {
+                  track("SimulationSummary.Open");
+                } else {
+                  track("SimulationSummary.Close");
+                }
+                setShowAnalyze(!showAnalyze);
+              }}
+            />
+          </AnalyzeButtonContainer>
+          <SettingsButtonContainer>
+            <SettingOutlined
+              style={{
+                fontSize: "32px",
+                color: "#fff",
+                marginRight: 20,
+                zIndex: 1000,
+              }}
+              onClick={() => {
+                track("Settings.Open");
+                setShowSettings(true);
+              }}
+            />
+          </SettingsButtonContainer>
+        </>
+      )}
+      {showAnalyze && !isEmbeddedMode && (
         <Sider
           reverseArrow
           collapsible
@@ -262,4 +262,5 @@ const View = ({ visible }: ViewProps) => {
     </Layout>
   );
 };
+
 export default View;

@@ -8,7 +8,7 @@ import RunInCloud from "./RunInCloud";
 import { useStoreActions, useStoreState } from "../hooks";
 const { Content } = Layout;
 
-const Main = () => {
+const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
   // @ts-ignore
   const wasm = window.wasm; // TODO: This is an ugly hack because wasm object is so big that Redux debugger hangs.
   const showConsole = useStoreState((state) => state.simulation.showConsole);
@@ -22,6 +22,12 @@ const Main = () => {
   );
   const status = useStoreState((state) => state.app.status);
 
+  // Check if we're in embedded mode
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  const embeddedSimulationUrl = urlSearchParams.get('embeddedSimulationUrl');
+  const simulationIndex = parseInt(urlSearchParams.get('simulationIndex') || '0', 10);
+  const isEmbeddedMode = Boolean(embeddedSimulationUrl && simulationIndex);
+
   return (
     <Content>
       <Tabs
@@ -29,7 +35,7 @@ const Main = () => {
         renderTabBar={() => <></>}
       >
         <Tabs.TabPane tab="View" key="view">
-          <View visible={selectedMenu === "view"} />
+          <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbeddedMode} />
         </Tabs.TabPane>
         <Tabs.TabPane tab="Console" key="console">
           <Console />
