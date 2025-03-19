@@ -91,7 +91,6 @@ const AutoStartSimulation = () => {
           description: `Could not load the simulation data from the provided URL. Details: ${error.message || error}`, // Include error message
         });
       }
-      }
     };
 const checkWasmAndStart = () => {
   if (!window.wasm) {
@@ -106,9 +105,9 @@ const checkWasmAndStart = () => {
     };
 
     checkWasmAndStart();
-  }, [running, simulation?.id, setNewSimulation, setPreferredView]);
+  }, [simulation?.id, running, setNewSimulation, setPreferredView]);
 
-  return null; // This component doesn't render anything
+  return null; // This component doesn't render anything visible
 };
 
 export default AutoStartSimulation;
