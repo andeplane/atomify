@@ -22,6 +22,7 @@ import { useStoreActions, useStoreState } from "./hooks";
 import { track } from "./utils/metrics";
 import NewSimulation from "./containers/NewSimulation";
 import AutoStartSimulation from "./components/AutoStartSimulation";
+import { useEmbeddedMode } from "./hooks/useEmbeddedMode";
 const { Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
@@ -67,11 +68,7 @@ const App: React.FC = () => {
 
   const run = useStoreActions((actions) => actions.simulation.run);
 
-  // Check if we're in embedded mode
-  const urlSearchParams = new URLSearchParams(window.location.search);
-  const embeddedSimulationUrl = urlSearchParams.get('embeddedSimulationUrl');
-  const simulationIndex = parseInt(urlSearchParams.get('simulationIndex') || '0', 10);
-  const isEmbeddedMode = Boolean(embeddedSimulationUrl && simulationIndex);
+  const { isEmbeddedMode } = useEmbeddedMode();
 
   useEffect(() => {
     if (width < 1000) {

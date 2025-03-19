@@ -6,6 +6,7 @@ import Console from "./Console";
 import Examples from "./Examples";
 import RunInCloud from "./RunInCloud";
 import { useStoreActions, useStoreState } from "../hooks";
+import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 const { Content } = Layout;
 
 const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
@@ -22,11 +23,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
   );
   const status = useStoreState((state) => state.app.status);
 
-  // Check if we're in embedded mode
-  const urlSearchParams = new URLSearchParams(window.location.search);
-  const embeddedSimulationUrl = urlSearchParams.get('embeddedSimulationUrl');
-  const simulationIndex = parseInt(urlSearchParams.get('simulationIndex') || '0', 10);
-  const isEmbeddedMode = Boolean(embeddedSimulationUrl && simulationIndex);
+  const { isEmbeddedMode } = useEmbeddedMode();
 
   return (
     <Content>
