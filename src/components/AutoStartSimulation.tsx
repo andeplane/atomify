@@ -2,10 +2,11 @@ import { useEffect, useRef } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
 import { Simulation } from "../store/simulation";
 import { notification } from "antd";
+import React from "react";
 
 declare global {
   interface Window {
-    wasm: any; // Replace 'any' with the actual type if known
+    wasm: any;
   }
 }
 
@@ -31,7 +32,7 @@ interface ExamplesData {
   examples: Example[];
 }
 
-const AutoStartSimulation = () => {
+const AutoStartSimulation: React.FC = () => {
   const hasInitiatedStart = useRef(false);
   const setNewSimulation = useStoreActions(
     (actions) => actions.simulation.newSimulation
@@ -56,11 +57,9 @@ const AutoStartSimulation = () => {
         const response = await fetch(embeddedSimulationUrl);
         const data: ExamplesData = await response.json();
         
-        // If we have a valid simulation index, start that simulation
         if (simulationIndex >= 0 && simulationIndex < data.examples.length) {
           const selectedExample = data.examples[simulationIndex];
           
-          // Update all URLs with baseUrl
           selectedExample.imageUrl = `${data.baseUrl}/${selectedExample.imageUrl}`;
           if (selectedExample.analysisScript) {
             selectedExample.analysisScript = `${data.baseUrl}/${selectedExample.analysisScript}`;
@@ -84,30 +83,30 @@ const AutoStartSimulation = () => {
             setPreferredView("view");
           }
         }
-      } catch (error: any) { // Explicitly type 'error' as 'any'
+      } catch (error) {
         console.error("Error fetching examples data:", error);
         notification.error({
           message: "Error loading simulation",
-          description: `Could not load the simulation data from the provided URL. Details: ${error.message || error}`, // Include error message
+          description: `Could not load the simulation data from the provided URL. Details: ${error instanceof Error ? error.message : String(error)}`,
         });
       }
     };
-const checkWasmAndStart = () => {
-  if (!window.wasm) {
-    const timeoutId = setTimeout(checkWasmAndStart, 500);
-    return () => clearTimeout(timeoutId);
-  }
 
-  if (!hasInitiatedStart.current && !running) {
-    fetchAndStartSimulation();
-  }
-};
+    const checkWasmAndStart = () => {
+      if (!window.wasm) {
+        setTimeout(checkWasmAndStart, 500);
+        return;
+      }
+
+      if (!hasInitiatedStart.current && !running) {
+        fetchAndStartSimulation();
+      }
     };
 
     checkWasmAndStart();
   }, [simulation?.id, running, setNewSimulation, setPreferredView]);
 
-  return null; // This component doesn't render anything visible
+  return null;
 };
 
 export default AutoStartSimulation;
