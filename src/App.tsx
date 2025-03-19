@@ -21,6 +21,7 @@ import Main from "./containers/Main";
 import { useStoreActions, useStoreState } from "./hooks";
 import { track } from "./utils/metrics";
 import NewSimulation from "./containers/NewSimulation";
+import AutoStartSimulation from "./components/AutoStartSimulation";
 const { Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
@@ -225,6 +226,7 @@ const App: React.FC = () => {
           />
         </Sider>
         <Layout className="site-layout">
+          <AutoStartSimulation />
           <Simulation />
           <Main />
         </Layout>
