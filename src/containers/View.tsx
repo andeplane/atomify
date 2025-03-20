@@ -58,9 +58,6 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const domElement = useRef<HTMLDivElement | null>(null);
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
-  const lastCommand = useStoreState(
-    (state) => state.simulationStatus.lastCommand,
-  );
   const runTotalTimesteps = useStoreState(
     (state) => state.simulationStatus.runTotalTimesteps,
   );

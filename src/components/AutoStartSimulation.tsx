@@ -102,7 +102,7 @@ const AutoStartSimulation: React.FC = () => {
     };
 
     checkWasmAndStart();
-  }, [simulation?.id, running, setNewSimulation, setPreferredView]);
+  }, [simulation?.id, running, setNewSimulation, setPreferredView, embeddedSimulationUrl, isEmbeddedMode, simulationIndex]);
 
   return null;
 };
