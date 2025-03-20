@@ -22,6 +22,7 @@ import { useStoreActions, useStoreState } from "./hooks";
 import { track } from "./utils/metrics";
 import NewSimulation from "./containers/NewSimulation";
 import AutoStartSimulation from "./components/AutoStartSimulation";
+import { useEmbeddedMode } from "./hooks/useEmbeddedMode";
 const { Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
@@ -66,6 +67,8 @@ const App: React.FC = () => {
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
 
   const run = useStoreActions((actions) => actions.simulation.run);
+
+  const { isEmbeddedMode } = useEmbeddedMode();
 
   useEffect(() => {
     if (width < 1000) {
@@ -207,28 +210,30 @@ const App: React.FC = () => {
   return (
     <>
       <Layout style={{ minHeight: "100vh" }} ref={myRef}>
-        <Sider
-          width={300}
-          collapsible
-          collapsedWidth={50}
-          collapsed={collapsed}
-          onCollapse={(value) => setCollapsed(value)}
-        >
-          <div className="logo" />
-          <Menu
-            theme="dark"
-            selectedKeys={[selectedMenu]}
-            defaultOpenKeys={["edit"]}
-            defaultSelectedKeys={["examples"]}
-            mode="inline"
-            items={items}
-            onSelect={(info) => onMenuSelect(info.key)}
-          />
-        </Sider>
+        {!isEmbeddedMode && (
+          <Sider
+            width={300}
+            collapsible
+            collapsedWidth={50}
+            collapsed={collapsed}
+            onCollapse={(value) => setCollapsed(value)}
+          >
+            <div className="logo" />
+            <Menu
+              theme="dark"
+              selectedKeys={[selectedMenu]}
+              defaultOpenKeys={["edit"]}
+              defaultSelectedKeys={["examples"]}
+              mode="inline"
+              items={items}
+              onSelect={(info) => onMenuSelect(info.key)}
+            />
+          </Sider>
+        )}
         <Layout className="site-layout">
           <AutoStartSimulation />
           <Simulation />
-          <Main />
+          <Main isEmbedded={isEmbeddedMode} />
         </Layout>
       </Layout>
       {showNewSimulation && (

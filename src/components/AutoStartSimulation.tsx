@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
+import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 import { Simulation } from "../store/simulation";
 import { notification } from "antd";
 import React from "react";
@@ -42,19 +43,16 @@ const AutoStartSimulation: React.FC = () => {
   );
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
+  const { embeddedSimulationUrl, simulationIndex, isEmbeddedMode } = useEmbeddedMode();
   
   useEffect(() => {
     const fetchAndStartSimulation = async () => {
-      const urlSearchParams = new URLSearchParams(window.location.search);
-      const embeddedSimulationUrl = urlSearchParams.get('embeddedSimulationUrl');
-      const simulationIndex = parseInt(urlSearchParams.get('simulationIndex') || '0', 10);
-
-      if (!embeddedSimulationUrl || !simulationIndex) {
+      if (!isEmbeddedMode) {
         return;
       }
       
       try {
-        const response = await fetch(embeddedSimulationUrl);
+        const response = await fetch(embeddedSimulationUrl!);
         const data: ExamplesData = await response.json();
         
         if (simulationIndex >= 0 && simulationIndex < data.examples.length) {
@@ -104,7 +102,7 @@ const AutoStartSimulation: React.FC = () => {
     };
 
     checkWasmAndStart();
-  }, [simulation?.id, running, setNewSimulation, setPreferredView]);
+  }, [simulation?.id, running, setNewSimulation, setPreferredView, embeddedSimulationUrl, isEmbeddedMode, simulationIndex]);
 
   return null;
 };
