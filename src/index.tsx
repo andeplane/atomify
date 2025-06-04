@@ -15,7 +15,7 @@ track("Page.Load");
 
 ReactDOM.render(
   <StoreProvider store={store}>
-    <App />
+    <App a={1} />
   </StoreProvider>,
   document.getElementById("root"),
 );
