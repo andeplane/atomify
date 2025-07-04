@@ -1,25 +1,39 @@
 import useFetch from "react-fetch-hook";
 import { GithubFile } from "../types";
 
+// Minimal subset of the GitHub REST API response for the
+// "Get repository content" endpoint (https://docs.github.com/en/rest/repos/contents#get-repository-content).
+// We only include the fields that this code accesses.
+interface GitHubContentResponse {
+  name: string;
+  path: string;
+  download_url: string | null;
+  size: number;
+  type: "file" | "dir" | "symlink" | "submodule";
+}
+
 export const useListDirectory = (
   user: string,
   repository: string,
   directory: string,
 ) => {
   const url = `https://api.github.com/repos/${user}/${repository}/contents/${directory}`;
-  const { isLoading, data } = useFetch(url, {
+  const { isLoading, data } = useFetch<GitHubContentResponse[]>(url, {
     formatter: (response) => response.json(),
   });
-  let files_metadata: GithubFile[] = [];
-  if (data) {
-    files_metadata = data.map((file: any) => ({
-      title: file.name,
-      path: file.path,
-      download_url: file.download_url,
-      size: file.size,
-      children: [],
-    }));
-  }
+
+  const files_metadata: GithubFile[] = (data ?? []).map((file) => ({
+    title: file.name,
+    path: file.path,
+    key: file.path,
+    download_url: file.download_url ?? "",
+    size: file.size,
+    type: file.type === "dir" ? "dir" : "file",
+    expanded: false,
+    isLeaf: file.type !== "dir",
+    children: [],
+  }));
+
   return { isLoading, files_metadata };
 };
 
@@ -47,15 +61,19 @@ export const retrievePath = async (
   }
 
   const response = await fetch(url, { headers });
-  const data = await response.json();
-  const files: GithubFile[] = data.map((file: any) => ({
+  const data: GitHubContentResponse[] = await response.json();
+
+  const files: GithubFile[] = data.map((file) => ({
     title: file.name,
     path: file.path,
-    download_url: file.download_url,
-    size: file.size,
-    type: file.type,
     key: file.path,
+    download_url: file.download_url ?? "",
+    size: file.size,
+    type: file.type === "dir" ? "dir" : "file",
+    expanded: false,
+    isLeaf: file.type !== "dir",
     children: [],
   }));
+
   return files;
 };
