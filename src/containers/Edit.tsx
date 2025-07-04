@@ -1,5 +1,6 @@
 import { useCallback } from "react";
-import { useStoreState } from "../hooks";
+import { useStoreState, useStoreActions } from "../hooks";
+import { Button, Space } from "antd";
 import MonacoEditor, { monaco } from "react-monaco-editor";
 
 monaco.languages.register({ id: "lammps" });
@@ -1411,6 +1412,9 @@ monaco.languages.setMonarchTokensProvider("lammps", {
 const Edit = () => {
   const selectedFile = useStoreState((state) => state.app.selectedFile);
   const simulation = useStoreState((state) => state.simulation.simulation);
+  const setSimulation = useStoreActions(
+    (actions: any) => actions.simulation.setSimulation,
+  );
   const options = {
     selectOnLineNumbers: true,
   };
@@ -1423,29 +1427,81 @@ const Edit = () => {
     (newValue: string, e: any) => {
       // console.log('onChange', newValue, e);
       const file = simulation?.files.filter(
-        (file) => file.fileName === selectedFile?.fileName,
+        (file: any) => file.fileName === selectedFile?.fileName,
       )[0];
       if (file) {
         file.content = newValue;
+
+        // Persist edit to localStorage so that it is restored on reload
+        try {
+          if (simulation) {
+            const editsKey = `simulationEdits_${simulation.id}`;
+            const editsStr = localStorage.getItem(editsKey);
+            const edits: { [key: string]: string } = editsStr
+              ? JSON.parse(editsStr)
+              : {};
+            edits[file.fileName] = newValue;
+            localStorage.setItem(editsKey, JSON.stringify(edits));
+          }
+        } catch (e) {
+          console.warn("Could not save simulation edits to localStorage", e);
+        }
       }
     },
-    [selectedFile?.fileName, simulation?.files],
+    [selectedFile?.fileName, simulation?.files, simulation?.id],
   );
+
+  const restoreOriginal = useCallback(() => {
+    if (!simulation) {
+      return;
+    }
+    try {
+      const originalKey = `simulationOriginal_${simulation.id}`;
+      const editsKey = `simulationEdits_${simulation.id}`;
+      const originalStr = localStorage.getItem(originalKey);
+      if (!originalStr) {
+        return;
+      }
+      const original: { [key: string]: string } = JSON.parse(originalStr);
+      simulation.files.forEach((file: any) => {
+        if (original[file.fileName] !== undefined) {
+          file.content = original[file.fileName];
+        }
+      });
+      // Remove stored edits
+      localStorage.removeItem(editsKey);
+      // Force rerender by setting simulation again with new reference
+      setSimulation({ ...simulation, files: [...simulation.files] });
+    } catch (e) {
+      console.warn("Could not restore original simulation files", e);
+    }
+  }, [simulation, setSimulation]);
+
+  const hasStoredEdits = simulation
+    ? !!localStorage.getItem(`simulationEdits_${simulation.id}`)
+    : false;
 
   if (!selectedFile) {
     return <>No file selected</>;
   }
 
   return (
-    <MonacoEditor
-      height="100vh"
-      language="lammps"
-      theme="vs-dark"
-      value={selectedFile.content}
-      options={options}
-      onChange={onEditorChange}
-      editorDidMount={editorDidMount}
-    />
+    <>
+      <Space style={{ padding: "6px" }}>
+        {hasStoredEdits && (
+          <Button onClick={restoreOriginal}>Restore original</Button>
+        )}
+      </Space>
+      <MonacoEditor
+        height="100vh"
+        language="lammps"
+        theme="vs-dark"
+        value={selectedFile.content}
+        options={options}
+        onChange={onEditorChange}
+        editorDidMount={editorDidMount}
+      />
+    </>
   );
 };
 export default Edit;

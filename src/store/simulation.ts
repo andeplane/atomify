@@ -466,8 +466,7 @@ export const simulationModel: SimulationModel = {
       window.simulation = simulation;
       allActions.simulationStatus.reset();
       actions.setShowConsole(false);
-      actions.setSimulation(simulation);
-      actions.resetLammpsOutput();
+      // We will set the simulation after applying potential localStorage modifications below
 
       // Reset potentially chosen per atom coloring
       const postTimestepModifiers =
@@ -529,7 +528,36 @@ export const simulationModel: SimulationModel = {
         progress: 0.9,
       });
 
-      actions.setSimulation(simulation); // Set it again now that files are updated
+      const newSimulationObj = { ...simulation } as Simulation; // ensure we can mutate safely
+      // Store the original (unmodified) file contents the first time we load this simulation
+      try {
+        const originalKey = `simulationOriginal_${newSimulationObj.id}`;
+        if (localStorage && !localStorage.getItem(originalKey)) {
+          const originalFiles: { [key: string]: string } = {};
+          newSimulationObj.files.forEach((file: any) => {
+            originalFiles[file.fileName] = file.content;
+          });
+          localStorage.setItem(originalKey, JSON.stringify(originalFiles));
+        }
+
+        // Apply any saved edits from localStorage if they exist
+        const editsKey = `simulationEdits_${newSimulationObj.id}`;
+        const editsStr = localStorage ? localStorage.getItem(editsKey) : null;
+        if (editsStr) {
+          const edits: { [key: string]: string } = JSON.parse(editsStr);
+          newSimulationObj.files.forEach((file: any) => {
+            const editedContent = edits[file.fileName];
+            if (editedContent !== undefined) {
+              file.content = editedContent;
+            }
+          });
+        }
+      } catch (e) {
+        // If localStorage is not available or fails for some reason, we silently ignore persistence
+        console.warn("Could not access localStorage to load/save simulation edits", e);
+      }
+
+      actions.setSimulation(newSimulationObj);
       wasm.FS.chdir(`/${simulation.id}`);
       await allActions.app.setStatus(undefined);
       if (simulation.start) {
