@@ -2,6 +2,9 @@ import { useCallback } from "react";
 import { useStoreState, useStoreActions } from "../hooks";
 import { Button, Space } from "antd";
 import MonacoEditor, { monaco } from "react-monaco-editor";
+import { SimulationFile } from "../store/app";
+import { StoreModel } from "../store/model";
+import { Actions } from "easy-peasy";
 
 monaco.languages.register({ id: "lammps" });
 monaco.languages.setMonarchTokensProvider("lammps", {
@@ -1413,7 +1416,7 @@ const Edit = () => {
   const selectedFile = useStoreState((state) => state.app.selectedFile);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const setSimulation = useStoreActions(
-    (actions: any) => actions.simulation.setSimulation,
+    (actions: Actions<StoreModel>) => actions.simulation.setSimulation,
   );
   const options = {
     selectOnLineNumbers: true,
@@ -1427,7 +1430,7 @@ const Edit = () => {
     (newValue: string, e: any) => {
       // console.log('onChange', newValue, e);
       const file = simulation?.files.filter(
-        (file: any) => file.fileName === selectedFile?.fileName,
+        (file: SimulationFile) => file.fileName === selectedFile?.fileName,
       )[0];
       if (file) {
         file.content = newValue;
@@ -1463,7 +1466,7 @@ const Edit = () => {
         return;
       }
       const original: { [key: string]: string } = JSON.parse(originalStr);
-      simulation.files.forEach((file: any) => {
+      simulation.files.forEach((file: SimulationFile) => {
         if (original[file.fileName] !== undefined) {
           file.content = original[file.fileName];
         }

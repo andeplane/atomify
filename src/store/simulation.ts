@@ -534,7 +534,7 @@ export const simulationModel: SimulationModel = {
         const originalKey = `simulationOriginal_${newSimulationObj.id}`;
         if (localStorage && !localStorage.getItem(originalKey)) {
           const originalFiles: { [key: string]: string } = {};
-          newSimulationObj.files.forEach((file: any) => {
+          newSimulationObj.files.forEach((file) => {
             originalFiles[file.fileName] = file.content;
           });
           localStorage.setItem(originalKey, JSON.stringify(originalFiles));
@@ -545,7 +545,7 @@ export const simulationModel: SimulationModel = {
         const editsStr = localStorage ? localStorage.getItem(editsKey) : null;
         if (editsStr) {
           const edits: { [key: string]: string } = JSON.parse(editsStr);
-          newSimulationObj.files.forEach((file: any) => {
+          newSimulationObj.files.forEach((file) => {
             const editedContent = edits[file.fileName];
             if (editedContent !== undefined) {
               file.content = editedContent;
