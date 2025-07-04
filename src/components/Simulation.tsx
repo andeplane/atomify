@@ -46,7 +46,7 @@ const SimulationComponent = () => {
   );
 
   useEffect(() => {
-    window.onkeydown = (ev) => {
+    const keyListener = (ev: KeyboardEvent) => {
       if (selectedMenu !== "view") {
         return;
       }
@@ -86,6 +86,13 @@ const SimulationComponent = () => {
           message: "Copied camera position and target to clipboard.",
         });
       }
+    };
+
+    window.addEventListener("keydown", keyListener);
+
+    // Clean up the event listener on unmount or when dependencies change
+    return () => {
+      window.removeEventListener("keydown", keyListener);
     };
   }, [
     lammps,

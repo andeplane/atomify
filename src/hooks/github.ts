@@ -27,15 +27,28 @@ export const retrievePath = async (
   user: string,
   repository: string,
   directory: string,
+  /** Optional personal access token to increase the GitHub API rate-limit. */
+  token?: string,
 ) => {
   const url = `https://api.github.com/repos/${user}/${repository}/contents/${directory}`;
-  const response = await fetch(url, {
-    headers: {
-      Authorization: "Bearer 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",
-    },
-  });
+
+  /*
+   * For public repositories the GitHub REST API does not require authentication.
+   * However, unauthenticated requests are limited to 60 / hour which can be too
+   * restrictive for heavy use. Instead of hard-coding a long-lived personal
+   * access token in the client bundle (which is both insecure and inflexible),
+   * we let callers pass in a token at runtime – for instance via an environment
+   * variable or UI settings – and only attach the Authorization header when a
+   * token is supplied.
+   */
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(url, { headers });
   const data = await response.json();
-  let files: GithubFile[] = data.map((file: any) => ({
+  const files: GithubFile[] = data.map((file: any) => ({
     title: file.name,
     path: file.path,
     download_url: file.download_url,

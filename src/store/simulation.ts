@@ -18,7 +18,7 @@ localforage.config({
 //@ts-ignore
 window.localforage = localforage;
 const parseCameraPosition = (line: string) => {
-  const splitted = line.split(" ");
+  const splitted = line.trim().split(/\s+/);
   if (
     splitted[0] === "camera" &&
     splitted[1] === "position" &&
@@ -32,7 +32,7 @@ const parseCameraPosition = (line: string) => {
 };
 
 const parseCameraTarget = (line: string) => {
-  const splitted = line.split(" ");
+  const splitted = line.trim().split(/\s+/);
   if (
     splitted[0] === "camera" &&
     splitted[1] === "target" &&
@@ -46,7 +46,7 @@ const parseCameraTarget = (line: string) => {
 };
 
 const parseAtomType = (line: string) => {
-  const regex = /^(?:atom)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\w*)$/;
+  const regex = /^(?:atom)(?:\s*|\t*)(\d+)(?:\s*|\t*)(\w+)$/;
   const matches = line.match(regex);
   if (matches) {
     return {
@@ -58,7 +58,7 @@ const parseAtomType = (line: string) => {
 
 const parseBond = (line: string) => {
   const regex =
-    /^(?:bond)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*.\d*)$/;
+    /^(?:bond)(?:\s*|\t*)(\d+)(?:\s*|\t*)(\d+)(?:\s*|\t*)([+-]?(?:\d*\.\d+|\d+)(?:[eE][+-]?\d+)?)$/;
   const matches = line.match(regex);
   if (matches) {
     return {
@@ -71,7 +71,7 @@ const parseBond = (line: string) => {
 
 const parseAtomSizeAndColor = (line: string) => {
   const regex =
-    /^(?:atom)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*.\d*)(?:\s*|\t*)(#[0-9a-fA-F]{6,6})$/;
+    /^(?:atom)(?:\s*|\t*)(\d+)(?:\s*|\t*)([+-]?(?:\d*\.\d+|\d+)(?:[eE][+-]?\d+)?)(?:\s*|\t*)(#[0-9a-fA-F]{6})$/;
   const matches = line.match(regex);
   if (matches) {
     return {
