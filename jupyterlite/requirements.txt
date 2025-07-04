@@ -28,3 +28,6 @@ ipyleaflet
 # Python: plotting libraries (optional)
 plotly>=5,<6
 bqplot
+
+# Jupyterlite meta package
+jupyterlite==0.6.0
