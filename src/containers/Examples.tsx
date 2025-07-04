@@ -16,6 +16,7 @@ const { Option } = Select;
 
 const { Header } = Layout;
 const { Meta } = Card;
+
 interface Example {
   id: string;
   title: string;
@@ -28,6 +29,14 @@ interface Example {
   author?: string;
   authorUrl?: string;
   keywords?: string[];
+}
+
+// Interface describing the structure of the examples JSON fetched from server
+interface ExamplesConfig {
+  baseUrl: string;
+  title?: string;
+  descriptionFile: string;
+  examples: Example[];
 }
 
 const Examples = () => {
@@ -46,19 +55,19 @@ const Examples = () => {
   );
 
   useEffect(() => {
-    const fetchExamples = async (examplesUrl: string) => {
-      let response = await fetch(examplesUrl, { cache: "no-store" });
-      const data = await response.json();
-      const baseUrl = data["baseUrl"];
-      const title = data["title"] || "Examples";
-      const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`;
+    const fetchExamples = async (examplesUrl: string): Promise<void> => {
+      const response = await fetch(examplesUrl, { cache: "no-store" });
+      // Cast to the expected JSON structure
+      const data = (await response.json()) as ExamplesConfig;
+      const { baseUrl, title: fetchedTitle = "Examples", descriptionFile } = data;
+      const descriptionsUrl = `${baseUrl}/${descriptionFile}`;
       response = await fetch(descriptionsUrl);
       if (response.status !== 404) {
         const description = await response.text();
         setDescription(description);
       }
 
-      const examples: Example[] = data["examples"];
+      const examples: Example[] = data.examples;
       examples.forEach((example) => {
         example.imageUrl = `${baseUrl}/${example.imageUrl}`;
         example.files.forEach((file) => {
@@ -66,8 +75,8 @@ const Examples = () => {
         });
       });
 
-      setTitle(title);
-      setExamples(data["examples"]);
+      setTitle(fetchedTitle);
+      setExamples(examples);
       track("Examples.Fetch", { examplesUrl });
     };
 
@@ -144,56 +153,57 @@ const Examples = () => {
   const keywords = Array.from(keywordsSet);
   keywords.sort();
 
-  const renderCard = (example: Example) => (
-    <Card
-      key={example.id}
-      style={{
-        width: 300,
-        height: 420,
-        display: "flex",
-        flexDirection: "column",
-        marginLeft: "auto",
-        marginRight: "auto",
-      }}
-      cover={
-        <img
-          alt="example"
-          src={example.imageUrl}
-          onClick={() => onPlay(example)}
-          style={{
-            cursor: "pointer",
-            height: 200,
-            objectFit: "cover",
-            width: "100%",
-          }}
-        />
-      }
-      actions={[
-        <CaretRightOutlined key="setting" onClick={() => onPlay(example)} />,
-        <EditOutlined key="edit" onClick={() => onEdit(example)} />,
-      ]}
-    >
-      <Meta
-        title={example.title}
-        description={
-          <div style={{ height: 140, overflow: "hidden" }}>
-            {example.description}
-            <br />
-            {example.author && (
-              <>
-                Author{" "}
-                <Button type="link" href={example.authorUrl} target={"_blank"}>
-                  {example.author}
-                </Button>
-              </>
-            )}
-          </div>
+  const renderCard = useCallback(
+    (example: Example): JSX.Element => (
+      <Card
+        key={example.id}
+        style={{
+          width: 300,
+          height: 420,
+          display: "flex",
+          flexDirection: "column",
+          marginLeft: "auto",
+          marginRight: "auto",
+        }}
+        cover={
+          <img
+            alt="example"
+            src={example.imageUrl}
+            onClick={() => onPlay(example)}
+            style={{
+              cursor: "pointer",
+              height: 200,
+              objectFit: "cover",
+              width: "100%",
+            }}
+          />
         }
-      />
-    </Card>
-  );
+        actions={[
+          <CaretRightOutlined key="setting" onClick={() => onPlay(example)} />,
+          <EditOutlined key="edit" onClick={() => onEdit(example)} />,
+        ]}
+      >
+        <Meta
+          title={example.title}
+          description={
+            <div style={{ height: 140, overflow: "hidden" }}>
+              {example.description}
+              <br />
+              {example.author && (
+                <>
+                  Author{" "}
+                  <Button type="link" href={example.authorUrl} target={"_blank"}>
+                    {example.author}
+                  </Button>
+                </>
+              )}
+            </div>
+          }
+        />
+      </Card>
+    ), [onEdit, onPlay]);
 
-  const renderChunk = (chunk: Example[], index: number) => (
+  const renderChunk = (chunk: Example[], index: number): JSX.Element => (
     <Row key={index.toString()} gutter={8} justify="space-evenly">
       {chunk.map((example, index2) => (
         <Col
@@ -208,7 +218,7 @@ const Examples = () => {
     </Row>
   );
 
-  const chunkIt = (array: Example[], chunkSize: number) => {
+  const chunkIt = (array: Example[], chunkSize: number): Example[][] => {
     const chunks: Example[][] = [];
 
     for (let i = 0; i < array.length; i += chunkSize) {
@@ -234,7 +244,7 @@ const Examples = () => {
   } else {
     filteredExamples = examples;
   }
-  const numChunks = Math.min(Math.max(1, Math.floor(width / 300)), 4);
+  const numChunks = Math.min(Math.max(1, Math.floor((width ?? 0) / 300)), 4);
   const chunks = chunkIt(filteredExamples, numChunks);
 
   return (
