@@ -1,6 +1,7 @@
-import { useCallback } from "react";
-import { useStoreState } from "../hooks";
+import React, { useCallback, useState, useEffect } from "react";
+import { useStoreState, useStoreActions } from "../hooks";
 import MonacoEditor, { monaco } from "react-monaco-editor";
+import { SimulationEditStorageUtils } from "../utils/simulationEditStorage";
 
 monaco.languages.register({ id: "lammps" });
 monaco.languages.setMonarchTokensProvider("lammps", {
@@ -1411,9 +1412,20 @@ monaco.languages.setMonarchTokensProvider("lammps", {
 const Edit = () => {
   const selectedFile = useStoreState((state) => state.app.selectedFile);
   const simulation = useStoreState((state) => state.simulation.simulation);
+  const storeFileEdit = useStoreActions((actions) => actions.simulation.storeFileEdit);
+  const restoreOriginalFile = useStoreActions((actions) => actions.simulation.restoreOriginalFile);
+  const [hasLocalEdits, setHasLocalEdits] = useState(false);
+  
   const options = {
     selectOnLineNumbers: true,
   };
+
+  // Check if current file has local edits
+  useEffect(() => {
+    if (simulation && selectedFile) {
+      setHasLocalEdits(SimulationEditStorageUtils.hasEdits(simulation.id, selectedFile.fileName));
+    }
+  }, [simulation, selectedFile]);
 
   const editorDidMount = useCallback((editor: any, monaco: any) => {
     editor.focus();
@@ -1425,27 +1437,73 @@ const Edit = () => {
       const file = simulation?.files.filter(
         (file) => file.fileName === selectedFile?.fileName,
       )[0];
-      if (file) {
+      if (file && simulation) {
         file.content = newValue;
+        // Store the edit in localStorage
+        storeFileEdit({ fileName: selectedFile.fileName, content: newValue });
+        setHasLocalEdits(true);
       }
     },
-    [selectedFile?.fileName, simulation?.files],
+    [selectedFile?.fileName, simulation?.files, simulation, storeFileEdit],
   );
+
+  const handleRestoreOriginal = useCallback(() => {
+    if (selectedFile && simulation) {
+      restoreOriginalFile(selectedFile.fileName);
+      setHasLocalEdits(false);
+    }
+  }, [selectedFile, simulation, restoreOriginalFile]);
 
   if (!selectedFile) {
     return <>No file selected</>;
   }
 
   return (
-    <MonacoEditor
-      height="100vh"
-      language="lammps"
-      theme="vs-dark"
-      value={selectedFile.content}
-      options={options}
-      onChange={onEditorChange}
-      editorDidMount={editorDidMount}
-    />
+    <div style={{ height: '100vh', position: 'relative' }}>
+      {hasLocalEdits && (
+        <div style={{ 
+          position: 'absolute', 
+          top: 10, 
+          right: 10, 
+          zIndex: 1000,
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: '8px 12px',
+          borderRadius: '4px',
+          border: '1px solid #333'
+        }}>
+          <button
+            onClick={handleRestoreOriginal}
+            style={{
+              backgroundColor: '#ff4d4f',
+              color: 'white',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 'bold'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = '#ff7875';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = '#ff4d4f';
+            }}
+          >
+            Restore Original
+          </button>
+        </div>
+      )}
+      <MonacoEditor
+        height="100vh"
+        language="lammps"
+        theme="vs-dark"
+        value={selectedFile.content}
+        options={options}
+        onChange={onEditorChange}
+        editorDidMount={editorDidMount}
+      />
+    </div>
   );
 };
 export default Edit;

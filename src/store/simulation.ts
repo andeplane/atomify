@@ -8,6 +8,7 @@ import * as THREE from "three";
 import localforage from "localforage";
 import ColorModifier from "../modifiers/colormodifier";
 import { SimulationFile } from "./app";
+import { SimulationEditStorageUtils } from "../utils/simulationEditStorage";
 
 localforage.config({
   driver: localforage.INDEXEDDB,
@@ -115,6 +116,9 @@ export interface SimulationModel {
   syncFilesJupyterLite: Thunk<SimulationModel, undefined>;
   run: Thunk<SimulationModel>;
   newSimulation: Thunk<SimulationModel, Simulation>;
+  storeFileEdit: Thunk<SimulationModel, { fileName: string; content: string }>;
+  restoreOriginalFile: Thunk<SimulationModel, string>;
+  loadStoredEdits: Thunk<SimulationModel, undefined>;
   lammps?: LammpsWeb;
   reset: Action<SimulationModel, undefined>;
 }
@@ -541,6 +545,53 @@ export const simulationModel: SimulationModel = {
         allActions.app.setSelectedFile(inputScriptFile);
       }
       track("Simulation.New", { simulationId: simulation?.id });
+      
+      // Store original files for edit tracking
+      SimulationEditStorageUtils.storeOriginalFiles(simulation.id, simulation.files);
+      
+      // Load any existing edits
+      actions.loadStoredEdits();
+    },
+  ),
+  storeFileEdit: thunk(
+    async (actions, payload: { fileName: string; content: string }, { getStoreState }) => {
+      const simulation = getStoreState().simulation.simulation as Simulation;
+      if (!simulation) {
+        return;
+      }
+      
+      SimulationEditStorageUtils.storeEditedFile(simulation.id, payload.fileName, payload.content);
+    },
+  ),
+  restoreOriginalFile: thunk(
+    async (actions, fileName: string, { getStoreState }) => {
+      const simulation = getStoreState().simulation.simulation as Simulation;
+      if (!simulation) {
+        return;
+      }
+      
+      const originalContent = SimulationEditStorageUtils.restoreOriginalFile(simulation.id, fileName);
+      if (originalContent) {
+        // Update the file content in the simulation
+        const file = simulation.files.find(f => f.fileName === fileName);
+        if (file) {
+          file.content = originalContent;
+        }
+        
+        // Update the simulation state to trigger re-render
+        actions.setSimulation({ ...simulation });
+      }
+    },
+  ),
+  loadStoredEdits: thunk(
+    async (actions, payload: undefined, { getStoreState }) => {
+      const simulation = getStoreState().simulation.simulation as Simulation;
+      if (!simulation) {
+        return;
+      }
+      
+      // Load any edited files from storage
+      SimulationEditStorageUtils.loadEditedFiles(simulation.id, simulation.files);
     },
   ),
   reset: action((state) => {
