@@ -56,14 +56,14 @@ const Examples = () => {
 
   useEffect(() => {
     const fetchExamples = async (examplesUrl: string): Promise<void> => {
-      const response = await fetch(examplesUrl, { cache: "no-store" });
+      const examplesResponse = await fetch(examplesUrl, { cache: "no-store" });
       // Cast to the expected JSON structure
-      const data = (await response.json()) as ExamplesConfig;
+      const data = (await examplesResponse.json()) as ExamplesConfig;
       const { baseUrl, title: fetchedTitle = "Examples", descriptionFile } = data;
       const descriptionsUrl = `${baseUrl}/${descriptionFile}`;
-      response = await fetch(descriptionsUrl);
-      if (response.status !== 404) {
-        const description = await response.text();
+      const descriptionsResponse = await fetch(descriptionsUrl);
+      if (descriptionsResponse.status !== 404) {
+        const description = await descriptionsResponse.text();
         setDescription(description);
       }
 
