@@ -147,13 +147,25 @@ const Examples = () => {
   const renderCard = (example: Example) => (
     <Card
       key={example.id}
-      style={{ width: 300, marginLeft: "auto", marginRight: "auto" }}
+      style={{
+        width: 300,
+        height: 420,
+        display: "flex",
+        flexDirection: "column",
+        marginLeft: "auto",
+        marginRight: "auto",
+      }}
       cover={
         <img
           alt="example"
           src={example.imageUrl}
           onClick={() => onPlay(example)}
-          style={{ cursor: "pointer" }}
+          style={{
+            cursor: "pointer",
+            height: 200,
+            objectFit: "cover",
+            width: "100%",
+          }}
         />
       }
       actions={[
@@ -164,7 +176,7 @@ const Examples = () => {
       <Meta
         title={example.title}
         description={
-          <>
+          <div style={{ height: 140, overflow: "hidden" }}>
             {example.description}
             <br />
             {example.author && (
@@ -175,7 +187,7 @@ const Examples = () => {
                 </Button>
               </>
             )}
-          </>
+          </div>
         }
       />
     </Card>
