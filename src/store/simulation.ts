@@ -468,6 +468,9 @@ export const simulationModel: SimulationModel = {
       actions.setShowConsole(false);
       actions.setSimulation(simulation);
       actions.resetLammpsOutput();
+      
+      // Create notebook files for JupyterLite when simulation is loaded
+      actions.syncFilesJupyterLite();
 
       // Reset potentially chosen per atom coloring
       const postTimestepModifiers =
