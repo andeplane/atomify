@@ -12,6 +12,27 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 
+// Add custom styles for enhanced card appearance
+const cardStyles = `
+  .example-card .ant-card-body {
+    padding: 16px !important;
+  }
+  
+  .example-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+  }
+  
+  .example-card .ant-card-actions {
+    border-radius: 0 0 12px 12px;
+    background: #fafafa;
+  }
+  
+  .example-card .ant-card-actions > li {
+    margin: 8px 0;
+  }
+`;
+
 const { Option } = Select;
 
 const { Header } = Layout;
@@ -147,48 +168,100 @@ const Examples = () => {
   const renderCard = (example: Example) => (
     <Card
       key={example.id}
-      style={{ width: 300, marginLeft: "auto", marginRight: "auto" }}
+      className="example-card"
+      style={{ 
+        width: 300, 
+        height: 420,
+        marginLeft: "auto", 
+        marginRight: "auto",
+        borderRadius: "12px",
+        overflow: "hidden",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+        transition: "all 0.3s ease",
+        border: "1px solid #f0f0f0"
+      }}
+      bodyStyle={{
+        padding: "16px",
+        height: "120px",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column"
+      }}
       cover={
         <img
           alt="example"
           src={example.imageUrl}
           onClick={() => onPlay(example)}
-          style={{ cursor: "pointer" }}
+          style={{ 
+            cursor: "pointer",
+            height: "200px",
+            objectFit: "cover",
+            width: "100%"
+          }}
         />
       }
       actions={[
         <CaretRightOutlined key="setting" onClick={() => onPlay(example)} />,
         <EditOutlined key="edit" onClick={() => onEdit(example)} />,
       ]}
+      hoverable
     >
       <Meta
-        title={example.title}
+        title={
+          <div style={{ 
+            fontSize: "16px", 
+            fontWeight: "600", 
+            marginBottom: "8px",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap"
+          }}>
+            {example.title}
+          </div>
+        }
         description={
-          <>
+          <div style={{ 
+            flex: 1,
+            overflow: "hidden",
+            display: "-webkit-box",
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: "vertical",
+            fontSize: "14px",
+            color: "#666",
+            lineHeight: "1.4"
+          }}>
             {example.description}
-            <br />
             {example.author && (
-              <>
+              <div style={{ marginTop: "8px" }}>
                 Author{" "}
-                <Button type="link" href={example.authorUrl} target={"_blank"}>
+                <Button 
+                  type="link" 
+                  href={example.authorUrl} 
+                  target={"_blank"}
+                  style={{ 
+                    padding: "0",
+                    height: "auto",
+                    fontSize: "14px"
+                  }}
+                >
                   {example.author}
                 </Button>
-              </>
+              </div>
             )}
-          </>
+          </div>
         }
       />
     </Card>
   );
 
   const renderChunk = (chunk: Example[], index: number) => (
-    <Row key={index.toString()} gutter={8} justify="space-evenly">
+    <Row key={index.toString()} gutter={16} justify="start" style={{ marginBottom: "16px" }}>
       {chunk.map((example, index2) => (
         <Col
           key={index.toString() + index2.toString()}
           className="gutter-row"
           span={24 / chunk.length}
-          style={{ marginTop: 10 }}
+          style={{ marginBottom: 8 }}
         >
           {renderCard(example)}
         </Col>
@@ -222,15 +295,16 @@ const Examples = () => {
   } else {
     filteredExamples = examples;
   }
-  const numChunks = Math.min(Math.max(1, Math.floor(width / 300)), 4);
+  const numChunks = Math.min(Math.max(1, Math.floor(width / 320)), 4);
   const chunks = chunkIt(filteredExamples, numChunks);
 
   return (
     <>
+      <style>{cardStyles}</style>
       <Header className="site-layout-background" style={{ fontSize: 25 }}>
         {title}
       </Header>
-      <div style={{ padding: 10, margin: 10 }} ref={myRef}>
+      <div style={{ padding: 16, margin: 10 }} ref={myRef}>
         <ReactMarkdown
           linkTarget="_blank"
           remarkPlugins={[remarkMath]}
