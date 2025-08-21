@@ -1,11 +1,11 @@
 # Core modules (mandatory)
-jupyterlite-core==0.6.4
-jupyterlab~=4.4.5
-notebook~=7.4.5
+jupyterlite-core==0.4.1
+jupyterlab~=4.2.5
+notebook~=7.2.2
 
 
 # Python kernel (optional)
-jupyterlite-pyodide-kernel==0.6.1
+jupyterlite-pyodide-kernel==0.4.2
 
 # Language support (optional)
 jupyterlab-language-pack-fr-FR
@@ -26,5 +26,5 @@ ipycanvas>=0.9.1
 ipyleaflet
 
 # Python: plotting libraries (optional)
-plotly>=6,<7
+plotly>=5,<6
 bqplot
