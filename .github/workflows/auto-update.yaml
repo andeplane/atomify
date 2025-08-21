@@ -1,0 +1,55 @@
+name: Auto Update PRs with auto-merge Label
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-auto-merge-prs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update PRs with auto-merge label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get all open PRs with auto-merge label
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+
+            let updatedCount = 0;
+
+            for (const pr of prs) {
+              try {
+                const { data: labels } = await github.rest.issues.listLabelsOnIssue({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number
+                });
+                
+                const hasAutoMergeLabel = labels.some(label => label.name === 'auto-merge');
+                
+                if (hasAutoMergeLabel) {
+                  await github.rest.pulls.updateBranch({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: pr.number
+                  });
+                  
+                  console.log(`✅ Updated PR #${pr.number}: ${pr.title}`);
+                  updatedCount++;
+                }
+                
+              } catch (error) {
+                console.log(`❌ Could not update PR #${pr.number}: ${error.message}`);
+              }
+            }
+            
+            if (updatedCount === 0) {
+              console.log('No PRs with auto-merge label found to update');
+            } else {
+              console.log(`Updated ${updatedCount} PRs with auto-merge label`);
+            }
