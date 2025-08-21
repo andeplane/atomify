@@ -5,29 +5,7 @@
 
 version: 2
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
-    labels:
-      - "dependencies"
-      - "auto-update"
-    reviewers:
-      - "andeplane"
-    commit-message:
-      prefix: "feat"
-      include: "scope"
-  
-  - package-ecosystem: "pip"
-    directory: "/jupyterlite"
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "auto-update"
-      - "jupyterlite"
-    reviewers:
-      - "andeplane"
-    commit-message:
-      prefix: "feat"
-      include: "scope"
