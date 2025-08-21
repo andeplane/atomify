@@ -1,0 +1,45 @@
+name: Auto Label PRs
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label Dependabot PRs
+        if: ${{ github.actor == 'dependabot[bot]' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['dependencies', 'auto-update']
+            })
+
+      - name: Label automated updates
+        if: ${{ contains(github.head_ref, 'update/') || contains(github.head_ref, 'bump/') }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['auto-update']
+            })
+
+      - name: Label build updates
+        if: ${{ contains(github.head_ref, 'build/') || contains(github.head_ref, 'ci/') }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['build', 'auto-update']
+            })

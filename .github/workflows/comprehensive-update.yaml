@@ -1,0 +1,86 @@
+name: Comprehensive Update
+
+on:
+  workflow_dispatch:
+    inputs:
+      update_type:
+        description: 'Type of update to perform'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - dependencies
+        - lammps
+        - actions
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Node.js
+        if: ${{ github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'dependencies' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Set up Python
+        if: ${{ github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'dependencies' }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Update npm dependencies
+        if: ${{ github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'dependencies' }}
+        run: |
+          npm update
+          npm audit fix --force || true
+
+      - name: Update Python dependencies
+        if: ${{ github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'dependencies' }}
+        run: |
+          cd jupyterlite
+          pip install --upgrade pip
+          pip list --outdated --format=json | jq -r '.[] | .name' | xargs -I {} pip install --upgrade {} || true
+          pip freeze > requirements.txt
+
+      - name: Update GitHub Actions
+        if: ${{ github.event.inputs.update_type == 'all' || github.event.inputs.update_type == 'actions' }}
+        uses: wow-actions/update-github-actions@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Pull Request
+        if: ${{ success() }}
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'feat: comprehensive auto-update of ${{ github.event.inputs.update_type }}'
+          title: 'feat: Auto-update ${{ github.event.inputs.update_type }}'
+          body: |
+            ## Comprehensive Auto-Update
+            
+            This PR contains automatic updates for: **${{ github.event.inputs.update_type }}**
+            
+            ### Changes included:
+            - 🔄 Updated dependencies to latest versions
+            - 🔧 Applied security fixes where available
+            - 📦 Refreshed package lockfiles
+            
+            ### Testing required:
+            - [ ] Verify build process works
+            - [ ] Test core functionality
+            - [ ] Check for any breaking changes
+            
+            **This PR was automatically created by the comprehensive update workflow.**
+          labels: |
+            auto-update
+            dependencies
+            enhancement
+          branch: auto-update/${{ github.event.inputs.update_type }}-${{ github.run_number }}
+          delete-branch: true

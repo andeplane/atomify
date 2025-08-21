@@ -1,0 +1,77 @@
+name: Check LAMMPS Updates
+
+on:
+  schedule:
+    - cron: '0 3 * * 1' # Weekly on Monday at 3 AM UTC
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  check-lammps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check LAMMPS version
+        id: check_version
+        run: |
+          # Extract current LAMMPS version from build.py
+          CURRENT_BRANCH=$(grep -o "stable_[^\"]*" cpp/build.py | head -1)
+          echo "current_branch=$CURRENT_BRANCH" >> $GITHUB_OUTPUT
+          echo "Current LAMMPS branch: $CURRENT_BRANCH"
+          
+          # Get latest stable releases from LAMMPS repository
+          LATEST_RELEASES=$(curl -s "https://api.github.com/repos/lammps/lammps/releases" | jq -r '.[0:5] | .[] | select(.tag_name | startswith("stable_")) | .tag_name')
+          echo "Latest LAMMPS releases:"
+          echo "$LATEST_RELEASES"
+          
+          # Check if our current version is the latest
+          LATEST_STABLE=$(echo "$LATEST_RELEASES" | head -1)
+          echo "latest_stable=$LATEST_STABLE" >> $GITHUB_OUTPUT
+          
+          if [ "$CURRENT_BRANCH" != "$LATEST_STABLE" ]; then
+            echo "update_available=true" >> $GITHUB_OUTPUT
+            echo "LAMMPS update available: $CURRENT_BRANCH -> $LATEST_STABLE"
+          else
+            echo "update_available=false" >> $GITHUB_OUTPUT
+            echo "LAMMPS is up to date"
+          fi
+
+      - name: Create Issue for LAMMPS Update
+        if: steps.check_version.outputs.update_available == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const currentBranch = '${{ steps.check_version.outputs.current_branch }}';
+            const latestStable = '${{ steps.check_version.outputs.latest_stable }}';
+            
+            // Check if issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'lammps-update'
+            });
+            
+            if (issues.data.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `feat: Update LAMMPS from ${currentBranch} to ${latestStable}`,
+                body: `## LAMMPS Update Available
+                
+A new stable version of LAMMPS is available.
+
+**Current version:** \`${currentBranch}\`
+**Latest version:** \`${latestStable}\`
+
+### Manual steps required:
+1. Update the branch name in \`cpp/build.py\`
+2. Test compilation: \`cd cpp && python build.py\`
+3. Verify examples still work
+4. Update any breaking changes if necessary
+
+**This issue was automatically created by the LAMMPS update checker.**`,
+                labels: ['lammps-update', 'auto-update', 'enhancement']
+              });
+            }
