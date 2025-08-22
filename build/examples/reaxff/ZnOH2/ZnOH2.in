@@ -1,0 +1,30 @@
+# REAX potential for ZnOH2 system
+# .....
+#/camera position 0 -20 50
+#/camera target 12.5 12.5 12.5
+#/atom 1 hydrogen
+#/atom 2 oxygen
+#/atom 3 zinc
+
+#/bond 1 2 1.7
+#/bond 2 3 3.0
+log none
+units		real
+
+atom_style	charge
+read_data	data.ZnOH2
+
+pair_style	reax/c lmp_control
+pair_coeff	* * ffield.reax.ZnOH H O Zn
+
+neighbor	2 bin
+neigh_modify every 1 delay 0 check yes
+
+fix 1 all nve
+fix	2 all qeq/reax 1 0.0 10.0 1e-4 param.qeq
+fix 3 all temp/berendsen 2500.0 2500.0 100.0
+
+velocity all create 4000.0 492845 rot yes dist gaussian
+
+timestep	0.25
+run 10000

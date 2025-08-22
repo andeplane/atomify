@@ -1,0 +1,62 @@
+# Atomify commands start with #/
+
+# Move camera to a nice position
+#/camera position 15.0 21.8 66.5
+#/camera target 13.7 15.4 10.5
+
+# Set atom size and color
+#/atom 1 1.0 #ffffff
+#/atom 2 1.5 #ff0000
+
+variable L equal 15.0
+variable Lhalf equal $(0.5*v_L)
+variable thickness equal 2.0
+
+units lj
+atom_style atomic
+lattice fcc 0.5
+
+# Create regions to place atoms
+variable left equal 0.5*$L-0.5*${thickness}
+variable right equal 0.5*$L+0.5*${thickness}
+region system block 0 $L 0 $L 0 ${Lhalf}
+region boxinside block ${left} ${right} 0 $L 0 ${Lhalf}
+region boxoutside block ${left} ${right} 0 $L 0 ${Lhalf} side out
+
+# Create a box with 2 atom types in the region system
+create_box 2 system
+# Create atoms of type 1 inside the inner region
+create_atoms 1 region boxinside
+# Create atoms of type 2 inside the outer region
+create_atoms 2 region boxoutside
+
+# Set atom masses 
+mass 1 1.0
+mass 2 4.0
+
+# Give initial velocity, T=3.00, seed = 1337
+velocity all create 3.00 1337 loop geom
+
+# Choose LJ with 2.5sigma cutoff
+pair_style lj/cut 2.5
+pair_coeff * * 1.0 1.0 2.5
+neigh_modify every 1 delay 0 check yes
+
+# Create two groups for computing diffusion coefficients
+group light type 1
+group heavy type 2
+
+# Measure mean square displacement and diffusion coefficient
+compute msd_light light msd com yes
+variable diffusion_coeff_light equal c_msd_light[4]/6/(step*dt+1.0e-6)
+variable msd_light equal c_msd_light[4]
+
+compute msd_heavy heavy msd com yes
+variable msd_heavy equal c_msd_heavy[4]
+variable diffusion_coeff_heavy equal c_msd_heavy[4]/6/(step*dt+1.0e-6)
+
+thermo 100
+thermo_style custom step v_diffusion_coeff_light v_msd_light v_diffusion_coeff_heavy v_msd_heavy
+fix 1 all nve
+compute displace all displace/atom
+run 10000
