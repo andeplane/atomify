@@ -1,21 +1,20 @@
 import { useCallback, useState, useEffect } from "react";
-import { useMeasure } from "react-use";
-import { Select, Button, Divider } from "antd";
+import { Select, Divider } from "antd";
 import { Simulation } from "../store/simulation";
 import { SimulationFile } from "../store/app";
 import { useStoreActions, useStoreState } from "../hooks";
 import { CaretRightOutlined, EditOutlined } from "@ant-design/icons";
-import { Card, Layout, Skeleton, Row, Col, notification } from "antd";
+import { Layout, Skeleton, notification } from "antd";
 import { track } from "../utils/metrics";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
+import "./Examples.css";
 
 const { Option } = Select;
 
 const { Header } = Layout;
-const { Meta } = Card;
 interface Example {
   id: string;
   title: string;
@@ -35,7 +34,7 @@ const Examples = () => {
   const [description, setDescription] = useState<string>("");
   const [examples, setExamples] = useState<Example[]>([]);
   const [filterKeywords, setFilterKeywords] = useState<string[]>([]);
-  const [myRef, { width }] = useMeasure<HTMLDivElement>();
+  // Width measurement no longer needed with CSS Grid
   const setNewSimulation = useStoreActions(
     (actions) => actions.simulation.newSimulation,
   );
@@ -145,66 +144,60 @@ const Examples = () => {
   keywords.sort();
 
   const renderCard = (example: Example) => (
-    <Card
-      key={example.id}
-      style={{ width: 300, marginLeft: "auto", marginRight: "auto" }}
-      cover={
-        <img
-          alt="example"
-          src={example.imageUrl}
-          onClick={() => onPlay(example)}
-          style={{ cursor: "pointer" }}
-        />
-      }
-      actions={[
-        <CaretRightOutlined key="setting" onClick={() => onPlay(example)} />,
-        <EditOutlined key="edit" onClick={() => onEdit(example)} />,
-      ]}
+    <div 
+      key={example.id} 
+      className="modern-card"
+      onClick={() => onPlay(example)}
     >
-      <Meta
-        title={example.title}
-        description={
-          <>
-            {example.description}
-            <br />
-            {example.author && (
-              <>
-                Author{" "}
-                <Button type="link" href={example.authorUrl} target={"_blank"}>
-                  {example.author}
-                </Button>
-              </>
-            )}
-          </>
-        }
-      />
-    </Card>
+      <div className="card-image-container">
+        <img
+          alt={example.title}
+          src={example.imageUrl}
+          className="card-image"
+        />
+        <div className="card-overlay">
+          <button 
+            className="overlay-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlay(example);
+            }}
+            title="Run simulation"
+          >
+            <CaretRightOutlined />
+          </button>
+          <button 
+            className="overlay-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(example);
+            }}
+            title="Edit simulation"
+          >
+            <EditOutlined />
+          </button>
+        </div>
+      </div>
+      <div className="card-content">
+        <div className="card-title" title={example.title}>{example.title}</div>
+        <div className="card-description" title={example.description}>{example.description}</div>
+        {example.author && (
+          <div className="card-author">
+            By <a 
+              href={example.authorUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {example.author}
+            </a>
+          </div>
+        )}
+      </div>
+    </div>
   );
 
-  const renderChunk = (chunk: Example[], index: number) => (
-    <Row key={index.toString()} gutter={8} justify="space-evenly">
-      {chunk.map((example, index2) => (
-        <Col
-          key={index.toString() + index2.toString()}
-          className="gutter-row"
-          span={24 / chunk.length}
-          style={{ marginTop: 10 }}
-        >
-          {renderCard(example)}
-        </Col>
-      ))}
-    </Row>
-  );
-
-  const chunkIt = (array: Example[], chunkSize: number) => {
-    const chunks: Example[][] = [];
-
-    for (let i = 0; i < array.length; i += chunkSize) {
-      const chunk = array.slice(i, i + chunkSize);
-      chunks.push(chunk);
-    }
-    return chunks;
-  };
+  // No more chunking needed - CSS Grid handles responsive layout automatically
 
   let filteredExamples: Example[] = [];
   if (filterKeywords.length > 0) {
@@ -222,15 +215,13 @@ const Examples = () => {
   } else {
     filteredExamples = examples;
   }
-  const numChunks = Math.min(Math.max(1, Math.floor(width / 300)), 4);
-  const chunks = chunkIt(filteredExamples, numChunks);
 
   return (
     <>
       <Header className="site-layout-background" style={{ fontSize: 25 }}>
         {title}
       </Header>
-      <div style={{ padding: 10, margin: 10 }} ref={myRef}>
+      <div className="examples-container">
         <ReactMarkdown
           linkTarget="_blank"
           remarkPlugins={[remarkMath]}
@@ -251,7 +242,9 @@ const Examples = () => {
             <Option key={keyword}>{keyword}</Option>
           ))}
         </Select>
-        {chunks.map(renderChunk)}
+        <div className="cards-grid">
+          {filteredExamples.map(renderCard)}
+        </div>
         {examples.length === 0 && <Skeleton active />}
       </div>
     </>
