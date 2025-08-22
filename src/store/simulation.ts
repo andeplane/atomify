@@ -533,7 +533,7 @@ export const simulationModel: SimulationModel = {
       wasm.FS.chdir(`/${simulation.id}`);
       
       // Sync files to JupyterLite storage now that they're available in WASM filesystem
-      actions.syncFilesJupyterLite();
+      await actions.syncFilesJupyterLite();
       
       await allActions.app.setStatus(undefined);
       if (simulation.start) {
