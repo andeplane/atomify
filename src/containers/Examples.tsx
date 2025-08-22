@@ -10,150 +10,7 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
-
-// Modern card styles with overlay design
-const cardStyles = `
-  .modern-card {
-    border-radius: 16px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    border: none;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-    background: white;
-  }
-  
-  .modern-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  }
-  
-  .card-image-container {
-    position: relative;
-    overflow: hidden;
-    background: #f8f9fa;
-  }
-  
-  .card-image {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    transition: transform 0.3s ease;
-    cursor: pointer;
-  }
-  
-  .card-image:hover {
-    transform: scale(1.05);
-  }
-  
-  .card-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-  }
-  
-  .card-image-container:hover .card-overlay {
-    opacity: 1;
-  }
-  
-  .overlay-button {
-    background: rgba(255, 255, 255, 0.9);
-    border: none;
-    border-radius: 50px;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(8px);
-  }
-  
-  .overlay-button:hover {
-    background: white;
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  }
-  
-  .overlay-button .anticon {
-    font-size: 18px;
-    color: #333;
-  }
-  
-  .card-content {
-    padding: 16px;
-  }
-  
-  .card-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: #1a1a1a;
-    margin-bottom: 8px;
-    line-height: 1.3;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-  
-  .card-description {
-    font-size: 14px;
-    color: #666;
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    margin-bottom: 8px;
-  }
-  
-  .card-description:hover {
-    color: #333;
-  }
-  
-  .card-author {
-    font-size: 12px;
-    color: #888;
-    margin-top: 8px;
-  }
-  
-  .card-author a {
-    color: #1890ff;
-    text-decoration: none;
-    font-weight: 500;
-  }
-  
-  .card-author a:hover {
-    text-decoration: underline;
-  }
-  
-  .cards-grid {
-    display: grid;
-    gap: 20px;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    margin-top: 24px;
-  }
-  
-  @media (max-width: 768px) {
-    .cards-grid {
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 16px;
-    }
-    
-    .card-image {
-      height: 160px;
-    }
-  }
-`;
+import "./Examples.css";
 
 const { Option } = Select;
 
@@ -291,7 +148,6 @@ const Examples = () => {
       key={example.id} 
       className="modern-card"
       onClick={() => onPlay(example)}
-      style={{ cursor: 'pointer' }}
     >
       <div className="card-image-container">
         <img
@@ -362,11 +218,10 @@ const Examples = () => {
 
   return (
     <>
-      <style>{cardStyles}</style>
       <Header className="site-layout-background" style={{ fontSize: 25 }}>
         {title}
       </Header>
-      <div style={{ padding: 16, margin: 10 }}>
+      <div className="examples-container">
         <ReactMarkdown
           linkTarget="_blank"
           remarkPlugins={[remarkMath]}
