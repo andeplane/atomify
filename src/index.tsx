@@ -13,6 +13,11 @@ mixpanel.init("b5022dd7fe5b3cd0396d84284ae647e6", { debug: false });
 
 track("Page.Load");
 
+// Make store globally available for console utilities
+if (typeof window !== 'undefined') {
+  (window as any).store = store;
+}
+
 ReactDOM.render(
   <StoreProvider store={store}>
     <App />

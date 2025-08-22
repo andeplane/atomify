@@ -1,0 +1,5 @@
+Atomify lets you run end to end molecular dynamics simulations purely in the browser, including analysis in Jupyter notebooks. The molecular dynamics engine is called [LAMMPS](https://lammps.org/). Atomify comes with a bunch of example simulations you can look at, or you can upload your own simulation files.
+
+You can also easily create your own set of simulations for e.g. teaching by using this [Github template](https://github.com/andeplane/atomify-examples-template), which only takes a few minutes if you have the simulations ready. These simulations can contain input scripts, data files and Python notebooks for simulation analysis.
+
+If you have any feedback, ideas or just a cool simulation we could add to the examples, create an issue on [https://github.com/andeplane/atomify](https://github.com/andeplane/atomify) or contact me at [andershaf@gmail.com](mailto:andershaf@gmail.com).

@@ -1,0 +1,73 @@
+# Solvated 5-mer peptide
+#/camera position 2 40 43
+#/camera target 50 55 43
+#/atom 1 carbon
+#/atom 2 carbon
+#/atom 6 carbon
+#/atom 7 carbon
+#/atom 8 carbon
+#/atom 4 hydrogen
+#/atom 10 hydrogen
+#/atom 11 hydrogen
+#/atom 14 hydrogen
+#/atom 5 nitrogen
+#/atom 3 oxygen
+#/atom 9 oxygen
+#/atom 12 sulfur
+#/atom 13 oxygen
+
+units		real
+atom_style	full
+
+pair_style	lj/charmm/coul/long 8.0 10.0 10.0
+bond_style      harmonic
+angle_style     charmm
+dihedral_style  charmm
+improper_style  harmonic
+kspace_style	pppm 0.0001
+neigh_modify every 1 delay 0 check yes
+
+read_data	data.peptide
+
+neighbor	2.0 bin
+neigh_modify	delay 5
+
+timestep	2.0
+
+thermo_style	multi
+thermo		50
+
+fix		1 all nvt temp 275.0 275.0 100.0 tchain 1
+fix		2 all shake 0.0001 10 100 b 4 6 8 10 12 14 18 a 31
+
+group		peptide type <= 12
+
+group 1 type 1
+group 2 type 2
+group 3 type 3
+group 4 type 4
+group 5 type 5
+group 6 type 6
+group 7 type 7
+group 8 type 8
+group 9 type 9
+group 10 type 10
+group 11 type 11
+group 12 type 12
+group 13 type 13
+group 14 type 14
+#dump		1 peptide atom 10 dump.peptide
+
+#dump		2 peptide image 25 image.*.jpg type type &
+#		axes yes 0.8 0.02 view 60 -30 bond atom 0.5
+#dump_modify	2 pad 3
+
+#dump		3 peptide movie 25 movie.mpg type type &
+#		axes yes 0.8 0.02 view 60 -30 bond atom 0.5
+#dump_modify	3 pad 3
+
+#compute		bnd all property/local btype batom1 batom2
+#dump		2 peptide local 300 dump.bond index c_bnd[1] c_bnd[2] c_bnd[3]
+
+run		300
+

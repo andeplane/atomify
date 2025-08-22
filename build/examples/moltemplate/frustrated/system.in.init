@@ -1,0 +1,11 @@
+    # --- Default options for the "1BeadFrustrated" protein model ---
+    # ---            (These can be overridden later.)             ---
+    units           lj
+    atom_style      full
+    bond_style      hybrid harmonic
+    angle_style     hybrid harmonic
+    dihedral_style  hybrid table spline 360
+    pair_style      hybrid lj/charmm/coul/charmm/inter es4k4l maxmax 3.5 4.0
+    pair_modify     mix arithmetic
+    special_bonds   lj 0.0 0.0 1.0   #(turn on "1-4" interactions)
+    neigh_modify every 1 delay 0 check yes
