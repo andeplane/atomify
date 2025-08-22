@@ -1,5 +1,5 @@
 import { useCallback, useState, useEffect } from "react";
-import { Select, Button, Divider } from "antd";
+import { Select, Divider } from "antd";
 import { Simulation } from "../store/simulation";
 import { SimulationFile } from "../store/app";
 import { useStoreActions, useStoreState } from "../hooks";
