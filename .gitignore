@@ -6,3 +6,4 @@ cpp/obj
 cpp/lammps.mjs
 cpp/lammps.wasm
 cpp/lammps.worker.js
+build/
