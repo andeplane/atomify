@@ -13,9 +13,11 @@ const Notebook = () => {
       const baseUrl = "/atomify/jupyter/lab/index.html";
       let url = baseUrl;
 
-      const path = simulation?.analysisScript
-        ? `${simulation.id}/${simulation.analysisScript}`
-        : "analyze.ipynb";
+      let path = "analyze.ipynb";
+      if (simulation?.analysisScript) {
+        const scriptName = simulation.analysisScript.substring(simulation.analysisScript.lastIndexOf('/') + 1);
+        path = `${simulation.id}/${scriptName}`;
+      }
 
       try {
         if (await localforage.getItem(path)) {
