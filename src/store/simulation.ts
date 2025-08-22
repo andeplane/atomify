@@ -468,9 +468,6 @@ export const simulationModel: SimulationModel = {
       actions.setShowConsole(false);
       actions.setSimulation(simulation);
       actions.resetLammpsOutput();
-      
-      // Sync files to JupyterLite storage so they're available immediately
-      actions.syncFilesJupyterLite();
 
       // Reset potentially chosen per atom coloring
       const postTimestepModifiers =
@@ -534,6 +531,10 @@ export const simulationModel: SimulationModel = {
 
       actions.setSimulation(simulation); // Set it again now that files are updated
       wasm.FS.chdir(`/${simulation.id}`);
+      
+      // Sync files to JupyterLite storage now that they're available in WASM filesystem
+      actions.syncFilesJupyterLite();
+      
       await allActions.app.setStatus(undefined);
       if (simulation.start) {
         actions.run();
