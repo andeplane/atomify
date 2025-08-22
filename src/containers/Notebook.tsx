@@ -8,6 +8,7 @@ const Notebook = () => {
   const [notebookUrl, setNotebookUrl] = useState<string>("/atomify/jupyter/lab/index.html");
 
   useEffect(() => {
+    let isMounted = true;
     const determineNotebookUrl = async () => {
       const baseUrl = "/atomify/jupyter/lab/index.html";
       let url = baseUrl;
@@ -24,10 +25,16 @@ const Notebook = () => {
         console.log(`Could not check for notebook existence at "${path}":`, error);
       }
 
-      setNotebookUrl(url);
+      if (isMounted) {
+        setNotebookUrl(url);
+      }
     };
 
     determineNotebookUrl();
+
+    return () => {
+      isMounted = false;
+    };
   }, [simulation]);
 
   return (
