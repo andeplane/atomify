@@ -9,31 +9,19 @@ const Notebook = () => {
 
   useEffect(() => {
     const determineNotebookUrl = async () => {
-      let url = "/atomify/jupyter/lab/index.html";
+      const baseUrl = "/atomify/jupyter/lab/index.html";
+      let url = baseUrl;
 
-      if (simulation?.analysisScript) {
-        // If simulation has a specific analysis script, use that
-        const analysisScriptPath = `${simulation.id}/${simulation.analysisScript}`;
-        try {
-          const analysisNotebook = await localforage.getItem(analysisScriptPath);
-          if (analysisNotebook) {
-            url = `/atomify/jupyter/lab/index.html?path=${analysisScriptPath}`;
-          }
-        } catch (error) {
-          console.log("Could not check for analysis script existence:", error);
+      const path = simulation?.analysisScript
+        ? `${simulation.id}/${simulation.analysisScript}`
+        : "analyze.ipynb";
+
+      try {
+        if (await localforage.getItem(path)) {
+          url = `${baseUrl}?path=${path}`;
         }
-      } else {
-        // Check if analyze.ipynb exists in localforage before using it
-        try {
-          const analyzeNotebook = await localforage.getItem("analyze.ipynb");
-          if (analyzeNotebook) {
-            url = "/atomify/jupyter/lab/index.html?path=analyze.ipynb";
-          }
-          // If analyze.ipynb doesn't exist, just use the base JupyterLab URL
-        } catch (error) {
-          console.log("Could not check for analyze.ipynb existence:", error);
-          // Fall back to base URL without specific path
-        }
+      } catch (error) {
+        console.log(`Could not check for notebook existence at "${path}":`, error);
       }
 
       setNotebookUrl(url);
