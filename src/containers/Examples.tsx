@@ -1,42 +1,159 @@
 import { useCallback, useState, useEffect } from "react";
-import { useMeasure } from "react-use";
 import { Select, Button, Divider } from "antd";
 import { Simulation } from "../store/simulation";
 import { SimulationFile } from "../store/app";
 import { useStoreActions, useStoreState } from "../hooks";
 import { CaretRightOutlined, EditOutlined } from "@ant-design/icons";
-import { Card, Layout, Skeleton, Row, Col, notification } from "antd";
+import { Layout, Skeleton, notification } from "antd";
 import { track } from "../utils/metrics";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 
-// Add custom styles for enhanced card appearance
+// Modern card styles with overlay design
 const cardStyles = `
-  .example-card .ant-card-body {
-    padding: 16px !important;
+  .modern-card {
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    background: white;
   }
   
-  .example-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+  .modern-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   }
   
-  .example-card .ant-card-actions {
-    border-radius: 0 0 12px 12px;
-    background: #fafafa;
+  .card-image-container {
+    position: relative;
+    overflow: hidden;
+    background: #f8f9fa;
   }
   
-  .example-card .ant-card-actions > li {
-    margin: 8px 0;
+  .card-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .card-image:hover {
+    transform: scale(1.05);
+  }
+  
+  .card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.3) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+  }
+  
+  .card-image-container:hover .card-overlay {
+    opacity: 1;
+  }
+  
+  .overlay-button {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50px;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(8px);
+  }
+  
+  .overlay-button:hover {
+    background: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .overlay-button .anticon {
+    font-size: 18px;
+    color: #333;
+  }
+  
+  .card-content {
+    padding: 16px;
+  }
+  
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .card-description {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  
+  .card-author {
+    font-size: 12px;
+    color: #888;
+    margin-top: 8px;
+  }
+  
+  .card-author a {
+    color: #1890ff;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
+  .card-author a:hover {
+    text-decoration: underline;
+  }
+  
+  .cards-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    margin-top: 24px;
+  }
+  
+  @media (max-width: 768px) {
+    .cards-grid {
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    
+    .card-image {
+      height: 150px;
+    }
   }
 `;
 
 const { Option } = Select;
 
 const { Header } = Layout;
-const { Meta } = Card;
 interface Example {
   id: string;
   title: string;
@@ -56,7 +173,7 @@ const Examples = () => {
   const [description, setDescription] = useState<string>("");
   const [examples, setExamples] = useState<Example[]>([]);
   const [filterKeywords, setFilterKeywords] = useState<string[]>([]);
-  const [myRef, { width }] = useMeasure<HTMLDivElement>();
+  // Width measurement no longer needed with CSS Grid
   const setNewSimulation = useStoreActions(
     (actions) => actions.simulation.newSimulation,
   );
@@ -166,118 +283,61 @@ const Examples = () => {
   keywords.sort();
 
   const renderCard = (example: Example) => (
-    <Card
-      key={example.id}
-      className="example-card"
-      style={{ 
-        width: 300, 
-        height: 420,
-        marginLeft: "auto", 
-        marginRight: "auto",
-        borderRadius: "12px",
-        overflow: "hidden",
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-        transition: "all 0.3s ease",
-        border: "1px solid #f0f0f0"
-      }}
-      bodyStyle={{
-        padding: "16px",
-        height: "120px",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column"
-      }}
-      cover={
-        <img
-          alt="example"
-          src={example.imageUrl}
-          onClick={() => onPlay(example)}
-          style={{ 
-            cursor: "pointer",
-            height: "200px",
-            objectFit: "cover",
-            width: "100%"
-          }}
-        />
-      }
-      actions={[
-        <CaretRightOutlined key="setting" onClick={() => onPlay(example)} />,
-        <EditOutlined key="edit" onClick={() => onEdit(example)} />,
-      ]}
-      hoverable
+    <div 
+      key={example.id} 
+      className="modern-card"
+      onClick={() => onPlay(example)}
+      style={{ cursor: 'pointer' }}
     >
-      <Meta
-        title={
-          <div style={{ 
-            fontSize: "16px", 
-            fontWeight: "600", 
-            marginBottom: "8px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap"
-          }}>
-            {example.title}
+      <div className="card-image-container">
+        <img
+          alt={example.title}
+          src={example.imageUrl}
+          className="card-image"
+        />
+        <div className="card-overlay">
+          <button 
+            className="overlay-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onPlay(example);
+            }}
+            title="Run simulation"
+          >
+            <CaretRightOutlined />
+          </button>
+          <button 
+            className="overlay-button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit(example);
+            }}
+            title="Edit simulation"
+          >
+            <EditOutlined />
+          </button>
+        </div>
+      </div>
+      <div className="card-content">
+        <div className="card-title">{example.title}</div>
+        <div className="card-description">{example.description}</div>
+        {example.author && (
+          <div className="card-author">
+            By <a 
+              href={example.authorUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {example.author}
+            </a>
           </div>
-        }
-        description={
-          <div style={{ 
-            flex: 1,
-            overflow: "hidden",
-            display: "-webkit-box",
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: "vertical",
-            fontSize: "14px",
-            color: "#666",
-            lineHeight: "1.4"
-          }}>
-            {example.description}
-            {example.author && (
-              <div style={{ marginTop: "8px" }}>
-                Author{" "}
-                <Button 
-                  type="link" 
-                  href={example.authorUrl} 
-                  target={"_blank"}
-                  style={{ 
-                    padding: "0",
-                    height: "auto",
-                    fontSize: "14px"
-                  }}
-                >
-                  {example.author}
-                </Button>
-              </div>
-            )}
-          </div>
-        }
-      />
-    </Card>
+        )}
+      </div>
+    </div>
   );
 
-  const renderChunk = (chunk: Example[], index: number) => (
-    <Row key={index.toString()} gutter={16} justify="start" style={{ marginBottom: "16px" }}>
-      {chunk.map((example, index2) => (
-        <Col
-          key={index.toString() + index2.toString()}
-          className="gutter-row"
-          span={24 / chunk.length}
-          style={{ marginBottom: 8 }}
-        >
-          {renderCard(example)}
-        </Col>
-      ))}
-    </Row>
-  );
-
-  const chunkIt = (array: Example[], chunkSize: number) => {
-    const chunks: Example[][] = [];
-
-    for (let i = 0; i < array.length; i += chunkSize) {
-      const chunk = array.slice(i, i + chunkSize);
-      chunks.push(chunk);
-    }
-    return chunks;
-  };
+  // No more chunking needed - CSS Grid handles responsive layout automatically
 
   let filteredExamples: Example[] = [];
   if (filterKeywords.length > 0) {
@@ -295,8 +355,6 @@ const Examples = () => {
   } else {
     filteredExamples = examples;
   }
-  const numChunks = Math.min(Math.max(1, Math.floor(width / 320)), 4);
-  const chunks = chunkIt(filteredExamples, numChunks);
 
   return (
     <>
@@ -304,7 +362,7 @@ const Examples = () => {
       <Header className="site-layout-background" style={{ fontSize: 25 }}>
         {title}
       </Header>
-      <div style={{ padding: 16, margin: 10 }} ref={myRef}>
+      <div style={{ padding: 16, margin: 10 }}>
         <ReactMarkdown
           linkTarget="_blank"
           remarkPlugins={[remarkMath]}
@@ -325,7 +383,9 @@ const Examples = () => {
             <Option key={keyword}>{keyword}</Option>
           ))}
         </Select>
-        {chunks.map(renderChunk)}
+        <div className="cards-grid">
+          {filteredExamples.map(renderCard)}
+        </div>
         {examples.length === 0 && <Skeleton active />}
       </div>
     </>
