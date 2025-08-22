@@ -1,13 +1,43 @@
 import Iframe from "react-iframe";
 import { useStoreState } from "../hooks";
+import { useEffect, useState } from "react";
+import localforage from "localforage";
+
 const Notebook = () => {
   const simulation = useStoreState((state) => state.simulation.simulation);
+  const [notebookUrl, setNotebookUrl] = useState<string>("/atomify/jupyter/lab/index.html");
 
-  let notebookUrl = `/atomify/jupyter/lab/index.html?path=analyze.ipynb`;
-  if (simulation?.analysisScript) {
-    const analysisScriptPath = `${simulation.id}/${simulation.analysisScript}`;
-    notebookUrl = `/atomify/jupyter/lab/index.html?path=${analysisScriptPath}`;
-  }
+  useEffect(() => {
+    let isMounted = true;
+    const determineNotebookUrl = async () => {
+      const baseUrl = "/atomify/jupyter/lab/index.html";
+      let url = baseUrl;
+
+      let path = "analyze.ipynb";
+      if (simulation?.analysisScript) {
+        const scriptName = simulation.analysisScript.substring(simulation.analysisScript.lastIndexOf('/') + 1);
+        path = `${simulation.id}/${scriptName}`;
+      }
+
+      try {
+        if (await localforage.getItem(path)) {
+          url = `${baseUrl}?path=${path}`;
+        }
+      } catch (error) {
+        console.log(`Could not check for notebook existence at "${path}":`, error);
+      }
+
+      if (isMounted) {
+        setNotebookUrl(url);
+      }
+    };
+
+    determineNotebookUrl();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [simulation]);
 
   return (
     <>
