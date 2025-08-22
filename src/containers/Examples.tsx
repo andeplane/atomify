@@ -35,7 +35,7 @@ const cardStyles = `
   
   .card-image {
     width: 100%;
-    height: 180px;
+    height: 200px;
     object-fit: cover;
     transition: transform 0.3s ease;
     cursor: pointer;
@@ -106,14 +106,18 @@ const cardStyles = `
   }
   
   .card-description {
-    font-size: 13px;
+    font-size: 14px;
     color: #666;
-    line-height: 1.4;
+    line-height: 1.5;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
+    -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
     margin-bottom: 8px;
+  }
+  
+  .card-description:hover {
+    color: #333;
   }
   
   .card-author {
@@ -146,7 +150,7 @@ const cardStyles = `
     }
     
     .card-image {
-      height: 150px;
+      height: 160px;
     }
   }
 `;
@@ -319,8 +323,8 @@ const Examples = () => {
         </div>
       </div>
       <div className="card-content">
-        <div className="card-title">{example.title}</div>
-        <div className="card-description">{example.description}</div>
+        <div className="card-title" title={example.title}>{example.title}</div>
+        <div className="card-description" title={example.description}>{example.description}</div>
         {example.author && (
           <div className="card-author">
             By <a 
