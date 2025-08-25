@@ -30,7 +30,7 @@
     "react-scripts": "5.0.1",
     "react-terminal-ui": "^1.0.0",
     "react-use": "^17.4.0",
-    "rehype-katex": "^6.0.2",
+    "rehype-katex": "^7.0.1",
     "remark-math": "^5.1.1",
     "styled-components": "^5.3.6",
     "three": "^0.164.1",
