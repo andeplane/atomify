@@ -69,6 +69,6 @@
     "@types/styled-components": "^5.1.26",
     "@types/uuid": "^8.3.4",
     "gh-pages": "^6.1.1",
-    "prettier": "3.3.3"
+    "prettier": "3.6.2"
   }
 }
