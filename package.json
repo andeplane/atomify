@@ -26,7 +26,7 @@
     "react-fetch-hook": "^1.9.5",
     "react-iframe": "^1.8.4",
     "react-markdown": "^8.0.3",
-    "react-monaco-editor": "^0.50.1",
+    "react-monaco-editor": "^0.59.0",
     "react-scripts": "5.0.1",
     "react-terminal-ui": "^1.0.0",
     "react-use": "^17.4.0",
