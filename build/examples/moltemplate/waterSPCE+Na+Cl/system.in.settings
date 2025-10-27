@@ -1,0 +1,12 @@
+    bond_coeff   1     harmonic                 1000.0  1.0 
+    angle_coeff  1   harmonic                 1000.0  109.47
+    pair_coeff   1 1  lj/charmm/coul/long  0.1553  3.166 
+    pair_coeff   2 2  lj/charmm/coul/long  0.0     2.058
+    group spce type  1  2
+    fix fShakeSPCE spce shake 0.0001 10 100 b 1 a 1
+    # (Remember to "unfix" fShakeSPCE during minimization.)
+    pair_coeff 3 3 lj/charmm/coul/long 0.3526418 1.079769246386
+    pair_coeff 4 4  lj/charmm/coul/long  0.0127850  2.711
+  group ionNa type  3 3
+  group ionCl type  4 4
+  group ions  type  3 4

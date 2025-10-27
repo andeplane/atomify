@@ -1,0 +1,53 @@
+#/atom 1 silicon
+#/atom 2 carbon
+#/bond 1 2 2.9
+
+#/camera position -12.4 31.5 -1.3
+#/camera target 25.5 31.1 26.5
+
+variable T0 equal 2200
+variable T1 equal 500
+
+units metal
+atom_style atomic
+
+read_data siliconcarbide.data
+replicate 7 7 7
+
+# pair_style vashishta
+pair_style vashishta/table 10000 0.5
+pair_coeff * * SiC.vashishta Si C
+
+mass 1 28.0855
+mass 2 12.0107
+
+variable xMid equal $(lx/2)
+variable yMid equal $(ly/2)
+variable zMid equal $(lz/2)
+
+change_box all x delta -10 10
+change_box all y delta -10 10
+change_box all z delta -10 10
+
+region sphere sphere ${xMid} ${yMid} ${zMid} 12 side out
+delete_atoms region sphere compress yes
+
+group silicon type 1
+group carbon type 2
+region outside sphere ${xMid} ${yMid} ${zMid} 14 side out
+include make_stoichiometric.in
+displace_atoms all move 12 12 12
+
+neigh_modify delay 0 every 1 check yes
+
+thermo 100
+thermo_style one
+
+timestep 0.002
+
+velocity all create ${T0} 12345 loop geom mom yes rot yes
+fix nvt all nvt temp ${T0} ${T1} 2.0
+compute rdf all rdf 300 1 1 1 2 2 2
+fix rdf all ave/time 1 10 10 c_rdf[*] mode vector ave running
+
+run 30000

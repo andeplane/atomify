@@ -1,0 +1,16 @@
+variable nsilicon equal count(silicon)
+variable ncarbon equal count(carbon)
+
+# carbon has -1 unit charge, silicon +1
+variable totalCharge equal "v_nsilicon-v_ncarbon"
+
+variable numAddCarbon equal v_totalCharge
+print "Total charge is $(v_totalCharge)"
+
+print "Will add $(v_numAddCarbon) carbon atoms"
+
+if "$(v_numAddCarbon)>0" then &
+"create_atoms 2 random $(v_numAddCarbon) 353552 outside"
+
+if "$(v_numAddCarbon)<0" then &
+"create_atoms 1 random $(-v_numAddCarbon) 353552 outside"

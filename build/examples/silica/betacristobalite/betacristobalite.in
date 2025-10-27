@@ -1,0 +1,33 @@
+# Tell Atomify where initial camera position should be
+#/camera position 18 40 90
+#/camera target 18 18 18
+# Information about atoms for coloring and bonds
+#/atom 1 silicon
+#/atom 2 oxygen
+#/bond 1 2 2.6
+
+units metal
+boundary p p p
+
+atom_style	atomic
+
+read_data betacristobalite.data
+
+replicate 5 5 5
+
+pair_style vashishta/table 10000 0.5
+pair_coeff	* * SiO2.vashishta Si O
+neigh_modify every 1 delay 0 check yes
+
+mass 1 28.08
+mass 2 15.9994
+
+velocity all create 300.0 277387 mom yes
+
+fix nvt all nvt temp 300 300 1.0
+timestep 0.002
+
+thermo_style one
+thermo 100
+
+run 1000

@@ -1,0 +1,29 @@
+# Tell Atomify where initial camera position should be
+#/camera position 5 5 5
+#/camera target 0 0 0
+# Information about atoms for coloring and bonds
+#/atom 1 oxygen
+#/atom 2 hydrogen
+#/bond 1 2 2.0
+
+units		metal
+boundary	p p p
+
+atom_style	atomic
+
+read_data	singlewater.data
+replicate 2 1 1
+pair_style vashishta
+pair_coeff	* *  H2O.vashishta O H
+neigh_modify every 1 delay 0 check yes
+mass 1 15.9994
+mass 2 1.00794
+
+velocity all create 300.0 86151 mom yes
+fix nve all nve
+timestep 0.0005
+
+thermo 10
+thermo_style one
+
+run 1000
