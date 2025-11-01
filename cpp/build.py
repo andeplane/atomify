@@ -81,18 +81,21 @@ copy_atomify_files()
 # Check if recompile flag is passed
 if "--recompile" in sys.argv or "-r" in sys.argv:
   print("Running clean to force full recompilation...")
-  subprocess.call("make clean", shell=True)
+  clean_result = subprocess.call(["make", "clean"])
+  if clean_result != 0:
+    print(f"'make clean' failed with exit code {clean_result}. Aborting.")
+    sys.exit(clean_result)
   print("Clean complete, proceeding with build...")
 
 # Check if DEBUG flag is passed
-debug_flag = ""
+build_env = os.environ.copy()
 if "--debug" in sys.argv or "-d" in sys.argv:
-  debug_flag = "DEBUG=1 "
+  build_env["DEBUG"] = "1"
   print("Building in DEBUG mode with source maps and symbols...")
 else:
   print("Building in RELEASE mode (optimized)...")
 
-result = subprocess.call(f"make -j8 {debug_flag}", shell=True)
+result = subprocess.call(["make", "-j8"], env=build_env)
 if result != 0:
   print(f"Build failed with exit code {result}")
   sys.exit(result)

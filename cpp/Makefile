@@ -33,8 +33,8 @@ obj/%.o: lammps/src/%.cpp
 	$(CXX) $(CC_FLAGS) $(INCLUDE_FLAGS) -c -o $@ $<
 
 # Dependencies for lammpsweb files
-$(foreach file,$(LAMMPSWEB_FILES),obj/$(file).o): obj/%.o: lammpsweb/%.cpp lammpsweb/%.h
-	$(CXX) $(CC_FLAGS) $(INCLUDE_FLAGS) -c -o $@ lammps/src/$*.cpp
+$(foreach file,$(LAMMPSWEB_FILES),obj/$(file).o): obj/%.o: lammpsweb/%.cpp lammpsweb/%.h lammps/src/%.cpp lammps/src/%.h
+	$(CXX) $(CC_FLAGS) $(INCLUDE_FLAGS) -c -o $@ lammpsweb/$*.cpp
 
 clean:
 	rm lammps.mjs; rm lammps.wasm; rm obj/*
