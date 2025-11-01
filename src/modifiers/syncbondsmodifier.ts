@@ -12,7 +12,11 @@ class SyncBondsModifier extends Modifier {
     super({ name, active });
   }
 
-  run = (input: ModifierInput, output: ModifierOutput) => {
+  run(
+    input: ModifierInput,
+    output: ModifierOutput,
+    everything: boolean = false,
+  ): void {
     if (!this.active) {
       if (output.bonds) {
         output.bonds.count = 0;
@@ -64,7 +68,7 @@ class SyncBondsModifier extends Modifier {
       newBonds.mesh.count = numBonds;
     }
     newBonds.markNeedsUpdate();
-  };
+  }
 }
 
 export default SyncBondsModifier;

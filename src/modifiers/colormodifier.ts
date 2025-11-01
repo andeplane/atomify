@@ -214,13 +214,17 @@ class ColorModifier extends Modifier {
     this.previousColoringMethod = "type";
   };
 
-  run = (input: ModifierInput, output: ModifierOutput) => {
+  run(
+    input: ModifierInput,
+    output: ModifierOutput,
+    everything: boolean = false,
+  ): void {
     if (this.computeName) {
       this.runByProperty(input, output);
     } else {
       this.runByType(input, output);
     }
-  };
+  }
 }
 
 export default ColorModifier;

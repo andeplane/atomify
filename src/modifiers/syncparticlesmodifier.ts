@@ -12,11 +12,11 @@ class SyncParticlesModifier extends Modifier {
     super({ name, active });
   }
 
-  run = (
+  run(
     input: ModifierInput,
     output: ModifierOutput,
     everything: boolean = false,
-  ) => {
+  ): void {
     if (!this.active) {
       if (output.particles) {
         output.particles.count = 0;
@@ -76,7 +76,7 @@ class SyncParticlesModifier extends Modifier {
 
     newParticles.markNeedsUpdate();
     return newParticles;
-  };
+  }
 }
 
 export default SyncParticlesModifier;
