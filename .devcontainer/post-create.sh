@@ -8,10 +8,7 @@ sudo apt-get update
 sudo apt-get install -y \
   build-essential \
   cmake \
-  git \
   wget \
-  python3 \
-  python3-pip \
   && sudo rm -rf /var/lib/apt/lists/*
 
 # Install Emscripten SDK

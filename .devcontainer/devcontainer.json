@@ -28,11 +28,6 @@
     }
   },
 
-  "remoteUser": "vscode",
-
-  "remoteEnv": {
-    "EMSDK": "/home/vscode/.emsdk",
-    "PATH": "/home/vscode/.emsdk:/home/vscode/.emsdk/upstream/emscripten:/home/vscode/.emsdk/upstream/bin:${containerEnv:PATH}"
-  }
+  "remoteUser": "vscode"
 }
 
