@@ -1,0 +1,5 @@
+# .cursorignore
+# By default, Cursor ignores everything in .gitignore
+# Use "!" to re-include things you want the AI to see
+
+!cpp/lammps
