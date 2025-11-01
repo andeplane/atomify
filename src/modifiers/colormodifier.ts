@@ -157,7 +157,7 @@ class ColorModifier extends Modifier {
     const perAtomArray = input.wasm.HEAPF64.subarray(
       perAtomDataPtr,
       perAtomDataPtr + output.particles.count,
-    ) as Float32Array;
+    ) as Float64Array;
     // Calculate min/max using a loop to avoid stack overflow for large arrays
     let minValue = Infinity;
     let maxValue = -Infinity;
