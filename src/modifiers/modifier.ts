@@ -25,8 +25,8 @@ export function processData1D(
 ): ProcessedData1D {
   // Get data1DNamesWrapper and extract size, then delete immediately
   const data1DNamesWrapper = lmpModifier.getData1DNames();
-  const hasData1D = data1DNamesWrapper.size() > 0;
   const data1DNamesSize = data1DNamesWrapper.size();
+  const hasData1D = data1DNamesSize > 0;
   data1DNamesWrapper.delete(); // Delete WASM wrapper to prevent memory leak
 
   if (data1DNamesSize === 0) {
@@ -42,7 +42,7 @@ export function processData1D(
     };
   }
 
-  if ((everything || syncDataPoints) && data1D) {
+  if (everything || syncDataPoints) {
     // Data points is only for plotting figures
     if (clearPerSync) {
       // For histograms (compute rdf etc) we don't have time as x axis, so we clear every time
