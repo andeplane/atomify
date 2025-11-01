@@ -49,12 +49,14 @@ class SyncFixesModifier extends Modifier {
       fix.yLabel = fix.lmpFix.getYLabel();
       fix.scalarValue = fix.lmpFix.getScalarValue();
 
-      const data1DNames = fix.lmpFix.getData1DNames();
-      fix.hasData1D = data1DNames.size() > 0;
+      // Get data1DNamesWrapper and extract size, then delete immediately
+      const data1DNamesWrapper = fix.lmpFix.getData1DNames();
+      fix.hasData1D = data1DNamesWrapper.size() > 0;
+      const data1DNamesSize = data1DNamesWrapper.size();
+      data1DNamesWrapper.delete(); // Delete WASM wrapper to prevent memory leak
 
-      if (data1DNames.size() > 0) {
+      if (data1DNamesSize > 0) {
         fix.clearPerSync = fix.lmpFix.getClearPerSync();
-        const data1DVector = fix.lmpFix.getData1D();
         if (fix.data1D == null) {
           fix.data1D = {
             data: [],
@@ -76,7 +78,10 @@ class SyncFixesModifier extends Modifier {
             fix.data1D.labels.push("x");
           }
 
-          for (let j = 0; j < data1DNames.size(); j++) {
+          // Get data1DVector once before the loop for better performance
+          const data1DVector = fix.lmpFix.getData1D();
+          
+          for (let j = 0; j < data1DNamesSize; j++) {
             const lmpData = data1DVector.get(j);
 
             if (fix.data1D.labels.length - 1 === j) {
@@ -100,7 +105,13 @@ class SyncFixesModifier extends Modifier {
               }
               fix.data1D.data[k].push(yValues[k]);
             }
+            
+            // Delete the Data1D copy to prevent memory leak
+            lmpData.delete();
           }
+          
+          // Delete the vector wrapper after the loop to prevent memory leak
+          data1DVector.delete();
         }
       }
       output.fixes[name] = fix;
