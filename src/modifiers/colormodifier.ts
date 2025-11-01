@@ -158,10 +158,14 @@ class ColorModifier extends Modifier {
       perAtomDataPtr,
       perAtomDataPtr + output.particles.count,
     ) as Float32Array;
-    // @ts-ignore
-    const minValue = Math.min.apply(null, perAtomArray);
-    // @ts-ignore
-    const maxValue = Math.max.apply(null, perAtomArray);
+    // Calculate min/max using a loop to avoid stack overflow for large arrays
+    let minValue = Infinity;
+    let maxValue = -Infinity;
+    for (let i = 0; i < perAtomArray.length; i++) {
+      const value = perAtomArray[i];
+      if (value < minValue) minValue = value;
+      if (value > maxValue) maxValue = value;
+    }
     perAtomArray.forEach((value, index) => {
       const realIndex = output.particles.indices[index];
       const colorIndex = Math.floor(
