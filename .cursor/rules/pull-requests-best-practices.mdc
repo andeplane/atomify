@@ -1,0 +1,67 @@
+---
+alwaysApply: false
+---
+
+# Pull Request Best Practices
+
+## PR Titles and Descriptions
+
+### Title Requirements
+- All PR titles MUST follow conventional commit format with prefixes:
+  - `fix:` for bug fixes
+  - `feat:` for new features
+  - `refactor:` for code refactoring
+  - `chore:` for maintenance tasks
+  - `docs:` for documentation changes
+  - `test:` for test-related changes
+  - `style:` for formatting changes
+- Titles should be descriptive and clearly indicate what the PR does
+- NEVER use generic titles like "Solve issue X and create PR" or "Fix issue Y"
+- Include the key change in the title (e.g., "fix: ColorModifier bugs - swapped min/max calculation")
+
+### Description Requirements
+- All PR descriptions MUST include:
+  1. A clear summary section explaining what the PR does
+  2. Reference to related GitHub issues using "Fixes #XXX" or "Closes #XXX" format
+  3. A "Changes" section listing what was modified
+  4. An "Impact" or "Benefits" section explaining why this change matters
+  5. Reference to any prerequisites or related PRs if applicable
+
+### Background Agent PRs
+- When creating PRs via background agents or automated tools:
+  - Always reference the related GitHub issue number in the title or description
+  - Use descriptive titles that explain the actual change, not just "Solve issue X"
+  - Include proper description sections as outlined above
+  - Ensure the PR title matches the issue's title or key change
+
+### PR Template Structure
+
+All PRs should follow this structure:
+```
+## Summary
+[Clear one-paragraph explanation of what this PR does]
+
+Fixes #XXX (or Closes #XXX)
+
+## Changes
+- [List of specific changes made]
+
+## Impact / Benefits
+[Explain why this change matters]
+
+## Files Modified
+- [List of files changed, if not obvious from changes]
+
+[Any additional context, testing notes, etc.]
+```
+
+## PR Creation Workflow
+
+When creating a pull request:
+1. Create the PR as a draft with proper title and description
+2. Wait 1 minute for Gemini PR reviewer to process and add comments
+3. Check for review comments
+4. If comments are not yet present, wait another 30 seconds
+5. Address any review comments from Gemini
+6. Keep the PR in draft status until all reviews are addressed
+7. Only mark the PR as ready for review once all review comments have been addressed
