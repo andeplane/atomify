@@ -13,25 +13,25 @@ sudo apt-get install -y \
 
 # Install Emscripten SDK
 EMSDK_DIR="$HOME/.emsdk"
+EMSDK_VERSION="3.1.45"
+
 if [ ! -d "$EMSDK_DIR" ]; then
   echo "Installing Emscripten SDK..."
   git clone https://github.com/emscripten-core/emsdk.git "$EMSDK_DIR"
   cd "$EMSDK_DIR"
   
-  # Install latest SDK
-  ./emsdk install latest
-  ./emsdk activate latest
-  
-  # Activate Emscripten environment for current session
-  source ./emsdk_env.sh
+  # Install specific SDK version for reproducibility
+  ./emsdk install "$EMSDK_VERSION"
   
   echo "Emscripten SDK installed successfully!"
 else
   echo "Emscripten SDK already exists, activating..."
   cd "$EMSDK_DIR"
-  ./emsdk activate latest
-  source ./emsdk_env.sh
 fi
+
+# Activate Emscripten environment (common for both install and existing)
+./emsdk activate "$EMSDK_VERSION"
+source ./emsdk_env.sh
 
 # Verify installation
 echo "Verifying Emscripten installation..."
