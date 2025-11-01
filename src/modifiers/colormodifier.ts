@@ -129,7 +129,11 @@ class ColorModifier extends Modifier {
     this.computeName = undefined;
   }
 
-  runByProperty = (input: ModifierInput, output: ModifierOutput) => {
+  runByProperty = (
+    input: ModifierInput,
+    output: ModifierOutput,
+    everything: boolean = false,
+  ) => {
     if (!input.renderState.visualizer) {
       return;
     }
@@ -222,7 +226,7 @@ class ColorModifier extends Modifier {
     everything: boolean = false,
   ): void {
     if (this.computeName) {
-      this.runByProperty(input, output);
+      this.runByProperty(input, output, everything);
     } else {
       this.runByType(input, output, everything);
     }

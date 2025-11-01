@@ -15,7 +15,7 @@ class SyncParticlesModifier extends Modifier {
   run(
     input: ModifierInput,
     output: ModifierOutput,
-    everything: boolean = false,
+    _everything: boolean = false,
   ): void {
     if (!this.active) {
       if (output.particles) {
