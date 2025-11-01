@@ -47,7 +47,7 @@ class SyncBondsModifier extends Modifier {
       if (newBonds.mesh) {
         newBonds.mesh.count = numBonds;
       }
-      return newBonds;
+      return;
     }
 
     const bonds1Ptr = input.lammps.getBondsPosition1Pointer() / 4;

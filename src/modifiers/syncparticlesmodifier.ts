@@ -75,7 +75,6 @@ class SyncParticlesModifier extends Modifier {
     }
 
     newParticles.markNeedsUpdate();
-    return newParticles;
   }
 }
 
