@@ -52,13 +52,16 @@ class SyncVariablesModifier extends Modifier {
       variable.scalarValue = variable.lmpVariable.getScalarValue();
       variable.hasScalarData = variable.lmpVariable.hasScalarData();
 
-      Object.assign(variable, processData1D(
+      const processed = processData1D(
         variable.lmpVariable,
         variable.data1D,
         input,
         everything,
         variable.syncDataPoints,
-      ));
+      );
+      variable.data1D = processed.data1D;
+      variable.hasData1D = processed.hasData1D;
+      variable.clearPerSync = processed.clearPerSync;
       output.variables[name] = variable;
     }
   };

@@ -53,13 +53,16 @@ class SyncComputesModifier extends Modifier {
         compute.yLabel = compute.lmpCompute.getYLabel();
         compute.scalarValue = compute.lmpCompute.getScalarValue();
 
-        Object.assign(compute, processData1D(
+        const processed = processData1D(
           compute.lmpCompute,
           compute.data1D,
           input,
           everything,
           compute.syncDataPoints,
-        ));
+        );
+        compute.data1D = processed.data1D;
+        compute.hasData1D = processed.hasData1D;
+        compute.clearPerSync = processed.clearPerSync;
       }
       output.computes[name] = compute;
     }

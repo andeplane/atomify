@@ -50,13 +50,16 @@ class SyncFixesModifier extends Modifier {
       fix.yLabel = fix.lmpFix.getYLabel();
       fix.scalarValue = fix.lmpFix.getScalarValue();
 
-      Object.assign(fix, processData1D(
+      const processed = processData1D(
         fix.lmpFix,
         fix.data1D,
         input,
         everything,
         fix.syncDataPoints,
-      ));
+      );
+      fix.data1D = processed.data1D;
+      fix.hasData1D = processed.hasData1D;
+      fix.clearPerSync = processed.clearPerSync;
       output.fixes[name] = fix;
     }
   };
