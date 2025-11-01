@@ -187,7 +187,9 @@ class ColorModifier extends Modifier {
     everything: boolean = false,
   ) => {
     if (
-      (this.previousColoringMethod === "type" && !output.colorsDirty) ||
+      (!everything &&
+        this.previousColoringMethod === "type" &&
+        !output.colorsDirty) ||
       !input.renderState.visualizer
     ) {
       return;
@@ -222,7 +224,7 @@ class ColorModifier extends Modifier {
     if (this.computeName) {
       this.runByProperty(input, output);
     } else {
-      this.runByType(input, output);
+      this.runByType(input, output, everything);
     }
   }
 }
