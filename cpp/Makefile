@@ -1,5 +1,4 @@
 CXX = emcc
-MAXMEMORY = 512MB
 
 LAMMPS_SOURCE := $(wildcard lammps/src/*.cpp)
 LAMMPS_SOURCE := $(filter-out lammps/src/main.cpp, $(LAMMPS_SOURCE))
@@ -15,9 +14,9 @@ ifeq ($(DEBUG), 1)
   LD_FLAGS := -O1 -gsource-map --source-map-base="http://localhost:3000/atomify/" $(LD_FLAGS_COMMON)
   CC_FLAGS := -O0 -gsource-map $(CC_FLAGS_COMMON)
 else
-  # Release flags
-  LD_FLAGS := -Oz $(LD_FLAGS_COMMON)
-  CC_FLAGS := -Oz $(CC_FLAGS_COMMON)
+  # Release flags - maximum optimization
+  LD_FLAGS := -Oz -flto $(LD_FLAGS_COMMON)
+  CC_FLAGS := -Oz -DNDEBUG -flto $(CC_FLAGS_COMMON)
 endif
 INCLUDE_FLAGS := -Ilammps/src
 SYMBOLS :=        -s ENVIRONMENT='web' \
