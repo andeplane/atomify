@@ -67,21 +67,27 @@ export function processData1D(
         data1D.labels.push(lmpData.getLabel());
       }
 
-      const xValuesPointer = lmpData.getXValuesPointer() / 4;
+      const numPoints = lmpData.getNumPoints();
       const yValuesPointer = lmpData.getYValuesPointer() / 4;
-      const xValues = input.wasm.HEAPF32.subarray(
-        xValuesPointer,
-        xValuesPointer + lmpData.getNumPoints(),
-      ) as Float32Array;
       const yValues = input.wasm.HEAPF32.subarray(
         yValuesPointer,
-        yValuesPointer + lmpData.getNumPoints(),
-      ) as Float32Array;
-      for (let k = lengthBeforeWeStart; k < xValues.length; k++) {
-        if (j === 0) {
+        yValuesPointer + numPoints,
+      );
+
+      if (j === 0) {
+        const xValuesPointer = lmpData.getXValuesPointer() / 4;
+        const xValues = input.wasm.HEAPF32.subarray(
+          xValuesPointer,
+          xValuesPointer + numPoints,
+        );
+        for (let k = lengthBeforeWeStart; k < numPoints; k++) {
           data1D.data.push([xValues[k]]);
+          data1D.data[k].push(yValues[k]);
         }
-        data1D.data[k].push(yValues[k]);
+      } else {
+        for (let k = lengthBeforeWeStart; k < numPoints; k++) {
+          data1D.data[k].push(yValues[k]);
+        }
       }
 
       // Delete the Data1D copy to prevent memory leak
