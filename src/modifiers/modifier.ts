@@ -5,7 +5,7 @@ interface ModifierProps {
   active: boolean;
 }
 
-class Modifier {
+abstract class Modifier {
   public name: string;
   public key: string;
   public active: boolean;
@@ -16,10 +16,10 @@ class Modifier {
     this.active = active;
   }
 
-  run = (
+  abstract run(
     input: ModifierInput,
     output: ModifierOutput,
-    everything: boolean = false,
-  ) => {};
+    everything?: boolean
+  ): void;
 }
 export default Modifier;
