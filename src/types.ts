@@ -69,6 +69,7 @@ enum ModifierType {
 type CPPArray<T> = {
   get: (index: number) => T;
   size: () => number;
+  delete: () => void;
 };
 
 export type LMPModifier = {
@@ -143,6 +144,7 @@ export type LMPData1D = {
   getXValuesPointer: () => number;
   getYValuesPointer: () => number;
   getNumPoints: () => number;
+  delete: () => void;
 };
 
 export type LammpsOutput = {

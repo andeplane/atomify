@@ -51,11 +51,14 @@ class SyncVariablesModifier extends Modifier {
       variable.scalarValue = variable.lmpVariable.getScalarValue();
       variable.hasScalarData = variable.lmpVariable.hasScalarData();
 
-      const data1DNames = variable.lmpVariable.getData1DNames();
-      variable.hasData1D = data1DNames.size() > 0;
-      if (data1DNames.size() > 0) {
+      // Get data1DNamesWrapper and extract size, then delete immediately
+      const data1DNamesWrapper = variable.lmpVariable.getData1DNames();
+      variable.hasData1D = data1DNamesWrapper.size() > 0;
+      const data1DNamesSize = data1DNamesWrapper.size();
+      data1DNamesWrapper.delete(); // Delete WASM wrapper to prevent memory leak
+      
+      if (data1DNamesSize > 0) {
         variable.clearPerSync = variable.lmpVariable.getClearPerSync();
-        const data1DVector = variable.lmpVariable.getData1D();
         if (variable.data1D == null) {
           variable.data1D = {
             data: [],
@@ -77,7 +80,8 @@ class SyncVariablesModifier extends Modifier {
             variable.data1D.labels.push("x");
           }
 
-          for (let j = 0; j < data1DNames.size(); j++) {
+          for (let j = 0; j < data1DNamesSize; j++) {
+            const data1DVector = variable.lmpVariable.getData1D();
             const lmpData = data1DVector.get(j);
 
             if (variable.data1D.labels.length - 1 === j) {
@@ -101,6 +105,10 @@ class SyncVariablesModifier extends Modifier {
               }
               variable.data1D.data[k].push(yValues[k]);
             }
+            
+            // Delete WASM wrappers to prevent memory leak
+            lmpData.delete();
+            data1DVector.delete();
           }
         }
       }
