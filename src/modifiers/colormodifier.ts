@@ -161,7 +161,8 @@ class ColorModifier extends Modifier {
     // Calculate min/max using a loop to avoid stack overflow for large arrays
     let minValue = Infinity;
     let maxValue = -Infinity;
-    for (const value of perAtomArray) {
+    for (let i = 0; i < perAtomArray.length; i++) {
+      const value = perAtomArray[i];
       minValue = Math.min(minValue, value);
       maxValue = Math.max(maxValue, value);
     }
