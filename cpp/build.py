@@ -2,6 +2,7 @@ import os
 import subprocess
 import shutil
 import hashlib
+import sys
 
 def copy_moltemplate_files():
   shutil.copyfile("moltemplate_additional_lammps_code/pair_lj_charmm_coul_charmm_inter.cpp", "lammps/src/pair_lj_charmm_coul_charmm_inter.cpp")
@@ -76,8 +77,34 @@ if not os.path.exists('lammps'):
 
 print("Copying modified files ...")
 copy_atomify_files()
-subprocess.call("make -j8", shell=True)
+
+# Check if recompile flag is passed
+if "--recompile" in sys.argv or "-r" in sys.argv:
+  print("Running clean to force full recompilation...")
+  clean_result = subprocess.call(["make", "clean"])
+  if clean_result != 0:
+    print(f"'make clean' failed with exit code {clean_result}. Aborting.")
+    sys.exit(clean_result)
+  print("Clean complete, proceeding with build...")
+
+# Check if DEBUG flag is passed
+build_env = os.environ.copy()
+if "--debug" in sys.argv or "-d" in sys.argv:
+  build_env["DEBUG"] = "1"
+  print("Building in DEBUG mode with source maps and symbols...")
+else:
+  print("Building in RELEASE mode (optimized)...")
+
+result = subprocess.call(["make", "-j8"], env=build_env)
+if result != 0:
+  print(f"Build failed with exit code {result}")
+  sys.exit(result)
+
 print("Copying compiled files into src directory ...")
+if not os.path.exists("lammps.wasm"):
+  print("ERROR: lammps.wasm was not generated!")
+  sys.exit(1)
+
 shutil.copyfile("lammps.wasm", "../public/lammps.wasm")
 # shutil.copyfile("lammps.mjs", "../src/wasm/lammps.mjs")
 with open('lammps.mjs') as f:
@@ -85,4 +112,3 @@ with open('lammps.mjs') as f:
   with open("../src/wasm/lammps.mjs", "w") as g:
     g.write("/* eslint-disable */\n")
     g.write(content)
-  
