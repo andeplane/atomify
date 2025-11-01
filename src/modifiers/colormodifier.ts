@@ -154,16 +154,18 @@ class ColorModifier extends Modifier {
     compute.lmpCompute.sync();
     const perAtomDataPtr = compute.lmpCompute.getPerAtomData() / 8;
     //@ts-ignore
-    const perAtomArray = wasm.HEAPF64.subarray(
+    const perAtomArray = input.wasm.HEAPF64.subarray(
       perAtomDataPtr,
       perAtomDataPtr + output.particles.count,
-    ) as Float32Array;
-    //@ts-ignore
-    window.perAtomArray = perAtomArray;
-    // @ts-ignore
-    const minValue = Math.max.apply(null, perAtomArray);
-    // @ts-ignore
-    const maxValue = Math.min.apply(null, perAtomArray);
+    ) as Float64Array;
+    // Calculate min/max using a loop to avoid stack overflow for large arrays
+    let minValue = Infinity;
+    let maxValue = -Infinity;
+    for (let i = 0; i < perAtomArray.length; i++) {
+      const value = perAtomArray[i];
+      minValue = Math.min(minValue, value);
+      maxValue = Math.max(maxValue, value);
+    }
     perAtomArray.forEach((value, index) => {
       const realIndex = output.particles.indices[index];
       const colorIndex = Math.floor(
