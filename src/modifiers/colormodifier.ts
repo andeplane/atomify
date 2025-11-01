@@ -162,9 +162,8 @@ class ColorModifier extends Modifier {
     let minValue = Infinity;
     let maxValue = -Infinity;
     for (let i = 0; i < perAtomArray.length; i++) {
-      const value = perAtomArray[i];
-      if (value < minValue) minValue = value;
-      if (value > maxValue) maxValue = value;
+      minValue = Math.min(minValue, perAtomArray[i]);
+      maxValue = Math.max(maxValue, perAtomArray[i]);
     }
     perAtomArray.forEach((value, index) => {
       const realIndex = output.particles.indices[index];
