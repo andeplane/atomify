@@ -6,10 +6,19 @@ LAMMPS_SOURCE := $(filter-out lammps/src/main.cpp, $(LAMMPS_SOURCE))
 LAMMPS_OBJ_FILES := $(addprefix obj/,$(notdir $(LAMMPS_SOURCE:.cpp=.o)))
 LAMMPSWEB_FILES := atomify_compute atomify_modify atomify_fix atomify_variable fix_atomify lammpsweb data1d
 
-#LD_FLAGS := -O1 --pre-js locateFile.js --no-entry -gsource-map --source-map-base="http://localhost:3000/atomify/" -lembind
-#CC_FLAGS := -O0 -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -gsource-map # -DNDEBUG
-LD_FLAGS := -Oz --pre-js locateFile.js --no-entry -lembind
-CC_FLAGS := -Oz -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS
+# Common flags shared between debug and release builds
+LD_FLAGS_COMMON := --pre-js locateFile.js --no-entry -lembind
+CC_FLAGS_COMMON := -DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS
+
+ifeq ($(DEBUG), 1)
+  # Debug flags
+  LD_FLAGS := -O1 -gsource-map --source-map-base="http://localhost:3000/atomify/" $(LD_FLAGS_COMMON)
+  CC_FLAGS := -O0 -gsource-map $(CC_FLAGS_COMMON)
+else
+  # Release flags
+  LD_FLAGS := -Oz $(LD_FLAGS_COMMON)
+  CC_FLAGS := -Oz $(CC_FLAGS_COMMON)
+endif
 INCLUDE_FLAGS := -Ilammps/src
 SYMBOLS :=        -s ENVIRONMENT='web' \
 									-s NO_DISABLE_EXCEPTION_CATCHING=1 \
@@ -33,8 +42,8 @@ obj/%.o: lammps/src/%.cpp
 	$(CXX) $(CC_FLAGS) $(INCLUDE_FLAGS) -c -o $@ $<
 
 # Dependencies for lammpsweb files
-$(foreach file,$(LAMMPSWEB_FILES),obj/$(file).o): obj/%.o: lammpsweb/%.cpp lammpsweb/%.h lammps/src/%.cpp lammps/src/%.h
-	$(CXX) $(CC_FLAGS) $(INCLUDE_FLAGS) -c -o $@ lammpsweb/$*.cpp
+$(foreach file,$(LAMMPSWEB_FILES),obj/$(file).o): obj/%.o: lammps/src/%.cpp lammps/src/%.h
+	$(CXX) $(CC_FLAGS) $(INCLUDE_FLAGS) -c -o $@ lammps/src/$*.cpp
 
 clean:
-	rm lammps.mjs; rm lammps.wasm; rm obj/*
+	rm -f lammps.mjs lammps.wasm $(LAMMPS_OBJ_FILES)
