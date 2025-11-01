@@ -74,9 +74,10 @@ export function processData1D(
       ) as Float32Array;
       for (let k = lengthBeforeWeStart; k < xValues.length; k++) {
         if (j === 0) {
-          currentData1D.data.push([xValues[k]]);
+          currentData1D.data.push([xValues[k], yValues[k]]);
+        } else {
+          currentData1D.data[k].push(yValues[k]);
         }
-        currentData1D.data[k].push(yValues[k]);
       }
 
       // Delete the Data1D copy to prevent memory leak
