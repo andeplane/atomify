@@ -54,3 +54,14 @@ Fixes #XXX (or Closes #XXX)
 
 [Any additional context, testing notes, etc.]
 ```
+
+## PR Creation Workflow
+
+When creating a pull request:
+1. Create the PR as a draft with proper title and description
+2. Wait 1 minute for Gemini PR reviewer to process and add comments
+3. Check for review comments
+4. If comments are not yet present, wait another 30 seconds
+5. Address any review comments from Gemini
+6. Keep the PR in draft status until all reviews are addressed
+7. Only mark the PR as ready for review once all review comments have been addressed
