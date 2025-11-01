@@ -20,8 +20,8 @@ export function processData1D(
 ): { data1D: Data1D | undefined; hasData1D: boolean } {
   // Get data1DNamesWrapper and extract size, then delete immediately
   const data1DNamesWrapper = lmpModifier.getData1DNames();
-  const hasData1D = data1DNamesWrapper.size() > 0;
   const data1DNamesSize = data1DNamesWrapper.size();
+  const hasData1D = data1DNamesSize > 0;
   data1DNamesWrapper.delete(); // Delete WASM wrapper to prevent memory leak
 
   if (data1DNamesSize === 0) {
@@ -37,7 +37,7 @@ export function processData1D(
     };
   }
 
-  if ((everything || syncDataPoints) && currentData1D) {
+  if (everything || syncDataPoints) {
     // Data points is only for plotting figures
     if (clearPerSync) {
       // For histograms (compute rdf etc) we don't have time as x axis, so we clear every time
@@ -62,8 +62,8 @@ export function processData1D(
         currentData1D.labels.push(lmpData.getLabel());
       }
 
-      const xValuesPointer = lmpData.getXValuesPointer() / 4;
-      const yValuesPointer = lmpData.getYValuesPointer() / 4;
+      const xValuesPointer = lmpData.getXValuesPointer() / Float32Array.BYTES_PER_ELEMENT;
+      const yValuesPointer = lmpData.getYValuesPointer() / Float32Array.BYTES_PER_ELEMENT;
       const xValues = input.wasm.HEAPF32.subarray(
         xValuesPointer,
         xValuesPointer + lmpData.getNumPoints(),
