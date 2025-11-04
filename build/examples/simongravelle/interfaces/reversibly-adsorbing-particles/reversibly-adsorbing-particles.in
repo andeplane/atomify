@@ -1,0 +1,74 @@
+#/atom 1 3.0 #9988aa
+#/atom 2 5.0 #a1a1a1
+#/atom 3 3.0 #9988aa
+#/atom 4 3.0 #9988aa
+#/atom 5 3.0 #9988aa
+#/atom 6 3.0 #9988aa
+#/atom 7 3.0 #9988aa
+#/atom 8 3.0 #9988aa
+#/atom 9 3.0 #9988aa
+#/atom 10 3.0 #9988aa
+# ============= This LAMMPS input script simulates neutral particles reversibly adsorbing at the surface of a cylindrical nanopore.
+# ============= Tested with the 30Jul2021 version of LAMMPS
+# ============= Written by Simon Gravelle (https://simongravelle.github.io/)
+# ============= Find more scripts here: https://github.com/simongravelle/lammps-input-files
+# ============= LAMMPS tutorials for beginners: https://lammpstutorials.github.io/
+
+# ====================== basic parameters
+units			real
+newton			on off
+dimension 		3
+boundary 		p p p
+atom_style 		full
+pair_style		lj/cut 3.367386145
+pair_modify	 	shift yes
+
+# ===================== read data, define region, import group
+read_data		reversibly-adsorbing-particles.data
+region			acces cylinder z 0 0 20.0535228296 INF INF
+include			groups.in
+
+# ===================== set charges to 0
+set			type * charge 0
+
+# ===================== bond parameters and force field
+# ===================== specify neighbor search
+bond_style  		harmonic
+bond_coeff 		1 0.01 0.0 
+pair_coeff		* * 0.3 3.0 
+neigh_modify		exclude group solide solide 
+neigh_modify 		every 1 delay 0 check yes 
+mass 			* 39.1 
+
+# ===================== dynamics : nve + langevin = nvt
+fix 			1 ions nve 
+fix 			2 ions langevin 300.0 300.0 23.0 33414 zero yes
+
+# ===================== bond file for tapping
+include			bonds.in
+
+# ===================== output properties
+thermo 			10000
+thermo_style one
+
+compute 		Tion ions temp 
+thermo_modify 		temp Tion
+
+# ===================== wall to prevent particle to leave cylinder
+fix			mur ions wall/region acces lj93 10.0 1.0 1.0
+
+# ===================== first step small timestep
+timestep		0.1
+run			10000
+
+# ===================== second equilibration step
+timestep		2.0
+run			100000
+reset_timestep		0
+
+# ===================== save adsorbed status of atoms
+fix 			myavt all ave/time 1000 1 1000 v_Ntot file AdsorbedParticles.dat
+
+# ===================== final run
+run			1000000
+

@@ -1,0 +1,22 @@
+  # Default styles for molecules built out of "Monomers"
+  units           lj
+  atom_style      full
+
+  bond_style      hybrid harmonic table linear 4001
+  angle_style     hybrid cosine
+
+  #   If you need angles, dihedrals and impropers, uncomment or replace:
+  # angle_style     hybrid harmonic
+  # dihedral_style  hybrid fourier
+
+  pair_style      hybrid lj/cut 2.5
+
+  #   If you are using gpu acceleration uncomment these lines:
+  # package gpu force/neigh 0 0 1.0
+  # pair_style    hybrid lj/cut/gpu 4.0
+
+  pair_modify     mix arithmetic
+  special_bonds   lj/coul  1 1 1
+  boundary s s s      # <-- boundary conditions in x y z directions
+  #boundary p p p      # <-- boundary conditions in x y z directions
+  neigh_modify every 1 delay 0 check yes

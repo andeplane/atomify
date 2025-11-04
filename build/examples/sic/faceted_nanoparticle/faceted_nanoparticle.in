@@ -1,0 +1,26 @@
+#/atom 1 silicon
+#/atom 2 carbon
+#/bond 1 2 2.9
+
+#/camera position -8.2 -35.1 154.4
+#/camera target 0.0 0.0 0.0
+
+units metal
+atom_style atomic
+
+read_data sic_nanoparticle.data
+
+# pair_style vashishta
+pair_style vashishta/table 10000 0.5
+pair_coeff * * SiC.vashishta Si C
+
+mass 1 28.0855
+mass 2 12.0107
+
+neigh_modify delay 0 every 1 check yes
+
+timestep 0.002
+
+velocity all create 500 12345 loop geom mom yes rot yes
+fix nvt all nvt temp 500 500 2.0
+run 20
