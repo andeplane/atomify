@@ -1,0 +1,51 @@
+---
+alwaysApply: false
+---
+
+# Updating PR Descriptions and Titles
+
+## When Updating Existing PRs
+
+When updating PR titles or descriptions:
+1. Use GitHub API directly via `gh api` command for reliable updates
+2. The `gh pr edit` command may fail silently, so prefer the API approach
+3. For large bodies, use a temporary markdown file and read with `$(cat file.md)`
+
+## Method
+
+Use this format for reliable PR updates:
+
+```bash
+REPO=$(gh repo view --json owner,name -q '.owner.login + "/" + .name')
+gh api repos/$REPO/pulls/XXX -X PATCH \
+  -f title="fix: Descriptive title" \
+  -f body="$(cat pr_body.md)"
+```
+
+### Example Workflow
+
+1. Create a temporary markdown file with the PR body:
+   ```bash
+   cat > pr_body.md << 'EOF'
+   ## Summary
+   [Description here]
+   Fixes #XXX
+   EOF
+   ```
+
+2. Update the PR using GitHub API:
+   ```bash
+   REPO=$(gh repo view --json owner,name -q '.owner.login + "/" + .name')
+   gh api repos/$REPO/pulls/XXX -X PATCH \
+     -f title="fix: Descriptive title" \
+     -f body="$(cat pr_body.md)"
+   ```
+
+3. Clean up the temporary file:
+   ```bash
+   rm pr_body.md
+   ```
+
+## Notes
+- Always verify the update worked by checking the PR with `gh pr view XXX`
+- The GitHub API method is more reliable than `gh pr edit` which can fail silently
