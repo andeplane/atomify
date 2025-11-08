@@ -30,11 +30,9 @@ def copy_moltemplate_files():
       print(f"Copying {src} to {dst}...")
       shutil.copyfile(src, dst)
 
-def copy_mpi_files_and_patch():
-  """Copy custom MPI stubs for Emscripten (no real MPI support) and patch file."""
+def copy_patch_and_atomify_fix():
+  """Copy custom patch file and fix_atomify (not part of standard LAMMPS)."""
   files = [
-    ("mpi.cpp", "lammps/src/mpi.cpp"),
-    ("lammps/src/STUBS/mpi.h", "lammps/src/mpi.h"),
     ("lammps.patch", "lammps/src/lammps.patch"),
     ("lammpsweb/fix_atomify.cpp", "lammps/src/fix_atomify.cpp"),
     ("lammpsweb/fix_atomify.h", "lammps/src/fix_atomify.h"),
@@ -113,6 +111,7 @@ def configure_cmake(debug_mode=False):
     "-DCMAKE_CXX_STANDARD=17",
     "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
     "-DLAMMPS_SIZES=smallsmall",  # Use 32-bit integers (matches Makefile)
+    "-DBUILD_MPI=OFF",  # Use LAMMPS built-in MPI STUBS for serial build
     "-DDOWNLOAD_VORO=ON",  # Let CMake download and build Voro++ automatically
     f'-DCMAKE_CXX_FLAGS="{cc_flags}"',
     f'-DCMAKE_C_FLAGS="{cc_flags}"',
@@ -144,20 +143,27 @@ def build_lammps_library():
   print("LAMMPS library build complete!")
 
 def link_wasm_module(debug_mode=False):
-  """Link the LAMMPS library and lammpsweb files into a WASM module."""
+  """Link the LAMMPS library into a WASM module."""
   print("Linking WASM module...")
   
-  # Find the library file (relative to current directory)
+  # Find the library files
   lib_path = os.path.join(BUILD_DIR, "liblammps.a")
   if not os.path.exists(lib_path):
-    # Try alternative location
     lib_path = os.path.join(BUILD_DIR, "lib", "liblammps.a")
     if not os.path.exists(lib_path):
       print(f"ERROR: LAMMPS library not found at {lib_path}")
       sys.exit(1)
   
-  # Build emcc command - use absolute path for library
+  # Also need colvars, lepton, and voro++ libraries (built by CMake)
+  colvars_lib = os.path.join(BUILD_DIR, "liblammps_colvars.a")
+  lepton_lib = os.path.join(BUILD_DIR, "liblammps_lepton.a")
+  voro_lib = os.path.join(BUILD_DIR, "voro_build-prefix/src/voro_build/src/libvoro++.a")
+  
+  # Build emcc command - use absolute paths
   lib_abs_path = os.path.abspath(lib_path)
+  colvars_abs_path = os.path.abspath(colvars_lib) if os.path.exists(colvars_lib) else None
+  lepton_abs_path = os.path.abspath(lepton_lib) if os.path.exists(lepton_lib) else None
+  voro_abs_path = os.path.abspath(voro_lib) if os.path.exists(voro_lib) else None
   locate_file_abs = os.path.abspath("locateFile.js")
   
   emcc_args = []
@@ -180,8 +186,21 @@ def link_wasm_module(debug_mode=False):
     "-s", "EXPORTED_RUNTIME_METHODS=['getValue','FS','HEAP32','HEAPF32','HEAPF64']",
     "-s", "EXPORT_NAME='createModule'",
     "-s", "FORCE_FILESYSTEM=1",
+    "-Wl,--whole-archive",  # Force inclusion of all symbols, including Emscripten bindings
+    lib_abs_path,
+  ])
+  
+  # Add colvars, lepton, and voro++ libraries if they exist
+  if colvars_abs_path:
+    emcc_args.append(colvars_abs_path)
+  if lepton_abs_path:
+    emcc_args.append(lepton_abs_path)
+  if voro_abs_path:
+    emcc_args.append(voro_abs_path)
+  
+  emcc_args.extend([
+    "-Wl,--no-whole-archive",
     "-o", "lammps.mjs",
-    lib_abs_path
   ])
   
   emsdk_env = setup_emscripten()
@@ -215,7 +234,7 @@ if not os.path.exists('lammps'):
     sys.exit(1)
   
   print("Copying modified files ...")
-  copy_mpi_files_and_patch() # Custom MPI stubs for Emscripten
+  copy_patch_and_atomify_fix() # Custom patch and fix_atomify
   copy_moltemplate_files()  # Custom pair styles
 
   cwd = os.getcwd()
