@@ -8,7 +8,15 @@ import sys
 EMSDK_PATH = "/Users/anderhaf/repos/emsdk"
 BUILD_DIR = "build_emscripten"
 
+# ============================================================================
+# Custom file copying functions
+# ============================================================================
+# These functions copy custom modifications that aren't part of standard LAMMPS.
+# CMake handles standard dependencies (Voro++, COLVARS) automatically.
+# ============================================================================
+
 def copy_moltemplate_files():
+  """Copy custom pair styles for moltemplate."""
   files = [
     ("moltemplate_additional_lammps_code/pair_lj_charmm_coul_charmm_inter.cpp", "lammps/src/pair_lj_charmm_coul_charmm_inter.cpp"),
     ("moltemplate_additional_lammps_code/pair_lj_charmm_coul_charmm_inter.h", "lammps/src/pair_lj_charmm_coul_charmm_inter.h"),
@@ -23,6 +31,7 @@ def copy_moltemplate_files():
       shutil.copyfile(src, dst)
 
 def copy_mpi_files_and_patch():
+  """Copy custom MPI stubs for Emscripten (no real MPI support) and patch file."""
   files = [
     ("mpi.cpp", "lammps/src/mpi.cpp"),
     ("lammps/src/STUBS/mpi.h", "lammps/src/mpi.h"),
@@ -35,18 +44,13 @@ def copy_mpi_files_and_patch():
       print(f"Copying {src} to {dst}...")
       shutil.copyfile(src, dst)
 
-def copy_colvars_files():
-  colvars_lib_dir = 'lammps/lib/colvars'
-  for file in os.listdir(colvars_lib_dir):
-    if file.endswith('.h') or file.endswith('.cpp'):
-      shutil.copyfile(f"{colvars_lib_dir}/{file}", f"lammps/src/{file}")
-  
 def file_content(path):
   if not os.path.exists(path):
     return ""
   return open(path, 'r').read()
 
 def copy_atomify_files():
+  """Copy custom Atomify/lammpsweb files with Emscripten bindings."""
   files = ["atomify_compute", "atomify_modify", "atomify_fix", "atomify_variable", "fix_atomify", "lammpsweb", "data1d"]
   for file in files:
     cpp_new_path = os.path.join('lammpsweb', file+".cpp")
@@ -58,13 +62,6 @@ def copy_atomify_files():
       print(f"{file} is updated. Copying new version...")
       shutil.copyfile(cpp_new_path, cpp_lmp_path)
       shutil.copyfile(h_new_path, h_lmp_path)
-
-def copy_voronoi_files():
-  for file in os.listdir('voro++-0.4.6/src'):
-    if file.endswith('.hh') or file.endswith('.cc'):
-      shutil.copyfile(f"voro++-0.4.6/src/{file}", f"lammps/src/{file}")
-  if os.path.exists('lammps/src/voro++.cc'):
-    shutil.move('lammps/src/voro++.cc', 'lammps/src/voro++.cpp')
 
 def setup_emscripten():
   """Set up Emscripten environment."""
@@ -116,6 +113,7 @@ def configure_cmake(debug_mode=False):
     "-DCMAKE_CXX_STANDARD=17",
     "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
     "-DLAMMPS_SIZES=smallsmall",  # Use 32-bit integers (matches Makefile)
+    "-DDOWNLOAD_VORO=ON",  # Let CMake download and build Voro++ automatically
     f'-DCMAKE_CXX_FLAGS="{cc_flags}"',
     f'-DCMAKE_C_FLAGS="{cc_flags}"',
   ] + package_flags
@@ -217,10 +215,8 @@ if not os.path.exists('lammps'):
     sys.exit(1)
   
   print("Copying modified files ...")
-  copy_mpi_files_and_patch() # First compile, it is not with emscripten, so we should not include lammpsweb
-  copy_moltemplate_files()
-  copy_voronoi_files()
-  copy_colvars_files()
+  copy_mpi_files_and_patch() # Custom MPI stubs for Emscripten
+  copy_moltemplate_files()  # Custom pair styles
 
   cwd = os.getcwd()
   print("Changing directory ...")
