@@ -72,10 +72,10 @@ bool Fix::trySync(LAMMPS_NS::FixAveTime *fix) {
       m_yLabel = "Value";
       return true;
     } else {
-      char **ids = fix->getids();
-      int *which = fix->getwhich();
+      const auto &values = fix->getValues();
       for(int i=0; i<nvalues; i++) {
-        auto type = getType(which[i], ids[i]);
+        const auto &val = values[i];
+        auto type = getType(val.which, val.id);
 
 
         std::string key = std::string("Value ")+std::to_string(i+1);
@@ -100,7 +100,7 @@ bool Fix::trySync(LAMMPS_NS::FixAveTime *fix) {
         m_clearPerSync = true;
 
         if(type==ComputeRDF) {
-          LAMMPS_NS::ComputeRDF *compute_rdf = dynamic_cast<LAMMPS_NS::ComputeRDF *>(m_lmp->modify->get_compute_by_id(ids[i]));
+          LAMMPS_NS::ComputeRDF *compute_rdf = dynamic_cast<LAMMPS_NS::ComputeRDF *>(m_lmp->modify->get_compute_by_id(val.id));
           for(int j=0; j<nrows; j++) {
             double binCenter = compute_rdf->array[j][0];
             double value = fix->compute_array(j, i);

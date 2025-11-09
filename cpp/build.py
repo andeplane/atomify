@@ -4,6 +4,8 @@ import shutil
 import hashlib
 import sys
 
+LAMMPS_BRANCH = "stable_22Jul2025_update1"
+
 # Emscripten SDK path - adjust if needed
 try:
   EMSDK_PATH = os.environ["EMSDK_PATH"]
@@ -97,7 +99,7 @@ def configure_cmake(emsdk_env, debug_mode=False):
   package_flags = [f"-DPKG_{pkg}=ON" for pkg in packages]
   
   # Common compiler flags
-  cc_flags_common = "-DLAMMPS_EXCEPTIONS -DLAMMPS_SMALLSMALL -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
+  cc_flags_common = "-DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
   
   if debug_mode:
     # Debug flags
@@ -114,7 +116,7 @@ def configure_cmake(emsdk_env, debug_mode=False):
     f"-DCMAKE_BUILD_TYPE={build_type}",
     "-DCMAKE_CXX_STANDARD=17",
     "-DCMAKE_CXX_STANDARD_REQUIRED=ON",
-    "-DLAMMPS_SIZES=smallsmall",  # Use 32-bit integers (matches Makefile)
+    "-DLAMMPS_SIZES=smallbig",  # Use 32-bit integers (matches Makefile)
     "-DBUILD_MPI=OFF",  # Use LAMMPS built-in MPI STUBS for serial build
     "-DDOWNLOAD_VORO=ON",  # Let CMake download and build Voro++ automatically
     f'-DCMAKE_CXX_FLAGS="{cc_flags}"',
@@ -198,7 +200,7 @@ def link_wasm_module(emsdk_env, debug_mode=False):
   ])
   
   # Build command with proper quoting
-  emcc_cmd = "emcc " + " ".join(f'"{arg}"' if any(c in arg for c in [" ", "=", "'", "["]) else arg for arg in emcc_args)
+  emcc_cmd = "emcc " + " ".join(f'"{arg}"' if any(c in arg for c in [" ", "'", "[", "]"]) else arg for arg in emcc_args)
   full_cmd = f'source {emsdk_env} && {emcc_cmd}'
   
   subprocess.run(full_cmd, shell=True, executable="/bin/bash", check=True)
@@ -207,7 +209,7 @@ def link_wasm_module(emsdk_env, debug_mode=False):
 if not os.path.exists('lammps'):
   # First clone lammps
   print("Could not find local clone of LAMMPS, cloning ...")
-  subprocess.run("git clone --depth 1 --branch stable_23Jun2022_update1  https://github.com/lammps/lammps.git", shell=True, check=True)
+  subprocess.run(f"git clone --depth 1 --branch {LAMMPS_BRANCH}  https://github.com/lammps/lammps.git", shell=True, check=True)
   
   # Verify lammps directory was created
   if not os.path.exists('lammps'):
@@ -224,14 +226,15 @@ if not os.path.exists('lammps'):
   copy_moltemplate_files()  # Custom pair styles
 
   cwd = os.getcwd()
-  print("Changing directory ...")
-  os.chdir('lammps/src')
   print("Applying patch ...")
   try:
-    subprocess.run("git apply lammps.patch", shell=True, check=True)
+    subprocess.run("cd lammps && git apply src/lammps.patch", shell=True, check=True)
   except subprocess.CalledProcessError as e:
     print(f"WARNING: Patch application failed with exit code {e.returncode}")
     # Don't exit, as patch might already be applied
+  
+  print("Changing directory ...")
+  os.chdir('lammps/src')
   
   if os.path.isfile('fix_imd.cpp'):
     print("Deleting non-functioning files fix_imd ...")
