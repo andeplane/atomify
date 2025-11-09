@@ -1,128 +1,77 @@
-diff --git a/src/error.cpp b/src/error.cpp
-index 912093c..da78f2e 100644
---- a/src/error.cpp
-+++ b/src/error.cpp
-@@ -162,8 +162,8 @@ void Error::all(const std::string &file, int line, const std::string &str)
- 
-   if (update) update->whichflag = 0;
- 
--  std::string msg = fmt::format("ERROR: {} ({}:{})\n",
--                                str, truncpath(file), line);
-+  std::string msg = fmt::format("ERROR: {} ({}:{})\nLast command: {}",
-+                                str, truncpath(file), line, lastcmd);
- 
-   if (universe->nworlds > 1) {
-     throw LAMMPSAbortException(msg, universe->uworld);
 diff --git a/src/fix_ave_time.h b/src/fix_ave_time.h
-index 55df82c..7df4801 100644
+index 7e16b0e..a01df02 100644
 --- a/src/fix_ave_time.h
 +++ b/src/fix_ave_time.h
-@@ -38,6 +38,12 @@ class FixAveTime : public Fix {
-   double compute_scalar() override;
+@@ -36,7 +36,6 @@ class FixAveTime : public Fix {
    double compute_vector(int) override;
    double compute_array(int, int) override;
-+  bigint nextvalid();
-+  int getmode() { return mode; }
-+  int getnvalues() { return nvalues; }
-+  int getnrows() { return nrows; }
-+  char **getids() { return ids; }
-+  int *getwhich() { return which; }
  
-  private:
-   int me, nvalues;
-@@ -77,7 +83,6 @@ class FixAveTime : public Fix {
+- private:
+   struct value_t {
+     int which;       // type of data: COMPUTE, FIX, VARIABLE
+     int argindex;    // 1-based index if data is vector, else 0
+@@ -51,6 +50,14 @@ class FixAveTime : public Fix {
+       int v;
+     } val;
+   };
++
++  bigint nextvalid();
++  int getmode() const { return mode; }
++  int getnvalues() const { return nvalues; }
++  int getnrows() const { return nrows; }
++  const std::vector<value_t> &getValues() const { return values; }
++
++ private:
+   std::vector<value_t> values;
+ 
+   int nvalues, nrepeat, nfreq, irepeat;
+@@ -84,7 +91,6 @@ class FixAveTime : public Fix {
    void invoke_vector(bigint);
    void options(int, int, char **);
    void allocate_arrays();
 -  bigint nextvalid();
  };
- 
  }    // namespace LAMMPS_NS
-diff --git a/src/info.cpp b/src/info.cpp
-index 2261b1d..71e340e 100644
---- a/src/info.cpp
-+++ b/src/info.cpp
-@@ -1326,9 +1326,9 @@ void Info::get_memory_info(double *meminfo)
  #endif
-     meminfo[1] = (double)mi.uordblks/1048576.0+(double)mi.hblkhd/1048576.0;
- #endif
--    struct rusage ru;
--    if (getrusage(RUSAGE_SELF, &ru) == 0)
--      meminfo[2] = (double)ru.ru_maxrss/1024.0;
-+    // struct rusage ru;
-+    // if (getrusage(RUSAGE_SELF, &ru) == 0)
-+    //   meminfo[2] = (double)ru.ru_maxrss/1024.0;
- #endif
- }
- 
 diff --git a/src/input.h b/src/input.h
-index f54d2ea..a78b3d6 100644
+index 949a70d..14b7ffc 100644
 --- a/src/input.h
 +++ b/src/input.h
-@@ -26,7 +26,6 @@ class Input : protected Pointers {
-   friend class Error;
-   friend class Deprecated;
-   friend class SimpleCommandsTest_Echo_Test;
--
-  public:
-   int narg;                    // # of command args
-   char **arg;                  // parsed args for command
-@@ -41,12 +40,10 @@ class Input : protected Pointers {
-   // substitute for variables in a string
-   void write_echo(const std::string &);    // send text to active echo file pointers
+@@ -44,11 +44,10 @@ class Input : protected Pointers {
+   void write_echo(const std::string &);                    // send text to active echo file pointers
+   int get_jump_skip() const { return jump_skip; }
  
 - protected:
-   char *command;      // ptr to current command
    int echo_screen;    // 0 = no, 1 = yes
    int echo_log;       // 0 = no, 1 = yes
  
-- private:
+- protected:
++
    int me;                           // proc ID
    int maxarg;                       // max # of args in arg
    char *line, *copy, *work;         // input line & copy and work string
 diff --git a/src/modify.cpp b/src/modify.cpp
-index 90b911b..8c462ba 100644
+index 5a125d7..b79f3d4 100644
 --- a/src/modify.cpp
 +++ b/src/modify.cpp
-@@ -807,7 +807,7 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix)
-   // nullptr must be last entry in this list
- 
-   const char *exceptions[] = {"GPU",   "OMP", "INTEL",      "property/atom", "cmap",
--                              "cmap3", "rx",  "deprecated", "STORE/KIM",     nullptr};
-+                              "cmap3", "rx",  "deprecated", "STORE/KIM", "atomify",     nullptr};
+@@ -830,7 +830,7 @@ Fix *Modify::add_fix(int narg, char **arg, int trysuffix)
+   // clang-format off
+   const char *exceptions[] =
+     {"GPU", "OMP", "INTEL", "property/atom", "cmap", "cmap3", "rx", "deprecated", "STORE/KIM",
+-     "amoeba/pitorsion", "amoeba/bitorsion", "DUMMY", nullptr};
++     "amoeba/pitorsion", "amoeba/bitorsion", "DUMMY", "atomify", nullptr};
+   // clang-format on
  
    if (domain->box_exist == 0) {
-     int m;
 diff --git a/src/neigh_request.h b/src/neigh_request.h
-index 71c5987..95ffa86 100644
+index caa9e05..3dc69e5 100644
 --- a/src/neigh_request.h
 +++ b/src/neigh_request.h
-@@ -27,6 +27,7 @@ class NeighRequest : protected Pointers {
-   friend class NeighborKokkos;
+@@ -28,6 +28,7 @@ class NeighRequest : protected Pointers {
    friend class NPairSkipIntel;
+   friend class NPairSkipTrimIntel;
    friend class FixIntel;
 +  friend class FixAtomify;
  
-  protected:
-   int index;                 // index of which neigh request this is
-diff --git a/src/platform.cpp b/src/platform.cpp
-index 667481b..85aee47 100644
---- a/src/platform.cpp
-+++ b/src/platform.cpp
-@@ -141,11 +141,11 @@ double platform::cputime()
- 
- #else /* ! _WIN32 */
- 
--  struct rusage ru;
--  if (getrusage(RUSAGE_SELF, &ru) == 0) {
--    rv = (double) ru.ru_utime.tv_sec;
--    rv += (double) ru.ru_utime.tv_usec * 0.000001;
--  }
-+  // struct rusage ru;
-+  // if (getrusage(RUSAGE_SELF, &ru) == 0) {
-+  //   rv = (double) ru.ru_utime.tv_sec;
-+  //   rv += (double) ru.ru_utime.tv_usec * 0.000001;
-+  // }
- 
- #endif
- 
+  public:
+   enum { REGULAR, INTRA, INTER };
