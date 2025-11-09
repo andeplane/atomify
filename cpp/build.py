@@ -205,7 +205,7 @@ def link_wasm_module(debug_mode=False):
   
   emsdk_env = setup_emscripten()
   # Build command with proper quoting
-  emcc_cmd = "emcc " + " ".join(f'"{arg}"' if any(c in arg for c in [" ", "=", "'", "["]) else arg for arg in emcc_args)
+  emcc_cmd = "emcc " + " ".join(shlex.quote(arg) for arg in emcc_args)
   full_cmd = f'source {emsdk_env} && {emcc_cmd}'
   
   result = subprocess.call(full_cmd, shell=True, executable="/bin/bash")
