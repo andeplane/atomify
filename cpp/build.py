@@ -121,11 +121,7 @@ def configure_cmake(debug_mode=False):
   emsdk_env = setup_emscripten()
   cmake_cmd = f'source {emsdk_env} && cd {BUILD_DIR} && {" ".join(cmake_args)}'
   
-  result = subprocess.call(cmake_cmd, shell=True, executable="/bin/bash")
-  if result != 0:
-    print(f"CMake configuration failed with exit code {result}")
-    sys.exit(result)
-  
+  subprocess.run(cmake_cmd, shell=True, executable="/bin/bash", check=True)
   print("CMake configuration complete!")
 
 def build_lammps_library():
@@ -135,11 +131,7 @@ def build_lammps_library():
   emsdk_env = setup_emscripten()
   build_cmd = f'source {emsdk_env} && cd {BUILD_DIR} && cmake --build . --target lammps -j{os.cpu_count() or 1}'
   
-  result = subprocess.call(build_cmd, shell=True, executable="/bin/bash")
-  if result != 0:
-    print(f"Build failed with exit code {result}")
-    sys.exit(result)
-  
+  subprocess.run(build_cmd, shell=True, executable="/bin/bash", check=True)
   print("LAMMPS library build complete!")
 
 def link_wasm_module(debug_mode=False):
@@ -208,20 +200,13 @@ def link_wasm_module(debug_mode=False):
   emcc_cmd = "emcc " + " ".join(f'"{arg}"' if any(c in arg for c in [" ", "=", "'", "["]) else arg for arg in emcc_args)
   full_cmd = f'source {emsdk_env} && {emcc_cmd}'
   
-  result = subprocess.call(full_cmd, shell=True, executable="/bin/bash")
-  if result != 0:
-    print(f"WASM linking failed with exit code {result}")
-    sys.exit(result)
-  
+  subprocess.run(full_cmd, shell=True, executable="/bin/bash", check=True)
   print("WASM module linking complete!")
 
 if not os.path.exists('lammps'):
   # First clone lammps
   print("Could not find local clone of LAMMPS, cloning ...")
-  clone_result = subprocess.call("git clone --depth 1 --branch stable_23Jun2022_update1  https://github.com/lammps/lammps.git", shell=True)
-  if clone_result != 0:
-    print(f"ERROR: Git clone failed with exit code {clone_result}")
-    sys.exit(clone_result)
+  subprocess.run("git clone --depth 1 --branch stable_23Jun2022_update1  https://github.com/lammps/lammps.git", shell=True, check=True)
   
   # Verify lammps directory was created
   if not os.path.exists('lammps'):
@@ -241,9 +226,10 @@ if not os.path.exists('lammps'):
   print("Changing directory ...")
   os.chdir('lammps/src')
   print("Applying patch ...")
-  patch_result = subprocess.call("git apply lammps.patch", shell=True)
-  if patch_result != 0:
-    print(f"WARNING: Patch application failed with exit code {patch_result}")
+  try:
+    subprocess.run("git apply lammps.patch", shell=True, check=True)
+  except subprocess.CalledProcessError as e:
+    print(f"WARNING: Patch application failed with exit code {e.returncode}")
     # Don't exit, as patch might already be applied
   
   if os.path.isfile('fix_imd.cpp'):
