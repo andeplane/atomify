@@ -1,4 +1,5 @@
 import { Modal, Tabs, Progress, Button, Layout } from "antd";
+import { useState, useEffect } from "react";
 import View from "./View";
 import Notebook from "./Notebook";
 import Edit from "./Edit";
@@ -13,6 +14,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
   // @ts-ignore
   const wasm = window.wasm; // TODO: This is an ugly hack because wasm object is so big that Redux debugger hangs.
   const showConsole = useStoreState((state) => state.simulation.showConsole);
+  const [consoleKey, setConsoleKey] = useState(0);
   const setShowConsole = useStoreActions(
     (actions) => actions.simulation.setShowConsole,
   );
@@ -24,6 +26,13 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
   const status = useStoreState((state) => state.app.status);
 
   const { isEmbeddedMode } = useEmbeddedMode();
+  
+  // Update console key when modal opens
+  useEffect(() => {
+    if (showConsole) {
+      setConsoleKey(Date.now());
+    }
+  }, [showConsole]);
 
   return (
     <Content>
@@ -76,7 +85,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
           open
           onCancel={() => setShowConsole(false)}
         >
-          <Console width={"100%"} height={"70vh"} />
+          <Console key={consoleKey} width={"100%"} height={"70vh"} />
         </Modal>
       )}
       {
