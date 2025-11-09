@@ -5,7 +5,10 @@ import hashlib
 import sys
 
 # Emscripten SDK path - adjust if needed
-EMSDK_PATH = os.environ.get("EMSDK")
+EMSDK_PATH = os.environ.get("EMSDK_PATH")
+if not EMSDK_PATH:
+  print("ERROR: EMSDK_PATH is not set")
+  sys.exit(1)
 BUILD_DIR = "build_emscripten"
 
 # ============================================================================
