@@ -119,7 +119,7 @@ def configure_cmake(debug_mode=False):
   
   # Source emsdk_env.sh and run cmake
   emsdk_env = setup_emscripten()
-  cmake_cmd = f'source {emsdk_env} && cd {BUILD_DIR} && {" ".join(cmake_args)}'
+  cmake_cmd = f'source {emsdk_env} && cd {BUILD_DIR} && {" ".join(shlex.quote(arg) for arg in cmake_args)}'
   
   result = subprocess.call(cmake_cmd, shell=True, executable="/bin/bash")
   if result != 0:
