@@ -228,7 +228,7 @@ if not os.path.exists('lammps'):
   cwd = os.getcwd()
   print("Applying patch ...")
   try:
-    subprocess.run("cd lammps && git apply src/lammps.patch", shell=True, check=True)
+    subprocess.run(["git", "apply", "src/lammps.patch"], check=True, cwd="lammps")
   except subprocess.CalledProcessError as e:
     print(f"WARNING: Patch application failed with exit code {e.returncode}")
     # Don't exit, as patch might already be applied
