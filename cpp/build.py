@@ -5,7 +5,7 @@ import hashlib
 import sys
 
 # Emscripten SDK path - adjust if needed
-EMSDK_PATH = os.environ.get("EMSDK", "/Users/anderhaf/repos/emsdk")
+EMSDK_PATH = os.environ.get("EMSDK")
 BUILD_DIR = "build_emscripten"
 
 # ============================================================================
