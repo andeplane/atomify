@@ -45,7 +45,8 @@ def copy_patch_and_atomify_fix():
 def file_content(path):
   if not os.path.exists(path):
     return ""
-  return open(path, 'r').read()
+  with open(path, 'r') as f:
+    return f.read()
 
 def copy_atomify_files():
   """Copy custom Atomify/lammpsweb files with Emscripten bindings."""
@@ -70,7 +71,7 @@ def setup_emscripten():
     sys.exit(1)
   return emsdk_env
 
-def configure_cmake(debug_mode=False):
+def configure_cmake(emsdk_env, debug_mode=False):
   """Configure CMake with Emscripten and required packages."""
   print("Configuring CMake with Emscripten...")
   
@@ -118,23 +119,21 @@ def configure_cmake(debug_mode=False):
   ] + package_flags
   
   # Source emsdk_env.sh and run cmake
-  emsdk_env = setup_emscripten()
   cmake_cmd = f'source {emsdk_env} && cd {BUILD_DIR} && {" ".join(cmake_args)}'
   
   subprocess.run(cmake_cmd, shell=True, executable="/bin/bash", check=True)
   print("CMake configuration complete!")
 
-def build_lammps_library():
+def build_lammps_library(emsdk_env):
   """Build the LAMMPS library using CMake."""
   print("Building LAMMPS library...")
   
-  emsdk_env = setup_emscripten()
   build_cmd = f'source {emsdk_env} && cd {BUILD_DIR} && cmake --build . --target lammps -j{os.cpu_count() or 1}'
   
   subprocess.run(build_cmd, shell=True, executable="/bin/bash", check=True)
   print("LAMMPS library build complete!")
 
-def link_wasm_module(debug_mode=False):
+def link_wasm_module(emsdk_env, debug_mode=False):
   """Link the LAMMPS library into a WASM module."""
   print("Linking WASM module...")
   
@@ -195,7 +194,6 @@ def link_wasm_module(debug_mode=False):
     "-o", "lammps.mjs",
   ])
   
-  emsdk_env = setup_emscripten()
   # Build command with proper quoting
   emcc_cmd = "emcc " + " ".join(f'"{arg}"' if any(c in arg for c in [" ", "=", "'", "["]) else arg for arg in emcc_args)
   full_cmd = f'source {emsdk_env} && {emcc_cmd}'
@@ -277,14 +275,17 @@ if debug_mode:
 else:
   print("Building in RELEASE mode (optimized)...")
 
+# Set up Emscripten environment once
+emsdk_env = setup_emscripten()
+
 # Configure CMake
-configure_cmake(debug_mode=debug_mode)
+configure_cmake(emsdk_env, debug_mode=debug_mode)
 
 # Build the library
-build_lammps_library()
+build_lammps_library(emsdk_env)
 
 # Link WASM module (lammpsweb files are already in the library)
-link_wasm_module(debug_mode=debug_mode)
+link_wasm_module(emsdk_env, debug_mode=debug_mode)
 
 print("Copying compiled files into src directory ...")
 if not os.path.exists("lammps.wasm"):
