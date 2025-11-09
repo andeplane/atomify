@@ -133,7 +133,7 @@ def build_lammps_library():
   print("Building LAMMPS library...")
   
   emsdk_env = setup_emscripten()
-  build_cmd = f'source {emsdk_env} && cd {BUILD_DIR} && cmake --build . --target lammps -j8'
+  build_cmd = f'source {emsdk_env} && cd {BUILD_DIR} && cmake --build . --target lammps -j{os.cpu_count() or 1}'
   
   result = subprocess.call(build_cmd, shell=True, executable="/bin/bash")
   if result != 0:
