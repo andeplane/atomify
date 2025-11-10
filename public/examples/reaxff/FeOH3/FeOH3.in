@@ -13,7 +13,7 @@ units		real
 atom_style	charge
 read_data	data.FeOH3
 
-pair_style	reax/c lmp_control
+pair_style	reaxff lmp_control
 pair_coeff	* * ffield.reax.Fe_O_C_H H O Fe
 
 neighbor	2 bin

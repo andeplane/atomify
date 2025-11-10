@@ -17,7 +17,7 @@ units		real
 atom_style	charge
 read_data	data.RDX
 
-pair_style	reax/c lmp_control
+pair_style	reaxff lmp_control
 pair_coeff	* * ffield.reax.rdx H C O N
 
 neighbor	2 bin

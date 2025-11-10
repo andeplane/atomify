@@ -15,9 +15,9 @@ atom_style charge
 read_data CHA_wAl.data
 replicate 2 2 2
 
-pair_style reax/c NULL 
+pair_style reaxff NULL 
 pair_coeff * * ffield_Psofogiannakis_CuOH_2015 Si Al O H
-fix qeq all qeq/reax 1 0.0 10.0 1e-4 reax/c
+fix qeq all qeq/reax 1 0.0 10.0 1e-4 reaxff
 neigh_modify every 1 delay 0 check yes
 
 timestep 0.25
