@@ -1,5 +1,31 @@
 # Change Log
 
+## [2.0.0] Nov 9th 2025
+
+- Upgraded LAMMPS from stable_23Jun2022 to stable_22Jul2025
+- Migrated LAMMPS build from Makefile to CMake with Emscripten integration
+- Rebuilt LAMMPS WASM with new Emscripten and optimized build settings
+- Added dev container with Emscripten for LAMMPS builds
+- Added recompile and debug build options for LAMMPS
+- Fixed WASM memory leak by explicitly deleting embind wrapper objects
+- Fixed ColorModifier bugs with swapped min/max calculation and global wasm reference
+- Removed non functioning examples with new version
+
+## [1.5.0] Aug 22nd 2025
+
+- Complete redesign of example cards with modern CSS Grid layout
+- Fixed notebook file not found error and prevented path traversal vulnerability
+- Added JupyterLite storage configuration to resolve file loading errors
+
+## [1.4.0] Mar 19th 2025
+
+- Added AutoStartSimulation support for automatically starting simulations
+- Added embedded mode with sidebar hiding capability
+
+## [1.3.1] Sep 15th 2024
+
+- Fixed notebook overwrite behavior
+
 ## [1.3.0] July 15th 2024
 
 - Added support for COLVARS package
