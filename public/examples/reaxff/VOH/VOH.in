@@ -16,7 +16,7 @@ units		real
 atom_style	charge
 read_data	data.VOH
 
-pair_style	reax/c lmp_control
+pair_style	reaxff lmp_control
 pair_coeff	* * ffield.reax.V_O_C_H H C O V
 
 neighbor	2 bin
