@@ -129,7 +129,11 @@ class ColorModifier extends Modifier {
     this.computeName = undefined;
   }
 
-  runByProperty = (input: ModifierInput, output: ModifierOutput) => {
+  runByProperty = (
+    input: ModifierInput,
+    output: ModifierOutput,
+    everything: boolean = false,
+  ) => {
     if (!input.renderState.visualizer) {
       return;
     }
@@ -189,7 +193,9 @@ class ColorModifier extends Modifier {
     everything: boolean = false,
   ) => {
     if (
-      (this.previousColoringMethod === "type" && !output.colorsDirty) ||
+      (!everything &&
+        this.previousColoringMethod === "type" &&
+        !output.colorsDirty) ||
       !input.renderState.visualizer
     ) {
       return;
@@ -216,13 +222,17 @@ class ColorModifier extends Modifier {
     this.previousColoringMethod = "type";
   };
 
-  run = (input: ModifierInput, output: ModifierOutput) => {
+  run(
+    input: ModifierInput,
+    output: ModifierOutput,
+    everything: boolean = false,
+  ): void {
     if (this.computeName) {
-      this.runByProperty(input, output);
+      this.runByProperty(input, output, everything);
     } else {
-      this.runByType(input, output);
+      this.runByType(input, output, everything);
     }
-  };
+  }
 }
 
 export default ColorModifier;
