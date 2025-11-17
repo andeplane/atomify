@@ -49,13 +49,6 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
       const url = `${baseUrl}?data=${encodedData}${embedParam}${autoStartParam}`;
       
       setShareUrl(url);
-      
-      // Warn if URL is too long (GitHub Pages has a ~2KB limit)
-      if (url.length >= 2000) {
-        setError(
-          `Warning: The generated URL is ${Math.round(url.length / 1024)}KB. GitHub Pages has a ~2KB URL limit, so this may not work. Consider reducing simulation size or number of files.`
-        );
-      }
     } catch (err) {
       console.error("Error generating share URL:", err);
       setError(`Failed to generate share URL: ${err instanceof Error ? err.message : String(err)}`);
