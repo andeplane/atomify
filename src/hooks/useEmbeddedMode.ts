@@ -2,6 +2,7 @@ export interface EmbeddedModeResult {
   embeddedSimulationUrl: string | null;
   simulationIndex: number;
   embeddedData: string | null;
+  autoStart: boolean;
   isEmbeddedMode: boolean;
 }
 
@@ -11,6 +12,8 @@ export function useEmbeddedMode(): EmbeddedModeResult {
   const simulationIndex = parseInt(urlSearchParams.get('simulationIndex') || '0', 10);
   const embeddedData = urlSearchParams.get('data');
   const embedParam = urlSearchParams.get('embed');
+  const autoStartParam = urlSearchParams.get('autostart');
+  const autoStart = autoStartParam === 'true';
   
   // isEmbeddedMode is true when:
   // 1. Using embeddedSimulationUrl method, OR
@@ -24,6 +27,7 @@ export function useEmbeddedMode(): EmbeddedModeResult {
     embeddedSimulationUrl,
     simulationIndex,
     embeddedData,
+    autoStart,
     isEmbeddedMode,
   };
 } 

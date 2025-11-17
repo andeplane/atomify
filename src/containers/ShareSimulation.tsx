@@ -21,24 +21,26 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
   const [copied, setCopied] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [embedMode, setEmbedMode] = useState<boolean>(false);
+  const [autoStart, setAutoStart] = useState<boolean>(true);
 
   useEffect(() => {
     if (visible && simulation) {
       generateShareUrl();
     }
-  }, [visible, simulation, embedMode]);
+  }, [visible, simulation, embedMode, autoStart]);
 
   const generateShareUrl = async () => {
     setLoading(true);
     setError(undefined);
     try {
-      track("ShareSimulation.Generate", { simulationId: simulation.id, embedMode });
+      track("ShareSimulation.Generate", { simulationId: simulation.id, embedMode, autoStart });
       const encodedData = await encodeSimulation(simulation);
       
       // Get the base URL (without query parameters)
       const baseUrl = `${window.location.origin}${window.location.pathname}`;
       const embedParam = embedMode ? '&embed=true' : '';
-      const url = `${baseUrl}?data=${encodedData}${embedParam}`;
+      const autoStartParam = autoStart ? '&autostart=true' : '';
+      const url = `${baseUrl}?data=${encodedData}${embedParam}${autoStartParam}`;
       
       setShareUrl(url);
       
@@ -109,6 +111,15 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
           Share in full screen, <strong>embedded mode</strong>. Use this for presentations, 
           embedding in websites, or sharing with users who just want to view 
           the simulation.
+        </Checkbox>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <Checkbox
+          checked={autoStart}
+          onChange={(e) => setAutoStart(e.target.checked)}
+        >
+          <strong>Auto-start simulation</strong> when opened
         </Checkbox>
       </div>
 

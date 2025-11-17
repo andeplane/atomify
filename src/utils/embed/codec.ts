@@ -103,7 +103,7 @@ export async function encodeSimulation(simulation: Simulation): Promise<string> 
 /**
  * Decodes a base64url string to a Simulation object
  */
-export function decodeSimulation(base64url: string): Simulation {
+export function decodeSimulation(base64url: string, autoStart: boolean = true): Simulation {
   const base64 = b64urlToB64(base64url);
   const buf = base64ToU8A(base64);
   const simulationData = SimulationData.decode(buf);
@@ -129,7 +129,7 @@ export function decodeSimulation(base64url: string): Simulation {
     inputScript: simulationData.inputScript,
     analysisScript: simulationData.analysisScript,
     files,
-    start: true // Auto-start embedded simulations
+    start: autoStart
   };
 }
 
