@@ -16,7 +16,7 @@ export function useEmbeddedMode(): EmbeddedModeResult {
   // 1. Using embeddedSimulationUrl method, OR
   // 2. Using data parameter WITH explicit embed=true
   const isEmbeddedMode = Boolean(
-    (embeddedSimulationUrl && simulationIndex) || 
+    (embeddedSimulationUrl && simulationIndex >= 0) || 
     (embeddedData && embedParam === 'true')
   );
 
