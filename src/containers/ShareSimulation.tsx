@@ -21,7 +21,7 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
   const [copied, setCopied] = useState<boolean>(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [embedMode, setEmbedMode] = useState<boolean>(false);
-  const [autoStart, setAutoStart] = useState<boolean>(true);
+  const [autoStart, setAutoStart] = useState<boolean>(false);
 
   useEffect(() => {
     if (visible && simulation) {
@@ -39,7 +39,9 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
       // Get the base URL (without query parameters)
       const baseUrl = `${window.location.origin}${window.location.pathname}`;
       const embedParam = embedMode ? '&embed=true' : '';
-      const autoStartParam = autoStart ? '&autostart=true' : '';
+      // When embedMode is true, autoStart is always true
+      const effectiveAutoStart = embedMode || autoStart;
+      const autoStartParam = effectiveAutoStart ? '&autostart=true' : '';
       const url = `${baseUrl}?data=${encodedData}${embedParam}${autoStartParam}`;
       
       setShareUrl(url);
@@ -105,21 +107,22 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
 
       <div style={{ marginBottom: 16 }}>
         <Checkbox
-          checked={embedMode}
-          onChange={(e) => setEmbedMode(e.target.checked)}
+          checked={autoStart}
+          onChange={(e) => setAutoStart(e.target.checked)}
+          disabled={embedMode}
         >
-          Share in full screen, <strong>embedded mode</strong>. Use this for presentations, 
-          embedding in websites, or sharing with users who just want to view 
-          the simulation.
+          <strong>Auto-start simulation</strong> when opened
         </Checkbox>
       </div>
 
       <div style={{ marginBottom: 16 }}>
         <Checkbox
-          checked={autoStart}
-          onChange={(e) => setAutoStart(e.target.checked)}
+          checked={embedMode}
+          onChange={(e) => setEmbedMode(e.target.checked)}
         >
-          <strong>Auto-start simulation</strong> when opened
+          <strong>Embedded mode:</strong> Share in full screen, embedded mode. Use this for presentations, 
+          embedding in websites, or sharing with users who just want to view 
+          the simulation.
         </Checkbox>
       </div>
 
