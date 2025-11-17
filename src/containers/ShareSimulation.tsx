@@ -107,7 +107,7 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
 
       <div style={{ marginBottom: 16 }}>
         <Checkbox
-          checked={autoStart}
+          checked={embedMode || autoStart}
           onChange={(e) => setAutoStart(e.target.checked)}
           disabled={embedMode}
         >
