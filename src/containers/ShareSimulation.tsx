@@ -5,6 +5,9 @@ import { Simulation } from "../store/simulation";
 import { encodeSimulation } from "../utils/embed/codec";
 import { track } from "../utils/metrics";
 
+// GitHub Pages has a ~2KB URL length limit
+const GITHUB_PAGES_URL_LIMIT = 2000;
+
 interface ShareSimulationProps {
   visible: boolean;
   onClose: () => void;
@@ -160,11 +163,11 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
           <Alert
             message={`URL size: ${urlSizeKB} KB`}
             description={
-              shareUrl.length < 2000
+              shareUrl.length < GITHUB_PAGES_URL_LIMIT
                 ? "This URL should work on GitHub Pages."
                 : "This URL may not work on GitHub Pages (has ~2KB limit). Consider reducing simulation size or number of files."
             }
-            type={shareUrl.length < 2000 ? "success" : "warning"}
+            type={shareUrl.length < GITHUB_PAGES_URL_LIMIT ? "success" : "warning"}
             showIcon
           />
 
