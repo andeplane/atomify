@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Modal, Button, Input, Alert, Spin, message, Checkbox } from "antd";
 import { CopyOutlined, CheckOutlined } from "@ant-design/icons";
 import { Simulation } from "../store/simulation";
@@ -23,14 +23,7 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
   const [embedMode, setEmbedMode] = useState<boolean>(false);
   const [autoStart, setAutoStart] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (visible && simulation) {
-      track("ShareSimulation.Open", { simulationId: simulation.id });
-      generateShareUrl();
-    }
-  }, [visible, simulation, embedMode, autoStart]);
-
-  const generateShareUrl = async () => {
+  const generateShareUrl = useCallback(async () => {
     setLoading(true);
     setError(undefined);
     try {
@@ -73,7 +66,14 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [simulation, embedMode, autoStart]);
+
+  useEffect(() => {
+    if (visible && simulation) {
+      track("ShareSimulation.Open", { simulationId: simulation.id });
+      generateShareUrl();
+    }
+  }, [visible, simulation, generateShareUrl]);
 
   const copyToClipboard = async () => {
     try {
