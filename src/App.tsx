@@ -11,16 +11,18 @@ import {
   CaretRightOutlined,
   CloudOutlined,
   PauseOutlined,
+  ShareAltOutlined,
 } from "@ant-design/icons";
 import { useMeasure } from "react-use";
 import React, { useState, useEffect, useCallback } from "react";
 import type { MenuProps } from "antd";
-import { Layout, Menu } from "antd";
+import { Layout, Menu, Badge } from "antd";
 import Simulation from "./components/Simulation";
 import Main from "./containers/Main";
 import { useStoreActions, useStoreState } from "./hooks";
 import { track } from "./utils/metrics";
 import NewSimulation from "./containers/NewSimulation";
+import ShareSimulation from "./containers/ShareSimulation";
 import AutoStartSimulation from "./components/AutoStartSimulation";
 import { useEmbeddedMode } from "./hooks/useEmbeddedMode";
 const { Sider } = Layout;
@@ -49,6 +51,7 @@ const App: React.FC = () => {
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
   const [collapsed, setCollapsed] = useState(false);
   const [showNewSimulation, setShowNewSimulation] = useState(false);
+  const [showShareSimulation, setShowShareSimulation] = useState(false);
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const selectedFile = useStoreState((state) => state.app.selectedFile);
@@ -124,6 +127,20 @@ const App: React.FC = () => {
     running,
   );
 
+  const shareSimulationButton = getItem(
+    <span>
+      Share simulation <Badge count="NEW" style={{ backgroundColor: '#52c41a', marginLeft: 8 }} />
+    </span>,
+    "share",
+    <ShareAltOutlined />,
+    undefined,
+    () => {
+      setShowShareSimulation(true);
+      setPreferredView(selectedMenu); // This is another hack. Should really rethink menu system.
+    },
+    simulation == null || running,
+  );
+
   const items: MenuItem[] = [
     getItem("View", "view", <AlignLeftOutlined />),
     getItem("Console", "console", <BorderOuterOutlined />),
@@ -147,6 +164,7 @@ const App: React.FC = () => {
     { type: "divider" },
     newSimulationButton,
     getItem("Examples", "examples", <InsertRowAboveOutlined />),
+    shareSimulationButton,
     { type: "divider" },
     runStopButton,
     getItem(
@@ -238,6 +256,13 @@ const App: React.FC = () => {
       </Layout>
       {showNewSimulation && (
         <NewSimulation onClose={() => setShowNewSimulation(false)} />
+      )}
+      {showShareSimulation && simulation && (
+        <ShareSimulation
+          visible={showShareSimulation}
+          onClose={() => setShowShareSimulation(false)}
+          simulation={simulation}
+        />
       )}
     </>
   );

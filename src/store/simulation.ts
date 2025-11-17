@@ -3,7 +3,7 @@ import { LammpsWeb } from "../types";
 import { notification } from "antd";
 import { AtomTypes, AtomType, hexToRgb } from "../utils/atomtypes";
 import AnalyzeNotebook from "../utils/AnalyzeNotebook";
-import { track, time_event } from "../utils/metrics";
+import { track, time_event, getEmbeddingParams } from "../utils/metrics";
 import * as THREE from "three";
 import localforage from "localforage";
 import ColorModifier from "../modifiers/colormodifier";
@@ -378,7 +378,10 @@ export const simulationModel: SimulationModel = {
 
     lammps.start();
     actions.setRunning(true);
-    track("Simulation.Start", { simulationId: simulation?.id });
+    track("Simulation.Start", { 
+      simulationId: simulation?.id,
+      ...getEmbeddingParams()
+    });
     time_event("Simulation.Stop");
 
     const inputScriptFile = simulation.files.filter(

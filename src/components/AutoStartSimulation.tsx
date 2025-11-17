@@ -4,6 +4,7 @@ import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 import { Simulation } from "../store/simulation";
 import { notification } from "antd";
 import React from "react";
+import { decodeSimulation } from "../utils/embed/codec";
 
 declare global {
   interface Window {
@@ -43,15 +44,34 @@ const AutoStartSimulation: React.FC = () => {
   );
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
-  const { embeddedSimulationUrl, simulationIndex, isEmbeddedMode } = useEmbeddedMode();
+  const { embeddedSimulationUrl, simulationIndex, embeddedData, autoStart, isEmbeddedMode } = useEmbeddedMode();
   
   useEffect(() => {
     const fetchAndStartSimulation = async () => {
-      if (!isEmbeddedMode) {
-        return;
-      }
-      
       try {
+        // Handle embedded data first (works in both full editor and embedded modes)
+        if (embeddedData) {
+          const decodedSimulation = decodeSimulation(embeddedData, autoStart);
+          
+          if (simulation?.id !== decodedSimulation.id) {
+            hasInitiatedStart.current = true;
+            setNewSimulation(decodedSimulation);
+            
+            // Set view based on autoStart
+            if (autoStart) {
+              setPreferredView("view"); // Visualizer showing atoms
+            } else {
+              setPreferredView("file" + decodedSimulation.inputScript); // Editor with script
+            }
+          }
+          return;
+        }
+        
+        // Handle URL-based embedding (only in embedded mode)
+        if (!isEmbeddedMode) {
+          return;
+        }
+        
         const response = await fetch(embeddedSimulationUrl!);
         const data: ExamplesData = await response.json();
         
@@ -102,7 +122,7 @@ const AutoStartSimulation: React.FC = () => {
     };
 
     checkWasmAndStart();
-  }, [simulation?.id, running, setNewSimulation, setPreferredView, embeddedSimulationUrl, isEmbeddedMode, simulationIndex]);
+  }, [simulation?.id, running, setNewSimulation, setPreferredView, embeddedSimulationUrl, embeddedData, autoStart, isEmbeddedMode, simulationIndex]);
 
   return null;
 };
