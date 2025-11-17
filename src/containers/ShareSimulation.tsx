@@ -25,6 +25,7 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
 
   useEffect(() => {
     if (visible && simulation) {
+      track("ShareSimulation.Open", { simulationId: simulation.id });
       generateShareUrl();
     }
   }, [visible, simulation, embedMode, autoStart]);
@@ -33,8 +34,18 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
     setLoading(true);
     setError(undefined);
     try {
-      track("ShareSimulation.Generate", { simulationId: simulation.id, embedMode, autoStart });
       const encodedData = await encodeSimulation(simulation);
+      
+      // Track with file details
+      const fileNames = simulation.files.map(f => f.fileName);
+      track("ShareSimulation.Generate", { 
+        simulationId: simulation.id,
+        embedMode,
+        autoStart,
+        fileNames,
+        fileCount: simulation.files.length,
+        urlLength: encodedData.length  // Just the encoded data part
+      });
       
       // Get the base URL (without query parameters)
       const baseUrl = `${window.location.origin}${window.location.pathname}`;
