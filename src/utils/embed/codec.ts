@@ -16,10 +16,11 @@ export function u8aToBase64(buf: Uint8Array, applyMax?: number): string {
   // throws `RangeError: Maximum call stack size exceeded`,
   // so we split the buffer into chunks and process them one by one.
   let str = '';
-  const nChunks = Math.ceil(buf.length / (applyMax ?? DEFAULT_APPLY_MAX));
+  const chunkSize = applyMax ?? DEFAULT_APPLY_MAX;
+  const nChunks = Math.ceil(buf.length / chunkSize);
   for (let i = 0; i < nChunks; ++i) {
-    const offset = DEFAULT_APPLY_MAX * i;
-    const chunk = buf.slice(offset, offset + DEFAULT_APPLY_MAX);
+    const offset = chunkSize * i;
+    const chunk = buf.slice(offset, offset + chunkSize);
     str += String.fromCharCode.apply(null, chunk as unknown as number[]);
   }
   return window.btoa(str);
