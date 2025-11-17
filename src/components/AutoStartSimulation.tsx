@@ -4,6 +4,7 @@ import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 import { Simulation } from "../store/simulation";
 import { notification } from "antd";
 import React from "react";
+import { decodeSimulation } from "../utils/embed/codec";
 
 declare global {
   interface Window {
@@ -43,7 +44,7 @@ const AutoStartSimulation: React.FC = () => {
   );
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
-  const { embeddedSimulationUrl, simulationIndex, isEmbeddedMode } = useEmbeddedMode();
+  const { embeddedSimulationUrl, simulationIndex, embeddedData, isEmbeddedMode } = useEmbeddedMode();
   
   useEffect(() => {
     const fetchAndStartSimulation = async () => {
@@ -52,6 +53,19 @@ const AutoStartSimulation: React.FC = () => {
       }
       
       try {
+        // Handle embedded data first (data in URL)
+        if (embeddedData) {
+          const decodedSimulation = decodeSimulation(embeddedData);
+          
+          if (simulation?.id !== decodedSimulation.id) {
+            hasInitiatedStart.current = true;
+            setNewSimulation(decodedSimulation);
+            setPreferredView("view");
+          }
+          return;
+        }
+        
+        // Fall back to URL-based embedding
         const response = await fetch(embeddedSimulationUrl!);
         const data: ExamplesData = await response.json();
         
@@ -102,7 +116,7 @@ const AutoStartSimulation: React.FC = () => {
     };
 
     checkWasmAndStart();
-  }, [simulation?.id, running, setNewSimulation, setPreferredView, embeddedSimulationUrl, isEmbeddedMode, simulationIndex]);
+  }, [simulation?.id, running, setNewSimulation, setPreferredView, embeddedSimulationUrl, embeddedData, isEmbeddedMode, simulationIndex]);
 
   return null;
 };
