@@ -190,7 +190,7 @@ export const simulationModel: SimulationModel = {
                 atomType: atomType,
               });
             } else {
-              notification.warn({
+              notification.warning({
                 message: `Atom type '${parsedAtomType.atomName}' does not exist. Ignoring setting radius and color.`,
               });
             }

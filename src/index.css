@@ -52,10 +52,45 @@ body,
   border: 11px dashed #60a7dc;
 }
 
-#components-layout-demo-side .logo {
+/* Modern Sidebar Styling */
+.ant-layout-sider {
+  background: rgba(10, 10, 10, 0.85) !important;
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ant-menu-dark {
+  background: transparent !important;
+}
+
+.ant-menu-item {
+  margin: 4px 8px !important;
+  width: calc(100% - 16px) !important;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: rgba(24, 144, 255, 0.2) !important;
+  color: #40a9ff !important;
+  font-weight: 600;
+}
+
+.ant-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  transform: translateX(4px);
+}
+
+.logo {
   height: 32px;
   margin: 16px;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.logo:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .site-layout .site-layout-background {
