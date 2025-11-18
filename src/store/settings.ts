@@ -30,11 +30,9 @@ export const settingsModel: SettingsModel = {
     state.render = render;
   }),
   setSimulation: action((state, simulation: SimulationSettings) => {
-    // Merge with existing settings to preserve uiUpdateFrequency if not provided
     state.simulation = {
       ...state.simulation,
       ...simulation,
-      uiUpdateFrequency: simulation.uiUpdateFrequency ?? state.simulation.uiUpdateFrequency ?? 15,
     };
     // @ts-ignore
     window.syncFrequency = state.simulation.speed;
