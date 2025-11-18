@@ -134,94 +134,51 @@
   padding: 24px;
   margin: 0;
   min-height: 100%;
-  background: #f0f2f5; /* Lighter background */
-  color: #1a1a1a; /* Explicit dark text for light background */
+  background: #000; /* Pure black background */
+  color: #ffffff; /* White text */
 }
 
-/* Explicitly override markdown content colors since they might inherit white */
+/* Light text colors for dark theme */
 .examples-container h1,
 .examples-container h2,
 .examples-container h3,
 .examples-container h4,
 .examples-container h5,
 .examples-container h6 {
-  color: #1a1a1a;
+  color: #ffffff;
 }
 
 .examples-container p,
 .examples-container li,
 .examples-container span {
-  color: #333;
+  color: #d9d9d9;
 }
 
-/* Style the Select/Filter to match light theme */
-.examples-container .ant-select {
-  background: white;
+.examples-container a {
+  color: #40a9ff;
 }
 
+/* Style the Select/Filter to match dark theme */
 .examples-container .ant-select-selector {
-  background: white !important;
-  border-color: #d9d9d9 !important;
-  color: #1a1a1a !important;
+  background: #141414 !important;
+  border-color: #3a3a3a !important;
+  color: #ffffff !important;
 }
 
 .examples-container .ant-select-selection-item {
-  color: #1a1a1a !important;
-  background: #f0f2f5;
+  color: #ffffff !important;
+  background: #2a2a2a;
 }
 
 .examples-container .ant-select-selection-placeholder {
-  color: #8c8c8c !important;
+  color: #888 !important;
 }
 
 .site-layout-background.examples-header {
-  background: #fff; /* Match light theme */
-  color: #1a1a1a; /* Dark text */
+  background: #000; /* Pure black header */
+  color: #ffffff; /* White text */
   padding: 0 24px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-/* Fix Ant Design Select component styles for light background */
-.examples-container .ant-select {
-  color: #1a1a1a;
-}
-
-.examples-container .ant-select-selector {
-  background-color: #fff !important;
-  border-color: #d9d9d9 !important;
-  color: #1a1a1a !important;
-}
-
-.examples-container .ant-select-selection-placeholder {
-  color: #bfbfbf !important;
-}
-
-.examples-container .ant-select-arrow {
-  color: #1a1a1a !important;
-}
-
-.examples-container .ant-select-selection-item {
-  color: #1a1a1a !important;
-  background-color: #f5f5f5 !important;
-  border-color: #f0f0f0 !important;
-}
-
-.examples-container .ant-select-clear {
-  background-color: #fff !important;
-  color: #bfbfbf !important;
-}
-
-/* Tag styles for selected items */
-.examples-container .ant-select-selection-item-content {
-  color: #1a1a1a !important;
-}
-
-.examples-container .ant-select-selection-item-remove {
-  color: #8c8c8c !important;
-}
-
-.examples-container .ant-select-selection-item-remove:hover {
-  color: #1a1a1a !important;
+  border-bottom: 1px solid #2a2a2a;
 }
 
 @media (max-width: 768px) {
