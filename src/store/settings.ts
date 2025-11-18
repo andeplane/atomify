@@ -7,6 +7,7 @@ export interface RenderSettings {
 
 export interface SimulationSettings {
   speed: number;
+  uiUpdateFrequency: number;
 }
 
 export interface SettingsModel {
@@ -19,6 +20,7 @@ export interface SettingsModel {
 export const settingsModel: SettingsModel = {
   simulation: {
     speed: 1,
+    uiUpdateFrequency: 15,
   },
   render: {
     ssao: true,
@@ -28,8 +30,13 @@ export const settingsModel: SettingsModel = {
     state.render = render;
   }),
   setSimulation: action((state, simulation: SimulationSettings) => {
-    state.simulation = simulation;
+    // Merge with existing settings to preserve uiUpdateFrequency if not provided
+    state.simulation = {
+      ...state.simulation,
+      ...simulation,
+      uiUpdateFrequency: simulation.uiUpdateFrequency ?? state.simulation.uiUpdateFrequency ?? 15,
+    };
     // @ts-ignore
-    window.syncFrequency = simulation.speed;
+    window.syncFrequency = state.simulation.speed;
   }),
 };

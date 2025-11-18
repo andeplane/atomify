@@ -4,7 +4,7 @@ import { Table, Row, Col, Button, Slider } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TableRowSelection } from "antd/es/table/interface";
 import { Compute, Fix, Variable } from "../types";
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import Modifier from "../modifiers/modifier";
 import SyncBondsSettings from "../modifiers/SyncBondsSettings";
 import SyncParticlesSettings from "../modifiers/SyncParticlesSettings";
@@ -68,6 +68,13 @@ const SimulationSummary = () => {
     if (value && value > 0) {
       track("SimulationSpeed.Change", { speed: value });
       setSimulationSettings({ ...simulationSettings, speed: value });
+    }
+  };
+
+  const setUIUpdateFrequency = (value: number | null) => {
+    if (value && value > 0) {
+      track("UIUpdateFrequency.Change", { frequency: value });
+      setSimulationSettings({ ...simulationSettings, uiUpdateFrequency: value });
     }
   };
 
@@ -246,10 +253,21 @@ const SimulationSummary = () => {
           return (
             <Slider
               min={1}
-              step={2}
+              step={1}
               max={200}
-              defaultValue={simulationSettings.speed}
+              value={simulationSettings.speed}
               onChange={(value) => setSyncFrequency(value)}
+            />
+          );
+        }
+        if (record.key === "uiupdatefrequency") {
+          return (
+            <Slider
+              min={1}
+              step={1}
+              max={15}
+              value={simulationSettings.uiUpdateFrequency || 15}
+              onChange={(value) => setUIUpdateFrequency(value)}
             />
           );
         }
@@ -258,10 +276,11 @@ const SimulationSummary = () => {
     },
   ];
 
-  let simulationStatusData: SimulationSummaryType[] = [];
-
-  if (simulation) {
-    simulationStatusData = [
+  const simulationStatusData: SimulationSummaryType[] = useMemo(() => {
+    if (!simulation) {
+      return [];
+    }
+    return [
       {
         key: "type",
         name: "Run type",
@@ -302,8 +321,24 @@ const SimulationSummary = () => {
         name: "Simulation speed",
         value: simulationSettings.speed,
       },
+      {
+        key: "uiupdatefrequency",
+        name: "UI update frequency",
+        value: simulationSettings.uiUpdateFrequency || 15,
+      },
     ];
-  }
+  }, [
+    simulation,
+    runType,
+    timesteps,
+    numAtoms,
+    numBonds,
+    remainingTime,
+    timestepsPerSecond,
+    memoryUsage,
+    simulationSettings.speed,
+    simulationSettings.uiUpdateFrequency,
+  ]);
 
   return (
     <>
@@ -385,4 +420,5 @@ const SimulationSummary = () => {
     </>
   );
 };
-export default SimulationSummary;
+
+export default React.memo(SimulationSummary);

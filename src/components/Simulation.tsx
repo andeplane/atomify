@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
 import createModule from "../wasm/lammps.mjs";
 import { LammpsWeb } from "../types";
@@ -28,9 +28,13 @@ const SimulationComponent = () => {
   const runPostTimestep = useStoreActions(
     (actions) => actions.processing.runPostTimestep,
   );
+  const runPostTimestepRendering = useStoreActions(
+    (actions) => actions.processing.runPostTimestepRendering,
+  );
   const setHasSynchronized = useStoreActions(
     (actions) => actions.simulationStatus.setHasSynchronized,
   );
+  const renderCycleCounter = useRef(0);
 
   const onPrint = useCallback(
     (text: string) => {
@@ -108,7 +112,17 @@ const SimulationComponent = () => {
       }
       if (lammps && wasm && simulation) {
         setHasSynchronized(true);
-        runPostTimestep(false);
+        
+        // Always update 3D rendering (high frequency)
+        runPostTimestepRendering();
+        
+        // Update UI state only every Nth cycle (low frequency)
+        renderCycleCounter.current += 1;
+        const uiUpdateFrequency = simulationSettings.uiUpdateFrequency || 15;
+        if (renderCycleCounter.current >= uiUpdateFrequency) {
+          renderCycleCounter.current = 0;
+          runPostTimestep(false);
+        }
 
         // @ts-ignore
         lammps.setSyncFrequency(window.syncFrequency);
@@ -128,8 +142,10 @@ const SimulationComponent = () => {
     simulation,
     paused,
     runPostTimestep,
+    runPostTimestepRendering,
     setPaused,
     setHasSynchronized,
+    simulationSettings,
   ]);
 
   useEffect(() => {
