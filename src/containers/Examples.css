@@ -1,17 +1,25 @@
+
+.examples-container {
+  padding: 24px;
+  margin: 0;
+  min-height: 100%;
+  background: #f0f2f5; /* Lighter background */
+}
+
 /* Modern card styles with overlay design */
 .modern-card {
   border-radius: 16px;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: none;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   background: white;
   cursor: pointer;
 }
 
 .modern-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
 }
 
 .card-image-container {
@@ -130,10 +138,6 @@
   margin-top: 24px;
 }
 
-.examples-container {
-  padding: 16px;
-  margin: 10px;
-}
 
 @media (max-width: 768px) {
   .cards-grid {

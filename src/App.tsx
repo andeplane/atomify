@@ -257,7 +257,6 @@ const App: React.FC = () => {
             collapsed={collapsed}
             onCollapse={(value) => setCollapsed(value)}
           >
-            <div className="logo" />
             <Menu
               theme="dark"
               selectedKeys={[selectedMenu]}
