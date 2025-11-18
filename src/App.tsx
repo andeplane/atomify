@@ -29,6 +29,29 @@ const { Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
 
+const darkThemeConfig = {
+  algorithm: theme.darkAlgorithm,
+  token: {
+    colorPrimary: '#1890ff',
+    borderRadius: 8,
+    colorBgBase: '#0a0a0a',
+    colorBgContainer: '#141414',
+    fontSizeHeading1: 48,
+    fontSizeHeading2: 36,
+  },
+  components: {
+    Menu: {
+      colorBgContainer: 'transparent',
+      itemBorderRadius: 8,
+      itemMarginInline: 8,
+    },
+    Layout: {
+      siderBg: '#0a0a0a',
+      triggerBg: '#1f1f1f',
+    }
+  }
+};
+
 function getItem(
   label: React.ReactNode,
   key: React.Key,
@@ -226,28 +249,7 @@ const App: React.FC = () => {
   );
 
   return (
-    <ConfigProvider
-      theme={{
-        algorithm: theme.darkAlgorithm,
-        token: {
-          colorPrimary: '#1890ff',
-          borderRadius: 8,
-          colorBgBase: '#0a0a0a',
-          colorBgContainer: '#141414',
-        },
-        components: {
-          Menu: {
-            colorBgContainer: 'transparent',
-            itemBorderRadius: 8,
-            itemMarginInline: 8,
-          },
-          Layout: {
-            siderBg: '#0a0a0a',
-            triggerBg: '#1f1f1f',
-          }
-        }
-      }}
-    >
+    <ConfigProvider theme={darkThemeConfig}>
       <Layout style={{ minHeight: "100vh" }} ref={myRef}>
         {!isEmbeddedMode && (
           <Sider

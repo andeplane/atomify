@@ -81,34 +81,22 @@ body,
   transform: translateX(4px);
 }
 
-.logo {
-  height: 32px;
-  margin: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.logo:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
 .site-layout .site-layout-background {
   background: #000;
   color: #fff;
-  font-size: 48px !important;
+  font-size: 48px;
 }
 
 .site-layout .site-layout-background h1 {
   color: #fff;
   margin-left: 2vh;
-  font-size: 48px !important;
+  font-size: 48px;
 }
 
 .site-layout .site-layout-background h2 {
   color: #fff;
   margin-left: 2vh;
-  font-size: 36px !important;
+  font-size: 36px;
 }
 
 .console-modal .ant-modal-footer {
