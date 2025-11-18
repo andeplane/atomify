@@ -5,6 +5,9 @@ import { Simulation } from "../store/simulation";
 import { encodeSimulation } from "../utils/embed/codec";
 import { track } from "../utils/metrics";
 
+// GitHub Pages has a ~2KB URL length limit
+const GITHUB_PAGES_URL_LIMIT = 2000;
+
 interface ShareSimulationProps {
   visible: boolean;
   onClose: () => void;
@@ -49,13 +52,6 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
       const url = `${baseUrl}?data=${encodedData}${embedParam}${autoStartParam}`;
       
       setShareUrl(url);
-      
-      // Warn if URL is too long (Firefox has a ~65KB limit, so we warn at 50KB to be safe)
-      if (url.length > 50000) {
-        setError(
-          `Warning: The generated URL is ${Math.round(url.length / 1024)}KB. Firefox has a ~65KB URL limit, so this may not work in Firefox. Consider reducing simulation size or number of files.`
-        );
-      }
     } catch (err) {
       console.error("Error generating share URL:", err);
       setError(`Failed to generate share URL: ${err instanceof Error ? err.message : String(err)}`);
@@ -167,11 +163,11 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
           <Alert
             message={`URL size: ${urlSizeKB} KB`}
             description={
-              urlSizeKB < 50
-                ? "This URL should work in all browsers including Firefox."
-                : "This URL may not work in Firefox (has ~65KB limit). Chrome and Safari support larger URLs."
+              shareUrl.length < GITHUB_PAGES_URL_LIMIT
+                ? "This URL should work on GitHub Pages."
+                : "This URL may not work on GitHub Pages (has ~2KB limit). Consider reducing simulation size or number of files."
             }
-            type={urlSizeKB < 50 ? "success" : "warning"}
+            type={shareUrl.length < GITHUB_PAGES_URL_LIMIT ? "success" : "warning"}
             showIcon
           />
 
