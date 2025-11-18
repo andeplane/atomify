@@ -7,6 +7,7 @@ export interface RenderSettings {
 
 export interface SimulationSettings {
   speed: number;
+  uiUpdateFrequency: number;
 }
 
 export interface SettingsModel {
@@ -19,6 +20,7 @@ export interface SettingsModel {
 export const settingsModel: SettingsModel = {
   simulation: {
     speed: 1,
+    uiUpdateFrequency: 15,
   },
   render: {
     ssao: true,

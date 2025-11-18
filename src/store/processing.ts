@@ -47,10 +47,61 @@ const getSimulationOrigo = (lammps: LammpsWeb, wasm: any) => {
   return origo;
 };
 
+const getModifierContext = (getStoreState: any, getStoreActions: any) => {
+  // @ts-ignore
+  const wasm = window.wasm;
+  // @ts-ignore
+  const lammps = getStoreState().simulation.lammps;
+  // @ts-ignore
+  const renderState = getStoreState().render;
+  // @ts-ignore
+  const computes = getStoreState().simulationStatus.computes;
+  // @ts-ignore
+  const fixes = getStoreState().simulationStatus.fixes;
+  // @ts-ignore
+  const variables = getStoreState().simulationStatus.variables;
+  // @ts-ignore
+  const hasSynchronized = getStoreState().simulationStatus.hasSynchronized;
+  const particles = renderState.particles;
+  const bonds = renderState.bonds;
+  const allActions = getStoreActions() as any;
+
+  const modifierInput: ModifierInput = {
+    lammps,
+    wasm,
+    renderState,
+    variables,
+    computes,
+    fixes,
+    hasSynchronized,
+  };
+
+  const modifierOutput: ModifierOutput = {
+    particles,
+    bonds,
+    // @ts-ignore
+    colorsDirty: getStoreState().render.particleStylesUpdated,
+    computes: {},
+    fixes: {},
+    variables: {},
+  };
+
+  return {
+    modifierInput,
+    modifierOutput,
+    allActions,
+    particles,
+    bonds,
+    lammps,
+    wasm,
+  };
+};
+
 export interface ProcessingModel {
   postTimestepModifiers: Modifier[];
   setPostTimestepModifiers: Action<ProcessingModel, Modifier[]>;
   runPostTimestep: Thunk<ProcessingModel, boolean>;
+  runPostTimestepRendering: Thunk<ProcessingModel, void>;
 }
 
 export const processingModel: ProcessingModel = {
@@ -89,43 +140,16 @@ export const processingModel: ProcessingModel = {
       everything: boolean,
       { getStoreState, getStoreActions },
     ) => {
-      // @ts-ignore
-      const wasm = window.wasm;
-      // @ts-ignore
-      const lammps = getStoreState().simulation.lammps;
-      // @ts-ignore
-      const renderState = getStoreState().render;
-      // @ts-ignore
-      const computes = getStoreState().simulationStatus.computes;
-      // @ts-ignore
-      const fixes = getStoreState().simulationStatus.fixes;
-      // @ts-ignore
-      const variables = getStoreState().simulationStatus.variables;
-      // @ts-ignore
-      const hasSynchronized = getStoreState().simulationStatus.hasSynchronized;
-      const particles = renderState.particles;
-      const bonds = renderState.bonds;
-      const allActions = getStoreActions() as any;
-
-      const modifierInput: ModifierInput = {
-        lammps,
-        wasm,
-        renderState,
-        variables,
-        computes,
-        fixes,
-        hasSynchronized,
-      };
-
-      const modifierOutput: ModifierOutput = {
+      const {
+        modifierInput,
+        modifierOutput,
+        allActions,
         particles,
         bonds,
-        // @ts-ignore
-        colorsDirty: getStoreState().render.particleStylesUpdated,
-        computes: {},
-        fixes: {},
-        variables: {},
-      };
+        lammps,
+        wasm,
+      } = getModifierContext(getStoreState, getStoreActions);
+
       // @ts-ignore
       getStoreState().processing.postTimestepModifiers.forEach((modifier) =>
         modifier.run(modifierInput, modifierOutput, true),
@@ -173,6 +197,46 @@ export const processingModel: ProcessingModel = {
           lammps.getTimestepsPerSecond(),
         );
         allActions.simulationStatus.setRemainingTime(lammps.getCPURemain());
+      }
+    },
+  ),
+  runPostTimestepRendering: thunk(
+    async (
+      actions,
+      payload: void,
+      { getStoreState, getStoreActions },
+    ) => {
+      const {
+        modifierInput,
+        modifierOutput,
+        allActions,
+        particles,
+        bonds,
+      } = getModifierContext(getStoreState, getStoreActions);
+      
+      // Only run rendering-related modifiers (Particles, Bonds, Colors)
+      // @ts-ignore
+      const renderingModifiers = getStoreState().processing.postTimestepModifiers.filter(
+        (modifier: Modifier) => 
+          modifier.name === "Particles" || 
+          modifier.name === "Bonds" || 
+          modifier.name === "Colors"
+      ) as Modifier[];
+      
+      renderingModifiers.forEach((modifier: Modifier) =>
+        modifier.run(modifierInput, modifierOutput, true),
+      );
+      allActions.render.setParticleStylesUpdated(false);
+
+      // Only update rendering state, skip UI state updates
+      // @ts-ignore
+      if (getStoreState().app.selectedMenu === "view") {
+        if (modifierOutput.particles !== particles) {
+          allActions.render.setParticles(modifierOutput.particles);
+        }
+        if (modifierOutput.bonds !== bonds) {
+          allActions.render.setBonds(modifierOutput.bonds);
+        }
       }
     },
   ),
