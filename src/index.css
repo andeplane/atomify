@@ -96,16 +96,19 @@ body,
 .site-layout .site-layout-background {
   background: #000;
   color: #fff;
+  font-size: 48px !important;
 }
 
 .site-layout .site-layout-background h1 {
   color: #fff;
   margin-left: 2vh;
+  font-size: 48px !important;
 }
 
 .site-layout .site-layout-background h2 {
   color: #fff;
   margin-left: 2vh;
+  font-size: 36px !important;
 }
 
 .console-modal .ant-modal-footer {
