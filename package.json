@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@ant-design/icons": "^4.7.0",
+    "@ant-design/icons": "^5.5.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.6.1",
@@ -12,10 +12,10 @@
     "@types/dygraphs": "^2.1.4",
     "@types/jest": "^29.5.14",
     "@types/node": "^16.11.63",
-    "@types/react": "^18.0.21",
-    "@types/react-dom": "^18.0.6",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
     "@types/three": "^0.164.0",
-    "antd": "^4.23.4",
+    "antd": "^5.22.0",
     "colormap": "^2.3.2",
     "dygraphs": "^2.1.0",
     "easy-peasy": "^6.0.5",
@@ -48,12 +48,6 @@
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [

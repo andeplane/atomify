@@ -135,18 +135,27 @@ const Settings = ({ open, onClose }: SettingsProps) => {
       open={open}
       onCancel={() => onClose()}
     >
-      <Tabs defaultActiveKey="render">
-        <Tabs.TabPane tab="Rendering" key="render">
-          {renderRenderSettings()}
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Keybord shortcuts" key="keybordshortcuts">
-          <Table
-            pagination={{ pageSize: 50, hideOnSinglePage: true }}
-            columns={columns}
-            dataSource={data}
-          />
-        </Tabs.TabPane>
-      </Tabs>
+      <Tabs
+        defaultActiveKey="render"
+        items={[
+          {
+            key: "render",
+            label: "Rendering",
+            children: renderRenderSettings(),
+          },
+          {
+            key: "keybordshortcuts",
+            label: "Keybord shortcuts",
+            children: (
+              <Table
+                pagination={{ pageSize: 50, hideOnSinglePage: true }}
+                columns={columns}
+                dataSource={data}
+              />
+            ),
+          },
+        ]}
+      />
     </Modal>
   );
 };
