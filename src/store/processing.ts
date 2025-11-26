@@ -6,6 +6,7 @@ import ColorModifier from "../modifiers/colormodifier";
 import SyncComputesModifier from "../modifiers/synccomputesmodifier";
 import { ModifierInput, ModifierOutput } from "../modifiers/types";
 import { LammpsWeb } from "../types";
+import { AtomifyWasmModule } from "../wasm/types";
 import * as THREE from "three";
 import SyncFixesModifier from "../modifiers/syncfixesmodifier";
 import SyncVariablesModifier from "../modifiers/syncvariablesmodifier";
@@ -14,7 +15,7 @@ import { StoreModel } from "./model";
 const cellMatrix = new THREE.Matrix3();
 const origo = new THREE.Vector3();
 
-const getSimulationBox = (lammps: LammpsWeb, wasm: any) => {
+const getSimulationBox = (lammps: LammpsWeb, wasm: AtomifyWasmModule) => {
   const cellMatrixPointer = lammps.getCellMatrixPointer() / 8;
   const cellMatrixSubArray = wasm.HEAPF64.subarray(
     cellMatrixPointer,
@@ -34,7 +35,7 @@ const getSimulationBox = (lammps: LammpsWeb, wasm: any) => {
   return cellMatrix;
 };
 
-const getSimulationOrigo = (lammps: LammpsWeb, wasm: any) => {
+const getSimulationOrigo = (lammps: LammpsWeb, wasm: AtomifyWasmModule) => {
   const origoPointer = lammps.getOrigoPointer() / 8;
   const origoPointerSubArray = wasm.HEAPF64.subarray(
     origoPointer,
