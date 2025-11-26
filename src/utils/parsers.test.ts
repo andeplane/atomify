@@ -58,6 +58,31 @@ describe("parseCameraPosition", () => {
     // Assert
     expect(result).toBeUndefined();
   });
+
+  // Tests for whitespace handling bug (these should pass but currently fail)
+  it.each([
+    {
+      case: "double spaces",
+      input: "camera  position  1  2  3",
+      expected: new THREE.Vector3(1, 2, 3),
+    },
+    {
+      case: "triple spaces",
+      input: "camera   position   5   10   15",
+      expected: new THREE.Vector3(5, 10, 15),
+    },
+    {
+      case: "mixed spaces and tabs",
+      input: "camera\tposition\t1\t2\t3",
+      expected: new THREE.Vector3(1, 2, 3),
+    },
+  ])("should handle $case whitespace", ({ input, expected }) => {
+    // Act
+    const result = parseCameraPosition(input);
+
+    // Assert
+    expect(result).toEqual(expected);
+  });
 });
 
 describe("parseCameraTarget", () => {
@@ -109,6 +134,31 @@ describe("parseCameraTarget", () => {
 
     // Assert
     expect(result).toBeUndefined();
+  });
+
+  // Tests for whitespace handling bug (these should pass but currently fail)
+  it.each([
+    {
+      case: "double spaces",
+      input: "camera  target  1  2  3",
+      expected: new THREE.Vector3(1, 2, 3),
+    },
+    {
+      case: "triple spaces",
+      input: "camera   target   5   10   15",
+      expected: new THREE.Vector3(5, 10, 15),
+    },
+    {
+      case: "mixed spaces and tabs",
+      input: "camera\ttarget\t-1\t-2\t-3",
+      expected: new THREE.Vector3(-1, -2, -3),
+    },
+  ])("should handle $case whitespace", ({ input, expected }) => {
+    // Act
+    const result = parseCameraTarget(input);
+
+    // Assert
+    expect(result).toEqual(expected);
   });
 });
 
@@ -165,20 +215,21 @@ describe("parseAtomType", () => {
     expect(result).toBeUndefined();
   });
 
-  // Edge cases that match the regex but may have NaN/empty values
+  // Edge cases that the regex still matches (empty name is allowed by \w*)
   it("should parse 'atom 1' with empty name", () => {
     const result = parseAtomType("atom 1");
     expect(result).toEqual({ atomType: 1, atomName: "" });
   });
 
-  it("should parse 'atom Carbon' with NaN type", () => {
+  // With stricter regex (\d+ instead of \d*), these now properly return undefined
+  it("should return undefined for 'atom Carbon' (missing type number)", () => {
     const result = parseAtomType("atom Carbon");
-    expect(result).toEqual({ atomType: NaN, atomName: "Carbon" });
+    expect(result).toBeUndefined();
   });
 
-  it("should parse 'atom' with NaN type and empty name", () => {
+  it("should return undefined for 'atom' (missing both)", () => {
     const result = parseAtomType("atom");
-    expect(result).toEqual({ atomType: NaN, atomName: "" });
+    expect(result).toBeUndefined();
   });
 });
 
@@ -236,22 +287,21 @@ describe("parseBond", () => {
     expect(result).toBeUndefined();
   });
 
-  // Edge cases that match but may have NaN values
+  // Integer distance is valid
   it("should parse integer distance", () => {
     const result = parseBond("bond 1 2 5");
     expect(result).toEqual({ atomType1: 1, atomType2: 2, distance: 5 });
   });
 
-  it("should parse with missing parts resulting in NaN", () => {
+  // With stricter regex (\d+ instead of \d*), these now properly return undefined
+  it("should return undefined for 'bond 1 2' (missing distance)", () => {
     const result = parseBond("bond 1 2");
-    expect(result?.atomType1).toBe(1);
-    expect(result?.atomType2).toBeNaN();
+    expect(result).toBeUndefined();
   });
 
-  it("should parse 'bond 1.5' with partial match", () => {
+  it("should return undefined for 'bond 1.5' (missing second type)", () => {
     const result = parseBond("bond 1.5");
-    expect(result?.atomType1).toBe(1);
-    expect(result?.atomType2).toBeNaN();
+    expect(result).toBeUndefined();
   });
 });
 
@@ -329,16 +379,16 @@ describe("parseAtomSizeAndColor", () => {
   });
 
   // Edge cases that the regex actually matches
+  // Integer radius is valid
   it("should parse integer radius", () => {
     const result = parseAtomSizeAndColor("atom 1 5 #FF0000");
     expect(result).toEqual({ atomTypeIndex: 1, radius: 5, color: "#FF0000" });
   });
 
-  it("should parse 'atom 1 #FF0000' with missing radius as NaN", () => {
+  // With stricter regex (\d+ instead of \d*), this now properly returns undefined
+  it("should return undefined for 'atom 1 #FF0000' (missing radius)", () => {
     const result = parseAtomSizeAndColor("atom 1 #FF0000");
-    expect(result?.atomTypeIndex).toBe(1);
-    expect(result?.radius).toBeNaN();
-    expect(result?.color).toBe("#FF0000");
+    expect(result).toBeUndefined();
   });
 });
 

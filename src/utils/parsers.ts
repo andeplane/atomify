@@ -6,7 +6,7 @@ import * as THREE from "three";
  * @returns THREE.Vector3 with the position, or undefined if parsing fails
  */
 export const parseCameraPosition = (line: string) => {
-  const splitted = line.split(" ");
+  const splitted = line.split(/\s+/);
   if (
     splitted[0] === "camera" &&
     splitted[1] === "position" &&
@@ -25,7 +25,7 @@ export const parseCameraPosition = (line: string) => {
  * @returns THREE.Vector3 with the target, or undefined if parsing fails
  */
 export const parseCameraTarget = (line: string) => {
-  const splitted = line.split(" ");
+  const splitted = line.split(/\s+/);
   if (
     splitted[0] === "camera" &&
     splitted[1] === "target" &&
@@ -44,7 +44,7 @@ export const parseCameraTarget = (line: string) => {
  * @returns Object with atomType and atomName, or undefined if parsing fails
  */
 export const parseAtomType = (line: string) => {
-  const regex = /^(?:atom)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\w*)$/;
+  const regex = /^(?:atom)(?:\s*|\t*)(\d+)(?:\s*|\t*)(\w*)$/;
   const matches = line.match(regex);
   if (matches) {
     return {
@@ -61,7 +61,7 @@ export const parseAtomType = (line: string) => {
  */
 export const parseBond = (line: string) => {
   const regex =
-    /^(?:bond)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*.\d*)$/;
+    /^(?:bond)(?:\s*|\t*)(\d+)(?:\s*|\t*)(\d+)(?:\s*|\t*)(\d+\.?\d*)$/;
   const matches = line.match(regex);
   if (matches) {
     return {
@@ -79,7 +79,7 @@ export const parseBond = (line: string) => {
  */
 export const parseAtomSizeAndColor = (line: string) => {
   const regex =
-    /^(?:atom)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*.\d*)(?:\s*|\t*)(#[0-9a-fA-F]{6,6})$/;
+    /^(?:atom)(?:\s*|\t*)(\d+)(?:\s*|\t*)(\d+\.?\d*)(?:\s*|\t*)(#[0-9a-fA-F]{6,6})$/;
   const matches = line.match(regex);
   if (matches) {
     return {
