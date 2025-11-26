@@ -373,9 +373,9 @@ function createMockWindow(overrides: Partial<Window> = {}): Window {
 }
 // Good: Partial interface implementation
 const mockWindow: Partial<Window> = {
-  location: 'https://cognite.test/',
+  location: 'https://example.test/',
 };
-const window = mockWindow as IAgentStorage;
+const window = mockWindow as Window;
 ```
 
 Avoid the following:
