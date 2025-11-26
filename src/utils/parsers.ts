@@ -44,7 +44,7 @@ export const parseCameraTarget = (line: string) => {
  * @returns Object with atomType and atomName, or undefined if parsing fails
  */
 export const parseAtomType = (line: string) => {
-  const regex = /^(?:atom)(?:\s*|\t*)(\d+)(?:\s*|\t*)(\w*)$/;
+  const regex = /^atom\s+(\d+)\s*(\w*)$/;
   const matches = line.match(regex);
   if (matches) {
     return {
@@ -60,8 +60,7 @@ export const parseAtomType = (line: string) => {
  * @returns Object with atomType1, atomType2, and distance, or undefined if parsing fails
  */
 export const parseBond = (line: string) => {
-  const regex =
-    /^(?:bond)(?:\s*|\t*)(\d+)(?:\s*|\t*)(\d+)(?:\s*|\t*)(\d+\.?\d*)$/;
+  const regex = /^bond\s+(\d+)\s+(\d+)\s+(\d+\.?\d*)$/;
   const matches = line.match(regex);
   if (matches) {
     return {
@@ -78,8 +77,7 @@ export const parseBond = (line: string) => {
  * @returns Object with atomTypeIndex, radius, and color, or undefined if parsing fails
  */
 export const parseAtomSizeAndColor = (line: string) => {
-  const regex =
-    /^(?:atom)(?:\s*|\t*)(\d+)(?:\s*|\t*)(\d+\.?\d*)(?:\s*|\t*)(#[0-9a-fA-F]{6,6})$/;
+  const regex = /^atom\s+(\d+)\s+(\d+\.?\d*)\s+(#[0-9a-fA-F]{6})$/;
   const matches = line.match(regex);
   if (matches) {
     return {

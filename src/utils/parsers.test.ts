@@ -59,7 +59,7 @@ describe("parseCameraPosition", () => {
     expect(result).toBeUndefined();
   });
 
-  // Tests for whitespace handling bug (these should pass but currently fail)
+  // Tests for whitespace handling
   it.each([
     {
       case: "double spaces",
@@ -136,7 +136,7 @@ describe("parseCameraTarget", () => {
     expect(result).toBeUndefined();
   });
 
-  // Tests for whitespace handling bug (these should pass but currently fail)
+  // Tests for whitespace handling
   it.each([
     {
       case: "double spaces",
