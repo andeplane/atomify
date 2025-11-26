@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
 import createModule from "../wasm/lammps.mjs";
 import { LammpsWeb } from "../types";
+import { AtomifyWasmModule } from "../wasm/types";
 import { notification } from "antd";
 import { time_event, track } from "../utils/metrics";
 
@@ -161,7 +162,7 @@ const SimulationComponent = () => {
         createModule({
           print: onPrint,
           printErr: onPrint,
-        }).then((Module) => {
+        }).then((Module: AtomifyWasmModule) => {
           track("WASM.Load");
           setStatus({
             title: "Downloading LAMMPS ...",
