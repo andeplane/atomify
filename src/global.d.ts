@@ -1,6 +1,8 @@
+import { AtomifyWasmModule } from "./wasm/types";
+
 declare global {
   interface Window {
-    wasm: any; // WebAssembly module object
+    wasm: AtomifyWasmModule;
   }
 }
 
