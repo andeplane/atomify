@@ -8,6 +8,13 @@ import * as THREE from "three";
 import localforage from "localforage";
 import ColorModifier from "../modifiers/colormodifier";
 import { SimulationFile } from "./app";
+import {
+  parseCameraPosition,
+  parseCameraTarget,
+  parseAtomType,
+  parseBond,
+  parseAtomSizeAndColor,
+} from "../utils/parsers";
 
 localforage.config({
   driver: localforage.INDEXEDDB,
@@ -17,70 +24,6 @@ localforage.config({
 });
 //@ts-ignore
 window.localforage = localforage;
-const parseCameraPosition = (line: string) => {
-  const splitted = line.split(" ");
-  if (
-    splitted[0] === "camera" &&
-    splitted[1] === "position" &&
-    splitted.length === 5
-  ) {
-    const x = parseFloat(splitted[2]);
-    const y = parseFloat(splitted[3]);
-    const z = parseFloat(splitted[4]);
-    return new THREE.Vector3(x, y, z);
-  }
-};
-
-const parseCameraTarget = (line: string) => {
-  const splitted = line.split(" ");
-  if (
-    splitted[0] === "camera" &&
-    splitted[1] === "target" &&
-    splitted.length === 5
-  ) {
-    const x = parseFloat(splitted[2]);
-    const y = parseFloat(splitted[3]);
-    const z = parseFloat(splitted[4]);
-    return new THREE.Vector3(x, y, z);
-  }
-};
-
-const parseAtomType = (line: string) => {
-  const regex = /^(?:atom)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\w*)$/;
-  const matches = line.match(regex);
-  if (matches) {
-    return {
-      atomType: parseInt(matches[1]),
-      atomName: matches[2],
-    };
-  }
-};
-
-const parseBond = (line: string) => {
-  const regex =
-    /^(?:bond)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*.\d*)$/;
-  const matches = line.match(regex);
-  if (matches) {
-    return {
-      atomType1: parseInt(matches[1]),
-      atomType2: parseInt(matches[2]),
-      distance: parseFloat(matches[3]),
-    };
-  }
-};
-
-const parseAtomSizeAndColor = (line: string) => {
-  const regex =
-    /^(?:atom)(?:\s*|\t*)(\d*)(?:\s*|\t*)(\d*.\d*)(?:\s*|\t*)(#[0-9a-fA-F]{6,6})$/;
-  const matches = line.match(regex);
-  if (matches) {
-    return {
-      atomTypeIndex: parseInt(matches[1]),
-      radius: parseFloat(matches[2]),
-      color: matches[3],
-    };
-  }
-};
 
 export interface Simulation {
   id: string;
