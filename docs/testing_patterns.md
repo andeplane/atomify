@@ -684,5 +684,4 @@ This approach:
 - Reduces bundle size by only importing what you need
 - Improves tree-shaking
 
-**Note**: In React 17+, JSX transform doesn't require the React namespace, so you can omit `import React` entirely unless you need specific React APIs.
 **Note**: In React 17+, JSX transform doesn't require the React namespace, so you only need to import React types, not the runtime.
