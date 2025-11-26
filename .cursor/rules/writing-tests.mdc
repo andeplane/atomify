@@ -1,0 +1,66 @@
+---
+alwaysApply: true
+---
+# Atomify Testing Standards
+
+## Test File Naming
+- Unit tests must be named `<something>.test.ts(x)` or `<something>.spec.ts(x)`
+- Use Vitest for all unit tests
+
+## Test Structure
+- Use Arrange/Act/Assert pattern for all unit tests
+- Keep tests short and focused
+- Use `describe` blocks to group related tests
+- Use descriptive test names that explain what is being tested
+
+## Testing React Components and Hooks
+- Use `render` from `@testing-library/react` to test React components
+- Use `renderHook` from `@testing-library/react` to test custom hooks
+- Use `act()` when performing state updates in tests
+- Use `waitFor()` for async assertions
+- To inject context dependencies, create a `wrapper` in `beforeEach` which is passed to `renderHook` or `render`
+
+## Mocking Guidelines
+- Prefer dependency injection over `vi.mock` when possible
+- Use `vi.fn()` for creating mock functions
+- Use `vi.mocked()` for type-safe access to mock functions
+- Mock `window.matchMedia`, `localStorage`, and other browser APIs as needed in `setupTests.ts`
+
+## Type Safety in Tests
+- Never use type `any` - prefer `unknown` or strong types
+- Use `Partial<T>` and `as T` to mock only needed fields
+- Avoid `as unknown as T` - it's worse than `any`
+
+## Common Patterns
+
+See [testing_patterns.md](mdc:docs/testing_patterns.md) for detailed patterns and examples.
+
+## Example Test Structure
+```typescript
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react';
+
+describe('ComponentName', () => {
+  beforeEach(() => {
+    // Setup common test data
+  });
+
+  it('should render without crashing', () => {
+    // Arrange
+    const props = { /* test props */ };
+    
+    // Act
+    render(<ComponentName {...props} />);
+    
+    // Assert
+    expect(screen.getByText('Expected Text')).toBeInTheDocument();
+  });
+});
+```
+
+## Running Tests
+- `npm test` - Run tests in watch mode
+- `npm run test:run` - Run all tests once (for CI)
+- `npm run test:ui` - Open the Vitest UI
+- `npm test -- --testNamePattern="pattern"` - Run specific tests by name pattern
+- `npm test -- src/path/to/file.test.tsx` - Run specific test file
