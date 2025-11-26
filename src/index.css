@@ -84,19 +84,18 @@ body,
 .site-layout .site-layout-background {
   background: #000;
   color: #fff;
-  font-size: 48px;
 }
 
 .site-layout .site-layout-background h1 {
   color: #fff;
   margin-left: 2vh;
-  font-size: 48px;
+  font-size: var(--ant-font-size-heading-1);
 }
 
 .site-layout .site-layout-background h2 {
   color: #fff;
   margin-left: 2vh;
-  font-size: 36px;
+  font-size: var(--ant-font-size-heading-2);
 }
 
 .console-modal .ant-modal-footer {
@@ -141,6 +140,23 @@ body,
 .ant-layout-sider-children {
   height: 100%;
   overflow: auto;
+}
+
+.sider-collapse-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.65);
+  background: rgba(31, 31, 31, 0.5);
+  transition: all 0.2s;
+  font-size: 16px;
+}
+
+.sider-collapse-trigger:hover {
+  color: #fff;
+  background: rgba(31, 31, 31, 0.8);
 }
 
 /* Dygraph dark theme styling */

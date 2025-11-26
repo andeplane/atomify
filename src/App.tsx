@@ -12,6 +12,8 @@ import {
   CloudOutlined,
   PauseOutlined,
   ShareAltOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from "@ant-design/icons";
 import { useMeasure } from "react-use";
 import React, { useState, useEffect, useCallback } from "react";
@@ -258,7 +260,14 @@ const App: React.FC = () => {
             collapsedWidth={50}
             collapsed={collapsed}
             onCollapse={(value) => setCollapsed(value)}
+            trigger={null}
           >
+            <div
+              className="sider-collapse-trigger"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            </div>
             <Menu
               theme="dark"
               selectedKeys={[selectedMenu]}
