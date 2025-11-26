@@ -9,6 +9,7 @@ import { LammpsWeb } from "../types";
 import * as THREE from "three";
 import SyncFixesModifier from "../modifiers/syncfixesmodifier";
 import SyncVariablesModifier from "../modifiers/syncvariablesmodifier";
+import { StoreModel } from "./model";
 
 const cellMatrix = new THREE.Matrix3();
 const origo = new THREE.Vector3();
@@ -50,21 +51,15 @@ const getSimulationOrigo = (lammps: LammpsWeb, wasm: any) => {
 const getModifierContext = (getStoreState: any, getStoreActions: any) => {
   // @ts-ignore
   const wasm = window.wasm;
-  // @ts-ignore
   const lammps = getStoreState().simulation.lammps;
-  // @ts-ignore
   const renderState = getStoreState().render;
-  // @ts-ignore
   const computes = getStoreState().simulationStatus.computes;
-  // @ts-ignore
   const fixes = getStoreState().simulationStatus.fixes;
-  // @ts-ignore
   const variables = getStoreState().simulationStatus.variables;
-  // @ts-ignore
   const hasSynchronized = getStoreState().simulationStatus.hasSynchronized;
   const particles = renderState.particles;
   const bonds = renderState.bonds;
-  const allActions = getStoreActions() as any;
+  const allActions = getStoreActions();
 
   const modifierInput: ModifierInput = {
     lammps,
@@ -79,7 +74,6 @@ const getModifierContext = (getStoreState: any, getStoreActions: any) => {
   const modifierOutput: ModifierOutput = {
     particles,
     bonds,
-    // @ts-ignore
     colorsDirty: getStoreState().render.particleStylesUpdated,
     computes: {},
     fixes: {},
@@ -100,8 +94,8 @@ const getModifierContext = (getStoreState: any, getStoreActions: any) => {
 export interface ProcessingModel {
   postTimestepModifiers: Modifier[];
   setPostTimestepModifiers: Action<ProcessingModel, Modifier[]>;
-  runPostTimestep: Thunk<ProcessingModel, boolean>;
-  runPostTimestepRendering: Thunk<ProcessingModel, void>;
+  runPostTimestep: Thunk<ProcessingModel, boolean, any, StoreModel>;
+  runPostTimestepRendering: Thunk<ProcessingModel, void, any, StoreModel>;
 }
 
 export const processingModel: ProcessingModel = {
@@ -150,7 +144,6 @@ export const processingModel: ProcessingModel = {
         wasm,
       } = getModifierContext(getStoreState, getStoreActions);
 
-      // @ts-ignore
       getStoreState().processing.postTimestepModifiers.forEach((modifier) =>
         modifier.run(modifierInput, modifierOutput, true),
       );
@@ -165,7 +158,6 @@ export const processingModel: ProcessingModel = {
         allActions.simulationStatus.setNumBonds(0);
       }
 
-      // @ts-ignore
       if (everything || getStoreState().app.selectedMenu === "view") {
         if (modifierOutput.particles !== particles) {
           allActions.render.setParticles(modifierOutput.particles);
@@ -215,7 +207,6 @@ export const processingModel: ProcessingModel = {
       } = getModifierContext(getStoreState, getStoreActions);
       
       // Only run rendering-related modifiers (Particles, Bonds, Colors)
-      // @ts-ignore
       const renderingModifiers = getStoreState().processing.postTimestepModifiers.filter(
         (modifier: Modifier) => 
           modifier.name === "Particles" || 
@@ -229,7 +220,6 @@ export const processingModel: ProcessingModel = {
       allActions.render.setParticleStylesUpdated(false);
 
       // Only update rendering state, skip UI state updates
-      // @ts-ignore
       if (getStoreState().app.selectedMenu === "view") {
         if (modifierOutput.particles !== particles) {
           allActions.render.setParticles(modifierOutput.particles);
