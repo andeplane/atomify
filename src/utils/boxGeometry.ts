@@ -1,0 +1,144 @@
+import * as THREE from "three";
+
+/**
+ * Creates a Group of cylinders for a parallelepiped wireframe from a cell matrix and origin.
+ * Handles both orthogonal and triclinic (non-orthogonal) simulation boxes.
+ * Uses cylinders instead of lines to ensure proper thickness across all systems.
+ * 
+ * @param cellMatrix - THREE.Matrix3 where columns represent the a, b, c vectors
+ * @param origin - THREE.Vector3 representing the origin point
+ * @param radius - Radius of the cylinder edges (default: 0.1)
+ * @returns THREE.Group containing cylinder meshes for each edge
+ */
+export function createBoxGeometry(
+  cellMatrix: THREE.Matrix3,
+  origin: THREE.Vector3,
+  radius: number = 0.1,
+): THREE.Group {
+  // The cell matrix from LAMMPS stores vectors as ROWS, but extractBasis gets COLUMNS
+  // So we need to transpose the matrix first
+  const transposed = cellMatrix.clone().transpose();
+  
+  // Extract column vectors from the transposed matrix (which are the original rows)
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const c = new THREE.Vector3();
+  transposed.extractBasis(a, b, c);
+
+  // Compute the 8 vertices of the parallelepiped
+  const vertices: THREE.Vector3[] = [
+    origin.clone(), // v0
+    origin.clone().add(a), // v1
+    origin.clone().add(b), // v2
+    origin.clone().add(c), // v3
+    origin.clone().add(a).add(b), // v4
+    origin.clone().add(a).add(c), // v5
+    origin.clone().add(b).add(c), // v6
+    origin.clone().add(a).add(b).add(c), // v7
+  ];
+
+  // Define the 12 edges of the parallelepiped
+  // Each edge is represented by two vertex indices
+  const edges = [
+    // Bottom face (z = 0 plane)
+    [0, 1], // v0 -> v1
+    [1, 4], // v1 -> v4
+    [4, 2], // v4 -> v2
+    [2, 0], // v2 -> v0
+    // Top face (z = c plane)
+    [3, 5], // v3 -> v5
+    [5, 7], // v5 -> v7
+    [7, 6], // v7 -> v6
+    [6, 3], // v6 -> v3
+    // Vertical edges connecting bottom to top
+    [0, 3], // v0 -> v3
+    [1, 5], // v1 -> v5
+    [4, 7], // v4 -> v7
+    [2, 6], // v2 -> v6
+  ];
+
+  const group = new THREE.Group();
+
+  // Create a cylinder for each edge
+  edges.forEach(([i, j]) => {
+    const start = vertices[i];
+    const end = vertices[j];
+    const direction = new THREE.Vector3().subVectors(end, start);
+    const length = direction.length();
+
+    if (length < 0.0001) {
+      // Skip zero-length edges
+      return;
+    }
+
+    // Create cylinder geometry (default orientation is along Y-axis)
+    const geometry = new THREE.CylinderGeometry(radius, radius, length, 8);
+    
+    // Create material
+    const material = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+    });
+
+    // Create mesh
+    const cylinder = new THREE.Mesh(geometry, material);
+
+    // Position at midpoint
+    const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
+    cylinder.position.copy(midpoint);
+    
+    // Orient cylinder along the edge direction
+    // Default cylinder axis is (0, 1, 0), we want it along direction
+    const defaultAxis = new THREE.Vector3(0, 1, 0);
+    const targetAxis = direction.clone().normalize();
+    
+    // Validate targetAxis is valid
+    if (
+      !isFinite(targetAxis.x) ||
+      !isFinite(targetAxis.y) ||
+      !isFinite(targetAxis.z) ||
+      targetAxis.length() < 0.001
+    ) {
+      // Invalid direction, skip this edge
+      geometry.dispose();
+      material.dispose();
+      return;
+    }
+    
+    // Calculate rotation quaternion to align defaultAxis (0,1,0) with targetAxis
+    // Use setFromUnitVectors which handles all cases correctly
+    const dot = defaultAxis.dot(targetAxis);
+    
+    if (Math.abs(dot - 1.0) < 1e-6) {
+      // Already aligned - no rotation needed
+      cylinder.quaternion.set(0, 0, 0, 1);
+    } else if (Math.abs(dot + 1.0) < 1e-6) {
+      // Opposite direction - rotate 180 degrees around perpendicular axis
+      // Find a perpendicular vector for the rotation axis
+      let perp = new THREE.Vector3(1, 0, 0);
+      if (Math.abs(defaultAxis.dot(perp)) > 0.9) {
+        perp = new THREE.Vector3(0, 0, 1);
+      }
+      cylinder.quaternion.setFromAxisAngle(perp, Math.PI);
+    } else {
+      // General case: use setFromUnitVectors (most reliable)
+      cylinder.quaternion.setFromUnitVectors(defaultAxis, targetAxis);
+    }
+    
+    // Validate final quaternion
+    if (
+      !isFinite(cylinder.quaternion.x) ||
+      !isFinite(cylinder.quaternion.y) ||
+      !isFinite(cylinder.quaternion.z) ||
+      !isFinite(cylinder.quaternion.w)
+    ) {
+      // Last resort: identity quaternion
+      cylinder.quaternion.set(0, 0, 0, 1);
+    }
+
+    group.add(cylinder);
+  });
+
+  return group;
+}
+
+
