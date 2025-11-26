@@ -2,15 +2,22 @@ import { describe, it, expect } from "vitest";
 import AnalyzeNotebook from "./AnalyzeNotebook";
 import { Simulation } from "../store/simulation";
 
+// Helper function to create mock simulation with defaults
+const createMockSimulation = (overrides: Partial<Simulation> = {}): Simulation => ({
+  id: "test-sim",
+  inputScript: "",
+  files: [],
+  start: false,
+  ...overrides,
+});
+
 describe("AnalyzeNotebook", () => {
   it("should generate notebook with simulation ID replaced", () => {
     // Arrange
-    const simulation: Simulation = {
+    const simulation = createMockSimulation({
       id: "test-simulation-123",
       inputScript: "run 1000",
-      files: [],
-      start: false,
-    };
+    });
 
     // Act
     const notebook = AnalyzeNotebook(simulation);
@@ -22,12 +29,7 @@ describe("AnalyzeNotebook", () => {
 
   it("should have correct notebook structure", () => {
     // Arrange
-    const simulation: Simulation = {
-      id: "sim-001",
-      inputScript: "",
-      files: [],
-      start: false,
-    };
+    const simulation = createMockSimulation({ id: "sim-001" });
 
     // Act
     const notebook = AnalyzeNotebook(simulation);
@@ -41,12 +43,7 @@ describe("AnalyzeNotebook", () => {
 
   it("should have three cells by default (pip install, plot code, empty)", () => {
     // Arrange
-    const simulation: Simulation = {
-      id: "sim-002",
-      inputScript: "",
-      files: [],
-      start: false,
-    };
+    const simulation = createMockSimulation({ id: "sim-002" });
 
     // Act
     const notebook = AnalyzeNotebook(simulation);
@@ -63,13 +60,10 @@ describe("AnalyzeNotebook", () => {
 
   it("should add markdown cell when analysisDescription is provided", () => {
     // Arrange
-    const simulation: Simulation = {
+    const simulation = createMockSimulation({
       id: "sim-003",
-      inputScript: "",
       analysisDescription: "# Analysis\nThis is a test analysis description",
-      files: [],
-      start: false,
-    };
+    });
 
     // Act
     const notebook = AnalyzeNotebook(simulation);
@@ -84,13 +78,10 @@ describe("AnalyzeNotebook", () => {
 
   it("should place markdown cell before pip install cell", () => {
     // Arrange
-    const simulation: Simulation = {
+    const simulation = createMockSimulation({
       id: "sim-004",
-      inputScript: "",
       analysisDescription: "Test description",
-      files: [],
-      start: false,
-    };
+    });
 
     // Act
     const notebook = AnalyzeNotebook(simulation);
@@ -102,12 +93,7 @@ describe("AnalyzeNotebook", () => {
 
   it("should contain lammps_logfile import and plotting code", () => {
     // Arrange
-    const simulation: Simulation = {
-      id: "sim-005",
-      inputScript: "",
-      files: [],
-      start: false,
-    };
+    const simulation = createMockSimulation({ id: "sim-005" });
 
     // Act
     const notebook = AnalyzeNotebook(simulation);
@@ -122,12 +108,7 @@ describe("AnalyzeNotebook", () => {
 
   it("should have correct metadata for Python kernel", () => {
     // Arrange
-    const simulation: Simulation = {
-      id: "sim-006",
-      inputScript: "",
-      files: [],
-      start: false,
-    };
+    const simulation = createMockSimulation({ id: "sim-006" });
 
     // Act
     const notebook = AnalyzeNotebook(simulation);
@@ -142,12 +123,9 @@ describe("AnalyzeNotebook", () => {
 
   it("should handle special characters in simulation ID", () => {
     // Arrange
-    const simulation: Simulation = {
+    const simulation = createMockSimulation({
       id: "sim-with-special-chars_123",
-      inputScript: "",
-      files: [],
-      start: false,
-    };
+    });
 
     // Act
     const notebook = AnalyzeNotebook(simulation);
@@ -158,13 +136,10 @@ describe("AnalyzeNotebook", () => {
 
   it("should not modify other cells when adding markdown", () => {
     // Arrange
-    const simulation: Simulation = {
+    const simulation = createMockSimulation({
       id: "sim-007",
-      inputScript: "",
       analysisDescription: "Description",
-      files: [],
-      start: false,
-    };
+    });
 
     // Act
     const notebook = AnalyzeNotebook(simulation);

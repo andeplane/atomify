@@ -68,10 +68,11 @@ describe("hexToRgb", () => {
     expect(result).toEqual([0, 0, 255]);
   });
 
-  it("should handle lowercase hex values", () => {
-    // Arrange
-    const hex = "#abcdef";
-
+  it.each([
+    { case: "lowercase", hex: "#abcdef" },
+    { case: "uppercase", hex: "#ABCDEF" },
+    { case: "mixed case", hex: "#AbCdEf" },
+  ])("should handle $case hex values", ({ hex }) => {
     // Act
     const result = hexToRgb(hex);
 
@@ -79,26 +80,36 @@ describe("hexToRgb", () => {
     expect(result).toEqual([171, 205, 239]);
   });
 
-  it("should handle uppercase hex values", () => {
+  it("should throw error for invalid hex string", () => {
     // Arrange
-    const hex = "#ABCDEF";
+    const invalidHex = "invalid-hex";
 
-    // Act
-    const result = hexToRgb(hex);
-
-    // Assert
-    expect(result).toEqual([171, 205, 239]);
+    // Act & Assert
+    expect(() => hexToRgb(invalidHex)).toThrow("Invalid hex color string");
   });
 
-  it("should handle mixed case hex values", () => {
+  it("should throw error for short hex format", () => {
     // Arrange
-    const hex = "#AbCdEf";
+    const shortHex = "#123";
 
-    // Act
-    const result = hexToRgb(hex);
+    // Act & Assert
+    expect(() => hexToRgb(shortHex)).toThrow("Invalid hex color string");
+  });
 
-    // Assert
-    expect(result).toEqual([171, 205, 239]);
+  it("should throw error for hex with invalid characters", () => {
+    // Arrange
+    const invalidChars = "#GGGGGG";
+
+    // Act & Assert
+    expect(() => hexToRgb(invalidChars)).toThrow("Invalid hex color string");
+  });
+
+  it("should throw error for empty string", () => {
+    // Arrange
+    const empty = "";
+
+    // Act & Assert
+    expect(() => hexToRgb(empty)).toThrow("Invalid hex color string");
   });
 });
 

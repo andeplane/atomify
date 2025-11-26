@@ -1,11 +1,15 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { u8aToBase64, base64ToU8A } from "./codec";
+
+// Store original implementations for restoration
+let originalBtoa: typeof global.btoa;
+let originalAtob: typeof global.atob;
 
 // Mock window.btoa and window.atob for testing
 beforeEach(() => {
-  // Store original implementations
-  const originalBtoa = global.btoa;
-  const originalAtob = global.atob;
+  // Save original implementations
+  originalBtoa = global.btoa;
+  originalAtob = global.atob;
 
   // Ensure they're available (they should be in jsdom, but just in case)
   if (!global.btoa) {
@@ -14,6 +18,12 @@ beforeEach(() => {
   if (!global.atob) {
     global.atob = (str: string) => Buffer.from(str, "base64").toString("binary");
   }
+});
+
+afterEach(() => {
+  // Restore original implementations to prevent test pollution
+  global.btoa = originalBtoa;
+  global.atob = originalAtob;
 });
 
 describe("u8aToBase64", () => {

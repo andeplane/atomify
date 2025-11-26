@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { getEmbeddingParams } from "./metrics";
 
 describe("getEmbeddingParams", () => {
@@ -17,16 +17,20 @@ describe("getEmbeddingParams", () => {
     });
   });
 
-  it("should return embedMode false when no embed params are present", () => {
-    // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search: "",
-    };
+  // Helper function to mock window.location with specific search params
+  const mockWindowLocation = (search: string) => {
     Object.defineProperty(window, "location", {
-      value: mockLocation,
+      value: {
+        ...originalLocation,
+        search,
+      },
       writable: true,
     });
+  };
+
+  it("should return embedMode false when no embed params are present", () => {
+    // Arrange
+    mockWindowLocation("");
 
     // Act
     const result = getEmbeddingParams();
@@ -39,14 +43,7 @@ describe("getEmbeddingParams", () => {
 
   it("should detect embedMode 'url' when embeddedSimulationUrl is present", () => {
     // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search: "?embeddedSimulationUrl=https://example.com/sim.in",
-    };
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-    });
+    mockWindowLocation("?embeddedSimulationUrl=https://example.com/sim.in");
 
     // Act
     const result = getEmbeddingParams();
@@ -59,14 +56,7 @@ describe("getEmbeddingParams", () => {
 
   it("should detect embedMode 'data' when data param is present", () => {
     // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search: "?data=encodedSimulationData",
-    };
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-    });
+    mockWindowLocation("?data=encodedSimulationData");
 
     // Act
     const result = getEmbeddingParams();
@@ -79,14 +69,7 @@ describe("getEmbeddingParams", () => {
 
   it("should detect embedFullscreen when embed=true", () => {
     // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search: "?embed=true",
-    };
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-    });
+    mockWindowLocation("?embed=true");
 
     // Act
     const result = getEmbeddingParams();
@@ -99,14 +82,7 @@ describe("getEmbeddingParams", () => {
 
   it("should detect embedAutoStart when autostart=true", () => {
     // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search: "?autostart=true",
-    };
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-    });
+    mockWindowLocation("?autostart=true");
 
     // Act
     const result = getEmbeddingParams();
@@ -119,15 +95,7 @@ describe("getEmbeddingParams", () => {
 
   it("should handle multiple params together", () => {
     // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search:
-        "?data=encodedData&embed=true&autostart=true",
-    };
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-    });
+    mockWindowLocation("?data=encodedData&embed=true&autostart=true");
 
     // Act
     const result = getEmbeddingParams();
@@ -140,14 +108,7 @@ describe("getEmbeddingParams", () => {
 
   it("should prioritize embeddedSimulationUrl over data param", () => {
     // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search: "?embeddedSimulationUrl=https://example.com&data=someData",
-    };
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-    });
+    mockWindowLocation("?embeddedSimulationUrl=https://example.com&data=someData");
 
     // Act
     const result = getEmbeddingParams();
@@ -158,14 +119,7 @@ describe("getEmbeddingParams", () => {
 
   it("should return false for embedFullscreen when embed param is not 'true'", () => {
     // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search: "?embed=false",
-    };
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-    });
+    mockWindowLocation("?embed=false");
 
     // Act
     const result = getEmbeddingParams();
@@ -176,14 +130,7 @@ describe("getEmbeddingParams", () => {
 
   it("should return false for embedAutoStart when autostart param is not 'true'", () => {
     // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search: "?autostart=false",
-    };
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-    });
+    mockWindowLocation("?autostart=false");
 
     // Act
     const result = getEmbeddingParams();
@@ -194,14 +141,7 @@ describe("getEmbeddingParams", () => {
 
   it("should handle URL with other unrelated params", () => {
     // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search: "?someOtherParam=value&anotherParam=test",
-    };
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-    });
+    mockWindowLocation("?someOtherParam=value&anotherParam=test");
 
     // Act
     const result = getEmbeddingParams();
@@ -214,15 +154,9 @@ describe("getEmbeddingParams", () => {
 
   it("should handle complex URL with mixed params", () => {
     // Arrange
-    const mockLocation = {
-      ...originalLocation,
-      search:
-        "?foo=bar&embeddedSimulationUrl=https://example.com/file.in&baz=qux&embed=true",
-    };
-    Object.defineProperty(window, "location", {
-      value: mockLocation,
-      writable: true,
-    });
+    mockWindowLocation(
+      "?foo=bar&embeddedSimulationUrl=https://example.com/file.in&baz=qux&embed=true"
+    );
 
     // Act
     const result = getEmbeddingParams();
