@@ -120,7 +120,8 @@ body,
 
 .simulationsummary {
   position: fixed !important;
-  background-color: #fff;
+  background-color: rgba(10, 10, 10, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   width: 300px;
   padding: 10px;
@@ -128,13 +129,14 @@ body,
   right: 0;
   margin-right: 10px;
   margin-top: 10px;
-  opacity: 0.1;
+  color: #fff;
+  opacity: 0.3;
   transition-property: opacity;
   transition-duration: 0.3s;
 }
 
 .simulationsummary.hover {
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .ant-layout-sider-children {
