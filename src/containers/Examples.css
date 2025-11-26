@@ -3,7 +3,7 @@
   border-radius: 16px;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  border: 1px solid #3a3a3a;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   background: white;
   cursor: pointer;
