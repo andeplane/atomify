@@ -52,10 +52,33 @@ body,
   border: 11px dashed #60a7dc;
 }
 
-#components-layout-demo-side .logo {
-  height: 32px;
-  margin: 16px;
-  background: rgba(255, 255, 255, 0.3);
+/* Modern Sidebar Styling */
+.ant-layout-sider {
+  background: rgba(10, 10, 10, 0.85) !important;
+  backdrop-filter: blur(10px);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ant-menu-dark {
+  background: transparent !important;
+}
+
+.ant-menu-item {
+  margin: 4px 8px !important;
+  width: calc(100% - 16px) !important;
+  border-radius: 8px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: rgba(24, 144, 255, 0.2) !important;
+  color: #40a9ff !important;
+  font-weight: 600;
+}
+
+.ant-menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  transform: translateX(4px);
 }
 
 .site-layout .site-layout-background {
@@ -66,11 +89,13 @@ body,
 .site-layout .site-layout-background h1 {
   color: #fff;
   margin-left: 2vh;
+  font-size: var(--ant-font-size-heading-1);
 }
 
 .site-layout .site-layout-background h2 {
   color: #fff;
   margin-left: 2vh;
+  font-size: var(--ant-font-size-heading-2);
 }
 
 .console-modal .ant-modal-footer {
@@ -95,7 +120,8 @@ body,
 
 .simulationsummary {
   position: fixed !important;
-  background-color: #fff;
+  background-color: rgba(10, 10, 10, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   width: 300px;
   padding: 10px;
@@ -103,16 +129,71 @@ body,
   right: 0;
   margin-right: 10px;
   margin-top: 10px;
-  opacity: 0.1;
+  color: #fff;
+  opacity: 0.3;
   transition-property: opacity;
   transition-duration: 0.3s;
 }
 
 .simulationsummary.hover {
-  opacity: 0.8;
+  opacity: 1;
 }
 
 .ant-layout-sider-children {
   height: 100%;
   overflow: auto;
+}
+
+.sider-collapse-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 48px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.65);
+  background: rgba(31, 31, 31, 0.5);
+  transition: all 0.2s;
+  font-size: 16px;
+}
+
+.sider-collapse-trigger:hover {
+  color: #fff;
+  background: rgba(31, 31, 31, 0.8);
+}
+
+/* Dygraph dark theme styling */
+.dygraph-legend {
+  background: rgba(0, 0, 0, 0.8) !important;
+  color: #fff !important;
+  border: 1px solid #333 !important;
+  border-radius: 4px !important;
+  padding: 8px !important;
+}
+
+.dygraph-custom-legend {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.dygraph-legend-dot {
+  font-weight: bold;
+}
+
+.dygraph-axis-label {
+  color: #ffffff !important;
+}
+
+.dygraph-title {
+  color: #ffffff !important;
+}
+
+.dygraph-xlabel,
+.dygraph-ylabel {
+  color: #ffffff !important;
+}
+
+.dygraph-label {
+  color: #ffffff !important;
 }

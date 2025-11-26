@@ -39,26 +39,39 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
       <Tabs
         activeKey={selectedMenu.startsWith("file") ? "editfile" : selectedMenu}
         renderTabBar={() => <></>}
-      >
-        <Tabs.TabPane tab="View" key="view">
-          <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbeddedMode} />
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Console" key="console">
-          <Console />
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Notebook" key="notebook">
-          <Notebook />
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Edit" key="editfile">
-          <Edit />
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Examples" key="examples">
-          <Examples />
-        </Tabs.TabPane>
-        <Tabs.TabPane tab="Run in cloud" key="runincloud">
-          <RunInCloud />
-        </Tabs.TabPane>
-      </Tabs>
+        items={[
+          {
+            key: "view",
+            label: "View",
+            children: <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbeddedMode} />,
+          },
+          {
+            key: "console",
+            label: "Console",
+            children: <Console />,
+          },
+          {
+            key: "notebook",
+            label: "Notebook",
+            children: <Notebook />,
+          },
+          {
+            key: "editfile",
+            label: "Edit",
+            children: <Edit />,
+          },
+          {
+            key: "examples",
+            label: "Examples",
+            children: <Examples />,
+          },
+          {
+            key: "runincloud",
+            label: "Run in cloud",
+            children: <RunInCloud />,
+          },
+        ]}
+      />
       {showConsole && (
         <Modal
           className="console-modal"

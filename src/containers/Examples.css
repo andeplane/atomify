@@ -3,15 +3,15 @@
   border-radius: 16px;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: none;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #3a3a3a;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
   background: white;
   cursor: pointer;
 }
 
 .modern-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
 }
 
 .card-image-container {
@@ -131,8 +131,56 @@
 }
 
 .examples-container {
-  padding: 16px;
-  margin: 10px;
+  padding: 24px;
+  margin: 0;
+  min-height: 100%;
+  background: #000; /* Pure black background */
+  color: #ffffff; /* White text */
+}
+
+/* Light text colors for dark theme */
+.examples-container h1,
+.examples-container h2,
+.examples-container h3,
+.examples-container h4,
+.examples-container h5,
+.examples-container h6 {
+  color: #ffffff;
+}
+
+.examples-container p,
+.examples-container li,
+.examples-container span {
+  color: #d9d9d9;
+}
+
+.examples-container a {
+  color: #40a9ff;
+}
+
+/* Style the Select/Filter to match dark theme */
+/* Note: Most styling is now handled via ConfigProvider Select theme in App.tsx */
+/* These styles remain as fallback for any edge cases */
+.examples-container .ant-select-selector {
+  background: #141414;
+  border-color: #3a3a3a;
+  color: #ffffff;
+}
+
+.examples-container .ant-select-selection-item {
+  color: #ffffff;
+  background: #2a2a2a;
+}
+
+.examples-container .ant-select-selection-placeholder {
+  color: #888;
+}
+
+.site-layout-background.examples-header {
+  background: #000; /* Pure black header */
+  color: #ffffff; /* White text */
+  padding: 0 24px;
+  border-bottom: 1px solid #2a2a2a;
 }
 
 @media (max-width: 768px) {
