@@ -34,6 +34,22 @@ const Figure = ({ modifier, onClose }: FigureProps) => {
         width: width - 50, // Extra 50 is padding for the figure
         height,
         legend: "always",
+        // Dark theme styling
+        colors: ['#40a9ff', '#52c41a', '#f5222d', '#fa8c16', '#13c2c2', '#eb2f96', '#722ed1'],
+        legendFormatter: function(data) {
+          if (data.x == null) {
+            return '';
+          }
+          let html = '<div class="dygraph-custom-legend">';
+          data.series.forEach(function(series) {
+            if (!series.isVisible) return;
+            const color = series.color;
+            html += '<span class="dygraph-legend-dot" style="color: ' + color + ';">● </span>';
+            html += series.labelHTML + ': ' + series.yHTML + '<br/>';
+          });
+          html += '</div>';
+          return html;
+        },
       });
       setGraph(g);
     }

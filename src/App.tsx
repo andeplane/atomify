@@ -12,11 +12,13 @@ import {
   CloudOutlined,
   PauseOutlined,
   ShareAltOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from "@ant-design/icons";
 import { useMeasure } from "react-use";
 import React, { useState, useEffect, useCallback } from "react";
 import type { MenuProps } from "antd";
-import { Layout, Menu, Badge } from "antd";
+import { Layout, Menu, Badge, ConfigProvider, theme } from "antd";
 import Simulation from "./components/Simulation";
 import Main from "./containers/Main";
 import { useStoreActions, useStoreState } from "./hooks";
@@ -28,6 +30,36 @@ import { useEmbeddedMode } from "./hooks/useEmbeddedMode";
 const { Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
+
+const darkThemeConfig = {
+  algorithm: theme.darkAlgorithm,
+  token: {
+    colorPrimary: '#1890ff',
+    borderRadius: 8,
+    colorBgBase: '#0a0a0a',
+    colorBgContainer: '#141414',
+    fontSizeHeading1: 48,
+    fontSizeHeading2: 36,
+  },
+  components: {
+    Menu: {
+      colorBgContainer: 'transparent',
+      itemBorderRadius: 8,
+      itemMarginInline: 8,
+    },
+    Layout: {
+      siderBg: '#0a0a0a',
+      triggerBg: '#1f1f1f',
+    },
+    Select: {
+      selectorBg: '#141414',
+      optionSelectedBg: '#2a2a2a',
+      colorText: '#ffffff',
+      colorTextPlaceholder: '#888',
+      colorBorder: '#3a3a3a',
+    }
+  }
+};
 
 function getItem(
   label: React.ReactNode,
@@ -226,7 +258,7 @@ const App: React.FC = () => {
   );
 
   return (
-    <>
+    <ConfigProvider theme={darkThemeConfig}>
       <Layout style={{ minHeight: "100vh" }} ref={myRef}>
         {!isEmbeddedMode && (
           <Sider
@@ -235,8 +267,14 @@ const App: React.FC = () => {
             collapsedWidth={50}
             collapsed={collapsed}
             onCollapse={(value) => setCollapsed(value)}
+            trigger={null}
           >
-            <div className="logo" />
+            <div
+              className="sider-collapse-trigger"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+            </div>
             <Menu
               theme="dark"
               selectedKeys={[selectedMenu]}
@@ -245,6 +283,7 @@ const App: React.FC = () => {
               mode="inline"
               items={items}
               onSelect={(info) => onMenuSelect(info.key)}
+              style={{ background: 'transparent' }}
             />
           </Sider>
         )}
@@ -264,7 +303,7 @@ const App: React.FC = () => {
           simulation={simulation}
         />
       )}
-    </>
+    </ConfigProvider>
   );
 };
 

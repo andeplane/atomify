@@ -164,19 +164,18 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         className="site-layout-background"
         style={{
           backgroundColor: "rgba(0,0,0,0)",
-          fontSize: "1.5vw",
           position: "fixed",
         }}
       >
         <Col>
-          <Row>{title}</Row>
+          <Row style={{ fontSize: '32px', fontWeight: 600 }}>{title}</Row>
           <Row>
             {running && (
               <Progress
                 showInfo={false}
-                style={{ marginTop: "-25px" }}
+                style={{ marginTop: "-15px" }}
                 strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
-                width={30}
+                strokeWidth={8}
                 percent={Math.round(
                   100 * (runTimesteps / (runTotalTimesteps + 1)),
                 )}

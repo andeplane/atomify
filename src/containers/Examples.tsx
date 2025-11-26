@@ -218,7 +218,7 @@ const Examples = () => {
 
   return (
     <>
-      <Header className="site-layout-background" style={{ fontSize: 25 }}>
+      <Header className="site-layout-background examples-header" style={{ fontSize: 25 }}>
         {title}
       </Header>
       <div className="examples-container">
