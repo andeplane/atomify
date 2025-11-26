@@ -1,6 +1,14 @@
 import useFetch from "react-fetch-hook";
 import { GithubFile } from "../types";
 
+interface GithubContentItem {
+  name: string;
+  path: string;
+  download_url: string | null;
+  size: number;
+  type: "file" | "dir";
+}
+
 export const useListDirectory = (
   user: string,
   repository: string,
@@ -12,7 +20,7 @@ export const useListDirectory = (
   });
   let files_metadata: GithubFile[] = [];
   if (data) {
-    files_metadata = data.map((file: any) => ({
+    files_metadata = (data as GithubContentItem[]).map((file) => ({
       title: file.name,
       path: file.path,
       download_url: file.download_url,
@@ -34,8 +42,8 @@ export const retrievePath = async (
       Authorization: "Bearer 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",
     },
   });
-  const data = await response.json();
-  let files: GithubFile[] = data.map((file: any) => ({
+  const data = (await response.json()) as GithubContentItem[];
+  let files: GithubFile[] = data.map((file) => ({
     title: file.name,
     path: file.path,
     download_url: file.download_url,

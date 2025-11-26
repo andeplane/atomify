@@ -2,11 +2,12 @@ import { LammpsWeb } from "../types";
 import { Particles, Bonds } from "omovi";
 import { Compute, Fix, Variable } from "../types";
 import { AtomifyWasmModule } from "../wasm/types";
+import { RenderModel } from "../store/render";
 
 export type ModifierInput = {
   wasm: AtomifyWasmModule;
   lammps: LammpsWeb;
-  renderState: any;
+  renderState: RenderModel;
   hasSynchronized: boolean;
   computes: { [key: string]: Compute };
   fixes: { [key: string]: Fix };

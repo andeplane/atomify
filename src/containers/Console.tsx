@@ -1,4 +1,4 @@
-import MonacoEditor from "react-monaco-editor";
+import MonacoEditor, { MonacoEditorProps } from "react-monaco-editor";
 import { useEffect, useRef } from "react";
 import { useStoreState } from "../hooks";
 
@@ -12,7 +12,7 @@ const Console = ({ width, height }: ConsoleProps) => {
   }
 
   const lammpsOutput = useStoreState((state) => state.simulation.lammpsOutput);
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<MonacoEditor | null>(null);
   const options = {
     selectOnLineNumbers: true,
     readOnly: true,
