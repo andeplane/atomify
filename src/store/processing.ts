@@ -49,7 +49,6 @@ const getSimulationOrigo = (lammps: LammpsWeb, wasm: any) => {
 };
 
 const getModifierContext = (getStoreState: any, getStoreActions: any) => {
-  // @ts-ignore
   const wasm = window.wasm;
   const lammps = getStoreState().simulation.lammps;
   const renderState = getStoreState().render;

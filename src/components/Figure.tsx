@@ -40,11 +40,11 @@ const Figure = ({ modifier, onClose }: FigureProps) => {
           if (data.x == null) {
             return '';
           }
-          let html = '<div style="background: rgba(0,0,0,0.8); padding: 8px; border-radius: 4px; color: #fff;">';
+          let html = '<div class="dygraph-custom-legend">';
           data.series.forEach(function(series) {
             if (!series.isVisible) return;
             const color = series.color;
-            html += '<span style="color: ' + color + '; font-weight: bold;">● </span>';
+            html += '<span class="dygraph-legend-dot" style="color: ' + color + ';">● </span>';
             html += series.labelHTML + ': ' + series.yHTML + '<br/>';
           });
           html += '</div>';

@@ -170,6 +170,17 @@ body,
   padding: 8px !important;
 }
 
+.dygraph-custom-legend {
+  background: rgba(0, 0, 0, 0.8);
+  padding: 8px;
+  border-radius: 4px;
+  color: #fff;
+}
+
+.dygraph-legend-dot {
+  font-weight: bold;
+}
+
 .dygraph-axis-label {
   color: #ffffff !important;
 }

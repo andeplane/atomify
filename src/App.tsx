@@ -50,6 +50,13 @@ const darkThemeConfig = {
     Layout: {
       siderBg: '#0a0a0a',
       triggerBg: '#1f1f1f',
+    },
+    Select: {
+      selectorBg: '#141414',
+      optionSelectedBg: '#2a2a2a',
+      colorText: '#ffffff',
+      colorTextPlaceholder: '#888',
+      colorBorder: '#3a3a3a',
     }
   }
 };
