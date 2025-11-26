@@ -28,6 +28,8 @@ jobs:
           node-version: "18.x"
       - name: Install Packages
         run: npm install
+      - name: Run Tests
+        run: npm run test:run
       - name: Run Prettier
         run: npx prettier .
       - name: Build app

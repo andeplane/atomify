@@ -5,13 +5,11 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^5.5.0",
-    "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/colormap": "^2.3.1",
     "@types/dygraphs": "^2.1.4",
     "@types/jest": "^29.5.14",
-    "@types/node": "^16.11.63",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "@types/three": "^0.164.0",
@@ -44,7 +42,9 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build && mv build dist",
-    "test": "react-scripts test",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
@@ -62,10 +62,15 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
     "@types/mixpanel-browser": "^2.38.0",
+    "@types/node": "^20.19.25",
     "@types/styled-components": "^5.1.26",
     "@types/uuid": "^8.3.4",
+    "@vitest/ui": "^4.0.14",
     "gh-pages": "^6.1.1",
-    "prettier": "3.6.2"
+    "jsdom": "^27.2.0",
+    "prettier": "3.6.2",
+    "vitest": "^4.0.14"
   }
 }
