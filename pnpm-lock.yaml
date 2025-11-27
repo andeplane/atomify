@@ -102,7 +102,7 @@ importers:
         specifier: ^0.164.1
         version: 0.164.1
       typescript:
-        specifier: ^4.8.4
+        specifier: ^4.9.5
         version: 4.9.5
       uuid:
         specifier: ^13.0.0
