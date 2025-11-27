@@ -1,5 +1,5 @@
 import { Modal, Tabs, Progress, Button, Layout } from "antd";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import View from "./View";
 import Notebook from "./Notebook";
 import Edit from "./Edit";
@@ -7,7 +7,6 @@ import Console from "./Console";
 import Examples from "./Examples";
 import RunInCloud from "./RunInCloud";
 import { useStoreActions, useStoreState } from "../hooks";
-import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 const { Content } = Layout;
 
 const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
@@ -24,8 +23,6 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
     (actions) => actions.app.setPreferredView,
   );
   const status = useStoreState((state) => state.app.status);
-
-  const { isEmbeddedMode } = useEmbeddedMode();
   
   // Update console key when modal opens
   useEffect(() => {
@@ -34,43 +31,46 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
     }
   }, [showConsole]);
 
-  const allTabs = [
-    {
-      key: "view",
-      label: "View",
-      children: <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbeddedMode} />,
-    },
-    {
-      key: "console",
-      label: "Console",
-      children: <Console />,
-    },
-    {
-      key: "notebook",
-      label: "Notebook",
-      children: <Notebook />,
-    },
-    {
-      key: "editfile",
-      label: "Edit",
-      children: <Edit />,
-    },
-    {
-      key: "examples",
-      label: "Examples",
-      children: <Examples />,
-    },
-    {
-      key: "runincloud",
-      label: "Run in cloud",
-      children: <RunInCloud />,
-    },
-  ];
+  // Memoize tabs array to prevent unnecessary re-renders
+  const tabs = useMemo(() => {
+    const allTabs = [
+      {
+        key: "view",
+        label: "View",
+        children: <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbedded} />,
+      },
+      {
+        key: "console",
+        label: "Console",
+        children: <Console />,
+      },
+      {
+        key: "notebook",
+        label: "Notebook",
+        children: <Notebook />,
+      },
+      {
+        key: "editfile",
+        label: "Edit",
+        children: <Edit />,
+      },
+      {
+        key: "examples",
+        label: "Examples",
+        children: <Examples />,
+      },
+      {
+        key: "runincloud",
+        label: "Run in cloud",
+        children: <RunInCloud />,
+      },
+    ];
 
-  // Filter out Examples tab in embedded mode
-  const tabs = isEmbeddedMode 
-    ? allTabs.filter(tab => tab.key !== "examples")
-    : allTabs;
+    // Filter out Examples tab in embedded mode
+    return isEmbedded
+      ? allTabs.filter(tab => tab.key !== "examples")
+      : allTabs;
+  }, [isEmbedded, selectedMenu]);
 
   return (
     <Content>

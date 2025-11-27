@@ -1,4 +1,5 @@
 import { action, Action } from "easy-peasy";
+import { isEmbeddedMode } from "../utils/embeddedMode";
 
 interface Status {
   title: String;
@@ -27,19 +28,8 @@ export interface AppModel {
 function getInitialSelectedMenu(): string {
   if (typeof window === 'undefined') return "examples";
   
-  const urlSearchParams = new URLSearchParams(window.location.search);
-  const embeddedSimulationUrl = urlSearchParams.get('embeddedSimulationUrl');
-  const simulationIndex = parseInt(urlSearchParams.get('simulationIndex') || '0', 10);
-  const embeddedData = urlSearchParams.get('data');
-  const embedParam = urlSearchParams.get('embed');
-  
-  // Same logic as useEmbeddedMode hook
-  const isEmbeddedMode = Boolean(
-    (embeddedSimulationUrl && simulationIndex >= 0) || 
-    (embeddedData && embedParam === 'true')
-  );
-  
-  return isEmbeddedMode ? "view" : "examples";
+  // Use shared utility function to determine embedded mode
+  return isEmbeddedMode() ? "view" : "examples";
 }
 
 export const appModel: AppModel = {
