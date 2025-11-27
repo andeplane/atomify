@@ -159,10 +159,10 @@ const SimulationComponent = () => {
       });
       setTimeout(() => {
         time_event("WASM.Load");
-        (createModule({
+        createModule({
           print: onPrint,
           printErr: onPrint,
-        }) as Promise<AtomifyWasmModule>).then((Module) => {
+        }).then((Module) => {
           track("WASM.Load");
           setStatus({
             title: "Downloading LAMMPS ...",
