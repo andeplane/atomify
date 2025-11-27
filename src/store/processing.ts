@@ -29,17 +29,14 @@ const getSimulationBox = (
   // Check if values changed
   if (currentBox) {
     const elements = currentBox.elements;
-    if (
-      elements[0] === cellMatrixSubArray[0] &&
-      elements[1] === cellMatrixSubArray[1] &&
-      elements[2] === cellMatrixSubArray[2] &&
-      elements[3] === cellMatrixSubArray[3] &&
-      elements[4] === cellMatrixSubArray[4] &&
-      elements[5] === cellMatrixSubArray[5] &&
-      elements[6] === cellMatrixSubArray[6] &&
-      elements[7] === cellMatrixSubArray[7] &&
-      elements[8] === cellMatrixSubArray[8]
-    ) {
+    let areEqual = true;
+    for (let i = 0; i < 9; i++) {
+      if (elements[i] !== cellMatrixSubArray[i]) {
+        areEqual = false;
+        break;
+      }
+    }
+    if (areEqual) {
       // No change, return existing reference
       return currentBox;
     }
