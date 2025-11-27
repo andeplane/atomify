@@ -1,11 +1,12 @@
 import { Modal, Tabs, Progress, Button, Layout } from "antd";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import View from "./View";
 import Notebook from "./Notebook";
 import Edit from "./Edit";
 import Console from "./Console";
 import Examples from "./Examples";
 import RunInCloud from "./RunInCloud";
+import LoadingSimulationScreen from "../components/LoadingSimulationScreen";
 import { useStoreActions, useStoreState } from "../hooks";
 import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 const { Content } = Layout;
@@ -15,10 +16,12 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
   const wasm = window.wasm; // TODO: This is an ugly hack because wasm object is so big that Redux debugger hangs.
   const showConsole = useStoreState((state) => state.simulation.showConsole);
   const [consoleKey, setConsoleKey] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
   const setShowConsole = useStoreActions(
     (actions) => actions.simulation.setShowConsole,
   );
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
+  const running = useStoreState((state) => state.simulation.running);
 
   const setPreferredView = useStoreActions(
     (actions) => actions.app.setPreferredView,
@@ -34,43 +37,64 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
     }
   }, [showConsole]);
 
+  // Track when simulation has started
+  useEffect(() => {
+    if (running) {
+      setHasStarted(true);
+    }
+  }, [running]);
+
+  // Memoize tabs array to prevent unnecessary re-renders
+  const tabs = useMemo(() => {
+    const allTabs = [
+      {
+        key: "view",
+        label: "View",
+        children: isEmbeddedMode && !hasStarted ? (
+          <LoadingSimulationScreen status={status} wasmReady={wasm != null} />
+        ) : (
+          <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbeddedMode} />,
+        ),
+      },
+      {
+        key: "console",
+        label: "Console",
+        children: <Console />,
+      },
+      {
+        key: "notebook",
+        label: "Notebook",
+        children: <Notebook />,
+      },
+      {
+        key: "editfile",
+        label: "Edit",
+        children: <Edit />,
+      },
+      {
+        key: "examples",
+        label: "Examples",
+        children: <Examples />,
+      },
+      {
+        key: "runincloud",
+        label: "Run in cloud",
+        children: <RunInCloud />,
+      },
+    ];
+
+    // Filter out Examples tab in embedded mode
+    return isEmbeddedMode
+      ? allTabs.filter(tab => tab.key !== "examples")
+      : allTabs;
+  }, [isEmbeddedMode, selectedMenu, hasStarted, status, wasm]);
+
   return (
     <Content>
       <Tabs
         activeKey={selectedMenu.startsWith("file") ? "editfile" : selectedMenu}
         renderTabBar={() => <></>}
-        items={[
-          {
-            key: "view",
-            label: "View",
-            children: <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbeddedMode} />,
-          },
-          {
-            key: "console",
-            label: "Console",
-            children: <Console />,
-          },
-          {
-            key: "notebook",
-            label: "Notebook",
-            children: <Notebook />,
-          },
-          {
-            key: "editfile",
-            label: "Edit",
-            children: <Edit />,
-          },
-          {
-            key: "examples",
-            label: "Examples",
-            children: <Examples />,
-          },
-          {
-            key: "runincloud",
-            label: "Run in cloud",
-            children: <RunInCloud />,
-          },
-        ]}
+        items={tabs}
       />
       {showConsole && (
         <Modal
@@ -101,7 +125,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
           <Console key={consoleKey} width={"100%"} height={"70vh"} />
         </Modal>
       )}
-      {
+      {!isEmbeddedMode && (
         <Modal
           closable={false}
           title={status?.title}
@@ -118,7 +142,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
             status="active"
           />
         </Modal>
-      }
+      )}
     </Content>
   );
 };

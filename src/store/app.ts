@@ -1,8 +1,8 @@
 import { action, Action } from "easy-peasy";
 
 interface Status {
-  title: String;
-  text: String;
+  title: string;
+  text: string;
   progress: number;
 }
 
