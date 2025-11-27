@@ -26,9 +26,7 @@ export interface AppModel {
 
 // Check if we're in embedded mode at initialization
 function getInitialSelectedMenu(): string {
-  if (typeof window === 'undefined') return "examples";
-  
-  // Use shared utility function to determine embedded mode
+  // Use shared utility function to determine embedded mode. isEmbeddedMode() is safe to call on the server.
   return isEmbeddedMode() ? "view" : "examples";
 }
 
