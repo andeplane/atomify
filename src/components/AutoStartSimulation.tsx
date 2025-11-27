@@ -6,12 +6,6 @@ import { notification } from "antd";
 import React from "react";
 import { decodeSimulation } from "../utils/embed/codec";
 
-declare global {
-  interface Window {
-    wasm: any;
-  }
-}
-
 interface Example {
   id: string;
   title: string;

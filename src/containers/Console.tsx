@@ -12,7 +12,7 @@ const Console = ({ width, height }: ConsoleProps) => {
   }
 
   const lammpsOutput = useStoreState((state) => state.simulation.lammpsOutput);
-  const editorRef = useRef<any>(null);
+  const editorRef = useRef<MonacoEditor | null>(null);
   const options = {
     selectOnLineNumbers: true,
     readOnly: true,
@@ -20,7 +20,10 @@ const Console = ({ width, height }: ConsoleProps) => {
   useEffect(() => {
     const editor = editorRef.current?.editor;
     if (editor) {
-      editor.revealLine(editor.getModel().getLineCount());
+      const model = editor.getModel();
+      if (model) {
+        editor.revealLine(model.getLineCount());
+      }
     }
   }, [lammpsOutput]);
 

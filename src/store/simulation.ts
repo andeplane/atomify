@@ -1,4 +1,5 @@
-import { action, Action, thunk, Thunk } from "easy-peasy";
+import { action, Action, thunk, Thunk, Actions } from "easy-peasy";
+import { StoreModel } from "./model";
 import { LammpsWeb } from "../types";
 import { notification } from "antd";
 import { AtomTypes, AtomType, hexToRgb } from "../utils/atomtypes";
@@ -7,6 +8,7 @@ import { track, time_event, getEmbeddingParams } from "../utils/metrics";
 import * as THREE from "three";
 import localforage from "localforage";
 import ColorModifier from "../modifiers/colormodifier";
+import Modifier from "../modifiers/modifier";
 import { SimulationFile } from "./app";
 import {
   parseCameraPosition,
@@ -186,7 +188,7 @@ export const simulationModel: SimulationModel = {
       const wasm = window.wasm;
       for (const file of simulation.files) {
         // Update all files if no fileName is specified
-        if (file.fileName === fileName || !fileName) {
+        if ((file.fileName === fileName || !fileName) && file.content) {
           wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content);
         }
       }
@@ -310,8 +312,7 @@ export const simulationModel: SimulationModel = {
       return;
     }
 
-    // @ts-ignore
-    const allActions = getStoreActions() as any;
+    const allActions = getStoreActions() as Actions<StoreModel>;
 
     allActions.render.resetParticleStyles();
     allActions.simulationStatus.reset();
@@ -426,8 +427,7 @@ export const simulationModel: SimulationModel = {
       simulation: Simulation,
       { getStoreState, getStoreActions },
     ) => {
-      // @ts-ignore
-      const allActions = getStoreActions() as any;
+      const allActions = getStoreActions() as Actions<StoreModel>;
 
       // @ts-ignore
       window.simulation = simulation;
@@ -441,7 +441,7 @@ export const simulationModel: SimulationModel = {
         // @ts-ignore
         getStoreState().processing.postTimestepModifiers;
       const colorModifier = postTimestepModifiers.filter(
-        (modifier: any) => modifier.name === "Colors",
+        (modifier: Modifier) => modifier.name === "Colors",
       )[0] as ColorModifier;
       if (colorModifier) {
         colorModifier.computeName = undefined;
