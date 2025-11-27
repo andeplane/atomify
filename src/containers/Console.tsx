@@ -1,4 +1,4 @@
-import MonacoEditor, { MonacoEditorProps } from "react-monaco-editor";
+import MonacoEditor from "react-monaco-editor";
 import { useEffect, useRef } from "react";
 import { useStoreState } from "../hooks";
 
