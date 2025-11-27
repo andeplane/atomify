@@ -3,6 +3,7 @@ import { action, Action } from "easy-peasy";
 export interface RenderSettings {
   ssao: boolean;
   brightness: number;
+  showSimulationBox: boolean;
 }
 
 export interface SimulationSettings {
@@ -25,6 +26,7 @@ export const settingsModel: SettingsModel = {
   render: {
     ssao: true,
     brightness: 1.0,
+    showSimulationBox: true,
   },
   setRender: action((state, render: RenderSettings) => {
     state.render = render;

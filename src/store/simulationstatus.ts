@@ -115,5 +115,7 @@ export const simulationStatusModel: SimulationStatusModel = {
     state.computes = {};
     state.fixes = {};
     state.variables = {};
+    state.box = undefined;
+    state.origo = undefined;
   }),
 };

@@ -15,13 +15,35 @@ import { StoreModel } from "./model";
 const cellMatrix = new THREE.Matrix3();
 const origo = new THREE.Vector3();
 
-const getSimulationBox = (lammps: LammpsWeb, wasm: AtomifyWasmModule) => {
+const getSimulationBox = (
+  lammps: LammpsWeb,
+  wasm: AtomifyWasmModule,
+  currentBox?: THREE.Matrix3,
+) => {
   const cellMatrixPointer = lammps.getCellMatrixPointer() / 8;
   const cellMatrixSubArray = wasm.HEAPF64.subarray(
     cellMatrixPointer,
     cellMatrixPointer + 9,
   ) as Float64Array;
-  cellMatrix.set(
+  
+  // Check if values changed
+  if (currentBox) {
+    const elements = currentBox.elements;
+    let areEqual = true;
+    for (let i = 0; i < 9; i++) {
+      if (elements[i] !== cellMatrixSubArray[i]) {
+        areEqual = false;
+        break;
+      }
+    }
+    if (areEqual) {
+      // No change, return existing reference
+      return currentBox;
+    }
+  }
+  
+  // Values changed, return new Matrix3
+  return new THREE.Matrix3().set(
     cellMatrixSubArray[0],
     cellMatrixSubArray[1],
     cellMatrixSubArray[2],
@@ -32,21 +54,37 @@ const getSimulationBox = (lammps: LammpsWeb, wasm: AtomifyWasmModule) => {
     cellMatrixSubArray[7],
     cellMatrixSubArray[8],
   );
-  return cellMatrix;
 };
 
-const getSimulationOrigo = (lammps: LammpsWeb, wasm: AtomifyWasmModule) => {
+const getSimulationOrigo = (
+  lammps: LammpsWeb,
+  wasm: AtomifyWasmModule,
+  currentOrigo?: THREE.Vector3,
+) => {
   const origoPointer = lammps.getOrigoPointer() / 8;
   const origoPointerSubArray = wasm.HEAPF64.subarray(
     origoPointer,
     origoPointer + 3,
   ) as Float64Array;
-  origo.set(
+  
+  // Check if values changed
+  if (currentOrigo) {
+    if (
+      currentOrigo.x === origoPointerSubArray[0] &&
+      currentOrigo.y === origoPointerSubArray[1] &&
+      currentOrigo.z === origoPointerSubArray[2]
+    ) {
+      // No change, return existing reference
+      return currentOrigo;
+    }
+  }
+  
+  // Values changed, return new Vector3
+  return new THREE.Vector3(
     origoPointerSubArray[0],
     origoPointerSubArray[1],
     origoPointerSubArray[2],
   );
-  return origo;
 };
 
 const getModifierContext = (
@@ -173,8 +211,12 @@ export const processingModel: ProcessingModel = {
         }
       }
 
-      allActions.simulationStatus.setBox(getSimulationBox(lammps, wasm));
-      allActions.simulationStatus.setOrigo(getSimulationOrigo(lammps, wasm));
+      allActions.simulationStatus.setBox(
+        getSimulationBox(lammps, wasm, getStoreState().simulationStatus.box),
+      );
+      allActions.simulationStatus.setOrigo(
+        getSimulationOrigo(lammps, wasm, getStoreState().simulationStatus.origo),
+      );
       allActions.simulationStatus.setTimesteps(lammps.getTimesteps());
       allActions.simulationStatus.setNumAtoms(lammps.getNumAtoms());
       allActions.simulationStatus.setRunTimesteps(lammps.getRunTimesteps());

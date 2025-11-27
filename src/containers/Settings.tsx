@@ -111,6 +111,22 @@ const Settings = ({ open, onClose }: SettingsProps) => {
           Enable SSAO
         </Checkbox>
       </p>
+      <p>
+        <Checkbox
+          checked={renderSettings.showSimulationBox}
+          onChange={(e) => {
+            track("Settings.Render.ShowSimulationBox", {
+              value: e.target.checked,
+            });
+            setRenderSettings({
+              ...renderSettings,
+              showSimulationBox: e.target.checked,
+            });
+          }}
+        >
+          Show simulation box
+        </Checkbox>
+      </p>
       <div>
         Brightness
         <Slider
