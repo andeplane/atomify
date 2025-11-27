@@ -1,4 +1,5 @@
 import { action, Action } from "easy-peasy";
+import { isEmbeddedMode } from "../utils/embeddedMode";
 
 interface Status {
   title: String;
@@ -23,8 +24,14 @@ export interface AppModel {
   setStatus: Action<AppModel, Status | undefined>;
 }
 
+// Check if we're in embedded mode at initialization
+function getInitialSelectedMenu(): string {
+  // Use shared utility function to determine embedded mode. isEmbeddedMode() is safe to call on the server.
+  return isEmbeddedMode() ? "view" : "examples";
+}
+
 export const appModel: AppModel = {
-  selectedMenu: "examples",
+  selectedMenu: getInitialSelectedMenu(),
   setSelectedMenu: action((state, selectedMenu: string) => {
     state.selectedMenu = selectedMenu;
   }),
