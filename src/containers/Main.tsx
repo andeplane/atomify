@@ -8,7 +8,6 @@ import Examples from "./Examples";
 import RunInCloud from "./RunInCloud";
 import LoadingSimulationScreen from "../components/LoadingSimulationScreen";
 import { useStoreActions, useStoreState } from "../hooks";
-import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 const { Content } = Layout;
 
 const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
@@ -27,8 +26,6 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
     (actions) => actions.app.setPreferredView,
   );
   const status = useStoreState((state) => state.app.status);
-
-  const { isEmbeddedMode } = useEmbeddedMode();
   
   // Update console key when modal opens
   useEffect(() => {
@@ -50,10 +47,10 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
       {
         key: "view",
         label: "View",
-        children: isEmbeddedMode && !hasStarted ? (
+        children: isEmbedded && !hasStarted ? (
           <LoadingSimulationScreen status={status} wasmReady={wasm != null} />
         ) : (
-          <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbeddedMode} />,
+          <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbedded} />,
         ),
       },
       {
@@ -84,10 +81,10 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
     ];
 
     // Filter out Examples tab in embedded mode
-    return isEmbeddedMode
+    return isEmbedded
       ? allTabs.filter(tab => tab.key !== "examples")
       : allTabs;
-  }, [isEmbeddedMode, selectedMenu, hasStarted, status, wasm]);
+  }, [isEmbedded, selectedMenu, hasStarted, status, wasm]);
 
   return (
     <Content>
@@ -125,7 +122,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
           <Console key={consoleKey} width={"100%"} height={"70vh"} />
         </Modal>
       )}
-      {!isEmbeddedMode && (
+      {!isEmbedded && (
         <Modal
           closable={false}
           title={status?.title}
