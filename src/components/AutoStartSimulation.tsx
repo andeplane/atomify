@@ -76,6 +76,16 @@ const AutoStartSimulation: React.FC = () => {
         const response = await fetch(embeddedSimulationUrl!);
         const data: ExamplesData = await response.json();
         
+        // Override baseUrl for localhost development
+        // When Atomify runs on localhost, derive baseUrl from embeddedSimulationUrl
+        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        if (isLocalhost && embeddedSimulationUrl) {
+          const url = new URL(embeddedSimulationUrl);
+          const pathParts = url.pathname.split('/');
+          pathParts.pop(); // Remove simulations.json filename
+          data.baseUrl = url.origin + pathParts.join('/');
+        }
+        
         if (simulationIndex >= 0 && simulationIndex < data.examples.length) {
           const selectedExample = data.examples[simulationIndex];
           
