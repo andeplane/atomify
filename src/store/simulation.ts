@@ -32,6 +32,7 @@ export interface Simulation {
   analysisDescription?: string;
   analysisScript?: string;
   start: boolean;
+  vars?: Record<string, number>;
 }
 
 export interface SimulationModel {
@@ -334,10 +335,30 @@ export const simulationModel: SimulationModel = {
       actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
     }
 
+    // Inject URL variables if provided
+    if (simulation.vars && Object.keys(simulation.vars).length > 0) {
+      const varsScript = Object.entries(simulation.vars)
+        .map(([name, value]) => `variable ${name} equal ${value}`)
+        .join('\n') + '\n\n';
+      
+      const wasm = (window as any).wasm;
+      const varsFileName = `_vars_${simulation.inputScript}`;
+      wasm.FS.writeFile(`/${simulation.id}/${varsFileName}`, varsScript);
+      
+      // Create a wrapper script that includes vars then the original script
+      const wrapperScript = varsScript + inputScriptFile.content;
+      const wrapperFileName = `_wrapper_${simulation.inputScript}`;
+      wasm.FS.writeFile(`/${simulation.id}/${wrapperFileName}`, wrapperScript);
+    }
+
     let errorMessage: string | undefined = undefined;
     const startTime = performance.now();
     try {
-      await lammps.runFile(`/${simulation.id}/${simulation.inputScript}`);
+      // Use wrapper script if we have vars, otherwise use original
+      const scriptToRun = simulation.vars && Object.keys(simulation.vars).length > 0 
+        ? `_wrapper_${simulation.inputScript}`
+        : simulation.inputScript;
+      await lammps.runFile(`/${simulation.id}/${scriptToRun}`);
     } catch (exception: any) {
       console.log("Got exception: ", exception);
       errorMessage = lammps.getExceptionMessage(exception);

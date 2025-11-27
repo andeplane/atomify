@@ -44,7 +44,7 @@ const AutoStartSimulation: React.FC = () => {
   );
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
-  const { embeddedSimulationUrl, simulationIndex, embeddedData, autoStart, isEmbeddedMode } = useEmbeddedMode();
+  const { embeddedSimulationUrl, simulationIndex, embeddedData, autoStart, isEmbeddedMode, vars } = useEmbeddedMode();
   
   useEffect(() => {
     const fetchAndStartSimulation = async () => {
@@ -52,6 +52,7 @@ const AutoStartSimulation: React.FC = () => {
         // Handle embedded data first (works in both full editor and embedded modes)
         if (embeddedData) {
           const decodedSimulation = decodeSimulation(embeddedData, autoStart);
+          decodedSimulation.vars = vars; // Add URL vars
           
           if (simulation?.id !== decodedSimulation.id) {
             hasInitiatedStart.current = true;
@@ -92,7 +93,8 @@ const AutoStartSimulation: React.FC = () => {
             files: selectedExample.files,
             analysisDescription: selectedExample.analysisDescription,
             analysisScript: selectedExample.analysisScript,
-            start: true
+            start: true,
+            vars: vars // Add URL vars
           };
 
           if (simulation?.id !== newSimulation.id) {
@@ -122,7 +124,7 @@ const AutoStartSimulation: React.FC = () => {
     };
 
     checkWasmAndStart();
-  }, [simulation?.id, running, setNewSimulation, setPreferredView, embeddedSimulationUrl, embeddedData, autoStart, isEmbeddedMode, simulationIndex]);
+  }, [simulation?.id, running, setNewSimulation, setPreferredView, embeddedSimulationUrl, embeddedData, autoStart, isEmbeddedMode, simulationIndex, vars]);
 
   return null;
 };

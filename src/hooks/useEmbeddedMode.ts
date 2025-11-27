@@ -4,6 +4,29 @@ export interface EmbeddedModeResult {
   embeddedData: string | null;
   autoStart: boolean;
   isEmbeddedMode: boolean;
+  vars: Record<string, number>;
+}
+
+/**
+ * Parse variables from URL parameter
+ * Format: "temp:2.5,mass:1.0"
+ * Returns: { temp: 2.5, mass: 1.0 }
+ */
+function parseVars(varsString: string | null): Record<string, number> {
+  if (!varsString) return {};
+  
+  const vars: Record<string, number> = {};
+  varsString.split(',').forEach(varDef => {
+    const parts = varDef.trim().split(':');
+    if (parts.length >= 2) {
+      const name = parts[0];
+      const value = parseFloat(parts[1]);
+      if (!isNaN(value)) {
+        vars[name] = value;
+      }
+    }
+  });
+  return vars;
 }
 
 export function useEmbeddedMode(): EmbeddedModeResult {
@@ -14,6 +37,7 @@ export function useEmbeddedMode(): EmbeddedModeResult {
   const embedParam = urlSearchParams.get('embed');
   const autoStartParam = urlSearchParams.get('autostart');
   const autoStart = autoStartParam === 'true';
+  const vars = parseVars(urlSearchParams.get('vars'));
   
   // isEmbeddedMode is true when:
   // 1. Using embeddedSimulationUrl method, OR
@@ -29,5 +53,6 @@ export function useEmbeddedMode(): EmbeddedModeResult {
     embeddedData,
     autoStart,
     isEmbeddedMode,
+    vars,
   };
 } 
