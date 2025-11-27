@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 
 import { useStoreState, useStoreActions } from "../hooks";
@@ -10,7 +10,7 @@ import { SettingOutlined, AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
 import * as THREE from "three";
-import { createBoxGeometry } from "../utils/boxGeometry";
+import { createBoxGeometry, calculateBoxRadius } from "../utils/boxGeometry";
 
 const { Header, Sider } = Layout;
 
@@ -71,6 +71,22 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     (state) => state.simulationStatus.origo,
   );
   const boxGroupRef = useRef<THREE.Group | null>(null);
+
+  const disposeBoxGroup = useCallback(() => {
+    if (boxGroupRef.current && visualizer) {
+      // Dispose of all cylinders in the group
+      boxGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose();
+          if (child.material instanceof THREE.Material) {
+            child.material.dispose();
+          }
+        }
+      });
+      visualizer.scene.remove(boxGroupRef.current);
+      boxGroupRef.current = null;
+    }
+  }, [visualizer]);
 
   useEffect(() => {
     if (domElement.current && !loading && !visualizer) {
@@ -167,32 +183,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       simulationOrigo !== undefined;
 
     // Remove existing box if it exists
-    if (boxGroupRef.current) {
-      // Dispose of all cylinders in the group
-      boxGroupRef.current.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry.dispose();
-          if (child.material instanceof THREE.Material) {
-            child.material.dispose();
-          }
-        }
-      });
-      visualizer.scene.remove(boxGroupRef.current);
-      boxGroupRef.current = null;
-    }
+    disposeBoxGroup();
 
     // Create and add box if enabled and data is available
     if (shouldShowBox && simulationBox && simulationOrigo) {
-      // Calculate a reasonable radius based on box size
-      // Extract vectors to estimate box size
-      const a = new THREE.Vector3();
-      const b = new THREE.Vector3();
-      const c = new THREE.Vector3();
-      simulationBox.extractBasis(a, b, c);
-      const avgLength = (a.length() + b.length() + c.length()) / 3;
-      // Use 0.15% of average box dimension, with a minimum of 0.1
-      const radius = Math.max(avgLength * 0.0015, 0.1);
-      
+      const radius = calculateBoxRadius(simulationBox);
       const boxGroup = createBoxGeometry(simulationBox, simulationOrigo, radius);
       boxGroupRef.current = boxGroup;
       visualizer.scene.add(boxGroup);
@@ -202,27 +197,17 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     simulationBox,
     simulationOrigo,
     renderSettings.showSimulationBox,
+    disposeBoxGroup,
   ]);
 
   useEffect(() => {
     return () => {
-      if (boxGroupRef.current && visualizer) {
-        // Dispose of all cylinders in the group
-        boxGroupRef.current.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.geometry.dispose();
-            if (child.material instanceof THREE.Material) {
-              child.material.dispose();
-            }
-          }
-        });
-        visualizer.scene.remove(boxGroupRef.current);
-      }
+      disposeBoxGroup();
       if (visualizer) {
         visualizer.dispose();
       }
     };
-  }, [visualizer]);
+  }, [visualizer, disposeBoxGroup]);
 
   const title = simulation ? simulation.id : "No simulation";
   const showNoSimulationModal = simulation == null && !hideNoSimulation && !isEmbeddedMode;

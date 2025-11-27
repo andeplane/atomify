@@ -1,6 +1,25 @@
 import * as THREE from "three";
 
 /**
+ * Calculates an appropriate radius for box wireframe edges based on the cell matrix.
+ * Uses 0.15% of the average basis vector length, with a minimum of 0.1.
+ *
+ * @param cellMatrix - THREE.Matrix3 where rows represent the a, b, c vectors (LAMMPS convention)
+ * @returns Calculated radius for wireframe edges
+ */
+export function calculateBoxRadius(cellMatrix: THREE.Matrix3): number {
+  // LAMMPS stores vectors as rows, but extractBasis gets columns - transpose first
+  const transposed = cellMatrix.clone().transpose();
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const c = new THREE.Vector3();
+  transposed.extractBasis(a, b, c);
+
+  const avgLength = (a.length() + b.length() + c.length()) / 3;
+  return Math.max(avgLength * 0.0015, 0.1);
+}
+
+/**
  * Creates a Group of cylinders for a parallelepiped wireframe from a cell matrix and origin.
  * Handles both orthogonal and triclinic (non-orthogonal) simulation boxes.
  * Uses cylinders instead of lines to ensure proper thickness across all systems.
@@ -58,6 +77,11 @@ export function createBoxGeometry(
   ];
 
   const group = new THREE.Group();
+  
+  // Create material once and reuse for all edges
+  const material = new THREE.MeshBasicMaterial({
+    color: 0xffffff,
+  });
 
   // Create a cylinder for each edge
   edges.forEach(([i, j]) => {
@@ -73,11 +97,6 @@ export function createBoxGeometry(
 
     // Create cylinder geometry (default orientation is along Y-axis)
     const geometry = new THREE.CylinderGeometry(radius, radius, length, 8);
-    
-    // Create material
-    const material = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
-    });
 
     // Create mesh
     const cylinder = new THREE.Mesh(geometry, material);
@@ -87,8 +106,6 @@ export function createBoxGeometry(
     cylinder.position.copy(midpoint);
     
     // Orient cylinder along the edge direction
-    // Default cylinder axis is (0, 1, 0), we want it along direction
-    const defaultAxis = new THREE.Vector3(0, 1, 0);
     const targetAxis = direction.clone().normalize();
     
     // Validate targetAxis is valid
@@ -100,29 +117,14 @@ export function createBoxGeometry(
     ) {
       // Invalid direction, skip this edge
       geometry.dispose();
-      material.dispose();
       return;
     }
     
-    // Calculate rotation quaternion to align defaultAxis (0,1,0) with targetAxis
-    // Use setFromUnitVectors which handles all cases correctly
-    const dot = defaultAxis.dot(targetAxis);
-    
-    if (Math.abs(dot - 1.0) < 1e-6) {
-      // Already aligned - no rotation needed
-      cylinder.quaternion.set(0, 0, 0, 1);
-    } else if (Math.abs(dot + 1.0) < 1e-6) {
-      // Opposite direction - rotate 180 degrees around perpendicular axis
-      // Find a perpendicular vector for the rotation axis
-      let perp = new THREE.Vector3(1, 0, 0);
-      if (Math.abs(defaultAxis.dot(perp)) > 0.9) {
-        perp = new THREE.Vector3(0, 0, 1);
-      }
-      cylinder.quaternion.setFromAxisAngle(perp, Math.PI);
-    } else {
-      // General case: use setFromUnitVectors (most reliable)
-      cylinder.quaternion.setFromUnitVectors(defaultAxis, targetAxis);
-    }
+    // Align cylinder to edge direction
+    cylinder.quaternion.setFromUnitVectors(
+      new THREE.Vector3(0, 1, 0),
+      targetAxis
+    );
     
     // Validate final quaternion
     if (
