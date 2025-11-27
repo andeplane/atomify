@@ -157,6 +157,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   }, [visualizer]);
 
   const title = simulation ? simulation.id : "No simulation";
+  const showNoSimulationModal = simulation == null && !hideNoSimulation && !isEmbeddedMode;
 
   return (
     <Layout style={{ height: "100vh" }}>
@@ -243,7 +244,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
           </Container>
         </Sider>
       )}
-      {simulation == null && !hideNoSimulation && !isEmbeddedMode && (
+      {showNoSimulationModal && (
         <Modal
           open
           onCancel={() => setHideNoSimulation(true)}
