@@ -159,10 +159,10 @@ const SimulationComponent = () => {
       });
       setTimeout(() => {
         time_event("WASM.Load");
+        // @ts-ignore - createModule returns AtomifyWasmModule but TypeScript infers {}
         createModule({
           print: onPrint,
           printErr: onPrint,
-          // @ts-ignore - createModule returns AtomifyWasmModule but TypeScript infers {}
         }).then((Module) => {
           track("WASM.Load");
           setStatus({

@@ -1,8 +1,5 @@
 import { Spin, Progress } from "antd";
-import { Layout } from "antd";
 import styled from "styled-components";
-
-const { Content } = Layout;
 
 interface LoadingSimulationScreenProps {
   status?: {
@@ -50,31 +47,27 @@ const LoadingSimulationScreen = ({
   const progress = status?.progress ?? 0;
 
   return (
-    <Layout style={{ height: "100vh" }}>
-      <Content>
-        <Container>
-          <Spin size="large" />
-          <StatusText>
-            <StatusTitle>{displayTitle}</StatusTitle>
-            {displayText && <div>{displayText}</div>}
-            {progress > 0 && (
-              <Progress
-                strokeColor={{
-                  from: "#108ee9",
-                  to: "#87d068",
-                }}
-                percent={Math.ceil(100 * progress)}
-                status="active"
-                style={{ marginTop: 16, maxWidth: 400 }}
-              />
-            )}
-            {!wasmReady && (
-              <StatusSubtext>Please wait while the simulation engine loads...</StatusSubtext>
-            )}
-          </StatusText>
-        </Container>
-      </Content>
-    </Layout>
+    <Container>
+      <Spin size="large" />
+      <StatusText>
+        <StatusTitle>{displayTitle}</StatusTitle>
+        {displayText && <div>{displayText}</div>}
+        {progress > 0 && (
+          <Progress
+            strokeColor={{
+              from: "#108ee9",
+              to: "#87d068",
+            }}
+            percent={Math.ceil(100 * progress)}
+            status="active"
+            style={{ marginTop: 16, maxWidth: 400 }}
+          />
+        )}
+        {!wasmReady && (
+          <StatusSubtext>Please wait while the simulation engine loads...</StatusSubtext>
+        )}
+      </StatusText>
+    </Container>
   );
 };
 
