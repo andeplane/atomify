@@ -159,6 +159,7 @@ const SimulationComponent = () => {
       });
       setTimeout(() => {
         time_event("WASM.Load");
+        // @ts-ignore - createModule returns AtomifyWasmModule but TypeScript infers {}
         createModule({
           print: onPrint,
           printErr: onPrint,
@@ -170,7 +171,8 @@ const SimulationComponent = () => {
             progress: 0.6,
           });
           // setWasm(Module)
-          const lammps = new Module.LAMMPSWeb() as LammpsWeb;
+          // @ts-ignore - Module is AtomifyWasmModule
+          const lammps = new Module.LAMMPSWeb();
           setLammps(lammps);
           // @ts-ignore
           window.wasm = Module;
