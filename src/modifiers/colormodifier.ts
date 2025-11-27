@@ -197,23 +197,26 @@ class ColorModifier extends Modifier {
     const particleStyles = input.renderState.particleStyles;
     const visualizer = input.renderState.visualizer;
 
-    for (let i = 0; i < output.particles.count; i++) {
-      const realIndex = output.particles.indices[i];
-      const type = output.particles.types[i];
-      let atomType = particleStyles[type];
-      if (!atomType) {
-        atomType = defaultAtomTypes[type % defaultAtomTypes.length];
+    // Only color if there are particles to color
+    if (output.particles.count > 0) {
+      for (let i = 0; i < output.particles.count; i++) {
+        const realIndex = output.particles.indices[i];
+        const type = output.particles.types[i];
+        let atomType = particleStyles[type];
+        if (!atomType) {
+          atomType = defaultAtomTypes[type % defaultAtomTypes.length];
+        }
+        const radius = 0.33 * input.renderState.particleRadius * atomType.radius;
+        visualizer.setRadius(realIndex, radius);
+        visualizer.setColor(realIndex, {
+          r: atomType.color.r,
+          g: atomType.color.g,
+          b: atomType.color.b,
+        });
       }
-      const radius = 0.33 * input.renderState.particleRadius * atomType.radius;
-      visualizer.setRadius(realIndex, radius);
-      visualizer.setColor(realIndex, {
-        r: atomType.color.r,
-        g: atomType.color.g,
-        b: atomType.color.b,
-      });
+      // Only mark as colored if we actually colored particles
+      this.previousColoringMethod = "type";
     }
-
-    this.previousColoringMethod = "type";
   };
 
   run = (input: ModifierInput, output: ModifierOutput) => {
