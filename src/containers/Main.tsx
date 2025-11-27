@@ -50,7 +50,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
         children: isEmbedded && !hasStarted ? (
           <LoadingSimulationScreen status={status} wasmReady={wasm != null} />
         ) : (
-          <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbedded} />,
+          <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbedded} />
         ),
       },
       {
