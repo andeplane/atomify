@@ -28,6 +28,8 @@ jobs:
           node-version: "20.x"
       - name: Install Packages
         run: npm install
+      - name: Run Typecheck
+        run: npm run typecheck
       - name: Run Tests
         run: npm run test:run
       - name: Run Prettier
