@@ -23,8 +23,27 @@ export interface AppModel {
   setStatus: Action<AppModel, Status | undefined>;
 }
 
+// Check if we're in embedded mode at initialization
+function getInitialSelectedMenu(): string {
+  if (typeof window === 'undefined') return "examples";
+  
+  const urlSearchParams = new URLSearchParams(window.location.search);
+  const embeddedSimulationUrl = urlSearchParams.get('embeddedSimulationUrl');
+  const simulationIndex = parseInt(urlSearchParams.get('simulationIndex') || '0', 10);
+  const embeddedData = urlSearchParams.get('data');
+  const embedParam = urlSearchParams.get('embed');
+  
+  // Same logic as useEmbeddedMode hook
+  const isEmbeddedMode = Boolean(
+    (embeddedSimulationUrl && simulationIndex >= 0) || 
+    (embeddedData && embedParam === 'true')
+  );
+  
+  return isEmbeddedMode ? "view" : "examples";
+}
+
 export const appModel: AppModel = {
-  selectedMenu: "examples",
+  selectedMenu: getInitialSelectedMenu(),
   setSelectedMenu: action((state, selectedMenu: string) => {
     state.selectedMenu = selectedMenu;
   }),

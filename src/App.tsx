@@ -279,7 +279,7 @@ const App: React.FC = () => {
               theme="dark"
               selectedKeys={[selectedMenu]}
               defaultOpenKeys={["edit"]}
-              defaultSelectedKeys={["examples"]}
+              defaultSelectedKeys={isEmbeddedMode ? ["view"] : ["examples"]}
               mode="inline"
               items={items}
               onSelect={(info) => onMenuSelect(info.key)}

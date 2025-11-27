@@ -39,6 +39,7 @@ export const renderModel: RenderModel = {
   }),
   setVisualizer: action((state, value: Visualizer) => {
     state.visualizer = value;
+    state.particleStylesUpdated = true;
   }),
   setParticles: action((state, value: Particles) => {
     state.particles = value;

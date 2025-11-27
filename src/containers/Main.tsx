@@ -34,43 +34,50 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
     }
   }, [showConsole]);
 
+  const allTabs = [
+    {
+      key: "view",
+      label: "View",
+      children: <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbeddedMode} />,
+    },
+    {
+      key: "console",
+      label: "Console",
+      children: <Console />,
+    },
+    {
+      key: "notebook",
+      label: "Notebook",
+      children: <Notebook />,
+    },
+    {
+      key: "editfile",
+      label: "Edit",
+      children: <Edit />,
+    },
+    {
+      key: "examples",
+      label: "Examples",
+      children: <Examples />,
+    },
+    {
+      key: "runincloud",
+      label: "Run in cloud",
+      children: <RunInCloud />,
+    },
+  ];
+
+  // Filter out Examples tab in embedded mode
+  const tabs = isEmbeddedMode 
+    ? allTabs.filter(tab => tab.key !== "examples")
+    : allTabs;
+
   return (
     <Content>
       <Tabs
         activeKey={selectedMenu.startsWith("file") ? "editfile" : selectedMenu}
         renderTabBar={() => <></>}
-        items={[
-          {
-            key: "view",
-            label: "View",
-            children: <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbeddedMode} />,
-          },
-          {
-            key: "console",
-            label: "Console",
-            children: <Console />,
-          },
-          {
-            key: "notebook",
-            label: "Notebook",
-            children: <Notebook />,
-          },
-          {
-            key: "editfile",
-            label: "Edit",
-            children: <Edit />,
-          },
-          {
-            key: "examples",
-            label: "Examples",
-            children: <Examples />,
-          },
-          {
-            key: "runincloud",
-            label: "Run in cloud",
-            children: <RunInCloud />,
-          },
-        ]}
+        items={tabs}
       />
       {showConsole && (
         <Modal
