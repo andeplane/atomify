@@ -243,7 +243,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
           </Container>
         </Sider>
       )}
-      {simulation == null && !hideNoSimulation && (
+      {simulation == null && !hideNoSimulation && !isEmbeddedMode && (
         <Modal
           open
           onCancel={() => setHideNoSimulation(true)}
