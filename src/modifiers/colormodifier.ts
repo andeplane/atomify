@@ -188,12 +188,21 @@ class ColorModifier extends Modifier {
     output: ModifierOutput,
     everything: boolean = false,
   ) => {
-    if (
-      (this.previousColoringMethod === "type" && !output.colorsDirty) ||
-      !input.renderState.visualizer
-    ) {
+    if (!input.renderState.visualizer) {
       return;
     }
+
+    // Reset previous coloring method if colors are dirty, ensuring we re-apply colors
+    // when styles are marked as updated (e.g., after visualizer initialization or particle changes)
+    if (output.colorsDirty) {
+      this.previousColoringMethod = undefined;
+    }
+
+    // Skip if we've already colored by type and colors aren't dirty
+    if (this.previousColoringMethod === "type" && !output.colorsDirty) {
+      return;
+    }
+
     const particleStyles = input.renderState.particleStyles;
     const visualizer = input.renderState.visualizer;
 
