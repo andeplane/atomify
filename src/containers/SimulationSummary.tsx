@@ -1,6 +1,6 @@
 import { useStoreState, useStoreActions } from "../hooks";
 import { SettingOutlined } from "@ant-design/icons";
-import { Table, Row, Col, Button, Slider } from "antd";
+import { Table, Row, Col, Button, Slider, Checkbox } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TableRowSelection } from "antd/es/table/interface";
 import { Compute, Fix, Variable } from "../types";
@@ -58,6 +58,10 @@ const SimulationSummary = () => {
 
   const setSimulationSettings = useStoreActions(
     (actions) => actions.settings.setSimulation,
+  );
+  const renderSettings = useStoreState((state) => state.settings.render);
+  const setRenderSettings = useStoreActions(
+    (actions) => actions.settings.setRender,
   );
 
   const computes = useStoreState((state) => state.simulationStatus.computes);
@@ -271,6 +275,22 @@ const SimulationSummary = () => {
             />
           );
         }
+        if (record.key === "showsimulationbox") {
+          return (
+            <Checkbox
+              checked={renderSettings.showSimulationBox}
+              onChange={(e) => {
+                track("Settings.Render.ShowSimulationBox", {
+                  value: e.target.checked,
+                });
+                setRenderSettings({
+                  ...renderSettings,
+                  showSimulationBox: e.target.checked,
+                });
+              }}
+            />
+          );
+        }
         return <>{text}</>;
       },
     },
@@ -326,6 +346,11 @@ const SimulationSummary = () => {
         name: "UI update frequency",
         value: simulationSettings.uiUpdateFrequency || 15,
       },
+      {
+        key: "showsimulationbox",
+        name: "Show simulation box",
+        value: "",
+      },
     ];
   }, [
     simulation,
@@ -338,6 +363,7 @@ const SimulationSummary = () => {
     memoryUsage,
     simulationSettings.speed,
     simulationSettings.uiUpdateFrequency,
+    renderSettings.showSimulationBox,
   ]);
 
   return (
