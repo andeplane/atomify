@@ -12,7 +12,8 @@ import {
   Input,
   Checkbox,
 } from "antd";
-import type { UploadProps } from "antd";
+import type { UploadProps, UploadFile } from "antd";
+import type { UploadChangeParam } from "antd/es/upload";
 import { Simulation } from "../store/simulation";
 import { SimulationFile } from "../store/app";
 import { track } from "../utils/metrics";
@@ -49,7 +50,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
   }, []);
 
   const onChange = useCallback(
-    async (info: any) => {
+    async (info: UploadChangeParam<UploadFile>) => {
       // Need to use window.files because these async functions can't seem to agree on the state
       if (info.file.status === "removed") {
         const newFiles = files.filter(
@@ -61,9 +62,13 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
         return;
       }
 
+      const originFile = info.file.originFileObj;
+      if (!originFile) {
+        return;
+      }
       const file: SimulationFile = {
         fileName: info.file.name,
-        content: await info.file.text(),
+        content: await originFile.text(),
       };
       //@ts-ignore
       window.files = [...window.files, file];

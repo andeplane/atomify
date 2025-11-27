@@ -1415,12 +1415,15 @@ const Edit = () => {
     selectOnLineNumbers: true,
   };
 
-  const editorDidMount = useCallback((editor: any, monaco: any) => {
-    editor.focus();
-  }, []);
+  const editorDidMount = useCallback(
+    (editor: monaco.editor.IStandaloneCodeEditor) => {
+      editor.focus();
+    },
+    [],
+  );
 
   const onEditorChange = useCallback(
-    (newValue: string, e: any) => {
+    (newValue: string) => {
       // console.log('onChange', newValue, e);
       const file = simulation?.files.filter(
         (file) => file.fileName === selectedFile?.fileName,

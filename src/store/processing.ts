@@ -1,4 +1,4 @@
-import { action, thunk, Action, Thunk } from "easy-peasy";
+import { action, thunk, Action, Thunk, State, Actions } from "easy-peasy";
 import Modifier from "../modifiers/modifier";
 import SyncParticlesModifier from "../modifiers/syncparticlesmodifier";
 import SyncBondsModifier from "../modifiers/syncbondsmodifier";
@@ -49,9 +49,15 @@ const getSimulationOrigo = (lammps: LammpsWeb, wasm: AtomifyWasmModule) => {
   return origo;
 };
 
-const getModifierContext = (getStoreState: any, getStoreActions: any) => {
+const getModifierContext = (
+  getStoreState: () => State<StoreModel>,
+  getStoreActions: () => Actions<StoreModel>,
+) => {
   const wasm = window.wasm;
   const lammps = getStoreState().simulation.lammps;
+  if (!lammps) {
+    throw new Error("Lammps instance is not initialized");
+  }
   const renderState = getStoreState().render;
   const computes = getStoreState().simulationStatus.computes;
   const fixes = getStoreState().simulationStatus.fixes;
@@ -94,8 +100,8 @@ const getModifierContext = (getStoreState: any, getStoreActions: any) => {
 export interface ProcessingModel {
   postTimestepModifiers: Modifier[];
   setPostTimestepModifiers: Action<ProcessingModel, Modifier[]>;
-  runPostTimestep: Thunk<ProcessingModel, boolean, any, StoreModel>;
-  runPostTimestepRendering: Thunk<ProcessingModel, void, any, StoreModel>;
+  runPostTimestep: Thunk<ProcessingModel, boolean, undefined, StoreModel>;
+  runPostTimestepRendering: Thunk<ProcessingModel, void, undefined, StoreModel>;
 }
 
 export const processingModel: ProcessingModel = {
@@ -159,10 +165,10 @@ export const processingModel: ProcessingModel = {
       }
 
       if (everything || getStoreState().app.selectedMenu === "view") {
-        if (modifierOutput.particles !== particles) {
+        if (modifierOutput.particles && modifierOutput.particles !== particles) {
           allActions.render.setParticles(modifierOutput.particles);
         }
-        if (modifierOutput.bonds !== bonds) {
+        if (modifierOutput.bonds && modifierOutput.bonds !== bonds) {
           allActions.render.setBonds(modifierOutput.bonds);
         }
       }
@@ -221,10 +227,10 @@ export const processingModel: ProcessingModel = {
 
       // Only update rendering state, skip UI state updates
       if (getStoreState().app.selectedMenu === "view") {
-        if (modifierOutput.particles !== particles) {
+        if (modifierOutput.particles && modifierOutput.particles !== particles) {
           allActions.render.setParticles(modifierOutput.particles);
         }
-        if (modifierOutput.bonds !== bonds) {
+        if (modifierOutput.bonds && modifierOutput.bonds !== bonds) {
           allActions.render.setBonds(modifierOutput.bonds);
         }
       }
