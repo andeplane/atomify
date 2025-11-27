@@ -162,7 +162,7 @@ const SimulationComponent = () => {
         createModule({
           print: onPrint,
           printErr: onPrint,
-        }).then((Module) => {
+        }).then((Module: AtomifyWasmModule) => {
           track("WASM.Load");
           setStatus({
             title: "Downloading LAMMPS ...",
