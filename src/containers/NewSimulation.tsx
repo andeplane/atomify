@@ -62,9 +62,13 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
         return;
       }
 
+      const originFile = info.file.originFileObj;
+      if (!originFile) {
+        return;
+      }
       const file: SimulationFile = {
         fileName: info.file.name,
-        content: await info.file.text(),
+        content: await originFile.text(),
       };
       //@ts-ignore
       window.files = [...window.files, file];

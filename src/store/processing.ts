@@ -55,6 +55,9 @@ const getModifierContext = (
 ) => {
   const wasm = window.wasm;
   const lammps = getStoreState().simulation.lammps;
+  if (!lammps) {
+    throw new Error("Lammps instance is not initialized");
+  }
   const renderState = getStoreState().render;
   const computes = getStoreState().simulationStatus.computes;
   const fixes = getStoreState().simulationStatus.fixes;
@@ -162,10 +165,10 @@ export const processingModel: ProcessingModel = {
       }
 
       if (everything || getStoreState().app.selectedMenu === "view") {
-        if (modifierOutput.particles !== particles) {
+        if (modifierOutput.particles && modifierOutput.particles !== particles) {
           allActions.render.setParticles(modifierOutput.particles);
         }
-        if (modifierOutput.bonds !== bonds) {
+        if (modifierOutput.bonds && modifierOutput.bonds !== bonds) {
           allActions.render.setBonds(modifierOutput.bonds);
         }
       }
@@ -224,10 +227,10 @@ export const processingModel: ProcessingModel = {
 
       // Only update rendering state, skip UI state updates
       if (getStoreState().app.selectedMenu === "view") {
-        if (modifierOutput.particles !== particles) {
+        if (modifierOutput.particles && modifierOutput.particles !== particles) {
           allActions.render.setParticles(modifierOutput.particles);
         }
-        if (modifierOutput.bonds !== bonds) {
+        if (modifierOutput.bonds && modifierOutput.bonds !== bonds) {
           allActions.render.setBonds(modifierOutput.bonds);
         }
       }

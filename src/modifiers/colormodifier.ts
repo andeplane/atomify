@@ -133,6 +133,10 @@ class ColorModifier extends Modifier {
     if (!input.renderState.visualizer) {
       return;
     }
+    if (!output.particles) {
+      return;
+    }
+    const particles = output.particles;
     const visualizer = input.renderState.visualizer;
 
     let colors = colormap({
@@ -156,7 +160,7 @@ class ColorModifier extends Modifier {
     //@ts-ignore
     const perAtomArray = input.wasm.HEAPF64.subarray(
       perAtomDataPtr,
-      perAtomDataPtr + output.particles.count,
+      perAtomDataPtr + particles.count,
     ) as Float64Array;
     // Calculate min/max using a loop to avoid stack overflow for large arrays
     let minValue = Infinity;
@@ -167,7 +171,7 @@ class ColorModifier extends Modifier {
       maxValue = Math.max(maxValue, value);
     }
     perAtomArray.forEach((value, index) => {
-      const realIndex = output.particles.indices[index];
+      const realIndex = particles.indices[index];
       const colorIndex = Math.floor(
         ((value - minValue) / (maxValue - minValue)) * (colors.length - 1),
       );
@@ -194,12 +198,16 @@ class ColorModifier extends Modifier {
     ) {
       return;
     }
+    if (!output.particles) {
+      return;
+    }
+    const particles = output.particles;
     const particleStyles = input.renderState.particleStyles;
     const visualizer = input.renderState.visualizer;
 
-    for (let i = 0; i < output.particles.count; i++) {
-      const realIndex = output.particles.indices[i];
-      const type = output.particles.types[i];
+    for (let i = 0; i < particles.count; i++) {
+      const realIndex = particles.indices[i];
+      const type = particles.types[i];
       let atomType = particleStyles[type];
       if (!atomType) {
         atomType = defaultAtomTypes[type % defaultAtomTypes.length];

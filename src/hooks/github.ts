@@ -23,8 +23,12 @@ export const useListDirectory = (
     files_metadata = (data as GithubContentItem[]).map((file) => ({
       title: file.name,
       path: file.path,
-      download_url: file.download_url,
+      download_url: file.download_url ?? undefined,
       size: file.size,
+      type: file.type,
+      key: file.path,
+      expanded: false,
+      isLeaf: file.type === "file",
       children: [],
     }));
   }
@@ -46,10 +50,12 @@ export const retrievePath = async (
   let files: GithubFile[] = data.map((file) => ({
     title: file.name,
     path: file.path,
-    download_url: file.download_url,
+    download_url: file.download_url ?? undefined,
     size: file.size,
     type: file.type,
     key: file.path,
+    expanded: false,
+    isLeaf: file.type === "file",
     children: [],
   }));
   return files;

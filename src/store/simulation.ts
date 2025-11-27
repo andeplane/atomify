@@ -187,7 +187,7 @@ export const simulationModel: SimulationModel = {
       const wasm = window.wasm;
       for (const file of simulation.files) {
         // Update all files if no fileName is specified
-        if (file.fileName === fileName || !fileName) {
+        if ((file.fileName === fileName || !fileName) && file.content) {
           wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content);
         }
       }

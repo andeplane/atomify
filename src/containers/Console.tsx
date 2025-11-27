@@ -20,7 +20,10 @@ const Console = ({ width, height }: ConsoleProps) => {
   useEffect(() => {
     const editor = editorRef.current?.editor;
     if (editor) {
-      editor.revealLine(editor.getModel().getLineCount());
+      const model = editor.getModel();
+      if (model) {
+        editor.revealLine(model.getLineCount());
+      }
     }
   }, [lammpsOutput]);
 
