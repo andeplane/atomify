@@ -3,6 +3,7 @@ import { Select, Divider } from "antd";
 import { Simulation } from "../store/simulation";
 import { SimulationFile } from "../store/app";
 import { useStoreActions, useStoreState } from "../hooks";
+import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 import { CaretRightOutlined, EditOutlined } from "@ant-design/icons";
 import { Layout, Skeleton, notification } from "antd";
 import { track } from "../utils/metrics";
@@ -43,6 +44,7 @@ const Examples = () => {
   const setPreferredView = useStoreActions(
     (actions) => actions.app.setPreferredView,
   );
+  const { isEmbeddedMode } = useEmbeddedMode();
 
   useEffect(() => {
     const fetchExamples = async (examplesUrl: string) => {
@@ -74,6 +76,11 @@ const Examples = () => {
       const urlSearchParams = new URLSearchParams(window.location.search);
       const params = Object.fromEntries(urlSearchParams.entries());
 
+      // Skip loading default examples if in embedded mode and no explicit examplesUrl is provided
+      if (isEmbeddedMode && params["examplesUrl"] == null) {
+        return;
+      }
+
       let defaultExamplesUrl = "examples/examples.json";
       let examplesUrl = defaultExamplesUrl;
       if (params["examplesUrl"] != null) {
@@ -89,7 +96,7 @@ const Examples = () => {
         await fetchExamples(defaultExamplesUrl);
       }
     })();
-  }, []);
+  }, [isEmbeddedMode]);
 
   const onPlay = useCallback(
     (example: Example) => {
