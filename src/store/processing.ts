@@ -147,7 +147,10 @@ export const processingModel: ProcessingModel = {
       getStoreState().processing.postTimestepModifiers.forEach((modifier) =>
         modifier.run(modifierInput, modifierOutput, true),
       );
-      allActions.render.setParticleStylesUpdated(false);
+      
+      if (modifierInput.renderState.visualizer) {
+        allActions.render.setParticleStylesUpdated(false);
+      }
 
       allActions.simulationStatus.setComputes(modifierOutput.computes);
       allActions.simulationStatus.setFixes(modifierOutput.fixes);
@@ -217,7 +220,10 @@ export const processingModel: ProcessingModel = {
       renderingModifiers.forEach((modifier: Modifier) =>
         modifier.run(modifierInput, modifierOutput, true),
       );
-      allActions.render.setParticleStylesUpdated(false);
+      
+      if (modifierInput.renderState.visualizer) {
+        allActions.render.setParticleStylesUpdated(false);
+      }
 
       // Only update rendering state, skip UI state updates
       if (getStoreState().app.selectedMenu === "view") {
