@@ -2,8 +2,8 @@ import { action, Action } from "easy-peasy";
 import { isEmbeddedMode } from "../utils/embeddedMode";
 
 interface Status {
-  title: String;
-  text: String;
+  title: string;
+  text: string;
   progress: number;
 }
 
