@@ -53,6 +53,9 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const setVisualizer = useStoreActions(
     (actions) => actions.render.setVisualizer,
   );
+  const setParticleStylesUpdated = useStoreActions(
+    (actions) => actions.render.setParticleStylesUpdated,
+  );
 
   const renderSettings = useStoreState((state) => state.settings.render);
   const domElement = useRef<HTMLDivElement | null>(null);
@@ -127,6 +130,8 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
 
     if (particles) {
       visualizer.add(particles);
+      // Ensure colors are applied when particles are added to visualizer
+      setParticleStylesUpdated(true);
     }
 
     if (prevBonds && prevBonds !== bonds) {
@@ -137,7 +142,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     if (bonds) {
       visualizer.add(bonds);
     }
-  }, [particles, prevParticles, prevBonds, bonds, visualizer]);
+  }, [particles, prevParticles, prevBonds, bonds, visualizer, setParticleStylesUpdated]);
 
   useEffect(() => {
     if (visualizer) {
