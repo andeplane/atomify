@@ -17,7 +17,7 @@ const Container = styled.div`
   justify-content: center;
   height: 100vh;
   color: #ffffff;
-  background-color: #0a0a0a;
+  background-color: #1a1b1f;
 `;
 
 const StatusText = styled.div`

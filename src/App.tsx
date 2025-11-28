@@ -36,8 +36,8 @@ const darkThemeConfig = {
   token: {
     colorPrimary: '#1890ff',
     borderRadius: 8,
-    colorBgBase: '#0a0a0a',
-    colorBgContainer: '#141414',
+    colorBgBase: '#29282d',
+    colorBgContainer: '#2a292f',
     fontSizeHeading1: 48,
     fontSizeHeading2: 36,
   },
@@ -48,11 +48,11 @@ const darkThemeConfig = {
       itemMarginInline: 8,
     },
     Layout: {
-      siderBg: '#0a0a0a',
+      siderBg: '#29282d',
       triggerBg: '#1f1f1f',
     },
     Select: {
-      selectorBg: '#141414',
+      selectorBg: '#2a292f',
       optionSelectedBg: '#2a2a2a',
       colorText: '#ffffff',
       colorTextPlaceholder: '#888',
