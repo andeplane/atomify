@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 
 import { useStoreState, useStoreActions } from "../hooks";
-import { Particles, Bonds, Visualizer } from "omovi";
+import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import Settings from "./Settings";
 import SimulationSummaryOverlay from "../components/SimulationSummaryOverlay";
 import SimulationSummary from "./SimulationSummary";
@@ -43,6 +43,8 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAnalyze, setShowAnalyze] = useState(window.innerWidth > 900);
+  const [selectedAtoms, setSelectedAtoms] = useState<Set<number>>(new Set());
+  const selectedAtomsRef = useRef<Set<number>>(new Set());
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(
@@ -94,6 +96,37 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       const newVisualizer = new Visualizer({
         domElement: domElement.current,
         // onCameraChanged: (position: THREE.Vector3, target: THREE.Vector3) => {console.log(position, target)}
+        onParticleClick: (event: ParticleClickEvent) => {
+          const { particleIndex, shiftKey } = event;
+          
+          setSelectedAtoms((prevSelection) => {
+            const newSelection = new Set(prevSelection);
+            
+            if (shiftKey) {
+              // Shift+click: toggle selection
+              if (newSelection.has(particleIndex)) {
+                newSelection.delete(particleIndex);
+              } else {
+                newSelection.add(particleIndex);
+              }
+            } else {
+              // Plain click: replace selection
+              newSelection.clear();
+              newSelection.add(particleIndex);
+            }
+            
+            // Update ref for immediate access
+            selectedAtomsRef.current = newSelection;
+            
+            // Update visualizer selection
+            newVisualizer.clearSelection();
+            newSelection.forEach((idx) => {
+              newVisualizer.setSelected(idx, true);
+            });
+            
+            return newSelection;
+          });
+        }
       });
       setVisualizer(newVisualizer);
       setLoading(false);

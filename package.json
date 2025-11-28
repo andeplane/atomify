@@ -20,7 +20,7 @@
     "katex": "^0.16.0",
     "localforage": "^1.10.0",
     "mixpanel-browser": "^2.45.0",
-    "omovi": "^0.11.3",
+    "omovi": "file:../omovi",
     "protobufjs": "^7.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
