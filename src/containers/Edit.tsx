@@ -1,9 +1,11 @@
 import { useCallback } from "react";
 import { useStoreState } from "../hooks";
-import MonacoEditor, { monaco } from "react-monaco-editor";
+import Editor, { Monaco } from "@monaco-editor/react";
+import * as monaco from "monaco-editor";
 
-monaco.languages.register({ id: "lammps" });
-monaco.languages.setMonarchTokensProvider("lammps", {
+const configureMonacoLanguage = (monaco: Monaco) => {
+  monaco.languages.register({ id: "lammps" });
+  monaco.languages.setMonarchTokensProvider("lammps", {
   keywords: [
     "ave/correlate",
     "lj/spica/coul/msm/omp",
@@ -1406,25 +1408,27 @@ monaco.languages.setMonarchTokensProvider("lammps", {
       [/\/\/.*$/, "comment"],
     ],
   },
-});
+  });
+};
 
 const Edit = () => {
   const selectedFile = useStoreState((state) => state.app.selectedFile);
   const simulation = useStoreState((state) => state.simulation.simulation);
-  const options = {
-    selectOnLineNumbers: true,
-  };
 
-  const editorDidMount = useCallback(
-    (editor: monaco.editor.IStandaloneCodeEditor) => {
+  const handleEditorWillMount = useCallback((monaco: Monaco) => {
+    configureMonacoLanguage(monaco);
+  }, []);
+
+  const handleEditorDidMount = useCallback(
+    (editor: monaco.editor.IStandaloneCodeEditor, monaco: Monaco) => {
       editor.focus();
     },
     [],
   );
 
   const onEditorChange = useCallback(
-    (newValue: string) => {
-      // console.log('onChange', newValue, e);
+    (newValue: string | undefined) => {
+      if (newValue === undefined) return;
       const file = simulation?.files.filter(
         (file) => file.fileName === selectedFile?.fileName,
       )[0];
@@ -1440,14 +1444,17 @@ const Edit = () => {
   }
 
   return (
-    <MonacoEditor
+    <Editor
       height="100vh"
       language="lammps"
       theme="vs-dark"
       value={selectedFile.content}
-      options={options}
+      options={{
+        selectOnLineNumbers: true,
+      }}
       onChange={onEditorChange}
-      editorDidMount={editorDidMount}
+      beforeMount={handleEditorWillMount}
+      onMount={handleEditorDidMount}
     />
   );
 };

@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@ant-design/icons": "^5.5.0",
+    "@monaco-editor/react": "^4.7.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/colormap": "^2.3.1",
@@ -17,7 +18,7 @@
     "colormap": "^2.3.2",
     "dygraphs": "^2.1.0",
     "easy-peasy": "^6.0.5",
-    "katex": "^0.16.0",
+    "katex": "^0.16.25",
     "localforage": "^1.10.0",
     "mixpanel-browser": "^2.45.0",
     "omovi": "^0.11.3",
@@ -27,8 +28,6 @@
     "react-fetch-hook": "^1.9.5",
     "react-iframe": "^1.8.4",
     "react-markdown": "^8.0.3",
-    "react-monaco-editor": "^0.50.1",
-    "react-scripts": "5.0.1",
     "react-terminal-ui": "^1.0.0",
     "react-use": "^17.4.0",
     "rehype-katex": "^6.0.2",
@@ -40,13 +39,14 @@
     "web-vitals": "^5.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build && mv build dist",
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build && rm -rf build && mv dist build",
+    "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "typecheck": "tsc --noEmit",
-    "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
@@ -69,10 +69,18 @@
     "@types/node": "^20.19.25",
     "@types/styled-components": "^5.1.26",
     "@types/uuid": "^8.3.4",
+    "@vitejs/plugin-react": "^5.1.1",
     "@vitest/ui": "^4.0.14",
     "gh-pages": "^6.1.1",
     "jsdom": "^27.2.0",
     "prettier": "3.6.2",
+    "vite": "^7.2.4",
+    "vite-plugin-static-copy": "^3.1.4",
     "vitest": "^4.0.14"
+  },
+  "overrides": {
+    "glob": "^10.4.0",
+    "node-forge": "^1.3.2",
+    "rollup": "^4.22.4"
   }
 }
