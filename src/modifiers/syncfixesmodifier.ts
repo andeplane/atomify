@@ -11,11 +11,11 @@ class SyncFixesModifier extends Modifier {
     super({ name, active });
   }
 
-  run = (
+  run(
     input: ModifierInput,
     output: ModifierOutput,
     everything: boolean = false,
-  ) => {
+  ): void {
     if (!this.active || !input.hasSynchronized) {
       return;
     }
@@ -116,7 +116,7 @@ class SyncFixesModifier extends Modifier {
       }
       output.fixes[name] = fix;
     }
-  };
+  }
 }
 
 export default SyncFixesModifier;

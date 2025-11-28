@@ -11,11 +11,11 @@ class SyncVariablesModifier extends Modifier {
     super({ name, active });
   }
 
-  run = (
+  run(
     input: ModifierInput,
     output: ModifierOutput,
     everything: boolean = false,
-  ) => {
+  ): void {
     if (!this.active || !input.hasSynchronized) {
       return;
     }
@@ -118,7 +118,7 @@ class SyncVariablesModifier extends Modifier {
       }
       output.variables[name] = variable;
     }
-  };
+  }
 }
 
 export default SyncVariablesModifier;

@@ -12,7 +12,11 @@ class SyncBondsModifier extends Modifier {
     super({ name, active });
   }
 
-  run = (input: ModifierInput, output: ModifierOutput) => {
+  run(
+    input: ModifierInput,
+    output: ModifierOutput,
+    _everything: boolean = false,
+  ): void {
     if (!this.active) {
       if (output.bonds) {
         output.bonds.count = 0;
@@ -43,7 +47,7 @@ class SyncBondsModifier extends Modifier {
       if (newBonds.mesh) {
         newBonds.mesh.count = numBonds;
       }
-      return newBonds;
+      return;
     }
 
     const bonds1Ptr = input.lammps.getBondsPosition1Pointer() / 4;
@@ -64,7 +68,7 @@ class SyncBondsModifier extends Modifier {
       newBonds.mesh.count = numBonds;
     }
     newBonds.markNeedsUpdate();
-  };
+  }
 }
 
 export default SyncBondsModifier;

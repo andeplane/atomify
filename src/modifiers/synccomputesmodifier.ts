@@ -11,11 +11,11 @@ class SyncComputesModifier extends Modifier {
     super({ name, active });
   }
 
-  run = (
+  run(
     input: ModifierInput,
     output: ModifierOutput,
     everything: boolean = false,
-  ) => {
+  ): void {
     if (!this.active || !input.hasSynchronized) {
       return;
     }
@@ -121,7 +121,7 @@ class SyncComputesModifier extends Modifier {
       }
       output.computes[name] = compute;
     }
-  };
+  }
 }
 
 export default SyncComputesModifier;
