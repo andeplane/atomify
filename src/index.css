@@ -54,7 +54,7 @@ body,
 
 /* Modern Sidebar Styling */
 .ant-layout-sider {
-  background: rgba(10, 10, 10, 0.85) !important;
+  background: rgba(41, 40, 45, 0.85) !important;
   backdrop-filter: blur(10px);
   border-right: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -71,7 +71,7 @@ body,
 }
 
 .ant-menu-dark .ant-menu-item-selected {
-  background-color: rgba(24, 144, 255, 0.2) !important;
+  background-color: rgb(42, 59, 80) !important;
   color: #40a9ff !important;
   font-weight: 600;
 }
@@ -82,7 +82,7 @@ body,
 }
 
 .site-layout .site-layout-background {
-  background: #000;
+  background: #1a1b1f;
   color: #fff;
 }
 
@@ -120,7 +120,7 @@ body,
 
 .simulationsummary {
   position: fixed !important;
-  background-color: rgba(10, 10, 10, 0.9);
+  background-color: rgba(26, 27, 31, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   width: 300px;

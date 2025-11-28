@@ -5,7 +5,7 @@
   transition: all 0.3s ease;
   border: 1px solid #3a3a3a;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-  background: white;
+  background: #2a292f;
   cursor: pointer;
 }
 
@@ -17,7 +17,7 @@
 .card-image-container {
   position: relative;
   overflow: hidden;
-  background: #f8f9fa;
+  background: #1a1b1f;
 }
 
 .card-image {
@@ -83,7 +83,7 @@
 .card-title {
   font-size: 16px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: #ffffff;
   margin-bottom: 8px;
   line-height: 1.3;
   display: -webkit-box;
@@ -94,7 +94,7 @@
 
 .card-description {
   font-size: 14px;
-  color: #666;
+  color: #d9d9d9;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 4;
@@ -104,12 +104,12 @@
 }
 
 .card-description:hover {
-  color: #333;
+  color: #ffffff;
 }
 
 .card-author {
   font-size: 12px;
-  color: #888;
+  color: #b0b0b0;
   margin-top: 8px;
 }
 
@@ -134,7 +134,7 @@
   padding: 24px;
   margin: 0;
   min-height: 100%;
-  background: #000; /* Pure black background */
+  background: #1a1b1f; /* Grey-ish background */
   color: #ffffff; /* White text */
 }
 
@@ -162,7 +162,7 @@
 /* Note: Most styling is now handled via ConfigProvider Select theme in App.tsx */
 /* These styles remain as fallback for any edge cases */
 .examples-container .ant-select-selector {
-  background: #141414;
+  background: #2a292f;
   border-color: #3a3a3a;
   color: #ffffff;
 }
@@ -177,7 +177,7 @@
 }
 
 .site-layout-background.examples-header {
-  background: #000; /* Pure black header */
+  background: #1a1b1f; /* Grey-ish header */
   color: #ffffff; /* White text */
   padding: 0 24px;
   border-bottom: 1px solid #2a2a2a;
