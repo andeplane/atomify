@@ -95,7 +95,7 @@ export type Data1D = {
 };
 
 export type PlotData = {
-  data1D: Data1D;
+  data1D?: Data1D;
   xLabel: string;
   yLabel: string;
   name: string;
