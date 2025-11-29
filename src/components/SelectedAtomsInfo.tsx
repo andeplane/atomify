@@ -161,7 +161,7 @@ const SelectedAtomsInfo = ({
         onClick={onClearSelection}
         style={{ marginTop: "10px", width: "100%" }}
       >
-        Clear Selection
+        Clear Selection (Esc)
       </Button>
       
       <div style={{ fontSize: "11px", fontStyle: "italic", color: "rgba(255, 255, 255, 0.6)", marginTop: "8px", textAlign: "center" }}>
