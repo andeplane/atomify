@@ -3,6 +3,7 @@ import { Particles } from "omovi";
 import { useMemo, useState, useEffect, useRef } from "react";
 import { Data1D, PlotData } from "../types";
 import Figure from "./Figure";
+import { useStoreState } from "../hooks";
 
 interface SelectedAtomsInfoProps {
   selectedAtoms: Set<number>;
@@ -60,6 +61,23 @@ const SelectedAtomsInfo = ({
   const [visiblePlot, setVisiblePlot] = useState<string | null>(null);
   const prevSelectedAtomsRef = useRef<Set<number>>(new Set());
   const prevTimestepsRef = useRef<number>(0);
+  const prevRunningRef = useRef<boolean>(false);
+  
+  // Get running state from store
+  const running = useStoreState((state) => state.simulation.running);
+
+  // Clear time-series data when simulation starts (running goes from false to true)
+  useEffect(() => {
+    const prevRunning = prevRunningRef.current;
+    const currentRunning = running;
+    
+    // When simulation starts (running transitions from false to true), clear data
+    if (!prevRunning && currentRunning) {
+      setTimeSeriesData({});
+    }
+    
+    prevRunningRef.current = currentRunning;
+  }, [running]);
 
   // Clear time-series data when selection changes
   useEffect(() => {
