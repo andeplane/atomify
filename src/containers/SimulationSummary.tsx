@@ -4,7 +4,7 @@ import { Table, Row, Col, Button, Slider, Checkbox } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TableRowSelection } from "antd/es/table/interface";
 import { Compute, Fix, Variable } from "../types";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import Modifier from "../modifiers/modifier";
 import SyncBondsSettings from "../modifiers/SyncBondsSettings";
 import SyncParticlesSettings from "../modifiers/SyncParticlesSettings";
@@ -67,6 +67,19 @@ const SimulationSummary = () => {
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
   const variables = useStoreState((state) => state.simulationStatus.variables);
+  const setModifierSyncDataPointsAction = useStoreActions(
+    (actions) => actions.simulationStatus.setModifierSyncDataPoints,
+  );
+  const handleToggleSyncDataPoints = useCallback(
+    (
+      name: string,
+      type: "compute" | "fix" | "variable",
+      value: boolean,
+    ) => {
+      setModifierSyncDataPointsAction({ name, type, value });
+    },
+    [setModifierSyncDataPointsAction],
+  );
 
   const setSyncFrequency = (value: number | null) => {
     if (value && value > 0) {
@@ -428,18 +441,24 @@ const SimulationSummary = () => {
       {visibleCompute && (
         <Figure
           modifier={visibleCompute}
+          modifierType="compute"
+          onToggleSyncDataPoints={handleToggleSyncDataPoints}
           onClose={() => setVisibleCompute(undefined)}
         />
       )}
       {visibleFix && (
         <Figure
           modifier={visibleFix}
+          modifierType="fix"
+          onToggleSyncDataPoints={handleToggleSyncDataPoints}
           onClose={() => setVisibleFix(undefined)}
         />
       )}
       {visibleVariable && (
         <Figure
           modifier={visibleVariable}
+          modifierType="variable"
+          onToggleSyncDataPoints={handleToggleSyncDataPoints}
           onClose={() => setVisibleVariable(undefined)}
         />
       )}

@@ -35,6 +35,10 @@ export interface SimulationStatusModel {
   setRunType: Action<SimulationStatusModel, string>;
   setBox: Action<SimulationStatusModel, THREE.Matrix3>;
   setOrigo: Action<SimulationStatusModel, THREE.Vector3>;
+  setModifierSyncDataPoints: Action<
+    SimulationStatusModel,
+    { name: string; type: "compute" | "fix" | "variable"; value: boolean }
+  >;
   reset: Action<SimulationStatusModel>;
 }
 
@@ -100,6 +104,30 @@ export const simulationStatusModel: SimulationStatusModel = {
   setOrigo: action((state, value: THREE.Vector3) => {
     state.origo = value;
   }),
+  setModifierSyncDataPoints: action(
+    (
+      state,
+      { name, type, value }: { name: string; type: "compute" | "fix" | "variable"; value: boolean },
+    ) => {
+      switch (type) {
+        case "compute":
+          if (state.computes[name]) {
+            state.computes[name].syncDataPoints = value;
+          }
+          break;
+        case "fix":
+          if (state.fixes[name]) {
+            state.fixes[name].syncDataPoints = value;
+          }
+          break;
+        case "variable":
+          if (state.variables[name]) {
+            state.variables[name].syncDataPoints = value;
+          }
+          break;
+      }
+    },
+  ),
   reset: action((state) => {
     state.hasSynchronized = false;
     state.lastCommand = undefined;
