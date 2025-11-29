@@ -42,22 +42,14 @@ const Figure = ({
 
   // Extract plot configuration from either modifier or plotData
   const plotConfig = useMemo(() => {
-    if (modifier) {
-      return {
-        data1D: modifier.data1D,
-        xLabel: modifier.xLabel,
-        yLabel: modifier.yLabel,
-        name: modifier.name,
-      };
-    } else if (plotData) {
-      return {
-        data1D: plotData.data1D,
-        xLabel: plotData.xLabel,
-        yLabel: plotData.yLabel,
-        name: plotData.name,
-      };
-    }
-    return null;
+    const source = modifier || plotData;
+    // The `FigureProps` type guarantees that `source` will always be defined.
+    return {
+      data1D: source.data1D,
+      xLabel: source.xLabel,
+      yLabel: source.yLabel,
+      name: source.name,
+    };
   }, [modifier, plotData]);
 
   // Only set syncDataPoints when a modifier is provided
