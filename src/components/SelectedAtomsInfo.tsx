@@ -1,5 +1,6 @@
 import { Button } from "antd";
 import { Particles } from "omovi";
+import { useMemo } from "react";
 
 interface SelectedAtomsInfoProps {
   selectedAtoms: Set<number>;
@@ -21,6 +22,16 @@ const SelectedAtomsInfo = ({
     return null;
   }
 
+  // Create a Map for O(1) atom ID to array index lookups
+  const atomIdToIndex = useMemo(() => {
+    if (!particles) return new Map<number, number>();
+    const map = new Map<number, number>();
+    particles.indices.forEach((atomId: number, arrayIndex: number) => {
+      map.set(atomId, arrayIndex);
+    });
+    return map;
+  }, [particles]);
+
   // Get atom data for selected atoms
   const getAtomData = (): AtomData[] => {
     if (!particles) return [];
@@ -29,9 +40,9 @@ const SelectedAtomsInfo = ({
     const selectedArray = Array.from(selectedAtoms).slice(0, 3); // Only show first 3
 
     for (const atomId of selectedArray) {
-      // Find array index for this atom ID
-      const arrayIndex = particles.indices.indexOf(atomId);
-      if (arrayIndex === -1) continue;
+      // Find array index for this atom ID using O(1) Map lookup
+      const arrayIndex = atomIdToIndex.get(atomId);
+      if (arrayIndex === undefined) continue;
 
       const position = particles.getPosition(arrayIndex);
       
