@@ -47,6 +47,18 @@ const calculateAngle = (
   return Math.acos(Math.max(-1, Math.min(1, cosAngle))) * (180 / Math.PI);
 };
 
+// Generate canonical distance key by sorting atom IDs
+const getCanonicalDistanceKey = (id1: number, id2: number): string => {
+  const sorted = [id1, id2].sort((a, b) => a - b);
+  return `distance-${sorted[0]}-${sorted[1]}`;
+};
+
+// Generate canonical angle key by sorting non-vertex atom IDs
+const getCanonicalAngleKey = (vertexId: number, id1: number, id2: number): string => {
+  const otherIds = [id1, id2].sort((a, b) => a - b);
+  return `angle-${otherIds[0]}-${vertexId}-${otherIds[1]}`;
+};
+
 interface TimeSeriesData {
   [key: string]: Data1D;
 }
@@ -143,6 +155,16 @@ const SelectedAtomsInfo = ({
     }
   }, [selectedAtoms]);
 
+  // Create a Map for O(1) atom ID to array index lookups
+  const atomIdToIndex = useMemo(() => {
+    if (!particles) return new Map<number, number>();
+    const map = new Map<number, number>();
+    particles.indices.forEach((atomId: number, arrayIndex: number) => {
+      map.set(atomId, arrayIndex);
+    });
+    return map;
+  }, [particles]);
+
   // Track measurements over time
   useEffect(() => {
     if (!particles || selectedAtoms.size === 0 || selectedAtoms.size > 3) {
@@ -156,10 +178,6 @@ const SelectedAtomsInfo = ({
     prevTimestepsRef.current = timesteps;
 
     const selectedArray = Array.from(selectedAtoms).slice(0, 3);
-    const atomIdToIndex = new Map<number, number>();
-    particles.indices.forEach((atomId: number, arrayIndex: number) => {
-      atomIdToIndex.set(atomId, arrayIndex);
-    });
 
     const atomPositions: Array<{ id: number; position: [number, number, number] }> = [];
     for (const atomId of selectedArray) {
@@ -179,15 +197,15 @@ const SelectedAtomsInfo = ({
 
       // Track distances
       if (atomPositions.length === 2) {
-        const key = `distance-${atomPositions[0].id}-${atomPositions[1].id}`;
+        const key = getCanonicalDistanceKey(atomPositions[0].id, atomPositions[1].id);
         const distance = calculateDistance(atomPositions[0].position, atomPositions[1].position);
         updateTimeSeries(updated, key, distance, ["Time", "Distance"], timesteps);
       } else if (atomPositions.length === 3) {
         // Three distances
         const distKeys = [
-          `distance-${atomPositions[0].id}-${atomPositions[1].id}`,
-          `distance-${atomPositions[1].id}-${atomPositions[2].id}`,
-          `distance-${atomPositions[0].id}-${atomPositions[2].id}`,
+          getCanonicalDistanceKey(atomPositions[0].id, atomPositions[1].id),
+          getCanonicalDistanceKey(atomPositions[1].id, atomPositions[2].id),
+          getCanonicalDistanceKey(atomPositions[0].id, atomPositions[2].id),
         ];
         const distances = [
           calculateDistance(atomPositions[0].position, atomPositions[1].position),
@@ -201,9 +219,9 @@ const SelectedAtomsInfo = ({
 
         // Three angles
         const angleKeys = [
-          `angle-${atomPositions[1].id}-${atomPositions[0].id}-${atomPositions[2].id}`,
-          `angle-${atomPositions[0].id}-${atomPositions[1].id}-${atomPositions[2].id}`,
-          `angle-${atomPositions[0].id}-${atomPositions[2].id}-${atomPositions[1].id}`,
+          getCanonicalAngleKey(atomPositions[0].id, atomPositions[1].id, atomPositions[2].id),
+          getCanonicalAngleKey(atomPositions[1].id, atomPositions[0].id, atomPositions[2].id),
+          getCanonicalAngleKey(atomPositions[2].id, atomPositions[0].id, atomPositions[1].id),
         ];
         const angles = [
           calculateAngle(atomPositions[1].position, atomPositions[0].position, atomPositions[2].position),
@@ -218,17 +236,7 @@ const SelectedAtomsInfo = ({
 
       return updated;
     });
-  }, [particles, selectedAtoms, timesteps]);
-
-  // Create a Map for O(1) atom ID to array index lookups
-  const atomIdToIndex = useMemo(() => {
-    if (!particles) return new Map<number, number>();
-    const map = new Map<number, number>();
-    particles.indices.forEach((atomId: number, arrayIndex: number) => {
-      map.set(atomId, arrayIndex);
-    });
-    return map;
-  }, [particles]);
+  }, [particles, selectedAtoms, timesteps, atomIdToIndex]);
 
   if (selectedAtoms.size === 0) {
     return null;
@@ -284,7 +292,7 @@ const SelectedAtomsInfo = ({
 
       {/* Distance for 2 atoms */}
       {atomData.length === 2 && (() => {
-        const distanceKey = `distance-${atomData[0].atomId}-${atomData[1].atomId}`;
+        const distanceKey = getCanonicalDistanceKey(atomData[0].atomId, atomData[1].atomId);
         const distance = calculateDistance(atomData[0].position, atomData[1].position);
         
         return (
@@ -307,14 +315,14 @@ const SelectedAtomsInfo = ({
       {/* Distances and angles for 3 atoms */}
       {atomData.length === 3 && (() => {
         const distKeys = [
-          `distance-${atomData[0].atomId}-${atomData[1].atomId}`,
-          `distance-${atomData[1].atomId}-${atomData[2].atomId}`,
-          `distance-${atomData[0].atomId}-${atomData[2].atomId}`,
+          getCanonicalDistanceKey(atomData[0].atomId, atomData[1].atomId),
+          getCanonicalDistanceKey(atomData[1].atomId, atomData[2].atomId),
+          getCanonicalDistanceKey(atomData[0].atomId, atomData[2].atomId),
         ];
         const angleKeys = [
-          `angle-${atomData[1].atomId}-${atomData[0].atomId}-${atomData[2].atomId}`,
-          `angle-${atomData[0].atomId}-${atomData[1].atomId}-${atomData[2].atomId}`,
-          `angle-${atomData[0].atomId}-${atomData[2].atomId}-${atomData[1].atomId}`,
+          getCanonicalAngleKey(atomData[0].atomId, atomData[1].atomId, atomData[2].atomId),
+          getCanonicalAngleKey(atomData[1].atomId, atomData[0].atomId, atomData[2].atomId),
+          getCanonicalAngleKey(atomData[2].atomId, atomData[0].atomId, atomData[1].atomId),
         ];
         
         return (
