@@ -51,6 +51,21 @@ interface TimeSeriesData {
   [key: string]: Data1D;
 }
 
+// Helper function to update time series data
+const updateTimeSeries = (
+  updated: TimeSeriesData,
+  key: string,
+  value: number,
+  labels: [string, string],
+  timestep: number
+) => {
+  const existing = updated[key] || { data: [], labels };
+  updated[key] = {
+    ...existing,
+    data: [...existing.data, [timestep, value]],
+  };
+};
+
 interface MeasurementRowProps {
   label: string;
   value: string;
@@ -166,14 +181,7 @@ const SelectedAtomsInfo = ({
       if (atomPositions.length === 2) {
         const key = `distance-${atomPositions[0].id}-${atomPositions[1].id}`;
         const distance = calculateDistance(atomPositions[0].position, atomPositions[1].position);
-        
-        if (!updated[key]) {
-          updated[key] = { data: [], labels: ["Time", "Distance"] };
-        }
-        updated[key] = {
-          ...updated[key],
-          data: [...updated[key].data, [timesteps, distance]],
-        };
+        updateTimeSeries(updated, key, distance, ["Time", "Distance"], timesteps);
       } else if (atomPositions.length === 3) {
         // Three distances
         const distKeys = [
@@ -188,13 +196,7 @@ const SelectedAtomsInfo = ({
         ];
 
         distKeys.forEach((key, idx) => {
-          if (!updated[key]) {
-            updated[key] = { data: [], labels: ["Time", "Distance"] };
-          }
-          updated[key] = {
-            ...updated[key],
-            data: [...updated[key].data, [timesteps, distances[idx]]],
-          };
+          updateTimeSeries(updated, key, distances[idx], ["Time", "Distance"], timesteps);
         });
 
         // Three angles
@@ -210,13 +212,7 @@ const SelectedAtomsInfo = ({
         ];
 
         angleKeys.forEach((key, idx) => {
-          if (!updated[key]) {
-            updated[key] = { data: [], labels: ["Time", "Angle"] };
-          }
-          updated[key] = {
-            ...updated[key],
-            data: [...updated[key].data, [timesteps, angles[idx]]],
-          };
+          updateTimeSeries(updated, key, angles[idx], ["Time", "Angle"], timesteps);
         });
       }
 
