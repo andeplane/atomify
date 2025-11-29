@@ -44,7 +44,7 @@ export type LammpsWeb = {
   computeParticles: () => number;
 };
 
-enum ModifierType {
+export enum ModifierType {
   ComputePressure,
   ComputeTemp,
   ComputePE,
