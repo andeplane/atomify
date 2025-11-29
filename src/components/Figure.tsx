@@ -50,7 +50,16 @@ const Figure = ({
       yLabel: source.yLabel,
       name: source.name,
     };
-  }, [modifier, plotData]);
+  }, [
+    modifier?.name,
+    modifier?.xLabel,
+    modifier?.yLabel,
+    modifier?.data1D,
+    plotData?.name,
+    plotData?.xLabel,
+    plotData?.yLabel,
+    plotData?.data1D,
+  ]);
 
   // Only set syncDataPoints when a modifier is provided
   useEffect(() => {
