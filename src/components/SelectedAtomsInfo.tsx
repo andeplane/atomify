@@ -165,7 +165,7 @@ const SelectedAtomsInfo = ({
       </Button>
       
       <div style={{ fontSize: "11px", fontStyle: "italic", color: "rgba(255, 255, 255, 0.6)", marginTop: "8px", textAlign: "center" }}>
-        Hold shift to select more
+        Hold shift to select more particles
       </div>
     </div>
   );
