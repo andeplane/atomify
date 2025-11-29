@@ -67,6 +67,9 @@ const SimulationSummary = () => {
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
   const variables = useStoreState((state) => state.simulationStatus.variables);
+  const setModifierSyncDataPoints = useStoreActions(
+    (actions) => actions.simulationStatus.setModifierSyncDataPoints,
+  );
 
   const setSyncFrequency = (value: number | null) => {
     if (value && value > 0) {
@@ -428,18 +431,24 @@ const SimulationSummary = () => {
       {visibleCompute && (
         <Figure
           modifier={visibleCompute}
+          modifierType="compute"
+          onToggleSyncDataPoints={setModifierSyncDataPoints}
           onClose={() => setVisibleCompute(undefined)}
         />
       )}
       {visibleFix && (
         <Figure
           modifier={visibleFix}
+          modifierType="fix"
+          onToggleSyncDataPoints={setModifierSyncDataPoints}
           onClose={() => setVisibleFix(undefined)}
         />
       )}
       {visibleVariable && (
         <Figure
           modifier={visibleVariable}
+          modifierType="variable"
+          onToggleSyncDataPoints={setModifierSyncDataPoints}
           onClose={() => setVisibleVariable(undefined)}
         />
       )}

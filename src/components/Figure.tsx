@@ -6,18 +6,31 @@ import Dygraph from "dygraphs";
 
 type FigureProps = {
   onClose: () => void;
+  onToggleSyncDataPoints?: (
+    name: string,
+    type: "compute" | "fix" | "variable",
+    value: boolean,
+  ) => void;
 } & (
   | {
       modifier: Fix | Compute | Variable;
+      modifierType: "compute" | "fix" | "variable";
       plotData?: never;
     }
   | {
       modifier?: never;
+      modifierType?: never;
       plotData: PlotData;
     }
 );
 
-const Figure = ({ modifier, plotData, onClose }: FigureProps) => {
+const Figure = ({
+  modifier,
+  modifierType,
+  plotData,
+  onClose,
+  onToggleSyncDataPoints,
+}: FigureProps) => {
   const [graph, setGraph] = useState<Dygraph>();
   const timesteps = useStoreState((state) => state.simulationStatus.timesteps);
   const graphId = useId();
@@ -49,13 +62,13 @@ const Figure = ({ modifier, plotData, onClose }: FigureProps) => {
 
   // Only set syncDataPoints when a modifier is provided
   useEffect(() => {
-    if (modifier) {
-      modifier.syncDataPoints = true;
+    if (modifier && modifierType && onToggleSyncDataPoints) {
+      onToggleSyncDataPoints(modifier.name, modifierType, true);
       return () => {
-        modifier.syncDataPoints = false;
+        onToggleSyncDataPoints(modifier.name, modifierType, false);
       };
     }
-  }, [modifier]);
+  }, [modifier, modifierType, onToggleSyncDataPoints]);
 
   useEffect(() => {
     if (plotConfig?.data1D && !graph) {
