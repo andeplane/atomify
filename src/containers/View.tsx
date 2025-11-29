@@ -68,6 +68,9 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const runTimesteps = useStoreState(
     (state) => state.simulationStatus.runTimesteps,
   );
+  const timesteps = useStoreState(
+    (state) => state.simulationStatus.timesteps,
+  );
   const simulationBox = useStoreState((state) => state.simulationStatus.box);
   const simulationOrigo = useStoreState(
     (state) => state.simulationStatus.origo,
@@ -310,6 +313,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
           <SelectedAtomsInfo
             selectedAtoms={selectedAtoms}
             particles={particles}
+            timesteps={timesteps}
             onClearSelection={handleClearSelection}
           />
         </div>
