@@ -314,15 +314,46 @@ const SelectedAtomsInfo = ({
 
       {/* Distances and angles for 3 atoms */}
       {atomData.length === 3 && (() => {
-        const distKeys = [
-          getCanonicalDistanceKey(atomData[0].atomId, atomData[1].atomId),
-          getCanonicalDistanceKey(atomData[1].atomId, atomData[2].atomId),
-          getCanonicalDistanceKey(atomData[0].atomId, atomData[2].atomId),
+        const distanceMeasurements = [
+          {
+            label: `d(${atomData[0].atomId}-${atomData[1].atomId})`,
+            value: calculateDistance(atomData[0].position, atomData[1].position).toFixed(3),
+            unit: "Å",
+            plotKey: getCanonicalDistanceKey(atomData[0].atomId, atomData[1].atomId),
+          },
+          {
+            label: `d(${atomData[1].atomId}-${atomData[2].atomId})`,
+            value: calculateDistance(atomData[1].position, atomData[2].position).toFixed(3),
+            unit: "Å",
+            plotKey: getCanonicalDistanceKey(atomData[1].atomId, atomData[2].atomId),
+          },
+          {
+            label: `d(${atomData[0].atomId}-${atomData[2].atomId})`,
+            value: calculateDistance(atomData[0].position, atomData[2].position).toFixed(3),
+            unit: "Å",
+            plotKey: getCanonicalDistanceKey(atomData[0].atomId, atomData[2].atomId),
+          },
         ];
-        const angleKeys = [
-          getCanonicalAngleKey(atomData[0].atomId, atomData[1].atomId, atomData[2].atomId),
-          getCanonicalAngleKey(atomData[1].atomId, atomData[0].atomId, atomData[2].atomId),
-          getCanonicalAngleKey(atomData[2].atomId, atomData[0].atomId, atomData[1].atomId),
+
+        const angleMeasurements = [
+          {
+            label: `∠${atomData[1].atomId}-${atomData[0].atomId}-${atomData[2].atomId}`,
+            value: calculateAngle(atomData[1].position, atomData[0].position, atomData[2].position).toFixed(1),
+            unit: "°",
+            plotKey: getCanonicalAngleKey(atomData[0].atomId, atomData[1].atomId, atomData[2].atomId),
+          },
+          {
+            label: `∠${atomData[0].atomId}-${atomData[1].atomId}-${atomData[2].atomId}`,
+            value: calculateAngle(atomData[0].position, atomData[1].position, atomData[2].position).toFixed(1),
+            unit: "°",
+            plotKey: getCanonicalAngleKey(atomData[1].atomId, atomData[0].atomId, atomData[2].atomId),
+          },
+          {
+            label: `∠${atomData[0].atomId}-${atomData[2].atomId}-${atomData[1].atomId}`,
+            value: calculateAngle(atomData[0].position, atomData[2].position, atomData[1].position).toFixed(1),
+            unit: "°",
+            plotKey: getCanonicalAngleKey(atomData[2].atomId, atomData[0].atomId, atomData[1].atomId),
+          },
         ];
         
         return (
@@ -331,56 +362,30 @@ const SelectedAtomsInfo = ({
               Geometry
             </div>
             <div style={{ fontFamily: "monospace", fontSize: "11px" }}>
-              <MeasurementRow
-                label={`d(${atomData[0].atomId}-${atomData[1].atomId})`}
-                value={calculateDistance(atomData[0].position, atomData[1].position).toFixed(3)}
-                unit="Å"
-                plotKey={distKeys[0]}
-                timeSeriesData={timeSeriesData}
-                onPlotClick={setVisiblePlot}
-              />
-              <MeasurementRow
-                label={`d(${atomData[1].atomId}-${atomData[2].atomId})`}
-                value={calculateDistance(atomData[1].position, atomData[2].position).toFixed(3)}
-                unit="Å"
-                plotKey={distKeys[1]}
-                timeSeriesData={timeSeriesData}
-                onPlotClick={setVisiblePlot}
-              />
-              <MeasurementRow
-                label={`d(${atomData[0].atomId}-${atomData[2].atomId})`}
-                value={calculateDistance(atomData[0].position, atomData[2].position).toFixed(3)}
-                unit="Å"
-                plotKey={distKeys[2]}
-                timeSeriesData={timeSeriesData}
-                onPlotClick={setVisiblePlot}
-              />
+              {distanceMeasurements.map((measurement, idx) => (
+                <MeasurementRow
+                  key={idx}
+                  label={measurement.label}
+                  value={measurement.value}
+                  unit={measurement.unit}
+                  plotKey={measurement.plotKey}
+                  timeSeriesData={timeSeriesData}
+                  onPlotClick={setVisiblePlot}
+                />
+              ))}
             </div>
             <div style={{ marginTop: "5px" }}>
-              <MeasurementRow
-                label={`∠${atomData[1].atomId}-${atomData[0].atomId}-${atomData[2].atomId}`}
-                value={calculateAngle(atomData[1].position, atomData[0].position, atomData[2].position).toFixed(1)}
-                unit="°"
-                plotKey={angleKeys[0]}
-                timeSeriesData={timeSeriesData}
-                onPlotClick={setVisiblePlot}
-              />
-              <MeasurementRow
-                label={`∠${atomData[0].atomId}-${atomData[1].atomId}-${atomData[2].atomId}`}
-                value={calculateAngle(atomData[0].position, atomData[1].position, atomData[2].position).toFixed(1)}
-                unit="°"
-                plotKey={angleKeys[1]}
-                timeSeriesData={timeSeriesData}
-                onPlotClick={setVisiblePlot}
-              />
-              <MeasurementRow
-                label={`∠${atomData[0].atomId}-${atomData[2].atomId}-${atomData[1].atomId}`}
-                value={calculateAngle(atomData[0].position, atomData[2].position, atomData[1].position).toFixed(1)}
-                unit="°"
-                plotKey={angleKeys[2]}
-                timeSeriesData={timeSeriesData}
-                onPlotClick={setVisiblePlot}
-              />
+              {angleMeasurements.map((measurement, idx) => (
+                <MeasurementRow
+                  key={idx}
+                  label={measurement.label}
+                  value={measurement.value}
+                  unit={measurement.unit}
+                  plotKey={measurement.plotKey}
+                  timeSeriesData={timeSeriesData}
+                  onPlotClick={setVisiblePlot}
+                />
+              ))}
             </div>
           </div>
         );
