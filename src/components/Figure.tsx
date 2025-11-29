@@ -64,12 +64,13 @@ const Figure = ({
   // Only set syncDataPoints when a modifier is provided
   useEffect(() => {
     if (modifier && modifierType && onToggleSyncDataPoints) {
-      onToggleSyncDataPoints(modifier.name, modifierType, true);
+      const modifierName = modifier.name;
+      onToggleSyncDataPoints(modifierName, modifierType, true);
       return () => {
-        onToggleSyncDataPoints(modifier.name, modifierType, false);
+        onToggleSyncDataPoints(modifierName, modifierType, false);
       };
     }
-  }, [modifier, modifierType, onToggleSyncDataPoints]);
+  }, [modifier?.name, modifierType, onToggleSyncDataPoints]);
 
   useEffect(() => {
     if (plotConfig?.data1D && !graph) {
