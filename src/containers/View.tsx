@@ -118,9 +118,13 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
                 newSelection.add(particleIndex);
               }
             } else {
-              // Plain click: replace selection
-              newSelection.clear();
-              newSelection.add(particleIndex);
+              // Plain click: toggle if already selected (and only one), otherwise replace selection
+              if (newSelection.size === 1 && newSelection.has(particleIndex)) {
+                newSelection.clear();
+              } else {
+                newSelection.clear();
+                newSelection.add(particleIndex);
+              }
             }
             
             // Update ref for immediate access
