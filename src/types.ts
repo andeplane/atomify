@@ -17,6 +17,7 @@ export type LammpsWeb = {
   getFixNames: () => CPPArray<string>;
   getVariable: (name: string) => LMPModifier;
   getVariableNames: () => CPPArray<string>;
+  getUnits: () => string;
   syncComputes: () => void;
   syncFixes: () => void;
   syncVariables: () => void;

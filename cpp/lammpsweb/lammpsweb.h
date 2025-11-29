@@ -59,6 +59,7 @@ public:
   Fix getFix(std::string name);
   std::vector<std::string> getVariableNames();
   Variable getVariable(std::string name);
+  std::string getUnits();
   long getMemoryUsage();
   
   // Pointer getters
@@ -121,6 +122,7 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .function("getFixNames", &LAMMPSWeb::getFixNames)
     .function("getVariable", &LAMMPSWeb::getVariable)
     .function("getVariableNames", &LAMMPSWeb::getVariableNames)
+    .function("getUnits", &LAMMPSWeb::getUnits)
     .function("syncComputes", &LAMMPSWeb::syncComputes)
     .function("syncFixes", &LAMMPSWeb::syncFixes)
     .function("syncVariables", &LAMMPSWeb::syncVariables)

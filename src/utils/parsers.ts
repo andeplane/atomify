@@ -89,26 +89,6 @@ export const parseAtomSizeAndColor = (line: string) => {
 };
 
 /**
- * Parses LAMMPS units command from input script
- * @param inputScript The LAMMPS input script content
- * @returns The unit style string (e.g., "real", "metal", "lj", "si", etc.) or undefined if not found
- */
-export const parseLammpsUnits = (inputScript: string): string | undefined => {
-  const lines = inputScript.split("\n");
-  for (const line of lines) {
-    // Remove comments (everything after #)
-    const withoutComments = line.split("#")[0];
-    const trimmed = withoutComments.trim();
-    // Match "units <style>" command
-    const match = trimmed.match(/^units\s+(\w+)/i);
-    if (match) {
-      return match[1].toLowerCase();
-    }
-  }
-  return undefined;
-};
-
-/**
  * Gets the distance unit symbol for a given LAMMPS unit style
  * @param unitStyle The LAMMPS unit style (e.g., "real", "metal", "lj", "si", etc.)
  * @returns The distance unit symbol string

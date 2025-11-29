@@ -1,8 +1,7 @@
 import { Button } from "antd";
 import { Particles } from "omovi";
 import { useMemo } from "react";
-import { useStoreState } from "../hooks";
-import { parseLammpsUnits, getDistanceUnitSymbol } from "../utils/parsers";
+import { useLammpsUnits } from "../hooks/useLammpsUnits";
 
 interface SelectedAtomsInfoProps {
   selectedAtoms: Set<number>;
@@ -50,25 +49,7 @@ const SelectedAtomsInfo = ({
   particles,
   onClearSelection,
 }: SelectedAtomsInfoProps) => {
-  const simulation = useStoreState((state) => state.simulation.simulation);
-  
-  // Get the distance unit symbol based on LAMMPS unit system
-  const distanceUnit = useMemo(() => {
-    if (!simulation) {
-      return "Å"; // Default to Angstroms
-    }
-    
-    const inputScriptFile = simulation.files.find(
-      (file) => file.fileName === simulation.inputScript
-    );
-    
-    if (!inputScriptFile?.content) {
-      return "Å"; // Default to Angstroms
-    }
-    
-    const unitStyle = parseLammpsUnits(inputScriptFile.content);
-    return getDistanceUnitSymbol(unitStyle);
-  }, [simulation]);
+  const distanceUnit = useLammpsUnits();
 
   if (selectedAtoms.size === 0) {
     return null;
