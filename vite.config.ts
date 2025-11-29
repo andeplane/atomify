@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/atomify/',
   build: {
     outDir: 'dist',
   },
@@ -15,6 +16,10 @@ export default defineConfig({
         changeOrigin: true
       }
     }
+  },
+  define: {
+    // Fix for libraries expecting CommonJS 'module' in browser
+    'typeof module': JSON.stringify('undefined'),
   },
   // WASM files served from public/ folder, no special config needed
 });
