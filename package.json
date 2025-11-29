@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@monaco-editor/react": "^4.6.0",
     "@ant-design/icons": "^5.5.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.6.1",
@@ -20,6 +21,7 @@
     "katex": "^0.16.0",
     "localforage": "^1.10.0",
     "mixpanel-browser": "^2.45.0",
+    "monaco-editor": "^0.50.0",
     "omovi": "^0.13.0",
     "protobufjs": "^7.5.4",
     "react": "^18.2.0",
@@ -27,8 +29,6 @@
     "react-fetch-hook": "^1.9.5",
     "react-iframe": "^1.8.4",
     "react-markdown": "^8.0.3",
-    "react-monaco-editor": "^0.50.1",
-    "react-scripts": "5.0.1",
     "react-terminal-ui": "^1.0.0",
     "react-use": "^17.4.0",
     "rehype-katex": "^6.0.2",
@@ -40,15 +40,15 @@
     "web-vitals": "^5.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build && mv build dist",
+    "start": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "typecheck": "tsc --noEmit",
-    "eject": "react-scripts eject",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d dist"
   },
   "browserslist": {
     "production": [
@@ -69,10 +69,12 @@
     "@types/node": "^20.19.25",
     "@types/styled-components": "^5.1.26",
     "@types/uuid": "^8.3.4",
+    "@vitejs/plugin-react": "^4.3.4",
     "@vitest/ui": "^4.0.14",
     "gh-pages": "^6.1.1",
     "jsdom": "^27.2.0",
     "prettier": "3.6.2",
+    "vite": "^5.4.11",
     "vitest": "^4.0.14"
   }
 }

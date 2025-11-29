@@ -4,13 +4,10 @@ import { storeModel, StoreModel } from "./model";
 const store = createStore<StoreModel>(storeModel);
 
 // Added support for hot reloading
-// Wrapping dev only code like this normally gets stripped out by bundlers
-// such as Webpack when creating a production build.
-if (process.env.NODE_ENV === "development") {
-  // @ts-ignore
-  if (module.hot) {
-    // @ts-ignore
-    module.hot.accept("./model", () => {
+// Vite uses import.meta.hot instead of module.hot
+if (import.meta.env.DEV) {
+  if (import.meta.hot) {
+    import.meta.hot.accept("./model", () => {
       store.reconfigure(storeModel); // 👈 Here is the magic
     });
   }

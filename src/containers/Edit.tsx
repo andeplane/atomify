@@ -1,9 +1,12 @@
 import { useCallback } from "react";
 import { useStoreState } from "../hooks";
-import MonacoEditor, { monaco } from "react-monaco-editor";
+import Editor, { loader } from "@monaco-editor/react";
+import type * as Monaco from "monaco-editor";
 
-monaco.languages.register({ id: "lammps" });
-monaco.languages.setMonarchTokensProvider("lammps", {
+// Initialize Monaco
+loader.init().then((monaco) => {
+  monaco.languages.register({ id: "lammps" });
+  monaco.languages.setMonarchTokensProvider("lammps", {
   keywords: [
     "ave/correlate",
     "lj/spica/coul/msm/omp",
@@ -1406,6 +1409,7 @@ monaco.languages.setMonarchTokensProvider("lammps", {
       [/\/\/.*$/, "comment"],
     ],
   },
+  });
 });
 
 const Edit = () => {
@@ -1415,19 +1419,19 @@ const Edit = () => {
     selectOnLineNumbers: true,
   };
 
-  const editorDidMount = useCallback(
-    (editor: monaco.editor.IStandaloneCodeEditor) => {
+  const handleEditorDidMount = useCallback(
+    (editor: Monaco.editor.IStandaloneCodeEditor) => {
       editor.focus();
     },
     [],
   );
 
   const onEditorChange = useCallback(
-    (newValue: string) => {
-      // console.log('onChange', newValue, e);
-      const file = simulation?.files.filter(
+    (newValue: string | undefined) => {
+      if (!newValue) return;
+      const file = simulation?.files.find(
         (file) => file.fileName === selectedFile?.fileName,
-      )[0];
+      );
       if (file) {
         file.content = newValue;
       }
@@ -1440,14 +1444,14 @@ const Edit = () => {
   }
 
   return (
-    <MonacoEditor
+    <Editor
       height="100vh"
       language="lammps"
       theme="vs-dark"
       value={selectedFile.content}
       options={options}
       onChange={onEditorChange}
-      editorDidMount={editorDidMount}
+      onMount={handleEditorDidMount}
     />
   );
 };

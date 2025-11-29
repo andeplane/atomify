@@ -162,6 +162,12 @@ const SimulationComponent = () => {
         createModule({
           print: onPrint,
           printErr: onPrint,
+          locateFile: (path: string) => {
+            if (path.endsWith('.wasm')) {
+              return import.meta.env.BASE_URL + path;
+            }
+            return path;
+          }
         }).then((Module) => {
           track("WASM.Load");
           setStatus({
