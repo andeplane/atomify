@@ -13,6 +13,7 @@ const { Content } = Layout;
 const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
   const wasm = window.wasm; // TODO: This is an ugly hack because wasm object is so big that Redux debugger hangs.
   const showConsole = useStoreState((state) => state.simulation.showConsole);
+  const lammpsOutput = useStoreState((state) => state.simulation.lammpsOutput);
   const [consoleKey, setConsoleKey] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
   const setShowConsole = useStoreActions(
@@ -39,6 +40,38 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
       setHasStarted(true);
     }
   }, [running]);
+
+  // Handle download logs
+  const handleDownloadLogs = () => {
+    const logsText = lammpsOutput.join("\n");
+    const blob = new Blob([logsText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `lammps-logs-${new Date().toISOString().split("T")[0]}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Handle copy logs
+  const handleCopyLogs = async () => {
+    const logsText = lammpsOutput.join("\n");
+    try {
+      await navigator.clipboard.writeText(logsText);
+    } catch (err) {
+      // Fallback for older browsers
+      const textArea = document.createElement("textarea");
+      textArea.value = logsText;
+      textArea.style.position = "fixed";
+      textArea.style.opacity = "0";
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textArea);
+    }
+  };
 
   // Memoize tabs array to prevent unnecessary re-renders
   const tabs = useMemo(() => {
@@ -101,23 +134,44 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
           className="console-modal"
           styles={{ body: { backgroundColor: "#1E1E1E" } }}
           width={"80%"}
-          footer={[
-            <>
-              <Button
-                key="analyze"
-                onClick={() => {
-                  setShowConsole(false);
-                  setPreferredView(undefined);
-                  setPreferredView("notebook");
-                }}
-              >
-                Analyze in notebook
-              </Button>
-              <Button key="close" onClick={() => setShowConsole(false)}>
-                Close
-              </Button>
-            </>,
-          ]}
+          footer={
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div>
+                <Button
+                  key="download"
+                  onClick={handleDownloadLogs}
+                >
+                  Download logs
+                </Button>
+                <Button
+                  key="copy"
+                  onClick={handleCopyLogs}
+                  style={{ marginLeft: 8 }}
+                >
+                  Copy logs
+                </Button>
+              </div>
+              <div>
+                <Button
+                  key="analyze"
+                  onClick={() => {
+                    setShowConsole(false);
+                    setPreferredView(undefined);
+                    setPreferredView("notebook");
+                  }}
+                >
+                  Analyze in notebook
+                </Button>
+                <Button
+                  key="close"
+                  onClick={() => setShowConsole(false)}
+                  style={{ marginLeft: 8 }}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          }
           closable={false}
           open
           onCancel={() => setShowConsole(false)}
