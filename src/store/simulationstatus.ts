@@ -109,12 +109,22 @@ export const simulationStatusModel: SimulationStatusModel = {
       state,
       { name, type, value }: { name: string; type: "compute" | "fix" | "variable"; value: boolean },
     ) => {
-      if (type === "compute" && state.computes[name]) {
-        state.computes[name] = { ...state.computes[name], syncDataPoints: value };
-      } else if (type === "fix" && state.fixes[name]) {
-        state.fixes[name] = { ...state.fixes[name], syncDataPoints: value };
-      } else if (type === "variable" && state.variables[name]) {
-        state.variables[name] = { ...state.variables[name], syncDataPoints: value };
+      switch (type) {
+        case "compute":
+          if (state.computes[name]) {
+            state.computes[name].syncDataPoints = value;
+          }
+          break;
+        case "fix":
+          if (state.fixes[name]) {
+            state.fixes[name].syncDataPoints = value;
+          }
+          break;
+        case "variable":
+          if (state.variables[name]) {
+            state.variables[name].syncDataPoints = value;
+          }
+          break;
       }
     },
   ),
