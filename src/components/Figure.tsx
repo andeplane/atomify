@@ -1,36 +1,62 @@
 import { Modal, Empty } from "antd";
-import { Compute, Fix, Variable } from "../types";
-import { useEffect, useState } from "react";
+import { Compute, Fix, Variable, PlotData } from "../types";
+import { useEffect, useState, useId, useMemo } from "react";
 import { useStoreState } from "../hooks";
 import Dygraph from "dygraphs";
 
 interface FigureProps {
-  modifier: Fix | Compute | Variable;
+  modifier?: Fix | Compute | Variable;
+  plotData?: PlotData;
   onClose: () => void;
 }
-const Figure = ({ modifier, onClose }: FigureProps) => {
+
+const Figure = ({ modifier, plotData, onClose }: FigureProps) => {
   const [graph, setGraph] = useState<Dygraph>();
   const timesteps = useStoreState((state) => state.simulationStatus.timesteps);
+  const graphId = useId();
   const width =
     window.innerWidth < 1000
       ? window.innerWidth * 0.8
       : window.innerWidth * 0.6;
   const height = (width * 3) / 4;
 
+  // Extract plot configuration from either modifier or plotData
+  const plotConfig = useMemo(() => {
+    if (modifier) {
+      return {
+        data1D: modifier.data1D,
+        xLabel: modifier.xLabel,
+        yLabel: modifier.yLabel,
+        name: modifier.name,
+      };
+    } else if (plotData) {
+      return {
+        data1D: plotData.data1D,
+        xLabel: plotData.xLabel,
+        yLabel: plotData.yLabel,
+        name: plotData.name,
+      };
+    }
+    return null;
+  }, [modifier, plotData]);
+
+  // Only set syncDataPoints when a modifier is provided
   useEffect(() => {
-    modifier.syncDataPoints = true;
-    return () => {
-      modifier.syncDataPoints = false;
-    };
+    if (modifier) {
+      modifier.syncDataPoints = true;
+      return () => {
+        modifier.syncDataPoints = false;
+      };
+    }
   }, [modifier]);
 
   useEffect(() => {
-    if (modifier.data1D && !graph) {
-      const g = new Dygraph("graph", modifier.data1D.data, {
-        labels: modifier.data1D.labels,
-        xlabel: modifier.xLabel,
-        ylabel: modifier.yLabel,
-        title: modifier.name,
+    if (plotConfig?.data1D && !graph) {
+      const g = new Dygraph(graphId, plotConfig.data1D.data, {
+        labels: plotConfig.data1D.labels,
+        xlabel: plotConfig.xLabel,
+        ylabel: plotConfig.yLabel,
+        title: plotConfig.name,
         width: width - 50, // Extra 50 is padding for the figure
         height,
         legend: "always",
@@ -53,17 +79,17 @@ const Figure = ({ modifier, onClose }: FigureProps) => {
       });
       setGraph(g);
     }
-  }, [modifier, graph, height, width]);
+  }, [plotConfig, graph, height, width, graphId]);
 
   useEffect(() => {
-    if (graph && modifier.data1D) {
-      graph.updateOptions({ file: modifier.data1D.data });
+    if (graph && plotConfig?.data1D) {
+      graph.updateOptions({ file: plotConfig.data1D.data });
     }
-  }, [graph, modifier, timesteps]);
+  }, [graph, plotConfig, timesteps]);
 
   return (
     <Modal open width={width} footer={null} onCancel={onClose}>
-      <div id="graph" />
+      <div id={graphId} />
       {!graph && <Empty />}
     </Modal>
   );

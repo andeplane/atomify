@@ -94,6 +94,14 @@ export type Data1D = {
   labels: string[];
 };
 
+export type PlotData = {
+  data1D: Data1D;
+  xLabel: string;
+  yLabel: string;
+  name: string;
+  syncDataPoints?: boolean;
+};
+
 export type Compute = {
   name: string;
   type: ModifierType;
