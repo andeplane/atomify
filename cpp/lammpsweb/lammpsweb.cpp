@@ -366,6 +366,13 @@ std::string LAMMPSWeb::getLastCommand() {
   return lastCommand;
 }
 
+std::string LAMMPSWeb::getUnits() {
+  if (!m_lmp || !m_lmp->update) {
+    return "";
+  }
+  return std::string(m_lmp->update->unit_style);
+}
+
 
 int LAMMPSWeb::getTimesteps() {
   if (!m_lmp) {

@@ -88,3 +88,35 @@ export const parseAtomSizeAndColor = (line: string) => {
   }
 };
 
+/**
+ * Gets the distance unit symbol for a given LAMMPS unit style
+ * @param unitStyle The LAMMPS unit style (e.g., "real", "metal", "lj", "si", etc.)
+ * @returns The distance unit symbol string
+ */
+export const getDistanceUnitSymbol = (unitStyle: string | undefined): string => {
+  if (!unitStyle) {
+    return "Å"; // Default to Angstroms if unit style is not found
+  }
+  
+  const style = unitStyle.toLowerCase();
+  switch (style) {
+    case "lj":
+      return "σ";
+    case "real":
+    case "metal":
+      return "Å";
+    case "si":
+      return "m";
+    case "cgs":
+      return "cm";
+    case "electron":
+      return "a₀";
+    case "micro":
+      return "μm";
+    case "nano":
+      return "nm";
+    default:
+      return "Å"; // Default to Angstroms for unknown unit styles
+  }
+};
+

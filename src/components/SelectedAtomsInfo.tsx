@@ -1,6 +1,7 @@
 import { Button } from "antd";
 import { Particles } from "omovi";
 import { useMemo } from "react";
+import { useLammpsUnits } from "../hooks/useLammpsUnits";
 
 interface SelectedAtomsInfoProps {
   selectedAtoms: Set<number>;
@@ -48,6 +49,8 @@ const SelectedAtomsInfo = ({
   particles,
   onClearSelection,
 }: SelectedAtomsInfoProps) => {
+  const distanceUnit = useLammpsUnits();
+
   if (selectedAtoms.size === 0) {
     return null;
   }
@@ -117,7 +120,7 @@ const SelectedAtomsInfo = ({
             Geometry
           </div>
           <div style={{ fontFamily: "monospace", fontSize: "11px" }}>
-            Distance: {calculateDistance(atomData[0].position, atomData[1].position).toFixed(3)} Å
+            Distance: {calculateDistance(atomData[0].position, atomData[1].position).toFixed(3)} {distanceUnit}
           </div>
         </div>
       )}
@@ -130,15 +133,15 @@ const SelectedAtomsInfo = ({
           </div>
           <div style={{ fontFamily: "monospace", fontSize: "11px" }}>
             d({atomData[0].atomId}-{atomData[1].atomId}):{" "}
-            {calculateDistance(atomData[0].position, atomData[1].position).toFixed(3)} Å
+            {calculateDistance(atomData[0].position, atomData[1].position).toFixed(3)} {distanceUnit}
           </div>
           <div style={{ fontFamily: "monospace", fontSize: "11px" }}>
             d({atomData[1].atomId}-{atomData[2].atomId}):{" "}
-            {calculateDistance(atomData[1].position, atomData[2].position).toFixed(3)} Å
+            {calculateDistance(atomData[1].position, atomData[2].position).toFixed(3)} {distanceUnit}
           </div>
           <div style={{ fontFamily: "monospace", fontSize: "11px" }}>
             d({atomData[0].atomId}-{atomData[2].atomId}):{" "}
-            {calculateDistance(atomData[0].position, atomData[2].position).toFixed(3)} Å
+            {calculateDistance(atomData[0].position, atomData[2].position).toFixed(3)} {distanceUnit}
           </div>
           <div style={{ marginTop: "5px" }}>
             <div style={{ fontFamily: "monospace", fontSize: "11px" }}>
