@@ -82,6 +82,20 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     }
   }, [visualizer]);
 
+  // Add Esc key handler to clear selection
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && selectedAtoms.size > 0) {
+        handleClearSelection();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedAtoms, handleClearSelection]);
+
   const disposeBoxGroup = useCallback(() => {
     if (boxGroupRef.current && visualizer) {
       // Dispose of all cylinders in the group
