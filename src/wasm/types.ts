@@ -9,3 +9,4 @@ export interface AtomifyWasmModule extends EmscriptenModule {
   LAMMPSWeb: new () => LammpsWeb;
 }
 
+
