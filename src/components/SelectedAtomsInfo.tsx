@@ -247,17 +247,18 @@ const SelectedAtomsInfo = ({
             <div style={{ fontWeight: "bold", fontSize: "12px", marginBottom: "5px" }}>
               Geometry
             </div>
-            <div style={{ fontFamily: "monospace", fontSize: "11px", display: "flex", alignItems: "center", gap: "8px" }}>
-              <span>Distance: {distance.toFixed(3)} Å</span>
-              {hasData && (
+            <div style={{ fontFamily: "monospace", fontSize: "11px", lineHeight: "1.5" }}>
+              {hasData ? (
                 <Button
                   type="link"
                   size="small"
                   onClick={() => setVisiblePlot(distanceKey)}
-                  style={{ padding: 0, fontSize: "11px", height: "auto" }}
+                  style={{ padding: 0, fontSize: "11px", height: "auto", fontFamily: "monospace" }}
                 >
-                  Plot
+                  Distance: {distance.toFixed(3)} Å
                 </Button>
+              ) : (
+                <span>Distance: {distance.toFixed(3)} Å</span>
               )}
             </div>
           </div>
@@ -283,102 +284,114 @@ const SelectedAtomsInfo = ({
               Geometry
             </div>
             <div style={{ fontFamily: "monospace", fontSize: "11px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>
-                  d({atomData[0].atomId}-{atomData[1].atomId}):{" "}
-                  {calculateDistance(atomData[0].position, atomData[1].position).toFixed(3)} Å
-                </span>
-                {timeSeriesData[distKeys[0]]?.data.length > 0 && (
+              <div style={{ lineHeight: "1.5" }}>
+                {timeSeriesData[distKeys[0]]?.data.length > 0 ? (
                   <Button
                     type="link"
                     size="small"
                     onClick={() => setVisiblePlot(distKeys[0])}
-                    style={{ padding: 0, fontSize: "11px", height: "auto" }}
+                    style={{ padding: 0, fontSize: "11px", height: "auto", fontFamily: "monospace" }}
                   >
-                    Plot
+                    d({atomData[0].atomId}-{atomData[1].atomId}):{" "}
+                    {calculateDistance(atomData[0].position, atomData[1].position).toFixed(3)} Å
                   </Button>
+                ) : (
+                  <span>
+                    d({atomData[0].atomId}-{atomData[1].atomId}):{" "}
+                    {calculateDistance(atomData[0].position, atomData[1].position).toFixed(3)} Å
+                  </span>
                 )}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>
-                  d({atomData[1].atomId}-{atomData[2].atomId}):{" "}
-                  {calculateDistance(atomData[1].position, atomData[2].position).toFixed(3)} Å
-                </span>
-                {timeSeriesData[distKeys[1]]?.data.length > 0 && (
+              <div style={{ lineHeight: "1.5" }}>
+                {timeSeriesData[distKeys[1]]?.data.length > 0 ? (
                   <Button
                     type="link"
                     size="small"
                     onClick={() => setVisiblePlot(distKeys[1])}
-                    style={{ padding: 0, fontSize: "11px", height: "auto" }}
+                    style={{ padding: 0, fontSize: "11px", height: "auto", fontFamily: "monospace" }}
                   >
-                    Plot
+                    d({atomData[1].atomId}-{atomData[2].atomId}):{" "}
+                    {calculateDistance(atomData[1].position, atomData[2].position).toFixed(3)} Å
                   </Button>
+                ) : (
+                  <span>
+                    d({atomData[1].atomId}-{atomData[2].atomId}):{" "}
+                    {calculateDistance(atomData[1].position, atomData[2].position).toFixed(3)} Å
+                  </span>
                 )}
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>
-                  d({atomData[0].atomId}-{atomData[2].atomId}):{" "}
-                  {calculateDistance(atomData[0].position, atomData[2].position).toFixed(3)} Å
-                </span>
-                {timeSeriesData[distKeys[2]]?.data.length > 0 && (
+              <div style={{ lineHeight: "1.5" }}>
+                {timeSeriesData[distKeys[2]]?.data.length > 0 ? (
                   <Button
                     type="link"
                     size="small"
                     onClick={() => setVisiblePlot(distKeys[2])}
-                    style={{ padding: 0, fontSize: "11px", height: "auto" }}
+                    style={{ padding: 0, fontSize: "11px", height: "auto", fontFamily: "monospace" }}
                   >
-                    Plot
+                    d({atomData[0].atomId}-{atomData[2].atomId}):{" "}
+                    {calculateDistance(atomData[0].position, atomData[2].position).toFixed(3)} Å
                   </Button>
+                ) : (
+                  <span>
+                    d({atomData[0].atomId}-{atomData[2].atomId}):{" "}
+                    {calculateDistance(atomData[0].position, atomData[2].position).toFixed(3)} Å
+                  </span>
                 )}
               </div>
             </div>
             <div style={{ marginTop: "5px" }}>
-              <div style={{ fontFamily: "monospace", fontSize: "11px", display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>
-                  ∠{atomData[1].atomId}-{atomData[0].atomId}-{atomData[2].atomId}:{" "}
-                  {calculateAngle(atomData[1].position, atomData[0].position, atomData[2].position).toFixed(1)}°
-                </span>
-                {timeSeriesData[angleKeys[0]]?.data.length > 0 && (
+              <div style={{ fontFamily: "monospace", fontSize: "11px", lineHeight: "1.5" }}>
+                {timeSeriesData[angleKeys[0]]?.data.length > 0 ? (
                   <Button
                     type="link"
                     size="small"
                     onClick={() => setVisiblePlot(angleKeys[0])}
-                    style={{ padding: 0, fontSize: "11px", height: "auto" }}
+                    style={{ padding: 0, fontSize: "11px", height: "auto", fontFamily: "monospace" }}
                   >
-                    Plot
+                    ∠{atomData[1].atomId}-{atomData[0].atomId}-{atomData[2].atomId}:{" "}
+                    {calculateAngle(atomData[1].position, atomData[0].position, atomData[2].position).toFixed(1)}°
                   </Button>
+                ) : (
+                  <span>
+                    ∠{atomData[1].atomId}-{atomData[0].atomId}-{atomData[2].atomId}:{" "}
+                    {calculateAngle(atomData[1].position, atomData[0].position, atomData[2].position).toFixed(1)}°
+                  </span>
                 )}
               </div>
-              <div style={{ fontFamily: "monospace", fontSize: "11px", display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>
-                  ∠{atomData[0].atomId}-{atomData[1].atomId}-{atomData[2].atomId}:{" "}
-                  {calculateAngle(atomData[0].position, atomData[1].position, atomData[2].position).toFixed(1)}°
-                </span>
-                {timeSeriesData[angleKeys[1]]?.data.length > 0 && (
+              <div style={{ fontFamily: "monospace", fontSize: "11px", lineHeight: "1.5" }}>
+                {timeSeriesData[angleKeys[1]]?.data.length > 0 ? (
                   <Button
                     type="link"
                     size="small"
                     onClick={() => setVisiblePlot(angleKeys[1])}
-                    style={{ padding: 0, fontSize: "11px", height: "auto" }}
+                    style={{ padding: 0, fontSize: "11px", height: "auto", fontFamily: "monospace" }}
                   >
-                    Plot
+                    ∠{atomData[0].atomId}-{atomData[1].atomId}-{atomData[2].atomId}:{" "}
+                    {calculateAngle(atomData[0].position, atomData[1].position, atomData[2].position).toFixed(1)}°
                   </Button>
+                ) : (
+                  <span>
+                    ∠{atomData[0].atomId}-{atomData[1].atomId}-{atomData[2].atomId}:{" "}
+                    {calculateAngle(atomData[0].position, atomData[1].position, atomData[2].position).toFixed(1)}°
+                  </span>
                 )}
               </div>
-              <div style={{ fontFamily: "monospace", fontSize: "11px", display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>
-                  ∠{atomData[0].atomId}-{atomData[2].atomId}-{atomData[1].atomId}:{" "}
-                  {calculateAngle(atomData[0].position, atomData[2].position, atomData[1].position).toFixed(1)}°
-                </span>
-                {timeSeriesData[angleKeys[2]]?.data.length > 0 && (
+              <div style={{ fontFamily: "monospace", fontSize: "11px", lineHeight: "1.5" }}>
+                {timeSeriesData[angleKeys[2]]?.data.length > 0 ? (
                   <Button
                     type="link"
                     size="small"
                     onClick={() => setVisiblePlot(angleKeys[2])}
-                    style={{ padding: 0, fontSize: "11px", height: "auto" }}
+                    style={{ padding: 0, fontSize: "11px", height: "auto", fontFamily: "monospace" }}
                   >
-                    Plot
+                    ∠{atomData[0].atomId}-{atomData[2].atomId}-{atomData[1].atomId}:{" "}
+                    {calculateAngle(atomData[0].position, atomData[2].position, atomData[1].position).toFixed(1)}°
                   </Button>
+                ) : (
+                  <span>
+                    ∠{atomData[0].atomId}-{atomData[2].atomId}-{atomData[1].atomId}:{" "}
+                    {calculateAngle(atomData[0].position, atomData[2].position, atomData[1].position).toFixed(1)}°
+                  </span>
                 )}
               </div>
             </div>
