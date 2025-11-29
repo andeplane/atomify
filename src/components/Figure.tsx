@@ -1,6 +1,6 @@
 import { Modal, Empty } from "antd";
 import { Compute, Fix, Variable, PlotData } from "../types";
-import { useEffect, useState, useId, useMemo } from "react";
+import { useEffect, useState, useId, useMemo, useRef } from "react";
 import { useStoreState } from "../hooks";
 import Dygraph from "dygraphs";
 
@@ -62,15 +62,38 @@ const Figure = ({
   ]);
 
   // Only set syncDataPoints when a modifier is provided
+  // Use ref to track previous modifier name to detect actual changes
+  const prevModifierNameRef = useRef<string | undefined>(undefined);
+  
   useEffect(() => {
     if (modifier && modifierType && onToggleSyncDataPoints) {
       const modifierName = modifier.name;
-      onToggleSyncDataPoints(modifierName, modifierType, true);
+      const prevModifierName = prevModifierNameRef.current;
+      
+      // Only update if modifier name actually changed (not just object reference)
+      if (prevModifierName !== modifierName) {
+        // Cleanup previous modifier if name changed
+        if (prevModifierName !== undefined) {
+          onToggleSyncDataPoints(prevModifierName, modifierType, false);
+        }
+        
+        // Set up new modifier
+        onToggleSyncDataPoints(modifierName, modifierType, true);
+        prevModifierNameRef.current = modifierName;
+      }
+      
       return () => {
-        onToggleSyncDataPoints(modifierName, modifierType, false);
+        // Cleanup on unmount
+        if (prevModifierNameRef.current !== undefined) {
+          onToggleSyncDataPoints(prevModifierNameRef.current, modifierType, false);
+          prevModifierNameRef.current = undefined;
+        }
       };
+    } else {
+      // Reset ref when modifier is removed
+      prevModifierNameRef.current = undefined;
     }
-  }, [modifier?.name, modifierType, onToggleSyncDataPoints]);
+  }, [modifier, modifierType, onToggleSyncDataPoints]);
 
   useEffect(() => {
     if (plotConfig?.data1D && !graph) {
