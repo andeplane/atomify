@@ -4,11 +4,18 @@ import { useEffect, useState, useId, useMemo } from "react";
 import { useStoreState } from "../hooks";
 import Dygraph from "dygraphs";
 
-interface FigureProps {
-  modifier?: Fix | Compute | Variable;
-  plotData?: PlotData;
+type FigureProps = {
   onClose: () => void;
-}
+} & (
+  | {
+      modifier: Fix | Compute | Variable;
+      plotData?: never;
+    }
+  | {
+      modifier?: never;
+      plotData: PlotData;
+    }
+);
 
 const Figure = ({ modifier, plotData, onClose }: FigureProps) => {
   const [graph, setGraph] = useState<Dygraph>();
