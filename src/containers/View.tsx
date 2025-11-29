@@ -2,9 +2,10 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 
 import { useStoreState, useStoreActions } from "../hooks";
-import { Particles, Bonds, Visualizer } from "omovi";
+import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import Settings from "./Settings";
 import SimulationSummaryOverlay from "../components/SimulationSummaryOverlay";
+import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import SimulationSummary from "./SimulationSummary";
 import { SettingOutlined, AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
@@ -43,6 +44,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAnalyze, setShowAnalyze] = useState(window.innerWidth > 900);
+  const [selectedAtoms, setSelectedAtoms] = useState<Set<number>>(new Set());
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(
@@ -72,6 +74,27 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   );
   const boxGroupRef = useRef<THREE.Group | null>(null);
 
+  const handleClearSelection = useCallback(() => {
+    setSelectedAtoms(new Set());
+    if (visualizer) {
+      visualizer.clearSelection();
+    }
+  }, [visualizer]);
+
+  // Add Esc key handler to clear selection
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && selectedAtoms.size > 0) {
+        handleClearSelection();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [selectedAtoms, handleClearSelection]);
+
   const disposeBoxGroup = useCallback(() => {
     if (boxGroupRef.current && visualizer) {
       // Dispose of all cylinders in the group
@@ -94,6 +117,38 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       const newVisualizer = new Visualizer({
         domElement: domElement.current,
         // onCameraChanged: (position: THREE.Vector3, target: THREE.Vector3) => {console.log(position, target)}
+        onParticleClick: (event: ParticleClickEvent) => {
+          const { particleIndex, shiftKey } = event;
+          
+          setSelectedAtoms((prevSelection) => {
+            const newSelection = new Set(prevSelection);
+            
+            if (shiftKey) {
+              // Shift+click: toggle selection
+              if (newSelection.has(particleIndex)) {
+                newSelection.delete(particleIndex);
+              } else {
+                newSelection.add(particleIndex);
+              }
+            } else {
+              // Plain click: if the only selected atom is clicked again, deselect it.
+              // Otherwise, select just this one.
+              const isDeselecting = newSelection.size === 1 && newSelection.has(particleIndex);
+              newSelection.clear();
+              if (!isDeselecting) {
+                newSelection.add(particleIndex);
+              }
+            }
+            
+            // Update visualizer selection
+            newVisualizer.clearSelection();
+            newSelection.forEach((idx) => {
+              newVisualizer.setSelected(idx, true);
+            });
+            
+            return newSelection;
+          });
+        }
       });
       setVisualizer(newVisualizer);
       setLoading(false);
@@ -113,6 +168,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       visualizer.idle = !visible;
     }
   }, [visible, visualizer]);
+
+  // Auto-reset selection when simulation changes
+  useEffect(() => {
+    handleClearSelection();
+  }, [simulation, handleClearSelection]);
 
   const prevParticlesRef = useRef<Particles>();
   useEffect(() => {
@@ -247,6 +307,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
           {!showAnalyze && window.innerWidth > 900 && (
             <SimulationSummaryOverlay />
           )}
+          <SelectedAtomsInfo
+            selectedAtoms={selectedAtoms}
+            particles={particles}
+            onClearSelection={handleClearSelection}
+          />
         </div>
       </div>
       {!isEmbeddedMode && (
