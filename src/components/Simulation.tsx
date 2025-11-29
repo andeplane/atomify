@@ -162,6 +162,12 @@ const SimulationComponent = () => {
         createModule({
           print: onPrint,
           printErr: onPrint,
+          locateFile: (path: string) => {
+            if (path.endsWith('.wasm')) {
+              return '/lammps.wasm';  // Absolute path from public/
+            }
+            return path;
+          }
         }).then((Module) => {
           track("WASM.Load");
           setStatus({

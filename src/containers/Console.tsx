@@ -1,6 +1,7 @@
-import MonacoEditor from "react-monaco-editor";
+import Editor from "@monaco-editor/react";
 import { useEffect, useRef } from "react";
 import { useStoreState } from "../hooks";
+import type * as Monaco from "monaco-editor";
 
 interface ConsoleProps {
   width?: number | string;
@@ -12,13 +13,14 @@ const Console = ({ width, height }: ConsoleProps) => {
   }
 
   const lammpsOutput = useStoreState((state) => state.simulation.lammpsOutput);
-  const editorRef = useRef<MonacoEditor | null>(null);
+  const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null);
   const options = {
     selectOnLineNumbers: true,
     readOnly: true,
   };
+  
   useEffect(() => {
-    const editor = editorRef.current?.editor;
+    const editor = editorRef.current;
     if (editor) {
       const model = editor.getModel();
       if (model) {
@@ -27,15 +29,19 @@ const Console = ({ width, height }: ConsoleProps) => {
     }
   }, [lammpsOutput]);
 
+  const handleEditorDidMount = (editor: Monaco.editor.IStandaloneCodeEditor) => {
+    editorRef.current = editor;
+  };
+
   return (
-    <MonacoEditor
+    <Editor
       width={width}
       height={height}
       language="javascript"
       theme="vs-dark"
       value={lammpsOutput.join("\n")}
       options={options}
-      ref={editorRef}
+      onMount={handleEditorDidMount}
     />
   );
 };
