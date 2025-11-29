@@ -140,7 +140,7 @@ body,
 }
 
 .selected-atoms-info {
-  position: absolute !important;
+  position: absolute;
   background-color: rgba(26, 27, 31, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;

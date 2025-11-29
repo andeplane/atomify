@@ -45,7 +45,6 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [showSettings, setShowSettings] = useState(false);
   const [showAnalyze, setShowAnalyze] = useState(window.innerWidth > 900);
   const [selectedAtoms, setSelectedAtoms] = useState<Set<number>>(new Set());
-  const selectedAtomsRef = useRef<Set<number>>(new Set());
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(
@@ -132,17 +131,14 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
                 newSelection.add(particleIndex);
               }
             } else {
-              // Plain click: toggle if already selected (and only one), otherwise replace selection
-              if (newSelection.size === 1 && newSelection.has(particleIndex)) {
-                newSelection.clear();
-              } else {
-                newSelection.clear();
+              // Plain click: if the only selected atom is clicked again, deselect it.
+              // Otherwise, select just this one.
+              const isDeselecting = newSelection.size === 1 && newSelection.has(particleIndex);
+              newSelection.clear();
+              if (!isDeselecting) {
                 newSelection.add(particleIndex);
               }
             }
-            
-            // Update ref for immediate access
-            selectedAtomsRef.current = newSelection;
             
             // Update visualizer selection
             newVisualizer.clearSelection();
