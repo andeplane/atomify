@@ -5,6 +5,7 @@ import { useStoreState, useStoreActions } from "../hooks";
 import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import Settings from "./Settings";
 import SimulationSummaryOverlay from "../components/SimulationSummaryOverlay";
+import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import SimulationSummary from "./SimulationSummary";
 import { SettingOutlined, AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
@@ -73,6 +74,13 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     (state) => state.simulationStatus.origo,
   );
   const boxGroupRef = useRef<THREE.Group | null>(null);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedAtoms(new Set());
+    if (visualizer) {
+      visualizer.clearSelection();
+    }
+  }, [visualizer]);
 
   const disposeBoxGroup = useCallback(() => {
     if (boxGroupRef.current && visualizer) {
@@ -146,6 +154,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       visualizer.idle = !visible;
     }
   }, [visible, visualizer]);
+
+  // Auto-reset selection when simulation changes
+  useEffect(() => {
+    handleClearSelection();
+  }, [simulation, handleClearSelection]);
 
   const prevParticlesRef = useRef<Particles>();
   useEffect(() => {
@@ -280,6 +293,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
           {!showAnalyze && window.innerWidth > 900 && (
             <SimulationSummaryOverlay />
           )}
+          <SelectedAtomsInfo
+            selectedAtoms={selectedAtoms}
+            particles={particles}
+            onClearSelection={handleClearSelection}
+          />
         </div>
       </div>
       {!isEmbeddedMode && (

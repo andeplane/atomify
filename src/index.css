@@ -139,6 +139,19 @@ body,
   opacity: 1;
 }
 
+.selected-atoms-info {
+  position: absolute !important;
+  background-color: rgba(26, 27, 31, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  width: 300px;
+  padding: 10px;
+  top: 20px;
+  left: 20px;
+  color: #fff;
+  z-index: 1000;
+}
+
 .ant-layout-sider-children {
   height: 100%;
   overflow: auto;
