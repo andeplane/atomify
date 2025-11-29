@@ -164,7 +164,7 @@ const SimulationComponent = () => {
           printErr: onPrint,
           locateFile: (path: string) => {
             if (path.endsWith('.wasm')) {
-              return '/lammps.wasm';  // Absolute path from public/
+              return import.meta.env.BASE_URL + 'lammps.wasm';
             }
             return path;
           }

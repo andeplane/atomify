@@ -1429,9 +1429,9 @@ const Edit = () => {
   const onEditorChange = useCallback(
     (newValue: string | undefined) => {
       if (!newValue) return;
-      const file = simulation?.files.filter(
+      const file = simulation?.files.find(
         (file) => file.fileName === selectedFile?.fileName,
-      )[0];
+      );
       if (file) {
         file.content = newValue;
       }

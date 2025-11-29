@@ -17,10 +17,6 @@ export default defineConfig({
       }
     }
   },
-  define: {
-    // Fix for libraries expecting CommonJS 'module' in browser
-    'typeof module': JSON.stringify('undefined'),
-  },
   // WASM files served from public/ folder, no special config needed
 });
 
