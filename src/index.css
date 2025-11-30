@@ -1,3 +1,52 @@
+/* Four-corner gradient background animation */
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 0%;
+  }
+}
+
+html {
+  background: 
+    /* Top-left corner */
+    radial-gradient(circle at 0% 0%, rgb(57, 76, 93) 0%, transparent 50%),
+    /* Top-right corner */
+    radial-gradient(circle at 100% 0%, rgb(31, 36, 47) 0%, transparent 50%),
+    /* Bottom-left corner */
+    radial-gradient(circle at 0% 100%, rgb(42, 44, 52) 0%, transparent 50%),
+    /* Bottom-right corner */
+    radial-gradient(circle at 100% 100%, rgb(41, 63, 86) 0%, transparent 50%),
+    /* Base gradient blend */
+    linear-gradient(135deg, rgb(42, 44, 52) 0%, rgb(31, 36, 47) 50%, rgb(41, 63, 86) 100%);
+  background-size: 200% 200%;
+  background-position: 0% 0%;
+  animation: gradient-shift 25s ease infinite;
+  min-height: 100%;
+  position: relative;
+}
+
+html::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(30, 35, 45, 0.3) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
 body {
   margin: 0;
   padding: 0;
@@ -7,6 +56,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 code {
@@ -52,11 +103,32 @@ body,
   border: 11px dashed #60a7dc;
 }
 
-/* Modern Sidebar Styling */
+/* Liquid Glass Sidebar */
 .ant-layout-sider {
-  background: rgba(41, 40, 45, 0.85) !important;
-  backdrop-filter: blur(10px);
-  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(41, 40, 45, 0.7) !important;
+  backdrop-filter: blur(20px) saturate(120%);
+  -webkit-backdrop-filter: blur(20px) saturate(120%);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.ant-layout-sider::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 0;
 }
 
 .ant-menu-dark {
@@ -68,22 +140,35 @@ body,
   width: calc(100% - 16px) !important;
   border-radius: 8px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent !important;
+  position: relative;
 }
 
 .ant-menu-dark .ant-menu-item-selected {
-  background-color: rgb(42, 59, 80) !important;
-  color: #40a9ff !important;
+  background: linear-gradient(135deg, rgb(73, 107, 187), rgb(100, 173, 230)) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff !important;
   font-weight: 600;
+  border: none !important;
 }
 
-.ant-menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+.ant-menu-item:hover:not(.ant-menu-item-selected) {
+  background-color: rgba(255, 255, 255, 0.05) !important;
   transform: translateX(4px);
 }
 
 .site-layout .site-layout-background {
-  background: #1a1b1f;
+  background: transparent;
   color: #fff;
+}
+
+.ant-layout-content {
+  background: transparent !important;
+}
+
+.ant-layout {
+  background: transparent !important;
 }
 
 .site-layout .site-layout-background h1 {
@@ -118,21 +203,41 @@ body,
   margin-bottom: 20px;
 }
 
+/* Liquid Glass Overlay Components */
 .simulationsummary {
   position: fixed !important;
-  background-color: rgba(26, 27, 31, 0.9);
+  background: rgba(42, 41, 47, 0.6);
+  backdrop-filter: blur(12px) saturate(110%);
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: 16px;
   width: 300px;
-  padding: 10px;
-  top: 0;
-  right: 0;
-  margin-right: 10px;
-  margin-top: 10px;
+  padding: 16px;
+  top: 10px;
+  right: 10px;
   color: #fff;
   opacity: 0.3;
-  transition-property: opacity;
-  transition-duration: 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  z-index: 1000;
+}
+
+.simulationsummary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 .simulationsummary.hover {
@@ -141,20 +246,43 @@ body,
 
 .selected-atoms-info {
   position: absolute;
-  background-color: rgba(26, 27, 31, 0.9);
+  background: rgba(42, 41, 47, 0.6);
+  backdrop-filter: blur(12px) saturate(110%);
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  border-radius: 16px;
   width: 300px;
-  padding: 10px;
+  padding: 16px;
   top: 20px;
   left: 20px;
   color: #fff;
   z-index: 1000;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.selected-atoms-info::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 .ant-layout-sider-children {
   height: 100%;
   overflow: auto;
+  position: relative;
+  z-index: 1;
 }
 
 .sider-collapse-trigger {
@@ -209,4 +337,72 @@ body,
 
 .dygraph-label {
   color: #ffffff !important;
+}
+
+/* Liquid Glass Container for tables and content */
+.liquid-glass-container {
+  background: rgba(42, 41, 47, 0.6);
+  backdrop-filter: blur(12px) saturate(110%);
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+}
+
+.liquid-glass-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.liquid-glass-container > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Glass effect for Edit container */
+.edit-container-glass {
+  background: rgba(42, 41, 47, 0.4);
+  backdrop-filter: blur(8px) saturate(110%);
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Make tables transparent to show glass effect */
+.ant-table-wrapper {
+  background: transparent !important;
+}
+
+.ant-table {
+  background: transparent !important;
+}
+
+.ant-table-thead > tr > th {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+.ant-table-tbody > tr > td {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background: rgba(255, 255, 255, 0.05) !important;
 }

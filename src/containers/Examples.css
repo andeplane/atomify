@@ -1,17 +1,45 @@
-/* Modern card styles with overlay design */
+/* Liquid Glass Card Styles */
 .modern-card {
   border-radius: 16px;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid #3a3a3a;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-  background: #2a292f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  background: rgba(42, 41, 47, 0.6);
+  backdrop-filter: blur(12px) saturate(110%);
+  -webkit-backdrop-filter: blur(12px) saturate(110%);
   cursor: pointer;
+  position: relative;
+}
+
+.modern-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.15) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  opacity: 0.5;
+  z-index: 1;
+  transition: opacity 0.3s ease;
 }
 
 .modern-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3), 0 12px 40px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(15px) saturate(110%);
+  -webkit-backdrop-filter: blur(15px) saturate(110%);
+}
+
+.modern-card:hover::before {
+  opacity: 0.7;
 }
 
 .card-image-container {
@@ -78,6 +106,8 @@
 
 .card-content {
   padding: 16px;
+  position: relative;
+  z-index: 2;
 }
 
 .card-title {
@@ -134,7 +164,7 @@
   padding: 24px;
   margin: 0;
   min-height: 100%;
-  background: #1a1b1f; /* Grey-ish background */
+  background: transparent; /* Transparent to show gradient */
   color: #ffffff; /* White text */
 }
 
@@ -177,10 +207,10 @@
 }
 
 .site-layout-background.examples-header {
-  background: #1a1b1f; /* Grey-ish header */
+  background: transparent; /* Transparent to show gradient */
   color: #ffffff; /* White text */
   padding: 0 24px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 @media (max-width: 768px) {
