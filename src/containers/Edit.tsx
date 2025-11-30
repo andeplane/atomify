@@ -12,8 +12,10 @@ loader.init().then((monaco) => {
 const Edit = () => {
   const selectedFile = useStoreState((state) => state.app.selectedFile);
   const simulation = useStoreState((state) => state.simulation.simulation);
+  const isRunning = useStoreState((state) => state.simulation.running);
   const options = {
     selectOnLineNumbers: true,
+    readOnly: isRunning,
   };
 
   const handleEditorDidMount = useCallback(
@@ -41,15 +43,31 @@ const Edit = () => {
   }
 
   return (
-    <Editor
-      height="100vh"
-      language="lammps"
-      theme="vs-dark"
-      value={selectedFile.content}
-      options={options}
-      onChange={onEditorChange}
-      onMount={handleEditorDidMount}
-    />
+    <>
+      {isRunning && (
+        <div
+          style={{
+            backgroundColor: "#3a3a3a",
+            color: "#ffa500",
+            padding: "8px 16px",
+            fontSize: "12px",
+            borderBottom: "1px solid #555",
+            fontFamily: "monospace",
+          }}
+        >
+          ⓘ File editing is disabled while simulation is running
+        </div>
+      )}
+      <Editor
+        height={isRunning ? "calc(100vh - 33px)" : "100vh"}
+        language="lammps"
+        theme="vs-dark"
+        value={selectedFile.content}
+        options={options}
+        onChange={onEditorChange}
+        onMount={handleEditorDidMount}
+      />
+    </>
   );
 };
 
