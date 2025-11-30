@@ -292,7 +292,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
                 showInfo={false}
                 style={{ marginTop: "-15px" }}
                 strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
-                strokeWidth={8}
+                size={8}
                 percent={Math.round(
                   100 * (runTimesteps / (runTotalTimesteps + 1)),
                 )}

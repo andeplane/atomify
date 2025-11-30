@@ -96,7 +96,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
       {showConsole && (
         <Modal
           className="console-modal"
-          bodyStyle={{ backgroundColor: "#1E1E1E" }}
+          styles={{ body: { backgroundColor: "#1E1E1E" } }}
           width={"80%"}
           footer={[
             <>
