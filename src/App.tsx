@@ -73,6 +73,7 @@ function getItem(
   children?: MenuItem[],
   onClick?: () => void,
   disabled?: boolean,
+  title?: string,
 ): MenuItem {
   return {
     key,
@@ -81,6 +82,7 @@ function getItem(
     label,
     onClick,
     disabled,
+    title,
   } as MenuItem;
 }
 
@@ -197,7 +199,15 @@ const App: React.FC = () => {
   const items: MenuItem[] = [
     getItem("View", "view", <AlignLeftOutlined />),
     getItem("Console", "console", <BorderOuterOutlined />),
-    getItem("Notebook", "notebook", <LineChartOutlined />),
+    getItem(
+      "Notebook",
+      "notebook",
+      <LineChartOutlined />,
+      undefined,
+      undefined,
+      running || paused,
+      running || paused ? "Can only analyze in Jupyter notebook after simulation has finished" : undefined,
+    ),
     getItem(
       editMenuLabel,
       "edit",
