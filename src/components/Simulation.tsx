@@ -7,7 +7,6 @@ import { notification } from "antd";
 import { time_event, track } from "../utils/metrics";
 
 const SimulationComponent = () => {
-  // @ts-ignore
   const wasm = window.wasm;
   const lammps = useStoreState((state) => state.simulation.lammps);
   const simulation = useStoreState((state) => state.simulation.simulation);
@@ -150,7 +149,6 @@ const SimulationComponent = () => {
   ]);
 
   useEffect(() => {
-    // @ts-ignore
     if (!window.wasm) {
       setStatus({
         title: "Downloading LAMMPS ...",
@@ -178,7 +176,6 @@ const SimulationComponent = () => {
           // setWasm(Module)
           const lammps = new Module.LAMMPSWeb();
           setLammps(lammps);
-          // @ts-ignore
           window.wasm = Module;
           // @ts-ignore
           window.lammps = lammps;

@@ -106,7 +106,6 @@ export const simulationModel: SimulationModel = {
     (actions, inputScript: string, { getStoreActions, getStoreState }) => {
       const lines = inputScript.split("\n");
 
-      // @ts-ignore
       const wasm = window.wasm;
       // @ts-ignore
       const lammps = getStoreState().simulation.lammps;
@@ -184,7 +183,6 @@ export const simulationModel: SimulationModel = {
         return;
       }
 
-      // @ts-ignore
       const wasm = window.wasm;
       for (const file of simulation.files) {
         // Update all files if no fileName is specified
@@ -202,7 +200,6 @@ export const simulationModel: SimulationModel = {
       if (!simulation) {
         return;
       }
-      // @ts-ignore
       const wasm = window.wasm;
       const fileNames: string[] = wasm.FS.readdir(`/${simulation.id}`);
       const files: { [key: string]: SimulationFile } = {};
@@ -342,7 +339,7 @@ export const simulationModel: SimulationModel = {
         .map(([name, value]) => `variable ${name} equal ${value}`)
         .join('\n') + '\n\n';
       
-      const wasm = (window as any).wasm;
+      const wasm = window.wasm;
       const varsFileName = `_vars_${simulation.inputScript}`;
       wasm.FS.writeFile(`/${simulation.id}/${varsFileName}`, varsScript);
       
@@ -450,7 +447,6 @@ export const simulationModel: SimulationModel = {
       // @ts-ignore
       getStoreActions().render.resetParticleStyles();
 
-      // @ts-ignore
       const wasm = window.wasm;
       // @ts-ignore
       const lammps = getStoreState().simulation.lammps;
