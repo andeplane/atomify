@@ -382,6 +382,26 @@ body,
   contain: layout style paint;
 }
 
+/* Make Monaco editor background transparent to show gradient */
+.edit-container-glass .monaco-editor,
+.edit-container-glass .monaco-editor .monaco-editor-background,
+.edit-container-glass .monaco-editor .margin,
+.edit-container-glass .monaco-editor .monaco-scrollable-element {
+  background: transparent !important;
+}
+
+.edit-container-glass .monaco-editor .view-lines {
+  background: transparent !important;
+}
+
+.edit-container-glass .monaco-editor .current-line {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.edit-container-glass .monaco-editor .selected-text {
+  background: rgba(64, 169, 255, 0.3) !important;
+}
+
 /* Make tables transparent to show glass effect */
 .ant-table-wrapper {
   background: transparent !important;
