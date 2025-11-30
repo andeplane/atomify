@@ -1,4 +1,4 @@
-import { action, Action, thunk, Thunk, Actions } from "easy-peasy";
+import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
 import { StoreModel } from "./model";
 import { LammpsWeb } from "../types";
 import { notification } from "antd";
@@ -24,7 +24,6 @@ localforage.config({
   storeName: "files", // Should be alphanumeric, with underscores.
   description: "some description",
 });
-//@ts-ignore
 window.localforage = localforage;
 
 export interface Simulation {
@@ -101,15 +100,19 @@ export const simulationModel: SimulationModel = {
   setFiles: action((state, files: string[]) => {
     state.files = files;
   }),
-  // @ts-ignore
   extractAndApplyAtomifyCommands: thunk(
-    (actions, inputScript: string, { getStoreActions, getStoreState }) => {
+    (
+      actions,
+      inputScript: string,
+      { getStoreActions, getStoreState }: { getStoreActions: () => Actions<StoreModel>; getStoreState: () => State<StoreModel> }
+    ) => {
       const lines = inputScript.split("\n");
 
-      // @ts-ignore
       const wasm = window.wasm;
-      // @ts-ignore
       const lammps = getStoreState().simulation.lammps;
+      if (!lammps) {
+        return;
+      }
 
       // Reset all settings for dynamic bonds
       const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
@@ -130,8 +133,7 @@ export const simulationModel: SimulationModel = {
             )[0];
 
             if (atomType) {
-              // @ts-ignore
-              getStoreActions().render.addParticleStyle({
+              (getStoreActions() as Actions<StoreModel>).render.addParticleStyle({
                 index: parsedAtomType.atomType,
                 atomType: atomType,
               });
@@ -149,8 +151,7 @@ export const simulationModel: SimulationModel = {
               shortname: atomSizeAndColor.atomTypeIndex.toString(),
               fullname: atomSizeAndColor.atomTypeIndex.toString(),
             };
-            // @ts-ignore
-            getStoreActions().render.addParticleStyle({
+            (getStoreActions() as Actions<StoreModel>).render.addParticleStyle({
               index: atomSizeAndColor.atomTypeIndex,
               atomType: atomType,
             });
@@ -177,14 +178,12 @@ export const simulationModel: SimulationModel = {
     },
   ),
   syncFilesWasm: thunk(
-    async (actions, fileName: string | undefined, { getStoreState }) => {
-      //@ts-ignore
-      const simulation = getStoreState().simulation.simulation as Simulation;
+    async (actions, fileName: string | undefined, { getStoreState }: { getStoreState: () => State<StoreModel> }) => {
+      const simulation = getStoreState().simulation.simulation;
       if (!simulation) {
         return;
       }
 
-      // @ts-ignore
       const wasm = window.wasm;
       for (const file of simulation.files) {
         // Update all files if no fileName is specified
@@ -195,14 +194,12 @@ export const simulationModel: SimulationModel = {
     },
   ),
   syncFilesJupyterLite: thunk(
-    async (actions, dummy: undefined, { getStoreState }) => {
+    async (actions, dummy: undefined, { getStoreState }: { getStoreState: () => State<StoreModel> }) => {
       // TODO: deal with the undefined hack
-      //@ts-ignore
-      const simulation = getStoreState().simulation.simulation as Simulation;
+      const simulation = getStoreState().simulation.simulation;
       if (!simulation) {
         return;
       }
-      // @ts-ignore
       const wasm = window.wasm;
       const fileNames: string[] = wasm.FS.readdir(`/${simulation.id}`);
       const files: { [key: string]: SimulationFile } = {};
@@ -300,14 +297,12 @@ export const simulationModel: SimulationModel = {
       }
     },
   ),
-  run: thunk(async (actions, payload, { getStoreState, getStoreActions }) => {
-    // @ts-ignore
-    const simulation = getStoreState().simulation.simulation as Simulation;
+  run: thunk(async (actions, payload, { getStoreState, getStoreActions }: { getStoreState: () => State<StoreModel>; getStoreActions: () => Actions<StoreModel> }) => {
+    const simulation = getStoreState().simulation.simulation;
     if (!simulation) {
       return;
     }
-    // @ts-ignore
-    const lammps = getStoreState().simulation.lammps as LammpsWeb;
+    const lammps = getStoreState().simulation.lammps;
     if (!lammps || lammps.getIsRunning()) {
       return;
     }
@@ -370,8 +365,7 @@ export const simulationModel: SimulationModel = {
       errorMessage = lammps.getErrorMessage();
     }
 
-    // @ts-ignore
-    const computes = getStoreState().simulationStatus.computes as Compute[];
+    const computes = getStoreState().simulationStatus.computes;
 
     const endTime = performance.now();
     const duration = (endTime - startTime) / 1000; // seconds
@@ -425,11 +419,10 @@ export const simulationModel: SimulationModel = {
     async (
       actions,
       simulation: Simulation,
-      { getStoreState, getStoreActions },
+      { getStoreState, getStoreActions }: { getStoreState: () => State<StoreModel>; getStoreActions: () => Actions<StoreModel> },
     ) => {
       const allActions = getStoreActions() as Actions<StoreModel>;
 
-      // @ts-ignore
       window.simulation = simulation;
       allActions.simulationStatus.reset();
       actions.setShowConsole(false);
@@ -438,7 +431,6 @@ export const simulationModel: SimulationModel = {
 
       // Reset potentially chosen per atom coloring
       const postTimestepModifiers =
-        // @ts-ignore
         getStoreState().processing.postTimestepModifiers;
       const colorModifier = postTimestepModifiers.filter(
         (modifier: Modifier) => modifier.name === "Colors",
@@ -447,12 +439,9 @@ export const simulationModel: SimulationModel = {
         colorModifier.computeName = undefined;
       }
 
-      // @ts-ignore
-      getStoreActions().render.resetParticleStyles();
+      (getStoreActions() as Actions<StoreModel>).render.resetParticleStyles();
 
-      // @ts-ignore
       const wasm = window.wasm;
-      // @ts-ignore
       const lammps = getStoreState().simulation.lammps;
 
       if (!wasm.FS.analyzePath(`/${simulation.id}`).exists) {
