@@ -40,6 +40,7 @@ export interface Simulation {
 export interface SimulationModel {
   running: boolean;
   paused: boolean;
+  finished: boolean;
   showConsole: boolean;
   simulation?: Simulation;
   files: string[];
@@ -50,6 +51,7 @@ export interface SimulationModel {
   addLammpsOutput: Action<SimulationModel, string>;
   setShowConsole: Action<SimulationModel, boolean>;
   setPaused: Action<SimulationModel, boolean>;
+  setFinished: Action<SimulationModel, boolean>;
   setCameraPosition: Action<SimulationModel, THREE.Vector3 | undefined>;
   setCameraTarget: Action<SimulationModel, THREE.Vector3 | undefined>;
   setSimulation: Action<SimulationModel, Simulation>;
@@ -60,6 +62,7 @@ export interface SimulationModel {
   syncFilesWasm: Thunk<SimulationModel, string | undefined>;
   syncFilesJupyterLite: Thunk<SimulationModel, undefined>;
   run: Thunk<SimulationModel>;
+  continueSimulation: Thunk<SimulationModel, number | undefined>;
   newSimulation: Thunk<SimulationModel, Simulation>;
   lammps?: LammpsWeb;
   reset: Action<SimulationModel, undefined>;
@@ -68,6 +71,7 @@ export interface SimulationModel {
 export const simulationModel: SimulationModel = {
   running: false,
   paused: false,
+  finished: false,
   showConsole: false,
   files: [],
   lammpsOutput: [],
@@ -82,6 +86,9 @@ export const simulationModel: SimulationModel = {
   }),
   setPaused: action((state, value: boolean) => {
     state.paused = value;
+  }),
+  setFinished: action((state, value: boolean) => {
+    state.finished = value;
   }),
   setCameraPosition: action((state, cameraPosition: THREE.Vector3) => {
     state.cameraPosition = cameraPosition;
@@ -318,6 +325,7 @@ export const simulationModel: SimulationModel = {
     allActions.simulationStatus.reset();
     actions.setShowConsole(false);
     actions.resetLammpsOutput();
+    actions.setFinished(false);
 
     await actions.syncFilesWasm(undefined);
 
@@ -389,6 +397,7 @@ export const simulationModel: SimulationModel = {
         // Simulation got canceled.
         actions.setRunning(false);
         actions.setShowConsole(true);
+        actions.setFinished(false);
         track("Simulation.Stop", {
           simulationId: simulation?.id,
           stopReason: "canceled",
@@ -401,6 +410,7 @@ export const simulationModel: SimulationModel = {
         });
         actions.setRunning(false);
         actions.setShowConsole(true);
+        actions.setFinished(false);
         track("Simulation.Stop", {
           simulationId: simulation?.id,
           stopReason: "failed",
@@ -412,6 +422,7 @@ export const simulationModel: SimulationModel = {
       allActions.processing.runPostTimestep(true);
       actions.setRunning(false);
       actions.setShowConsole(true);
+      actions.setFinished(true);
       track("Simulation.Stop", {
         simulationId: simulation?.id,
         stopReason: "completed",
@@ -421,6 +432,106 @@ export const simulationModel: SimulationModel = {
     actions.syncFilesJupyterLite();
     allActions.simulationStatus.setLastCommand(undefined);
   }),
+  continueSimulation: thunk(
+    async (actions, timesteps: number | undefined, { getStoreState, getStoreActions }) => {
+      // @ts-ignore
+      const simulation = getStoreState().simulation.simulation as Simulation;
+      if (!simulation) {
+        return;
+      }
+      // @ts-ignore
+      const lammps = getStoreState().simulation.lammps as LammpsWeb;
+      if (!lammps || lammps.getIsRunning()) {
+        return;
+      }
+
+      const allActions = getStoreActions() as Actions<StoreModel>;
+
+      actions.setShowConsole(false);
+      actions.setFinished(false);
+
+      lammps.start();
+      actions.setRunning(true);
+      track("Simulation.Continue", { 
+        simulationId: simulation?.id,
+        timesteps: timesteps,
+        ...getEmbeddingParams()
+      });
+      time_event("Simulation.Stop");
+
+      let errorMessage: string | undefined = undefined;
+      const startTime = performance.now();
+      
+      try {
+        // Use the suggested command format: run with pre no post no
+        // This continues the simulation without re-initializing
+        const runCommand = timesteps ? `run ${timesteps} pre no post no` : `run 1000 pre no post no`;
+        lammps.runCommand(runCommand);
+      } catch (exception: any) {
+        console.log("Got exception: ", exception);
+        errorMessage = lammps.getExceptionMessage(exception);
+        console.log("Got error running LAMMPS: ", errorMessage);
+      }
+
+      if (!errorMessage) {
+        errorMessage = lammps.getErrorMessage();
+      }
+
+      // @ts-ignore
+      const computes = getStoreState().simulationStatus.computes as Compute[];
+
+      const endTime = performance.now();
+      const duration = (endTime - startTime) / 1000; // seconds
+      const metricsData = {
+        timesteps: lammps.getTimesteps(),
+        timestepsPerSecond: (lammps.getTimesteps() / duration).toFixed(3),
+        numAtoms: lammps.getNumAtoms(),
+        computes: Object.keys(computes),
+      };
+      actions.setPaused(false);
+
+      if (errorMessage) {
+        if (errorMessage.includes("Atomify::canceled")) {
+          allActions.processing.runPostTimestep(true);
+          // Simulation got canceled.
+          actions.setRunning(false);
+          actions.setShowConsole(true);
+          actions.setFinished(false);
+          track("Simulation.Stop", {
+            simulationId: simulation?.id,
+            stopReason: "canceled",
+            ...metricsData,
+          });
+        } else {
+          notification.error({
+            message: errorMessage,
+            duration: 5,
+          });
+          actions.setRunning(false);
+          actions.setShowConsole(true);
+          actions.setFinished(false);
+          track("Simulation.Stop", {
+            simulationId: simulation?.id,
+            stopReason: "failed",
+            errorMessage,
+            ...metricsData,
+          });
+        }
+      } else {
+        allActions.processing.runPostTimestep(true);
+        actions.setRunning(false);
+        actions.setShowConsole(true);
+        actions.setFinished(true);
+        track("Simulation.Stop", {
+          simulationId: simulation?.id,
+          stopReason: "completed",
+          ...metricsData,
+        });
+      }
+      actions.syncFilesJupyterLite();
+      allActions.simulationStatus.setLastCommand(undefined);
+    },
+  ),
   newSimulation: thunk(
     async (
       actions,
@@ -517,5 +628,6 @@ export const simulationModel: SimulationModel = {
   reset: action((state) => {
     state.files = [];
     state.lammps = undefined;
+    state.finished = false;
   }),
 };

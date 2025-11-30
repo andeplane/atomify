@@ -85,6 +85,7 @@ const App: React.FC = () => {
   const [showNewSimulation, setShowNewSimulation] = useState(false);
   const [showShareSimulation, setShowShareSimulation] = useState(false);
   const running = useStoreState((state) => state.simulation.running);
+  const finished = useStoreState((state) => state.simulation.finished);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const selectedFile = useStoreState((state) => state.app.selectedFile);
   const setSelectedFile = useStoreActions(
@@ -102,6 +103,7 @@ const App: React.FC = () => {
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
 
   const run = useStoreActions((actions) => actions.simulation.run);
+  const continueSimulation = useStoreActions((actions) => actions.simulation.continueSimulation);
 
   const { isEmbeddedMode } = useEmbeddedMode();
 
@@ -145,6 +147,18 @@ const App: React.FC = () => {
       setPreferredView(selectedMenu); // This is another hack. Should really rethink menu system.
     },
     running === false,
+  );
+
+  const continueButton = getItem(
+    "Continue simulation",
+    "continue",
+    <CaretRightOutlined />,
+    undefined,
+    () => {
+      continueSimulation(undefined);
+      setPreferredView("view");
+    },
+    !finished || running,
   );
 
   const newSimulationButton = getItem(
@@ -208,6 +222,7 @@ const App: React.FC = () => {
       simulation == null,
     ),
     pauseButton,
+    continueButton,
   ];
 
   useEffect(() => {
