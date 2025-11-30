@@ -6,6 +6,35 @@ import type {
 } from "@jupyterlab/nbformat";
 
 const AnalyzeNotebook = (simulation: Simulation): INotebookContent => {
+  const cells: ICodeCell[] = [
+    {
+      cell_type: "code",
+      source: "%pip install pandas",
+      metadata: {
+        trusted: true,
+      },
+      execution_count: null,
+      outputs: [],
+    },
+    {
+      cell_type: "code",
+      source:
+        'import lammps_logfile\nimport matplotlib.pyplot as plt\n\nlog = lammps_logfile.File("###SIMULATIONID###/log.lammps")\nstep = log.get("Step")\n\nfor keyword in log.keywords:\n    plt.figure()\n    plt.plot(step, log.get(keyword), label=keyword)\n    plt.xlabel(\'Timestep\')\n    plt.title(keyword)\n    plt.show()',
+      metadata: {
+        trusted: true,
+      },
+      execution_count: null,
+      outputs: [],
+    },
+    {
+      cell_type: "code",
+      source: "",
+      metadata: {},
+      execution_count: null,
+      outputs: [],
+    },
+  ];
+
   const notebook: INotebookContent = {
     metadata: {
       language_info: {
@@ -28,34 +57,7 @@ const AnalyzeNotebook = (simulation: Simulation): INotebookContent => {
     },
     nbformat_minor: 4,
     nbformat: 4,
-    cells: [
-      {
-        cell_type: "code",
-        source: "%pip install pandas",
-        metadata: {
-          trusted: true,
-        },
-        execution_count: null,
-        outputs: [],
-      } as ICodeCell,
-      {
-        cell_type: "code",
-        source:
-          'import lammps_logfile\nimport matplotlib.pyplot as plt\n\nlog = lammps_logfile.File("###SIMULATIONID###/log.lammps")\nstep = log.get("Step")\n\nfor keyword in log.keywords:\n    plt.figure()\n    plt.plot(step, log.get(keyword), label=keyword)\n    plt.xlabel(\'Timestep\')\n    plt.title(keyword)\n    plt.show()',
-        metadata: {
-          trusted: true,
-        },
-        execution_count: null,
-        outputs: [],
-      } as ICodeCell,
-      {
-        cell_type: "code",
-        source: "",
-        metadata: {},
-        execution_count: null,
-        outputs: [],
-      } as ICodeCell,
-    ],
+    cells,
   };
 
   const cell = notebook.cells[1];
