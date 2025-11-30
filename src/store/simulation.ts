@@ -195,7 +195,6 @@ export const simulationModel: SimulationModel = {
   ),
   syncFilesJupyterLite: thunk(
     async (actions, dummy: undefined, { getStoreState }: { getStoreState: () => State<StoreModel> }) => {
-      // TODO: deal with the undefined hack
       const simulation = getStoreState().simulation.simulation;
       if (!simulation) {
         return;
@@ -443,6 +442,9 @@ export const simulationModel: SimulationModel = {
 
       const wasm = window.wasm;
       const lammps = getStoreState().simulation.lammps;
+      if (!lammps) {
+        throw new Error("Lammps instance is not initialized");
+      }
 
       if (!wasm.FS.analyzePath(`/${simulation.id}`).exists) {
         wasm.FS.mkdir(`/${simulation.id}`);
