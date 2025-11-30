@@ -44,7 +44,7 @@ export type LammpsWeb = {
   computeParticles: () => number;
 };
 
-enum ModifierType {
+export enum ModifierType {
   ComputePressure,
   ComputeTemp,
   ComputePE,
@@ -92,6 +92,14 @@ export type LMPModifier = {
 export type Data1D = {
   data: number[][];
   labels: string[];
+};
+
+export type PlotData = {
+  data1D?: Data1D;
+  xLabel: string;
+  yLabel: string;
+  name: string;
+  syncDataPoints?: boolean;
 };
 
 export type Compute = {
