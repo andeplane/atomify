@@ -46,6 +46,9 @@ const darkThemeConfig = {
       colorBgContainer: 'transparent',
       itemBorderRadius: 8,
       itemMarginInline: 8,
+      itemActiveBorderWidth: 0,
+      itemSelectedBorderWidth: 0,
+      subMenuItemBorderRadius: 8,
     },
     Layout: {
       siderBg: 'transparent',
