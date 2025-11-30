@@ -25,17 +25,16 @@ vi.mock("dygraphs", () => {
 
 // Mock antd Modal, Empty, and Button components
 vi.mock("antd", () => ({
-  Modal: ({ children, open, onCancel, extra }: { children: React.ReactNode; open: boolean; onCancel: () => void; extra?: React.ReactNode }) => (
+  Modal: ({ children, open, onCancel }: { children: React.ReactNode; open: boolean; onCancel: () => void }) => (
     open ? (
       <div data-testid="modal" onClick={onCancel}>
-        {extra && <div data-testid="modal-extra">{extra}</div>}
         {children}
       </div>
     ) : null
   ),
   Empty: () => <div data-testid="empty">Empty</div>,
-  Button: ({ children, onClick, icon, type }: { children: React.ReactNode; onClick: () => void; icon?: React.ReactNode; type?: string }) => (
-    <button data-testid="button" onClick={onClick} data-type={type}>
+  Button: ({ children, onClick, icon, type, style }: { children: React.ReactNode; onClick: () => void; icon?: React.ReactNode; type?: string; style?: React.CSSProperties }) => (
+    <button data-testid="button" onClick={onClick} data-type={type} style={style}>
       {icon}
       {children}
     </button>

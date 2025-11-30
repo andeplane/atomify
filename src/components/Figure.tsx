@@ -162,18 +162,17 @@ const Figure = ({
       width={width} 
       footer={null} 
       onCancel={onClose}
-      extra={
-        plotConfig?.data1D && (
-          <Button 
-            type="primary" 
-            icon={<DownloadOutlined />} 
-            onClick={handleExportCsv}
-          >
-            Export CSV
-          </Button>
-        )
-      }
     >
+      {plotConfig?.data1D && (
+        <Button 
+          type="primary" 
+          icon={<DownloadOutlined />} 
+          onClick={handleExportCsv}
+          style={{ marginBottom: 16 }}
+        >
+          Export CSV
+        </Button>
+      )}
       <div id={graphId} />
       {!graph && <Empty />}
     </Modal>
