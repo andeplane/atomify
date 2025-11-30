@@ -22,7 +22,7 @@ vi.mock('@monaco-editor/react', () => ({
 }));
 
 describe('Edit', () => {
-  let store: ReturnType<typeof createStore<StoreModel>>;
+  let store: any;
 
   beforeEach(() => {
     // Create a minimal store with the necessary state
@@ -89,7 +89,7 @@ describe('Edit', () => {
 
   it('should render "No file selected" when no file is selected', () => {
     // Arrange
-    store = createStore<Partial<StoreModel>>({
+    store = createStore({
       app: {
         selectedFile: undefined,
         setSelectedFile: vi.fn(),
