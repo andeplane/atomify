@@ -125,8 +125,9 @@ const SimulationComponent = () => {
           runPostTimestep(false);
         }
 
-        // @ts-ignore
-        lammps.setSyncFrequency(window.syncFrequency);
+        if (window.syncFrequency !== undefined) {
+          lammps.setSyncFrequency(window.syncFrequency);
+        }
         // @ts-ignore
         if (window.cancel) {
           // @ts-ignore
@@ -178,11 +179,8 @@ const SimulationComponent = () => {
           // setWasm(Module)
           const lammps = new Module.LAMMPSWeb();
           setLammps(lammps);
-          // @ts-ignore
           window.wasm = Module;
-          // @ts-ignore
           window.lammps = lammps;
-          // @ts-ignore
           window.syncFrequency = 1;
           setStatus(undefined);
         });

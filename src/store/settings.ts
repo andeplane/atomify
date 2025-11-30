@@ -33,7 +33,6 @@ export const settingsModel: SettingsModel = {
   }),
   setSimulation: action((state, simulation: SimulationSettings) => {
     state.simulation = simulation;
-    // @ts-ignore
     window.syncFrequency = simulation.speed;
   }),
 };
