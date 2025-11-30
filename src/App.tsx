@@ -48,7 +48,7 @@ const darkThemeConfig = {
       itemMarginInline: 8,
     },
     Layout: {
-      siderBg: '#29282d',
+      siderBg: 'transparent',
       triggerBg: '#1f1f1f',
     },
     Select: {
