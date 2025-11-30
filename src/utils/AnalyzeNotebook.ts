@@ -1,40 +1,12 @@
 import { Simulation } from "../store/simulation";
+import type {
+  INotebookContent,
+  ICodeCell,
+  IMarkdownCell,
+} from "@jupyterlab/nbformat";
 
-interface NotebookCell {
-  cell_type: "code" | "markdown";
-  source: string;
-  metadata: Record<string, unknown>;
-  execution_count?: number | null;
-  outputs?: unknown[];
-}
-
-interface NotebookMetadata {
-  language_info: {
-    codemirror_mode: {
-      name: string;
-      version: number;
-    };
-    file_extension: string;
-    mimetype: string;
-    name: string;
-    nbconvert_exporter: string;
-    pygments_lexer: string;
-    version: string;
-  };
-  kernelspec: {
-    name: string;
-    display_name: string;
-    language: string;
-  };
-}
-
-const AnalyzeNotebook = (simulation: Simulation) => {
-  const notebook: {
-    metadata: NotebookMetadata;
-    nbformat_minor: number;
-    nbformat: number;
-    cells: NotebookCell[];
-  } = {
+const AnalyzeNotebook = (simulation: Simulation): INotebookContent => {
+  const notebook: INotebookContent = {
     metadata: {
       language_info: {
         codemirror_mode: {
@@ -65,7 +37,7 @@ const AnalyzeNotebook = (simulation: Simulation) => {
         },
         execution_count: null,
         outputs: [],
-      },
+      } as ICodeCell,
       {
         cell_type: "code",
         source:
@@ -75,27 +47,29 @@ const AnalyzeNotebook = (simulation: Simulation) => {
         },
         execution_count: null,
         outputs: [],
-      },
+      } as ICodeCell,
       {
         cell_type: "code",
         source: "",
         metadata: {},
         execution_count: null,
         outputs: [],
-      },
+      } as ICodeCell,
     ],
   };
 
-  notebook["cells"][1]["source"] = notebook["cells"][1]["source"].replace(
-    "###SIMULATIONID###",
-    simulation.id,
-  );
+  const cell = notebook.cells[1];
+  if (cell.cell_type === "code") {
+    const source = Array.isArray(cell.source) ? cell.source.join("") : cell.source;
+    cell.source = source.replace("###SIMULATIONID###", simulation.id);
+  }
   if (simulation.analysisDescription) {
-    notebook.cells.splice(0, 0, {
+    const markdownCell: IMarkdownCell = {
       cell_type: "markdown",
       source: simulation.analysisDescription,
       metadata: {},
-    });
+    };
+    notebook.cells.splice(0, 0, markdownCell);
   }
   return notebook;
 };
