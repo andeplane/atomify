@@ -1,6 +1,40 @@
 import { Simulation } from "../store/simulation";
+
+interface NotebookCell {
+  cell_type: "code" | "markdown";
+  source: string;
+  metadata: Record<string, unknown>;
+  execution_count?: number | null;
+  outputs?: unknown[];
+}
+
+interface NotebookMetadata {
+  language_info: {
+    codemirror_mode: {
+      name: string;
+      version: number;
+    };
+    file_extension: string;
+    mimetype: string;
+    name: string;
+    nbconvert_exporter: string;
+    pygments_lexer: string;
+    version: string;
+  };
+  kernelspec: {
+    name: string;
+    display_name: string;
+    language: string;
+  };
+}
+
 const AnalyzeNotebook = (simulation: Simulation) => {
-  const notebook = {
+  const notebook: {
+    metadata: NotebookMetadata;
+    nbformat_minor: number;
+    nbformat: number;
+    cells: NotebookCell[];
+  } = {
     metadata: {
       language_info: {
         codemirror_mode: {
@@ -57,8 +91,7 @@ const AnalyzeNotebook = (simulation: Simulation) => {
     simulation.id,
   );
   if (simulation.analysisDescription) {
-    // @ts-ignore
-    notebook["cells"].splice(0, 0, {
+    notebook.cells.splice(0, 0, {
       cell_type: "markdown",
       source: simulation.analysisDescription,
       metadata: {},

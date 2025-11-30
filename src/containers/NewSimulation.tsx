@@ -45,7 +45,6 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
     files.filter((file) => file.fileName === inputScript).length > 0;
 
   useEffect(() => {
-    //@ts-ignore
     window.files = [];
   }, []);
 
@@ -56,7 +55,6 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
         const newFiles = files.filter(
           (file) => file.fileName !== info.file.name,
         );
-        //@ts-ignore
         window.files = newFiles;
         setFiles(newFiles);
         return;
@@ -70,9 +68,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
         fileName: info.file.name,
         content: await originFile.text(),
       };
-      //@ts-ignore
-      window.files = [...window.files, file];
-      //@ts-ignore
+      window.files = [...(window.files || []), file];
       setFiles(window.files);
       message.success(`${file.fileName} uploaded successfully.`);
     },
