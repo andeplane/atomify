@@ -3,7 +3,6 @@ import { Data1D } from "../types";
 /**
  * Converts plot data to CSV format
  * @param data1D - The 1D plot data containing data rows and column labels
- * @param filename - Optional filename for the downloaded CSV file
  * @returns CSV string
  */
 export function plotDataToCsv(data1D: Data1D): string {
@@ -44,9 +43,11 @@ export function exportPlotDataToCsv(data1D: Data1D, filename = "plot-data.csv"):
   link.style.visibility = "hidden";
   
   document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  
-  // Clean up the URL object
-  URL.revokeObjectURL(url);
+  try {
+    link.click();
+  } finally {
+    document.body.removeChild(link);
+    // Clean up the URL object
+    URL.revokeObjectURL(url);
+  }
 }
