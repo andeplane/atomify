@@ -575,7 +575,7 @@ long LAMMPSWeb::getPositionsPointer() {
 }
 
 long LAMMPSWeb::getIdPointer() {
-  auto ptr = lammps_extract_atom((void *)m_lmp, "id");
+  auto ptr = lammps_extract_atom((void *)m_lmp, "tag");
 
   return reinterpret_cast<long>(ptr);
 }
