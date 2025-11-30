@@ -461,5 +461,28 @@ describe("Figure", () => {
         "my-test-plot-with-spaces.csv",
       );
     });
+
+    it("should sanitize filename by replacing invalid characters", async () => {
+      // Arrange
+      const plotData = createMockPlotData({
+        name: 'plot/with\\invalid:characters*?"|<>',
+        data1D: {
+          data: [[0, 1]],
+          labels: ["x", "y"],
+        },
+      });
+      const user = userEvent.setup();
+
+      // Act
+      render(<Figure plotData={plotData} onClose={mockOnClose} />);
+      const exportButton = screen.getByTestId("button");
+      await user.click(exportButton);
+
+      // Assert
+      expect(exportPlotDataToCsv).toHaveBeenCalledWith(
+        plotData.data1D,
+        "plot-with-invalid-characters------.csv",
+      );
+    });
   });
 });

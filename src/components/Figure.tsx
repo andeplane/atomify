@@ -151,7 +151,7 @@ const Figure = ({
 
   const handleExportCsv = () => {
     if (plotConfig?.data1D) {
-      const filename = `${plotConfig.name.replace(/\s+/g, "-")}.csv`;
+      const filename = `${plotConfig.name.replace(/[\s/\\?%*:"|<>]/g, "-")}.csv`;
       exportPlotDataToCsv(plotConfig.data1D, filename);
     }
   };
