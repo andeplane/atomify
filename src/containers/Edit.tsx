@@ -1444,17 +1444,15 @@ const Edit = () => {
   }
 
   return (
-    <div className="edit-container-glass" style={{ height: "100vh", width: "100%" }}>
-      <Editor
-        height="100vh"
-        language="lammps"
-        theme="vs-dark"
-        value={selectedFile.content}
-        options={options}
-        onChange={onEditorChange}
-        onMount={handleEditorDidMount}
-      />
-    </div>
+    <Editor
+      height="100vh"
+      language="lammps"
+      theme="vs-dark"
+      value={selectedFile.content}
+      options={options}
+      onChange={onEditorChange}
+      onMount={handleEditorDidMount}
+    />
   );
 };
 export default Edit;
