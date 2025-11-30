@@ -157,7 +157,6 @@ class ColorModifier extends Modifier {
     }
     compute.lmpCompute.sync();
     const perAtomDataPtr = compute.lmpCompute.getPerAtomData() / 8;
-    //@ts-ignore
     const perAtomArray = input.wasm.HEAPF64.subarray(
       perAtomDataPtr,
       perAtomDataPtr + particles.count,

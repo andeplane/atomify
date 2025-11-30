@@ -1,6 +1,41 @@
 import { Simulation } from "../store/simulation";
-const AnalyzeNotebook = (simulation: Simulation) => {
-  const notebook = {
+import type {
+  INotebookContent,
+  ICodeCell,
+  IMarkdownCell,
+} from "@jupyterlab/nbformat";
+
+const AnalyzeNotebook = (simulation: Simulation): INotebookContent => {
+  const cells: ICodeCell[] = [
+    {
+      cell_type: "code",
+      source: "%pip install pandas",
+      metadata: {
+        trusted: true,
+      },
+      execution_count: null,
+      outputs: [],
+    },
+    {
+      cell_type: "code",
+      source:
+        'import lammps_logfile\nimport matplotlib.pyplot as plt\n\nlog = lammps_logfile.File("###SIMULATIONID###/log.lammps")\nstep = log.get("Step")\n\nfor keyword in log.keywords:\n    plt.figure()\n    plt.plot(step, log.get(keyword), label=keyword)\n    plt.xlabel(\'Timestep\')\n    plt.title(keyword)\n    plt.show()',
+      metadata: {
+        trusted: true,
+      },
+      execution_count: null,
+      outputs: [],
+    },
+    {
+      cell_type: "code",
+      source: "",
+      metadata: {},
+      execution_count: null,
+      outputs: [],
+    },
+  ];
+
+  const notebook: INotebookContent = {
     metadata: {
       language_info: {
         codemirror_mode: {
@@ -22,47 +57,21 @@ const AnalyzeNotebook = (simulation: Simulation) => {
     },
     nbformat_minor: 4,
     nbformat: 4,
-    cells: [
-      {
-        cell_type: "code",
-        source: "%pip install pandas",
-        metadata: {
-          trusted: true,
-        },
-        execution_count: null,
-        outputs: [],
-      },
-      {
-        cell_type: "code",
-        source:
-          'import lammps_logfile\nimport matplotlib.pyplot as plt\n\nlog = lammps_logfile.File("###SIMULATIONID###/log.lammps")\nstep = log.get("Step")\n\nfor keyword in log.keywords:\n    plt.figure()\n    plt.plot(step, log.get(keyword), label=keyword)\n    plt.xlabel(\'Timestep\')\n    plt.title(keyword)\n    plt.show()',
-        metadata: {
-          trusted: true,
-        },
-        execution_count: null,
-        outputs: [],
-      },
-      {
-        cell_type: "code",
-        source: "",
-        metadata: {},
-        execution_count: null,
-        outputs: [],
-      },
-    ],
+    cells,
   };
 
-  notebook["cells"][1]["source"] = notebook["cells"][1]["source"].replace(
-    "###SIMULATIONID###",
-    simulation.id,
-  );
+  const cell = notebook.cells[1];
+  if (cell.cell_type === "code") {
+    const source = Array.isArray(cell.source) ? cell.source.join("") : cell.source;
+    cell.source = source.replace("###SIMULATIONID###", simulation.id);
+  }
   if (simulation.analysisDescription) {
-    // @ts-ignore
-    notebook["cells"].splice(0, 0, {
+    const markdownCell: IMarkdownCell = {
       cell_type: "markdown",
       source: simulation.analysisDescription,
       metadata: {},
-    });
+    };
+    notebook.cells.splice(0, 0, markdownCell);
   }
   return notebook;
 };

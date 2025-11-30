@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
-    "@monaco-editor/react": "^4.6.0",
     "@ant-design/icons": "^5.5.0",
+    "@monaco-editor/react": "^4.6.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/colormap": "^2.3.1",
@@ -63,6 +63,7 @@
     ]
   },
   "devDependencies": {
+    "@jupyterlab/nbformat": "^4.5.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/emscripten": "^1.41.5",
     "@types/mixpanel-browser": "^2.38.0",

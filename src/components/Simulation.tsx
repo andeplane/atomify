@@ -7,7 +7,6 @@ import { notification } from "antd";
 import { time_event, track } from "../utils/metrics";
 
 const SimulationComponent = () => {
-  // @ts-ignore
   const wasm = window.wasm;
   const lammps = useStoreState((state) => state.simulation.lammps);
   const simulation = useStoreState((state) => state.simulation.simulation);
@@ -43,7 +42,6 @@ const SimulationComponent = () => {
         // Ignore this one
         return;
       }
-      //@ts-ignore
       addLammpsOutput(text);
       console.log(text);
     },
@@ -68,8 +66,7 @@ const SimulationComponent = () => {
         "9": 200,
       };
       if (Object.keys(syncFrequencyMap).indexOf(ev.key) >= 0) {
-        // @ts-ignore
-        const value: number = syncFrequencyMap[ev.key];
+        const value: number = syncFrequencyMap[ev.key as keyof typeof syncFrequencyMap];
         setSimulationSettings({ ...simulationSettings, speed: value });
         notification.info({
           message: `Setting simulation speed to ${value}.`,
@@ -81,9 +78,8 @@ const SimulationComponent = () => {
       }
 
       if (ev.key === "c" && !ev.metaKey && !ev.ctrlKey) {
-        //@ts-ignore
+        if (!window.visualizer) return;
         const cameraPosition = window.visualizer.getCameraPosition();
-        //@ts-ignore
         const cameraTarget = window.visualizer.getCameraTarget();
         const output = `#/camera position ${cameraPosition.x.toFixed(1)} ${cameraPosition.y.toFixed(1)} ${cameraPosition.z.toFixed(1)}\n#/camera target ${cameraTarget.x.toFixed(1)} ${cameraTarget.y.toFixed(1)} ${cameraTarget.z.toFixed(1)}`;
         navigator.clipboard.writeText(output);
@@ -104,9 +100,7 @@ const SimulationComponent = () => {
   ]);
 
   useEffect(() => {
-    //@ts-ignore
     window.postStepCallback = () => {
-      // @ts-ignore
       if (paused && !window.cancel) {
         // Gah this state hack is growing.
         return true;
@@ -125,11 +119,10 @@ const SimulationComponent = () => {
           runPostTimestep(false);
         }
 
-        // @ts-ignore
-        lammps.setSyncFrequency(window.syncFrequency);
-        // @ts-ignore
+        if (window.syncFrequency !== undefined) {
+          lammps.setSyncFrequency(window.syncFrequency);
+        }
         if (window.cancel) {
-          // @ts-ignore
           window.cancel = false;
           setPaused(false);
           lammps.cancel();
@@ -150,7 +143,6 @@ const SimulationComponent = () => {
   ]);
 
   useEffect(() => {
-    // @ts-ignore
     if (!window.wasm) {
       setStatus({
         title: "Downloading LAMMPS ...",
@@ -178,11 +170,8 @@ const SimulationComponent = () => {
           // setWasm(Module)
           const lammps = new Module.LAMMPSWeb();
           setLammps(lammps);
-          // @ts-ignore
           window.wasm = Module;
-          // @ts-ignore
           window.lammps = lammps;
-          // @ts-ignore
           window.syncFrequency = 1;
           setStatus(undefined);
         });

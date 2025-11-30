@@ -124,7 +124,6 @@ const App: React.FC = () => {
       if (running) {
         // Need to unpause to reach cancel. TODO: improve this state
         setPaused(false);
-        // @ts-ignore
         window.cancel = true;
       } else {
         run();

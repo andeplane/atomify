@@ -38,7 +38,7 @@ describe("AnalyzeNotebook", () => {
     expect(notebook.nbformat).toBe(4);
     expect(notebook.nbformat_minor).toBe(4);
     expect(notebook.metadata).toBeDefined();
-    expect(notebook.metadata.language_info.name).toBe("python");
+    expect(notebook.metadata.language_info?.name).toBe("python");
   });
 
   it("should have three cells by default (pip install, plot code, empty)", () => {
@@ -114,11 +114,13 @@ describe("AnalyzeNotebook", () => {
     const notebook = AnalyzeNotebook(simulation);
 
     // Assert
-    expect(notebook.metadata.kernelspec.name).toBe("python");
-    expect(notebook.metadata.kernelspec.display_name).toBe("Python (Pyodide)");
-    expect(notebook.metadata.kernelspec.language).toBe("python");
-    expect(notebook.metadata.language_info.name).toBe("python");
-    expect(notebook.metadata.language_info.version).toBe("3.12");
+    expect(notebook.metadata.kernelspec?.name).toBe("python");
+    expect(notebook.metadata.kernelspec?.display_name).toBe("Python (Pyodide)");
+    // language is an extra field not in the official types but allowed via PartialJSONObject
+    expect((notebook.metadata.kernelspec as { language?: string })?.language).toBe("python");
+    expect(notebook.metadata.language_info?.name).toBe("python");
+    // version is an extra field not in the official types but allowed via PartialJSONObject
+    expect((notebook.metadata.language_info as { version?: string })?.version).toBe("3.12");
   });
 
   it("should handle special characters in simulation ID", () => {
