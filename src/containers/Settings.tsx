@@ -127,18 +127,33 @@ const Settings = ({ open, onClose }: SettingsProps) => {
           Show simulation box
         </Checkbox>
       </p>
-      <div>
-        Brightness
-        <Slider
-          min={0.1}
-          max={2.0}
-          step={0.1}
-          defaultValue={renderSettings.brightness}
-          onChange={(value) => {
-            track("Settings.Render.Brightness", { value });
-            setRenderSettings({ ...renderSettings, brightness: value });
-          }}
-        />
+      <div style={{ marginTop: "16px" }}>
+        <div style={{ marginBottom: "8px" }}>
+          Ambient Light Intensity
+          <Slider
+            min={0}
+            max={0.2}
+            step={0.01}
+            value={renderSettings.ambientLightIntensity}
+            onChange={(value) => {
+              track("Settings.Render.AmbientLightIntensity", { value });
+              setRenderSettings({ ...renderSettings, ambientLightIntensity: value });
+            }}
+          />
+        </div>
+        <div style={{ marginTop: "16px" }}>
+          Point Light Intensity
+          <Slider
+            min={0}
+            max={50}
+            step={1}
+            value={renderSettings.pointLightIntensity}
+            onChange={(value) => {
+              track("Settings.Render.PointLightIntensity", { value });
+              setRenderSettings({ ...renderSettings, pointLightIntensity: value });
+            }}
+          />
+        </div>
       </div>
     </>
   );
