@@ -132,7 +132,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
           Ambient Light Intensity
           <Slider
             min={0}
-            max={0.2}
+            max={1.0}
             step={0.01}
             value={renderSettings.ambientLightIntensity}
             onChange={(value) => {
