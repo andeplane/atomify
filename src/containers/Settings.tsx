@@ -1,4 +1,4 @@
-import { Modal, Checkbox, Slider, Tabs, Table } from "antd";
+import { Modal, Checkbox, Slider, Tabs, Table, Divider, Collapse } from "antd";
 import { useStoreState, useStoreActions } from "../hooks";
 import type { ColumnsType } from "antd/es/table";
 import { track } from "../utils/metrics";
@@ -100,61 +100,112 @@ const Settings = ({ open, onClose }: SettingsProps) => {
 
   const renderRenderSettings = () => (
     <>
-      <p>
-        <Checkbox
-          checked={renderSettings.ssao}
-          onChange={(e) => {
-            track("Settings.Render.SSAO", { value: e.target.checked });
-            setRenderSettings({ ...renderSettings, ssao: e.target.checked });
-          }}
-        >
-          Enable SSAO
-        </Checkbox>
-      </p>
-      <p>
-        <Checkbox
-          checked={renderSettings.showSimulationBox}
-          onChange={(e) => {
-            track("Settings.Render.ShowSimulationBox", {
-              value: e.target.checked,
-            });
-            setRenderSettings({
-              ...renderSettings,
-              showSimulationBox: e.target.checked,
-            });
-          }}
-        >
-          Show simulation box
-        </Checkbox>
-      </p>
-      <div style={{ marginTop: "16px" }}>
-        <div style={{ marginBottom: "8px" }}>
-          Ambient Light Intensity
-          <Slider
-            min={0}
-            max={1.0}
-            step={0.01}
-            value={renderSettings.ambientLightIntensity}
-            onChange={(value) => {
-              track("Settings.Render.AmbientLightIntensity", { value });
-              setRenderSettings({ ...renderSettings, ambientLightIntensity: value });
-            }}
-          />
-        </div>
-        <div style={{ marginTop: "16px" }}>
-          Point Light Intensity
-          <Slider
-            min={0}
-            max={50}
-            step={1}
-            value={renderSettings.pointLightIntensity}
-            onChange={(value) => {
-              track("Settings.Render.PointLightIntensity", { value });
-              setRenderSettings({ ...renderSettings, pointLightIntensity: value });
-            }}
-          />
-        </div>
-      </div>
+      {/* Basic Settings */}
+      <Checkbox
+        checked={renderSettings.showSimulationBox}
+        onChange={(e) => {
+          track("Settings.Render.ShowSimulationBox", {
+            value: e.target.checked,
+          });
+          setRenderSettings({
+            ...renderSettings,
+            showSimulationBox: e.target.checked,
+          });
+        }}
+      >
+        Show simulation box
+      </Checkbox>
+
+      <Collapse
+        defaultActiveKey={["lighting"]}
+        items={[
+          {
+            key: "lighting",
+            label: "Lighting",
+            children: (
+              <>
+                <div style={{ marginBottom: "8px" }}>
+                  Ambient Light Intensity: {renderSettings.ambientLightIntensity.toFixed(2)}
+                  <Slider
+                    min={0}
+                    max={1.0}
+                    step={0.01}
+                    value={renderSettings.ambientLightIntensity}
+                    onChange={(value) => {
+                      track("Settings.Render.AmbientLightIntensity", { value });
+                      setRenderSettings({ ...renderSettings, ambientLightIntensity: value });
+                    }}
+                  />
+                </div>
+                <div>
+                  Point Light Intensity: {renderSettings.pointLightIntensity.toFixed(0)}
+                  <Slider
+                    min={0}
+                    max={50}
+                    step={1}
+                    value={renderSettings.pointLightIntensity}
+                    onChange={(value) => {
+                      track("Settings.Render.PointLightIntensity", { value });
+                      setRenderSettings({ ...renderSettings, pointLightIntensity: value });
+                    }}
+                  />
+                </div>
+              </>
+            ),
+          },
+          {
+            key: "ssao",
+            label: "Ambient Occlusion (SSAO)",
+            children: (
+              <>
+                <Checkbox
+                  checked={renderSettings.ssao}
+                  onChange={(e) => {
+                    track("Settings.Render.SSAO", { value: e.target.checked });
+                    setRenderSettings({
+                      ...renderSettings,
+                      ssao: e.target.checked,
+                    });
+                  }}
+                >
+                  Enable SSAO
+                </Checkbox>
+
+                {renderSettings.ssao && (
+                  <div style={{ marginTop: "16px" }}>
+                    <div style={{ marginBottom: "8px" }}>
+                      Radius: {renderSettings.ssaoRadius.toFixed(1)}
+                      <Slider
+                        min={1}
+                        max={30}
+                        step={0.5}
+                        value={renderSettings.ssaoRadius}
+                        onChange={(value) => {
+                          track("Settings.Render.SSAORadius", { value });
+                          setRenderSettings({ ...renderSettings, ssaoRadius: value });
+                        }}
+                      />
+                    </div>
+                    <div>
+                      Intensity: {renderSettings.ssaoIntensity.toFixed(1)}
+                      <Slider
+                        min={0}
+                        max={15}
+                        step={0.5}
+                        value={renderSettings.ssaoIntensity}
+                        onChange={(value) => {
+                          track("Settings.Render.SSAOIntensity", { value });
+                          setRenderSettings({ ...renderSettings, ssaoIntensity: value });
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
+            ),
+          },
+        ]}
+      />
     </>
   );
 
@@ -176,7 +227,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
           },
           {
             key: "keybordshortcuts",
-            label: "Keybord shortcuts",
+            label: "Keyboard shortcuts",
             children: (
               <Table
                 pagination={{ pageSize: 50, hideOnSinglePage: true }}
