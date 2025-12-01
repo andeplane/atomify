@@ -49,7 +49,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [showAnalyze, setShowAnalyze] = useState(window.innerWidth > 900);
+  const [showAnalyze, setShowAnalyze] = useState(false);
   const [selectedAtoms, setSelectedAtoms] = useState<Set<number>>(new Set());
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
@@ -336,7 +336,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             onClose={() => setShowSettings(false)}
           />
           {!showAnalyze && window.innerWidth > 900 && (
-            <SimulationSummaryOverlay />
+            <SimulationSummaryOverlay
+              onShowMore={() => {
+                setShowAnalyze(true);
+              }}
+            />
           )}
           <SelectedAtomsInfo
             selectedAtoms={selectedAtoms}
