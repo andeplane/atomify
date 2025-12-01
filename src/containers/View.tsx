@@ -161,7 +161,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       newVisualizer.pointLight.intensity = renderSettings.pointLightIntensity;
       newVisualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
     }
-  }, [domElement, setVisualizer, visualizer, loading]);
+  }, [domElement, setVisualizer, visualizer, loading, renderSettings]);
 
   useEffect(() => {
     if (visible && domElement.current) {

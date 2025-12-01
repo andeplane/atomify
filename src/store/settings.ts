@@ -13,7 +13,10 @@ export const loadRenderSettingsFromStorage = (): Partial<RenderSettings> => {
   try {
     const stored = localStorage.getItem(RENDER_SETTINGS_STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      if (typeof parsed === "object" && parsed !== null) {
+        return parsed;
+      }
     }
   } catch (e) {
     console.warn("Failed to load render settings from localStorage", e);
