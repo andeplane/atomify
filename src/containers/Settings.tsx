@@ -1,4 +1,4 @@
-import { Modal, Checkbox, Slider, Tabs, Table, Divider, Collapse } from "antd";
+import { Modal, Checkbox, Slider, Tabs, Table, Collapse } from "antd";
 import { useStoreState, useStoreActions } from "../hooks";
 import type { ColumnsType } from "antd/es/table";
 import { track } from "../utils/metrics";
@@ -98,116 +98,139 @@ const Settings = ({ open, onClose }: SettingsProps) => {
     },
   ];
 
-  const renderRenderSettings = () => (
-    <>
-      {/* Basic Settings */}
-      <Checkbox
-        checked={renderSettings.showSimulationBox}
-        onChange={(e) => {
-          track("Settings.Render.ShowSimulationBox", {
-            value: e.target.checked,
-          });
-          setRenderSettings({
-            ...renderSettings,
-            showSimulationBox: e.target.checked,
-          });
-        }}
-      >
-        Show simulation box
-      </Checkbox>
+  const renderRenderSettings = () => {
+    const handleSettingChange = <K extends keyof typeof renderSettings>(
+      key: K,
+      value: (typeof renderSettings)[K],
+      trackName: string
+    ) => {
+      track(trackName, { value });
+      setRenderSettings({ ...renderSettings, [key]: value });
+    };
 
-      <Collapse
-        defaultActiveKey={["lighting"]}
-        items={[
-          {
-            key: "lighting",
-            label: "Lighting",
-            children: (
-              <>
-                <div style={{ marginBottom: "8px" }}>
-                  Ambient Light Intensity: {renderSettings.ambientLightIntensity.toFixed(2)}
-                  <Slider
-                    min={0}
-                    max={1.0}
-                    step={0.01}
-                    value={renderSettings.ambientLightIntensity}
-                    onChange={(value) => {
-                      track("Settings.Render.AmbientLightIntensity", { value });
-                      setRenderSettings({ ...renderSettings, ambientLightIntensity: value });
-                    }}
-                  />
-                </div>
-                <div>
-                  Point Light Intensity: {renderSettings.pointLightIntensity.toFixed(0)}
-                  <Slider
-                    min={0}
-                    max={50}
-                    step={1}
-                    value={renderSettings.pointLightIntensity}
-                    onChange={(value) => {
-                      track("Settings.Render.PointLightIntensity", { value });
-                      setRenderSettings({ ...renderSettings, pointLightIntensity: value });
-                    }}
-                  />
-                </div>
-              </>
-            ),
-          },
-          {
-            key: "ssao",
-            label: "Ambient Occlusion (SSAO)",
-            children: (
-              <>
-                <Checkbox
-                  checked={renderSettings.ssao}
-                  onChange={(e) => {
-                    track("Settings.Render.SSAO", { value: e.target.checked });
-                    setRenderSettings({
-                      ...renderSettings,
-                      ssao: e.target.checked,
-                    });
-                  }}
-                >
-                  Enable SSAO
-                </Checkbox>
+    return (
+      <>
+        {/* Basic Settings */}
+        <Checkbox
+          checked={renderSettings.showSimulationBox}
+          onChange={(e) =>
+            handleSettingChange(
+              "showSimulationBox",
+              e.target.checked,
+              "Settings.Render.ShowSimulationBox"
+            )
+          }
+        >
+          Show simulation box
+        </Checkbox>
 
-                {renderSettings.ssao && (
-                  <div style={{ marginTop: "16px" }}>
-                    <div style={{ marginBottom: "8px" }}>
-                      Radius: {renderSettings.ssaoRadius.toFixed(1)}
-                      <Slider
-                        min={1}
-                        max={30}
-                        step={0.5}
-                        value={renderSettings.ssaoRadius}
-                        onChange={(value) => {
-                          track("Settings.Render.SSAORadius", { value });
-                          setRenderSettings({ ...renderSettings, ssaoRadius: value });
-                        }}
-                      />
-                    </div>
-                    <div>
-                      Intensity: {renderSettings.ssaoIntensity.toFixed(1)}
-                      <Slider
-                        min={0}
-                        max={15}
-                        step={0.5}
-                        value={renderSettings.ssaoIntensity}
-                        onChange={(value) => {
-                          track("Settings.Render.SSAOIntensity", { value });
-                          setRenderSettings({ ...renderSettings, ssaoIntensity: value });
-                        }}
-                      />
-                    </div>
+        <Collapse
+          defaultActiveKey={["lighting"]}
+          items={[
+            {
+              key: "lighting",
+              label: "Lighting",
+              children: (
+                <>
+                  <div style={{ marginBottom: "8px" }}>
+                    Ambient Light Intensity:{" "}
+                    {renderSettings.ambientLightIntensity.toFixed(2)}
+                    <Slider
+                      min={0}
+                      max={1.0}
+                      step={0.01}
+                      value={renderSettings.ambientLightIntensity}
+                      onChange={(value) =>
+                        handleSettingChange(
+                          "ambientLightIntensity",
+                          value,
+                          "Settings.Render.AmbientLightIntensity"
+                        )
+                      }
+                    />
                   </div>
-                )}
-              </>
-            ),
-          },
-        ]}
-      />
-    </>
-  );
+                  <div>
+                    Point Light Intensity:{" "}
+                    {renderSettings.pointLightIntensity.toFixed(0)}
+                    <Slider
+                      min={0}
+                      max={50}
+                      step={1}
+                      value={renderSettings.pointLightIntensity}
+                      onChange={(value) =>
+                        handleSettingChange(
+                          "pointLightIntensity",
+                          value,
+                          "Settings.Render.PointLightIntensity"
+                        )
+                      }
+                    />
+                  </div>
+                </>
+              ),
+            },
+            {
+              key: "ssao",
+              label: "Ambient Occlusion (SSAO)",
+              children: (
+                <>
+                  <Checkbox
+                    checked={renderSettings.ssao}
+                    onChange={(e) =>
+                      handleSettingChange(
+                        "ssao",
+                        e.target.checked,
+                        "Settings.Render.SSAO"
+                      )
+                    }
+                  >
+                    Enable SSAO
+                  </Checkbox>
+
+                  {renderSettings.ssao && (
+                    <div style={{ marginTop: "16px" }}>
+                      <div style={{ marginBottom: "8px" }}>
+                        Radius: {renderSettings.ssaoRadius.toFixed(1)}
+                        <Slider
+                          min={1}
+                          max={30}
+                          step={0.5}
+                          value={renderSettings.ssaoRadius}
+                          onChange={(value) =>
+                            handleSettingChange(
+                              "ssaoRadius",
+                              value,
+                              "Settings.Render.SSAORadius"
+                            )
+                          }
+                        />
+                      </div>
+                      <div>
+                        Intensity: {renderSettings.ssaoIntensity.toFixed(1)}
+                        <Slider
+                          min={0}
+                          max={15}
+                          step={0.5}
+                          value={renderSettings.ssaoIntensity}
+                          onChange={(value) =>
+                            handleSettingChange(
+                              "ssaoIntensity",
+                              value,
+                              "Settings.Render.SSAOIntensity"
+                            )
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
+                </>
+              ),
+            },
+          ]}
+        />
+      </>
+    );
+  };
 
   return (
     <Modal
