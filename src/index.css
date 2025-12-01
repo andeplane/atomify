@@ -258,7 +258,6 @@ body,
   color: #fff;
   z-index: 1000;
   box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
-  position: relative;
   overflow: hidden;
   contain: layout style paint;
 }

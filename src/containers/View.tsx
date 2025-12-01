@@ -303,7 +303,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         </Col>
       </Header>
       <div id="canvas-container" style={{ height: "100%", width: "100%" }}>
-        <div style={{ height: "100vh", width: "100%" }} ref={domElement}>
+        <div style={{ height: "100vh", width: "100%", position: "relative" }} ref={domElement}>
           <Settings
             open={showSettings}
             onClose={() => setShowSettings(false)}
