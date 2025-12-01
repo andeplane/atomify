@@ -39,6 +39,12 @@ const Container = styled.div`
   height: 100vh;
 `;
 
+const VisualizerWrapper = styled.div`
+  height: 100vh;
+  width: 100%;
+  position: relative;
+`;
+
 const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
@@ -303,7 +309,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         </Col>
       </Header>
       <div id="canvas-container" style={{ height: "100%", width: "100%" }}>
-        <div style={{ height: "100vh", width: "100%" }} ref={domElement}>
+        <VisualizerWrapper ref={domElement}>
           <Settings
             open={showSettings}
             onClose={() => setShowSettings(false)}
@@ -317,7 +323,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             timesteps={timesteps}
             onClearSelection={handleClearSelection}
           />
-        </div>
+        </VisualizerWrapper>
       </div>
       {!isEmbeddedMode && (
         <>
