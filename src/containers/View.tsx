@@ -156,11 +156,12 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       setVisualizer(newVisualizer);
       setLoading(false);
       newVisualizer.materials.particles.shininess = 50;
-      newVisualizer.ambientLight.intensity = 0.5;
-      newVisualizer.pointLight.intensity = 0.5;
-      // newVisualizer.pointLight.decay = 2
+      // Apply initial render settings
+      newVisualizer.renderer.renderSsao = renderSettings.ssao;
+      newVisualizer.pointLight.intensity = renderSettings.pointLightIntensity;
+      newVisualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
     }
-  }, [domElement, setVisualizer, visualizer, loading]);
+  }, [domElement, setVisualizer, visualizer, loading, renderSettings]);
 
   useEffect(() => {
     if (visible && domElement.current) {
@@ -229,8 +230,8 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     if (visualizer) {
       // ts-ignore
       visualizer.renderer.renderSsao = renderSettings.ssao;
-      visualizer.pointLight.intensity = 0.5 * renderSettings.brightness;
-      visualizer.ambientLight.intensity = 0.5 * renderSettings.brightness;
+      visualizer.pointLight.intensity = renderSettings.pointLightIntensity;
+      visualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
     }
   }, [renderSettings, visualizer]);
 
