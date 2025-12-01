@@ -2,6 +2,8 @@ import { action, Action } from "easy-peasy";
 
 export interface RenderSettings {
   ssao: boolean;
+  ssaoRadius: number;
+  ssaoIntensity: number;
   ambientLightIntensity: number;
   pointLightIntensity: number;
   showSimulationBox: boolean;
@@ -46,6 +48,8 @@ export interface SettingsModel {
 
 const defaultRenderSettings: RenderSettings = {
   ssao: true,
+  ssaoRadius: 10.0,
+  ssaoIntensity: 5.0,
   ambientLightIntensity: 0.05,
   pointLightIntensity: 20.0,
   showSimulationBox: true,

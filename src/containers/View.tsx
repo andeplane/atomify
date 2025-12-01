@@ -104,6 +104,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     };
   }, [selectedAtoms, handleClearSelection]);
 
+
   const disposeBoxGroup = useCallback(() => {
     if (boxGroupRef.current && visualizer) {
       // Dispose of all cylinders in the group
@@ -162,8 +163,17 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       setVisualizer(newVisualizer);
       setLoading(false);
       newVisualizer.materials.particles.shininess = 50;
-      // Apply initial render settings
-      newVisualizer.renderer.renderSsao = renderSettings.ssao;
+      
+      // Initialize post-processing with settings
+      newVisualizer.initPostProcessing({
+        ssao: {
+          enabled: renderSettings.ssao,
+          radius: renderSettings.ssaoRadius,
+          intensity: renderSettings.ssaoIntensity,
+        },
+      });
+      
+      // Apply lighting settings
       newVisualizer.pointLight.intensity = renderSettings.pointLightIntensity;
       newVisualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
     }
@@ -232,10 +242,21 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     }
   }, [particles, prevParticles, prevBonds, bonds, visualizer]);
 
+  // Apply render settings when they change
   useEffect(() => {
     if (visualizer) {
-      // ts-ignore
-      visualizer.renderer.renderSsao = renderSettings.ssao;
+      // Update post-processing settings
+      if (visualizer.isPostProcessingEnabled()) {
+        visualizer.updatePostProcessingSettings({
+          ssao: {
+            enabled: renderSettings.ssao,
+            radius: renderSettings.ssaoRadius,
+            intensity: renderSettings.ssaoIntensity,
+          },
+        });
+      }
+      
+      // Update lighting
       visualizer.pointLight.intensity = renderSettings.pointLightIntensity;
       visualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
     }
