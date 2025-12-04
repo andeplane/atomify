@@ -77,5 +77,8 @@
     "prettier": "3.6.2",
     "vite": "^5.4.11",
     "vitest": "^4.0.14"
+  },
+  "overrides": {
+    "cross-spawn": "^7.0.6"
   }
 }
