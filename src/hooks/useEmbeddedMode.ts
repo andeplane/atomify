@@ -34,39 +34,39 @@ function parseVars(varsString: string | null): Record<string, number> {
 }
 
 /**
+ * Default embed configuration values
+ */
+const DEFAULT_EMBED_CONFIG: EmbedConfig = {
+  showSimulationSummary: true,
+  showSimulationBox: true,
+  enableCameraControls: true,
+  enableParticlePicking: true,
+};
+
+/**
  * Parse embed configuration from base64-encoded JSON URL parameter
  * Returns: EmbedConfig with defaults applied
  */
 function parseEmbedConfig(configString: string | null): EmbedConfig {
   if (!configString) {
-    return {
-      showSimulationSummary: true,
-      showSimulationBox: true,
-      enableCameraControls: true,
-      enableParticlePicking: true,
-    };
+    return DEFAULT_EMBED_CONFIG;
   }
 
   try {
     const decoded = atob(configString);
     const parsed = JSON.parse(decoded) as Partial<EmbedConfig>;
     
-    // Apply defaults
+    // Apply defaults for any missing properties
     return {
-      showSimulationSummary: parsed.showSimulationSummary ?? true,
-      showSimulationBox: parsed.showSimulationBox ?? true,
-      enableCameraControls: parsed.enableCameraControls ?? true,
-      enableParticlePicking: parsed.enableParticlePicking ?? true,
+      showSimulationSummary: parsed.showSimulationSummary ?? DEFAULT_EMBED_CONFIG.showSimulationSummary,
+      showSimulationBox: parsed.showSimulationBox ?? DEFAULT_EMBED_CONFIG.showSimulationBox,
+      enableCameraControls: parsed.enableCameraControls ?? DEFAULT_EMBED_CONFIG.enableCameraControls,
+      enableParticlePicking: parsed.enableParticlePicking ?? DEFAULT_EMBED_CONFIG.enableParticlePicking,
     };
   } catch (error) {
     console.warn('Failed to parse embed config:', error);
     // Return defaults on parse error
-    return {
-      showSimulationSummary: true,
-      showSimulationBox: true,
-      enableCameraControls: true,
-      enableParticlePicking: true,
-    };
+    return DEFAULT_EMBED_CONFIG;
   }
 }
 

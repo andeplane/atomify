@@ -323,23 +323,16 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   useEffect(() => {
     if (visualizer) {
       // Apply camera controls setting
-      if (embedConfig.enableCameraControls !== undefined) {
-        visualizer.setControlsEnabled(embedConfig.enableCameraControls);
-      }
+      visualizer.setControlsEnabled(embedConfig.enableCameraControls);
       
       // Apply particle picking setting
-      if (embedConfig.enableParticlePicking !== undefined) {
-        visualizer.setPickingEnabled(embedConfig.enableParticlePicking);
-      }
+      visualizer.setPickingEnabled(embedConfig.enableParticlePicking);
     }
   }, [visualizer, embedConfig.enableCameraControls, embedConfig.enableParticlePicking]);
 
   // Apply showSimulationBox setting from embed config
   useEffect(() => {
-    if (
-      embedConfig.showSimulationBox !== undefined &&
-      renderSettings.showSimulationBox !== embedConfig.showSimulationBox
-    ) {
+    if (renderSettings.showSimulationBox !== embedConfig.showSimulationBox) {
       setRenderSettings({
         ...renderSettings,
         showSimulationBox: embedConfig.showSimulationBox,
