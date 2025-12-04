@@ -11,7 +11,11 @@ import { SettingOutlined, AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
 import * as THREE from "three";
-import { createBoxGeometry, calculateBoxRadius } from "../utils/boxGeometry";
+import {
+  createBoxGeometry,
+  calculateBoxRadius,
+  getSimulationBoxBounds,
+} from "../utils/boxGeometry";
 
 const { Header, Sider } = Layout;
 
@@ -264,6 +268,22 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       visualizer.setOrthographic(renderSettings.orthographic);
     }
   }, [renderSettings, visualizer]);
+
+  // Update camera planes based on simulation box bounds
+  useEffect(() => {
+    if (!visualizer) {
+      return;
+    }
+
+    // If simulation box is available, use it to update camera planes
+    // This takes precedence over system bounds from particles/bonds
+    if (simulationBox && simulationOrigo && typeof visualizer.updateCameraPlanes === 'function') {
+      const boundingBox = getSimulationBoxBounds(simulationBox, simulationOrigo);
+      visualizer.updateCameraPlanes(boundingBox);
+    }
+    // Note: Camera planes are also updated automatically when particles/bonds are added
+    // (as a fallback if simulation box is not available)
+  }, [visualizer, simulationBox, simulationOrigo]);
 
   // Handle simulation box visualization
   useEffect(() => {

@@ -155,4 +155,47 @@ export function createBoxGeometry(
   return group;
 }
 
+/**
+ * Calculates the axis-aligned bounding box (AABB) of a simulation box parallelepiped.
+ * Handles both orthogonal and triclinic (non-orthogonal) simulation boxes.
+ * 
+ * @param cellMatrix - THREE.Matrix3 where rows represent the a, b, c vectors (LAMMPS convention)
+ * @param origin - THREE.Vector3 representing the origin point
+ * @returns THREE.Box3 representing the axis-aligned bounding box
+ */
+export function getSimulationBoxBounds(
+  cellMatrix: THREE.Matrix3,
+  origin: THREE.Vector3,
+): THREE.Box3 {
+  // The cell matrix from LAMMPS stores vectors as ROWS, but extractBasis gets COLUMNS
+  // So we need to transpose the matrix first
+  const transposed = cellMatrix.clone().transpose();
+  
+  // Extract column vectors from the transposed matrix (which are the original rows)
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const c = new THREE.Vector3();
+  transposed.extractBasis(a, b, c);
+
+  // Compute the 8 vertices of the parallelepiped
+  const vertices: THREE.Vector3[] = [
+    origin.clone(), // v0
+    origin.clone().add(a), // v1
+    origin.clone().add(b), // v2
+    origin.clone().add(c), // v3
+    origin.clone().add(a).add(b), // v4
+    origin.clone().add(a).add(c), // v5
+    origin.clone().add(b).add(c), // v6
+    origin.clone().add(a).add(b).add(c), // v7
+  ];
+
+  // Create bounding box and expand by all vertices
+  const box = new THREE.Box3();
+  for (const vertex of vertices) {
+    box.expandByPoint(vertex);
+  }
+
+  return box;
+}
+
 
