@@ -1,12 +1,21 @@
 import { useStoreState, useStoreActions } from "../hooks";
 import { Slider, Button } from "antd";
+import { MinusOutlined } from "@ant-design/icons";
 import { track } from "../utils/metrics";
 
 interface SimulationSummaryOverlayProps {
-  onShowMore: () => void;
+  onShowMore?: () => void;
+  isCollapsed?: boolean;
+  onExpand?: () => void;
+  onCollapse?: () => void;
 }
 
-const SimulationSummaryOverlay = ({ onShowMore }: SimulationSummaryOverlayProps) => {
+const SimulationSummaryOverlay = ({ 
+  onShowMore, 
+  isCollapsed = false, 
+  onExpand,
+  onCollapse
+}: SimulationSummaryOverlayProps) => {
   const simulationSettings = useStoreState(
     (state) => state.settings.simulation,
   );
@@ -33,14 +42,55 @@ const SimulationSummaryOverlay = ({ onShowMore }: SimulationSummaryOverlayProps)
   };
 
   const handleShowMore = () => {
-    track("SimulationSummary.ShowMore");
-    onShowMore();
+    if (onShowMore) {
+      track("SimulationSummary.ShowMore");
+      onShowMore();
+    }
   };
+
+  const handleExpand = () => {
+    if (onExpand) {
+      track("SimulationSummary.Expand");
+      onExpand();
+    }
+  };
+
+  const handleCollapse = () => {
+    if (onCollapse) {
+      track("SimulationSummary.Collapse");
+      onCollapse();
+    }
+  };
+
+  if (isCollapsed) {
+    return (
+      <div className="simulationsummary simulationsummary-collapsed" onClick={handleExpand}>
+        <div style={{ cursor: 'pointer' }}>
+          Show simulation summary
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="simulationsummary">
       {simulation && (
         <>
+          {onCollapse && (
+            <div style={{ 
+              position: 'absolute', 
+              top: '8px', 
+              right: '8px', 
+              zIndex: 1 
+            }}>
+              <Button
+                type="text"
+                icon={<MinusOutlined />}
+                onClick={handleCollapse}
+                style={{ color: '#fff', padding: 0 }}
+              />
+            </div>
+          )}
           <div>
             Type: {runType}
             <br />
@@ -60,15 +110,17 @@ const SimulationSummaryOverlay = ({ onShowMore }: SimulationSummaryOverlayProps)
               defaultValue={simulationSettings.speed}
               onChange={(value) => setSyncFrequency(value)}
             />
-            <div className="show-more-container">
-              <Button
-                type="link"
-                onClick={handleShowMore}
-                className="show-more-button"
-              >
-                Show more →
-              </Button>
-            </div>
+            {onShowMore && (
+              <div className="show-more-container">
+                <Button
+                  type="link"
+                  onClick={handleShowMore}
+                  className="show-more-button"
+                >
+                  Show more →
+                </Button>
+              </div>
+            )}
           </div>
         </>
       )}
