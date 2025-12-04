@@ -239,6 +239,18 @@ body,
   transform: translateZ(0);
 }
 
+.show-more-container {
+  text-align: right;
+  margin-top: 8px;
+}
+
+.show-more-button {
+  padding: 0 !important;
+  color: #fff !important;
+  text-decoration: underline;
+  font-size: 12px;
+}
+
 .selected-atoms-info {
   position: absolute;
   background: rgba(42, 41, 47, 0.6);

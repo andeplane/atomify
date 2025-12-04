@@ -6,7 +6,7 @@ interface SimulationSummaryOverlayProps {
   onShowMore: () => void;
 }
 
-const SimulationSummary = ({ onShowMore }: SimulationSummaryOverlayProps) => {
+const SimulationSummaryOverlay = ({ onShowMore }: SimulationSummaryOverlayProps) => {
   const simulationSettings = useStoreState(
     (state) => state.settings.simulation,
   );
@@ -60,16 +60,11 @@ const SimulationSummary = ({ onShowMore }: SimulationSummaryOverlayProps) => {
               defaultValue={simulationSettings.speed}
               onChange={(value) => setSyncFrequency(value)}
             />
-            <div style={{ textAlign: "right", marginTop: "8px" }}>
+            <div className="show-more-container">
               <Button
                 type="link"
                 onClick={handleShowMore}
-                style={{
-                  padding: 0,
-                  color: "#fff",
-                  textDecoration: "underline",
-                  fontSize: "12px",
-                }}
+                className="show-more-button"
               >
                 Show more →
               </Button>
@@ -80,4 +75,4 @@ const SimulationSummary = ({ onShowMore }: SimulationSummaryOverlayProps) => {
     </div>
   );
 };
-export default SimulationSummary;
+export default SimulationSummaryOverlay;
