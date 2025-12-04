@@ -259,6 +259,9 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       // Update lighting
       visualizer.pointLight.intensity = renderSettings.pointLightIntensity;
       visualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
+
+      // Update camera projection mode
+      visualizer.setOrthographic(renderSettings.orthographic);
     }
   }, [renderSettings, visualizer]);
 

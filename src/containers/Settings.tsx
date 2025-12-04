@@ -124,6 +124,21 @@ const Settings = ({ open, onClose }: SettingsProps) => {
           Show simulation box
         </Checkbox>
 
+        <div style={{ marginTop: "8px" }}>
+          <Checkbox
+            checked={renderSettings.orthographic}
+            onChange={(e) =>
+              handleSettingChange(
+                "orthographic",
+                e.target.checked,
+                "Settings.Render.Orthographic"
+              )
+            }
+          >
+            Orthographic camera
+          </Checkbox>
+        </div>
+
         <Collapse
           defaultActiveKey={["lighting"]}
           items={[

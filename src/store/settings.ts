@@ -7,6 +7,7 @@ export interface RenderSettings {
   ambientLightIntensity: number;
   pointLightIntensity: number;
   showSimulationBox: boolean;
+  orthographic: boolean;
 }
 
 const RENDER_SETTINGS_STORAGE_KEY = "atomify_render_settings";
@@ -53,6 +54,7 @@ const defaultRenderSettings: RenderSettings = {
   ambientLightIntensity: 0.05,
   pointLightIntensity: 20.0,
   showSimulationBox: true,
+  orthographic: false,
 };
 
 // Load settings from localStorage on initialization
