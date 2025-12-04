@@ -1,4 +1,5 @@
 import { isEmbeddedMode } from "../utils/embeddedMode";
+import { EmbedConfig } from "../types";
 
 export interface EmbeddedModeResult {
   embeddedSimulationUrl: string | null;
@@ -7,7 +8,7 @@ export interface EmbeddedModeResult {
   autoStart: boolean;
   isEmbeddedMode: boolean;
   vars: Record<string, number>;
-  showSimulationSummary: boolean;
+  embedConfig: EmbedConfig;
 }
 
 /**
@@ -32,6 +33,43 @@ function parseVars(varsString: string | null): Record<string, number> {
   return vars;
 }
 
+/**
+ * Parse embed configuration from base64-encoded JSON URL parameter
+ * Returns: EmbedConfig with defaults applied
+ */
+function parseEmbedConfig(configString: string | null): EmbedConfig {
+  if (!configString) {
+    return {
+      showSimulationSummary: true,
+      showSimulationBox: true,
+      enableCameraControls: true,
+      enableParticlePicking: true,
+    };
+  }
+
+  try {
+    const decoded = atob(configString);
+    const parsed = JSON.parse(decoded) as Partial<EmbedConfig>;
+    
+    // Apply defaults
+    return {
+      showSimulationSummary: parsed.showSimulationSummary ?? true,
+      showSimulationBox: parsed.showSimulationBox ?? true,
+      enableCameraControls: parsed.enableCameraControls ?? true,
+      enableParticlePicking: parsed.enableParticlePicking ?? true,
+    };
+  } catch (error) {
+    console.warn('Failed to parse embed config:', error);
+    // Return defaults on parse error
+    return {
+      showSimulationSummary: true,
+      showSimulationBox: true,
+      enableCameraControls: true,
+      enableParticlePicking: true,
+    };
+  }
+}
+
 export function useEmbeddedMode(): EmbeddedModeResult {
   const urlSearchParams = new URLSearchParams(window.location.search);
   const embeddedSimulationUrl = urlSearchParams.get('embeddedSimulationUrl');
@@ -40,8 +78,12 @@ export function useEmbeddedMode(): EmbeddedModeResult {
   const autoStartParam = urlSearchParams.get('autostart');
   const autoStart = autoStartParam === 'true';
   const vars = parseVars(urlSearchParams.get('vars'));
+<<<<<<< HEAD
   const showSimulationSummaryParam = urlSearchParams.get('showSimulationSummary');
   const showSimulationSummary = showSimulationSummaryParam === 'true';
+=======
+  const embedConfig = parseEmbedConfig(urlSearchParams.get('config'));
+>>>>>>> b55952d (feat: add embed config URL parameter support)
   
   // Use shared utility function to determine embedded mode
   const embeddedMode = isEmbeddedMode(urlSearchParams);
@@ -53,6 +95,10 @@ export function useEmbeddedMode(): EmbeddedModeResult {
     autoStart,
     isEmbeddedMode: embeddedMode,
     vars,
+<<<<<<< HEAD
     showSimulationSummary,
+=======
+    embedConfig,
+>>>>>>> b55952d (feat: add embed config URL parameter support)
   };
 } 
