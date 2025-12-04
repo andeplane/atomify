@@ -4,7 +4,7 @@ import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 import { useStoreState, useStoreActions } from "../hooks";
 import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import Settings from "./Settings";
-import SimulationSummaryOverlay from "../components/SimulationSummaryOverlay";
+import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSummary";
 import SimulationSummaryModal from "../components/SimulationSummaryModal";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import SimulationSummary from "./SimulationSummary";
@@ -404,40 +404,16 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             open={showSettings}
             onClose={() => setShowSettings(false)}
           />
-          {(() => {
-            const isDesktop = !isMobile;
-            
-            // In embedded mode: show overlay only if showSimulationSummary=true
-            if (isEmbeddedMode) {
-              if (showSimulationSummary) {
-                return (
-                  <SimulationSummaryOverlay
-                    isCollapsed={isOverlayCollapsed}
-                    onExpand={() => setIsOverlayCollapsed(false)}
-                    onCollapse={() => setIsOverlayCollapsed(true)}
-                  />
-                );
-              }
-              return null;
-            }
-            
-            // In non-embedded mode: overlay can be collapsed/expanded
-            // Desktop shows "Show more" button when expanded, mobile doesn't
-            if (!showAnalyze) {
-              return (
-                <SimulationSummaryOverlay
-                  isCollapsed={isOverlayCollapsed}
-                  onExpand={() => setIsOverlayCollapsed(false)}
-                  onCollapse={() => setIsOverlayCollapsed(true)}
-                  onShowMore={isDesktop ? () => {
-                    setShowAnalyze(true);
-                  } : undefined}
-                />
-              );
-            }
-            
-            return null;
-          })()}
+          <ResponsiveSimulationSummary
+            isEmbeddedMode={isEmbeddedMode}
+            showSimulationSummary={showSimulationSummary}
+            isMobile={isMobile}
+            isOverlayCollapsed={isOverlayCollapsed}
+            showAnalyze={showAnalyze}
+            onExpand={() => setIsOverlayCollapsed(false)}
+            onCollapse={() => setIsOverlayCollapsed(true)}
+            onShowMore={() => setShowAnalyze(true)}
+          />
           <SelectedAtomsInfo
             selectedAtoms={selectedAtoms}
             particles={particles}
