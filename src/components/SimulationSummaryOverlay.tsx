@@ -1,10 +1,12 @@
-import { useState } from "react";
 import { useStoreState, useStoreActions } from "../hooks";
-import { Slider } from "antd";
+import { Slider, Button } from "antd";
 import { track } from "../utils/metrics";
 
-const SimulationSummary = () => {
-  const [isHovering, setIsHovering] = useState(false);
+interface SimulationSummaryOverlayProps {
+  onShowMore: () => void;
+}
+
+const SimulationSummaryOverlay = ({ onShowMore }: SimulationSummaryOverlayProps) => {
   const simulationSettings = useStoreState(
     (state) => state.settings.simulation,
   );
@@ -23,13 +25,6 @@ const SimulationSummary = () => {
     (state) => state.simulationStatus.timestepsPerSecond,
   );
 
-  const handleMouseOver = () => {
-    setIsHovering(true);
-  };
-
-  const handleMouseOut = () => {
-    setIsHovering(false);
-  };
   const setSyncFrequency = (value: number | null) => {
     if (value && value > 0) {
       track("SimulationSpeed.Change", { speed: value });
@@ -37,12 +32,13 @@ const SimulationSummary = () => {
     }
   };
 
+  const handleShowMore = () => {
+    track("SimulationSummary.ShowMore");
+    onShowMore();
+  };
+
   return (
-    <div
-      onMouseOver={handleMouseOver}
-      onMouseOut={handleMouseOut}
-      className={"simulationsummary" + (isHovering ? " hover" : "")}
-    >
+    <div className="simulationsummary">
       {simulation && (
         <>
           <div>
@@ -64,10 +60,19 @@ const SimulationSummary = () => {
               defaultValue={simulationSettings.speed}
               onChange={(value) => setSyncFrequency(value)}
             />
+            <div className="show-more-container">
+              <Button
+                type="link"
+                onClick={handleShowMore}
+                className="show-more-button"
+              >
+                Show more →
+              </Button>
+            </div>
           </div>
         </>
       )}
     </div>
   );
 };
-export default SimulationSummary;
+export default SimulationSummaryOverlay;
