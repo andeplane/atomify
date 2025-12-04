@@ -17,6 +17,20 @@ import {
   getSimulationBoxBounds,
 } from "../utils/boxGeometry";
 
+// Type guard for Visualizer with updateCameraPlanes method
+interface VisualizerWithCameraPlanes extends Visualizer {
+  updateCameraPlanes: (box: THREE.Box3) => void;
+}
+
+function visualizerHasCameraPlanes(
+  v: Visualizer,
+): v is VisualizerWithCameraPlanes {
+  return (
+    "updateCameraPlanes" in v &&
+    typeof (v as any).updateCameraPlanes === "function"
+  );
+}
+
 const { Header, Sider } = Layout;
 
 interface ViewProps {
@@ -277,7 +291,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
 
     // If simulation box is available, use it to update camera planes
     // This takes precedence over system bounds from particles/bonds
-    if (simulationBox && simulationOrigo && typeof visualizer.updateCameraPlanes === 'function') {
+    if (simulationBox && simulationOrigo && visualizerHasCameraPlanes(visualizer)) {
       const boundingBox = getSimulationBoxBounds(simulationBox, simulationOrigo);
       visualizer.updateCameraPlanes(boundingBox);
     }
