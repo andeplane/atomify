@@ -18,7 +18,6 @@ import {
   calculateBoxRadius,
   getSimulationBoxBounds,
 } from "../utils/boxGeometry";
-import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 
 // Type guard for Visualizer with updateCameraPlanes method
 interface VisualizerWithCameraPlanes extends Visualizer {
