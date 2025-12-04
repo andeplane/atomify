@@ -5,11 +5,13 @@ import { useStoreState, useStoreActions } from "../hooks";
 import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import Settings from "./Settings";
 import SimulationSummaryOverlay from "../components/SimulationSummaryOverlay";
+import SimulationSummaryModal from "../components/SimulationSummaryModal";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import SimulationSummary from "./SimulationSummary";
 import { SettingOutlined, AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
+import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 import * as THREE from "three";
 import {
   createBoxGeometry,
@@ -52,6 +54,14 @@ const AnalyzeButtonContainer = styled.div`
   margin-bottom: 20px;
 `;
 
+const MobileSummaryButtonContainer = styled.div`
+  position: fixed !important;
+  bottom: 0;
+  right: 0;
+  margin-bottom: 20px;
+  margin-right: 20px;
+`;
+
 const Container = styled.div`
   color: #ffffff;
   height: 100vh;
@@ -68,7 +78,20 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAnalyze, setShowAnalyze] = useState(false);
+  const [showMobileSummaryModal, setShowMobileSummaryModal] = useState(false);
+  const [isOverlayCollapsed, setIsOverlayCollapsed] = useState(false); // false = expanded, true = collapsed
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [selectedAtoms, setSelectedAtoms] = useState<Set<number>>(new Set());
+  const { showSimulationSummary } = useEmbeddedMode();
+
+  // Track window width for responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 900);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(
@@ -372,13 +395,66 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             open={showSettings}
             onClose={() => setShowSettings(false)}
           />
-          {!showAnalyze && window.innerWidth > 900 && (
-            <SimulationSummaryOverlay
-              onShowMore={() => {
-                setShowAnalyze(true);
-              }}
-            />
-          )}
+          {(() => {
+            const isDesktop = !isMobile;
+            
+            // In embedded mode: show overlay only if showSimulationSummary=true
+            // Desktop: starts expanded, Mobile: starts collapsed
+            if (isEmbeddedMode) {
+              if (showSimulationSummary) {
+                if (isDesktop) {
+                  // Desktop embedded: expanded by default
+                  return (
+                    <SimulationSummaryOverlay
+                      isCollapsed={isOverlayCollapsed}
+                      onExpand={() => setIsOverlayCollapsed(false)}
+                      onCollapse={() => setIsOverlayCollapsed(true)}
+                    />
+                  );
+                } else {
+                  // Mobile embedded: collapsed by default
+                  return (
+                    <SimulationSummaryOverlay
+                      isCollapsed={!isOverlayCollapsed}
+                      onExpand={() => setIsOverlayCollapsed(true)}
+                      onCollapse={() => setIsOverlayCollapsed(false)}
+                    />
+                  );
+                }
+              }
+              return null;
+            }
+            
+            // In non-embedded mode: 
+            // Desktop: overlay is expanded by default (isCollapsed = false), can be collapsed, shows "Show more" button
+            // Mobile: overlay starts collapsed (isCollapsed = true), can be expanded, no "Show more" button
+            if (!showAnalyze) {
+              if (isDesktop) {
+                // Desktop: expanded by default, user can collapse it
+                return (
+                  <SimulationSummaryOverlay
+                    isCollapsed={isOverlayCollapsed}
+                    onExpand={() => setIsOverlayCollapsed(false)}
+                    onCollapse={() => setIsOverlayCollapsed(true)}
+                    onShowMore={() => {
+                      setShowAnalyze(true);
+                    }}
+                  />
+                );
+              } else {
+                // Mobile: collapsed by default, user can expand it
+                return (
+                  <SimulationSummaryOverlay
+                    isCollapsed={!isOverlayCollapsed}
+                    onExpand={() => setIsOverlayCollapsed(true)}
+                    onCollapse={() => setIsOverlayCollapsed(false)}
+                  />
+                );
+              }
+            }
+            
+            return null;
+          })()}
           <SelectedAtomsInfo
             selectedAtoms={selectedAtoms}
             particles={particles}
@@ -389,24 +465,41 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       </div>
       {!isEmbeddedMode && (
         <>
-          <AnalyzeButtonContainer>
-            <AreaChartOutlined
-              style={{
-                fontSize: "32px",
-                color: "#fff",
-                marginRight: 70,
-                zIndex: 1000,
-              }}
-              onClick={() => {
-                if (!showAnalyze) {
-                  track("SimulationSummary.Open");
-                } else {
-                  track("SimulationSummary.Close");
-                }
-                setShowAnalyze(!showAnalyze);
-              }}
-            />
-          </AnalyzeButtonContainer>
+          {!isMobile && (
+            <AnalyzeButtonContainer>
+              <AreaChartOutlined
+                style={{
+                  fontSize: "32px",
+                  color: "#fff",
+                  marginRight: 70,
+                  zIndex: 1000,
+                }}
+                onClick={() => {
+                  if (!showAnalyze) {
+                    track("SimulationSummary.Open");
+                  } else {
+                    track("SimulationSummary.Close");
+                  }
+                  setShowAnalyze(!showAnalyze);
+                }}
+              />
+            </AnalyzeButtonContainer>
+          )}
+          {isMobile && (
+            <MobileSummaryButtonContainer>
+              <AreaChartOutlined
+                style={{
+                  fontSize: "32px",
+                  color: "#fff",
+                  zIndex: 1000,
+                }}
+                onClick={() => {
+                  track("SimulationSummary.Modal.Open");
+                  setShowMobileSummaryModal(true);
+                }}
+              />
+            </MobileSummaryButtonContainer>
+          )}
           <SettingsButtonContainer>
             <SettingOutlined
               style={{
@@ -446,6 +539,12 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         >
           You can create a new simulation or run one of the built-in examples.
         </Modal>
+      )}
+      {isMobile && (
+        <SimulationSummaryModal
+          open={showMobileSummaryModal}
+          onClose={() => setShowMobileSummaryModal(false)}
+        />
       )}
     </Layout>
   );
