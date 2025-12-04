@@ -4,12 +4,14 @@ import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 import { useStoreState, useStoreActions } from "../hooks";
 import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import Settings from "./Settings";
-import SimulationSummaryOverlay from "../components/SimulationSummaryOverlay";
+import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSummary";
+import SimulationSummaryModal from "../components/SimulationSummaryModal";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import SimulationSummary from "./SimulationSummary";
 import { SettingOutlined, AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
+import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 import * as THREE from "three";
 import {
   createBoxGeometry,
@@ -52,6 +54,14 @@ const AnalyzeButtonContainer = styled.div`
   margin-bottom: 20px;
 `;
 
+const MobileSummaryButtonContainer = styled.div`
+  position: fixed !important;
+  bottom: 0;
+  right: 0;
+  margin-bottom: 20px;
+  margin-right: 20px;
+`;
+
 const Container = styled.div`
   color: #ffffff;
   height: 100vh;
@@ -63,12 +73,34 @@ const VisualizerWrapper = styled.div`
   position: relative;
 `;
 
+const MOBILE_BREAKPOINT = 900;
+
 const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAnalyze, setShowAnalyze] = useState(false);
+  const [showMobileSummaryModal, setShowMobileSummaryModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
+  // State consistently represents the collapsed state.
+  // Initial state is collapsed on mobile, expanded on desktop.
+  const [isOverlayCollapsed, setIsOverlayCollapsed] = useState(isMobile);
   const [selectedAtoms, setSelectedAtoms] = useState<Set<number>>(new Set());
+  const { showSimulationSummary } = useEmbeddedMode();
+
+  // Track window width for responsive behavior
+  useEffect(() => {
+    const handleResize = () => {
+      const newIsMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+      if (newIsMobile !== isMobile) {
+        setIsMobile(newIsMobile);
+        // Reset collapsed state when switching between mobile/desktop
+        setIsOverlayCollapsed(newIsMobile);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isMobile]);
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(
@@ -372,13 +404,16 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             open={showSettings}
             onClose={() => setShowSettings(false)}
           />
-          {!showAnalyze && window.innerWidth > 900 && (
-            <SimulationSummaryOverlay
-              onShowMore={() => {
-                setShowAnalyze(true);
-              }}
-            />
-          )}
+          <ResponsiveSimulationSummary
+            isEmbeddedMode={isEmbeddedMode}
+            showSimulationSummary={showSimulationSummary}
+            isMobile={isMobile}
+            isOverlayCollapsed={isOverlayCollapsed}
+            showAnalyze={showAnalyze}
+            onExpand={() => setIsOverlayCollapsed(false)}
+            onCollapse={() => setIsOverlayCollapsed(true)}
+            onShowMore={() => setShowAnalyze(true)}
+          />
           <SelectedAtomsInfo
             selectedAtoms={selectedAtoms}
             particles={particles}
@@ -389,24 +424,41 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       </div>
       {!isEmbeddedMode && (
         <>
-          <AnalyzeButtonContainer>
-            <AreaChartOutlined
-              style={{
-                fontSize: "32px",
-                color: "#fff",
-                marginRight: 70,
-                zIndex: 1000,
-              }}
-              onClick={() => {
-                if (!showAnalyze) {
-                  track("SimulationSummary.Open");
-                } else {
-                  track("SimulationSummary.Close");
-                }
-                setShowAnalyze(!showAnalyze);
-              }}
-            />
-          </AnalyzeButtonContainer>
+          {!isMobile && (
+            <AnalyzeButtonContainer>
+              <AreaChartOutlined
+                style={{
+                  fontSize: "32px",
+                  color: "#fff",
+                  marginRight: 70,
+                  zIndex: 1000,
+                }}
+                onClick={() => {
+                  if (!showAnalyze) {
+                    track("SimulationSummary.Open");
+                  } else {
+                    track("SimulationSummary.Close");
+                  }
+                  setShowAnalyze(!showAnalyze);
+                }}
+              />
+            </AnalyzeButtonContainer>
+          )}
+          {isMobile && (
+            <MobileSummaryButtonContainer>
+              <AreaChartOutlined
+                style={{
+                  fontSize: "32px",
+                  color: "#fff",
+                  zIndex: 1000,
+                }}
+                onClick={() => {
+                  track("SimulationSummary.Modal.Open");
+                  setShowMobileSummaryModal(true);
+                }}
+              />
+            </MobileSummaryButtonContainer>
+          )}
           <SettingsButtonContainer>
             <SettingOutlined
               style={{
@@ -446,6 +498,12 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         >
           You can create a new simulation or run one of the built-in examples.
         </Modal>
+      )}
+      {isMobile && (
+        <SimulationSummaryModal
+          open={showMobileSummaryModal}
+          onClose={() => setShowMobileSummaryModal(false)}
+        />
       )}
     </Layout>
   );
