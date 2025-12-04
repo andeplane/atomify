@@ -64,11 +64,11 @@ const SimulationSummaryOverlay = ({
 
   if (isCollapsed) {
     return (
-      <div className="simulationsummary simulationsummary-collapsed" onClick={handleExpand} style={{ cursor: 'pointer' }}>
+      <button type="button" className="simulationsummary simulationsummary-collapsed" onClick={handleExpand}>
         <div>
           Show simulation summary
         </div>
-      </div>
+      </button>
     );
   }
 

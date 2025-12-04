@@ -258,6 +258,23 @@ body,
   z-index: 1;
 }
 
+.simulationsummary-collapsed {
+  width: auto !important;
+  min-width: 200px;
+  padding: 8px 16px !important;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background: inherit;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.simulationsummary-collapsed:hover {
+  background: rgba(42, 41, 47, 0.8) !important;
+}
+
 .selected-atoms-info {
   position: absolute;
   background: rgba(42, 41, 47, 0.6);

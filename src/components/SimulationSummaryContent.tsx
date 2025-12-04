@@ -33,13 +33,10 @@ const SimulationSummaryContent = () => {
   const modifiers = useStoreState(
     (state) => state.processing.postTimestepModifiers,
   );
-  const postTimestepModifiers = useStoreState(
-    (state) => state.processing.postTimestepModifiers,
-  );
-  const colorModifier = postTimestepModifiers.filter(
+  const colorModifier = modifiers.find(
     (modifier) => modifier.name === "Colors",
-  )[0] as ColorModifier;
-  const selectedModifiers = postTimestepModifiers
+  ) as ColorModifier | undefined;
+  const selectedModifiers = modifiers
     .filter((m) => m.active)
     .map((m) => m.name);
   const simulation = useStoreState((state) => state.simulation.simulation);
@@ -108,10 +105,14 @@ const SimulationSummaryContent = () => {
               style={{ padding: 0 }}
               type="link"
               onMouseEnter={() => {
-                colorModifier.computeName = value;
+                if (colorModifier) {
+                  colorModifier.computeName = value;
+                }
               }}
               onMouseLeave={() => {
-                colorModifier.computeName = undefined;
+                if (colorModifier) {
+                  colorModifier.computeName = undefined;
+                }
               }}
             >
               {value}
