@@ -86,7 +86,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   // Initial state is collapsed on mobile, expanded on desktop.
   const [isOverlayCollapsed, setIsOverlayCollapsed] = useState(isMobile);
   const [selectedAtoms, setSelectedAtoms] = useState<Set<number>>(new Set());
-  const { showSimulationSummary } = useEmbeddedMode();
+  const { embedConfig } = useEmbeddedMode();
 
   // Track window width for responsive behavior
   useEffect(() => {
@@ -115,6 +115,9 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   );
 
   const renderSettings = useStoreState((state) => state.settings.render);
+  const setRenderSettings = useStoreActions(
+    (actions) => actions.settings.setRender,
+  );
   const domElement = useRef<HTMLDivElement | null>(null);
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
@@ -315,6 +318,27 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     }
   }, [renderSettings, visualizer]);
 
+  // Apply embed config settings
+  useEffect(() => {
+    if (visualizer) {
+      // Apply camera controls setting
+      visualizer.setControlsEnabled(embedConfig.enableCameraControls);
+      
+      // Apply particle picking setting
+      visualizer.setPickingEnabled(embedConfig.enableParticlePicking);
+    }
+  }, [visualizer, embedConfig.enableCameraControls, embedConfig.enableParticlePicking]);
+
+  // Apply showSimulationBox setting from embed config
+  useEffect(() => {
+    if (renderSettings.showSimulationBox !== embedConfig.showSimulationBox) {
+      setRenderSettings({
+        ...renderSettings,
+        showSimulationBox: embedConfig.showSimulationBox,
+      });
+    }
+  }, [embedConfig.showSimulationBox, renderSettings, setRenderSettings]);
+
   // Update camera planes based on simulation box bounds
   useEffect(() => {
     if (!visualizer) {
@@ -404,16 +428,18 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             open={showSettings}
             onClose={() => setShowSettings(false)}
           />
-          <ResponsiveSimulationSummary
-            isEmbeddedMode={isEmbeddedMode}
-            showSimulationSummary={showSimulationSummary}
-            isMobile={isMobile}
-            isOverlayCollapsed={isOverlayCollapsed}
-            showAnalyze={showAnalyze}
-            onExpand={() => setIsOverlayCollapsed(false)}
-            onCollapse={() => setIsOverlayCollapsed(true)}
-            onShowMore={() => setShowAnalyze(true)}
-          />
+          {embedConfig.showSimulationSummary && (
+            <ResponsiveSimulationSummary
+              isEmbeddedMode={isEmbeddedMode}
+              showSimulationSummary={embedConfig.showSimulationSummary}
+              isMobile={isMobile}
+              isOverlayCollapsed={isOverlayCollapsed}
+              showAnalyze={showAnalyze}
+              onExpand={() => setIsOverlayCollapsed(false)}
+              onCollapse={() => setIsOverlayCollapsed(true)}
+              onShowMore={() => setShowAnalyze(true)}
+            />
+          )}
           <SelectedAtomsInfo
             selectedAtoms={selectedAtoms}
             particles={particles}

@@ -171,3 +171,20 @@ export type GithubFile = {
   isLeaf: boolean;
   children: GithubFile[];
 };
+
+/**
+ * Configuration options for embedded simulations.
+ * These can be passed via base64-encoded JSON in the 'config' URL parameter.
+ * 
+ * Note: When parsed from URL, all properties are guaranteed to have values (defaults applied).
+ */
+export interface EmbedConfig {
+  /** Show the simulation summary overlay (default: true) */
+  showSimulationSummary: boolean;
+  /** Show the simulation box visualization (default: true) */
+  showSimulationBox: boolean;
+  /** Enable camera controls (default: true) */
+  enableCameraControls: boolean;
+  /** Enable particle picking (default: true) */
+  enableParticlePicking: boolean;
+}
