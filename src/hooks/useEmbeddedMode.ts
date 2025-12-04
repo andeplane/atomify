@@ -78,12 +78,7 @@ export function useEmbeddedMode(): EmbeddedModeResult {
   const autoStartParam = urlSearchParams.get('autostart');
   const autoStart = autoStartParam === 'true';
   const vars = parseVars(urlSearchParams.get('vars'));
-<<<<<<< HEAD
-  const showSimulationSummaryParam = urlSearchParams.get('showSimulationSummary');
-  const showSimulationSummary = showSimulationSummaryParam === 'true';
-=======
   const embedConfig = parseEmbedConfig(urlSearchParams.get('config'));
->>>>>>> b55952d (feat: add embed config URL parameter support)
   
   // Use shared utility function to determine embedded mode
   const embeddedMode = isEmbeddedMode(urlSearchParams);
@@ -95,10 +90,6 @@ export function useEmbeddedMode(): EmbeddedModeResult {
     autoStart,
     isEmbeddedMode: embeddedMode,
     vars,
-<<<<<<< HEAD
-    showSimulationSummary,
-=======
     embedConfig,
->>>>>>> b55952d (feat: add embed config URL parameter support)
   };
 } 
