@@ -9,6 +9,7 @@ export default defineConfig({
     outDir: 'dist',
   },
   server: {
+    host: true, // Allow access from local network (0.0.0.0)
     port: 3000,
     proxy: {
       '/chapters': {
