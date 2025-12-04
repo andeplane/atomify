@@ -192,11 +192,8 @@ export function getSimulationBoxBounds(
     origin.clone().add(a).add(b).add(c), // v7
   ];
 
-  // Create bounding box and expand by all vertices
-  const box = new THREE.Box3();
-  for (const vertex of vertices) {
-    box.expandByPoint(vertex);
-  }
+  // Create bounding box from all vertices
+  const box = new THREE.Box3().setFromPoints(vertices);
 
   return box;
 }
