@@ -9,6 +9,7 @@ import { track } from "../utils/metrics";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import rehypeExternalLinks from "rehype-external-links";
 import "katex/dist/katex.min.css";
 import "./Examples.css";
 
@@ -223,9 +224,11 @@ const Examples = () => {
       </Header>
       <div className="examples-container">
         <ReactMarkdown
-          linkTarget="_blank"
           remarkPlugins={[remarkMath]}
-          rehypePlugins={[rehypeKatex]}
+          rehypePlugins={[
+            rehypeKatex,
+            [rehypeExternalLinks, { target: "_blank", rel: ["nofollow", "noopener", "noreferrer"] }],
+          ]}
         >
           {description}
         </ReactMarkdown>
