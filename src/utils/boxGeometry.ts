@@ -8,6 +8,28 @@ const ZERO_LENGTH_THRESHOLD = 1e-4;
 const MIN_NORMALIZED_LENGTH = 0.001;
 
 /**
+ * Extracts the three basis vectors from a LAMMPS cell matrix.
+ * LAMMPS stores vectors as rows, but extractBasis gets columns, so we transpose first.
+ *
+ * @param cellMatrix - THREE.Matrix3 where rows represent the a, b, c vectors (LAMMPS convention)
+ * @returns Object containing the three basis vectors { a, b, c }
+ */
+export function extractBasisVectors(cellMatrix: THREE.Matrix3): {
+  a: THREE.Vector3
+  b: THREE.Vector3
+  c: THREE.Vector3
+} {
+  // LAMMPS stores vectors as rows, but extractBasis gets columns - transpose first
+  const transposed = cellMatrix.clone().transpose();
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const c = new THREE.Vector3();
+  transposed.extractBasis(a, b, c);
+
+  return { a, b, c }
+}
+
+/**
  * Calculates an appropriate radius for box wireframe edges based on the cell matrix.
  * Uses RADIUS_SCALE_FACTOR of the average basis vector length, with a minimum of MIN_RADIUS.
  *
@@ -15,12 +37,7 @@ const MIN_NORMALIZED_LENGTH = 0.001;
  * @returns Calculated radius for wireframe edges
  */
 export function calculateBoxRadius(cellMatrix: THREE.Matrix3): number {
-  // LAMMPS stores vectors as rows, but extractBasis gets columns - transpose first
-  const transposed = cellMatrix.clone().transpose();
-  const a = new THREE.Vector3();
-  const b = new THREE.Vector3();
-  const c = new THREE.Vector3();
-  transposed.extractBasis(a, b, c);
+  const { a, b, c } = extractBasisVectors(cellMatrix);
 
   const avgLength = (a.length() + b.length() + c.length()) / 3;
   return Math.max(avgLength * RADIUS_SCALE_FACTOR, MIN_RADIUS);
@@ -41,15 +58,8 @@ export function createBoxGeometry(
   origin: THREE.Vector3,
   radius: number = MIN_RADIUS,
 ): THREE.Group {
-  // The cell matrix from LAMMPS stores vectors as ROWS, but extractBasis gets COLUMNS
-  // So we need to transpose the matrix first
-  const transposed = cellMatrix.clone().transpose();
-  
-  // Extract column vectors from the transposed matrix (which are the original rows)
-  const a = new THREE.Vector3();
-  const b = new THREE.Vector3();
-  const c = new THREE.Vector3();
-  transposed.extractBasis(a, b, c);
+  // Extract basis vectors using shared helper function
+  const { a, b, c } = extractBasisVectors(cellMatrix);
 
   // Compute the 8 vertices of the parallelepiped
   const vertices: THREE.Vector3[] = [
@@ -167,15 +177,8 @@ export function getSimulationBoxBounds(
   cellMatrix: THREE.Matrix3,
   origin: THREE.Vector3,
 ): THREE.Box3 {
-  // The cell matrix from LAMMPS stores vectors as ROWS, but extractBasis gets COLUMNS
-  // So we need to transpose the matrix first
-  const transposed = cellMatrix.clone().transpose();
-  
-  // Extract column vectors from the transposed matrix (which are the original rows)
-  const a = new THREE.Vector3();
-  const b = new THREE.Vector3();
-  const c = new THREE.Vector3();
-  transposed.extractBasis(a, b, c);
+  // Extract basis vectors using shared helper function
+  const { a, b, c } = extractBasisVectors(cellMatrix);
 
   // Compute the 8 vertices of the parallelepiped
   const vertices: THREE.Vector3[] = [
