@@ -251,6 +251,13 @@ body,
   font-size: 12px;
 }
 
+.simulation-summary-minimize-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+}
+
 .selected-atoms-info {
   position: absolute;
   background: rgba(42, 41, 47, 0.6);

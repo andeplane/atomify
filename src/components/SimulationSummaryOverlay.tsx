@@ -64,8 +64,8 @@ const SimulationSummaryOverlay = ({
 
   if (isCollapsed) {
     return (
-      <div className="simulationsummary simulationsummary-collapsed" onClick={handleExpand}>
-        <div style={{ cursor: 'pointer' }}>
+      <div className="simulationsummary simulationsummary-collapsed" onClick={handleExpand} style={{ cursor: 'pointer' }}>
+        <div>
           Show simulation summary
         </div>
       </div>
@@ -77,12 +77,7 @@ const SimulationSummaryOverlay = ({
       {simulation && (
         <>
           {onCollapse && (
-            <div style={{ 
-              position: 'absolute', 
-              top: '8px', 
-              right: '8px', 
-              zIndex: 1 
-            }}>
+            <div className="simulation-summary-minimize-button">
               <Button
                 type="text"
                 icon={<MinusOutlined />}

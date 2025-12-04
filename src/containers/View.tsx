@@ -73,13 +73,15 @@ const VisualizerWrapper = styled.div`
   position: relative;
 `;
 
+const MOBILE_BREAKPOINT = 900;
+
 const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showAnalyze, setShowAnalyze] = useState(false);
   const [showMobileSummaryModal, setShowMobileSummaryModal] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
   // State consistently represents the collapsed state.
   // Initial state is collapsed on mobile, expanded on desktop.
   const [isOverlayCollapsed, setIsOverlayCollapsed] = useState(isMobile);
@@ -89,7 +91,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   // Track window width for responsive behavior
   useEffect(() => {
     const handleResize = () => {
-      const newIsMobile = window.innerWidth <= 900;
+      const newIsMobile = window.innerWidth <= MOBILE_BREAKPOINT;
       if (newIsMobile !== isMobile) {
         setIsMobile(newIsMobile);
         // Reset collapsed state when switching between mobile/desktop
