@@ -227,7 +227,7 @@ const Examples = () => {
           remarkPlugins={[remarkMath]}
           rehypePlugins={[
             rehypeKatex,
-            [rehypeExternalLinks, { target: "_blank", rel: ["nofollow", "noopener", "noreferrer"] }],
+            [rehypeExternalLinks, { target: "_blank", rel: ["nofollow", "noreferrer"] }],
           ]}
         >
           {description}
