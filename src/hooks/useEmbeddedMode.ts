@@ -7,6 +7,7 @@ export interface EmbeddedModeResult {
   autoStart: boolean;
   isEmbeddedMode: boolean;
   vars: Record<string, number>;
+  showSimulationSummary: boolean;
 }
 
 /**
@@ -39,6 +40,8 @@ export function useEmbeddedMode(): EmbeddedModeResult {
   const autoStartParam = urlSearchParams.get('autostart');
   const autoStart = autoStartParam === 'true';
   const vars = parseVars(urlSearchParams.get('vars'));
+  const showSimulationSummaryParam = urlSearchParams.get('showSimulationSummary');
+  const showSimulationSummary = showSimulationSummaryParam === 'true';
   
   // Use shared utility function to determine embedded mode
   const embeddedMode = isEmbeddedMode(urlSearchParams);
@@ -50,5 +53,6 @@ export function useEmbeddedMode(): EmbeddedModeResult {
     autoStart,
     isEmbeddedMode: embeddedMode,
     vars,
+    showSimulationSummary,
   };
 } 
