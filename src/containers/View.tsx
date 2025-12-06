@@ -7,11 +7,13 @@ import Settings from "./Settings";
 import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSummary";
 import SimulationSummaryModal from "../components/SimulationSummaryModal";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
+import ColorLegend from "../components/ColorLegend";
 import SimulationSummary from "./SimulationSummary";
 import { SettingOutlined, AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
 import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
+import ColorModifier from "../modifiers/colormodifier";
 import * as THREE from "three";
 import {
   createBoxGeometry,
@@ -134,7 +136,15 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const simulationOrigo = useStoreState(
     (state) => state.simulationStatus.origo,
   );
+  const postTimestepModifiers = useStoreState(
+    (state) => state.processing.postTimestepModifiers,
+  );
   const boxGroupRef = useRef<THREE.Group | null>(null);
+  
+  // Get color modifier for legend display
+  const colorModifier = postTimestepModifiers.find(
+    (modifier) => modifier.name === "Colors",
+  ) as ColorModifier | undefined;
 
   const handleClearSelection = useCallback(() => {
     setSelectedAtoms(new Set());
@@ -446,6 +456,13 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             timesteps={timesteps}
             onClearSelection={handleClearSelection}
           />
+          {colorModifier?.computeName && (
+            <ColorLegend
+              computeName={colorModifier.computeName}
+              minValue={colorModifier.getEffectiveMinValue()}
+              maxValue={colorModifier.getEffectiveMaxValue()}
+            />
+          )}
         </VisualizerWrapper>
       </div>
       {!isEmbeddedMode && (
