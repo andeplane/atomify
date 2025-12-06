@@ -1,47 +1,5 @@
 import { useEffect, useRef } from "react";
-import styled from "styled-components";
 import colormap from "colormap";
-
-const LegendContainer = styled.div`
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 8px;
-  padding: 12px 16px;
-  color: white;
-  font-family: monospace;
-  font-size: 12px;
-  z-index: 1000;
-  min-width: 180px;
-`;
-
-const LegendTitle = styled.div`
-  font-weight: bold;
-  margin-bottom: 8px;
-  font-size: 13px;
-`;
-
-const GradientCanvas = styled.canvas`
-  width: 100%;
-  height: 20px;
-  border-radius: 4px;
-  margin-bottom: 8px;
-`;
-
-const ValueRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 4px;
-`;
-
-const ValueLabel = styled.span`
-  opacity: 0.8;
-`;
-
-const ValueText = styled.span`
-  font-weight: bold;
-`;
 
 interface ColorLegendProps {
   computeName: string;
@@ -88,6 +46,9 @@ const ColorLegend = ({ computeName, minValue, maxValue, type }: ColorLegendProps
   }, []);
 
   const formatValue = (value: number): string => {
+    if (!isFinite(value)) {
+      return "N/A";
+    }
     // Format to 3 significant figures
     if (Math.abs(value) < 0.01 || Math.abs(value) > 1000) {
       return value.toExponential(2);
@@ -104,18 +65,28 @@ const ColorLegend = ({ computeName, minValue, maxValue, type }: ColorLegendProps
   };
 
   return (
-    <LegendContainer>
-      <LegendTitle>{formatTitle()}</LegendTitle>
-      <GradientCanvas ref={canvasRef} />
-      <ValueRow>
-        <ValueLabel>Min:</ValueLabel>
-        <ValueText>{formatValue(minValue)}</ValueText>
-      </ValueRow>
-      <ValueRow>
-        <ValueLabel>Max:</ValueLabel>
-        <ValueText>{formatValue(maxValue)}</ValueText>
-      </ValueRow>
-    </LegendContainer>
+    <div className="color-legend">
+      <div style={{ fontWeight: "bold", marginBottom: "8px", fontSize: "13px" }}>
+        {formatTitle()}
+      </div>
+      <canvas
+        ref={canvasRef}
+        style={{
+          width: "100%",
+          height: "20px",
+          borderRadius: "4px",
+          marginBottom: "8px",
+        }}
+      />
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
+        <span style={{ opacity: 0.8 }}>Min:</span>
+        <span style={{ fontWeight: "bold" }}>{formatValue(minValue)}</span>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
+        <span style={{ opacity: 0.8 }}>Max:</span>
+        <span style={{ fontWeight: "bold" }}>{formatValue(maxValue)}</span>
+      </div>
+    </div>
   );
 };
 

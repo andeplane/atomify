@@ -163,6 +163,88 @@ describe("ColorLegend", () => {
     });
   });
 
+  describe("non-finite number handling", () => {
+    it("should display N/A for Infinity min value", () => {
+      // Arrange
+      const props = {
+        computeName: "c_test",
+        minValue: Infinity,
+        maxValue: 100,
+      };
+
+      // Act
+      render(<ColorLegend {...props} />);
+
+      // Assert
+      expect(screen.getByText("N/A")).toBeInTheDocument();
+      expect(screen.getByText("100")).toBeInTheDocument();
+    });
+
+    it("should display N/A for -Infinity min value", () => {
+      // Arrange
+      const props = {
+        computeName: "c_test",
+        minValue: -Infinity,
+        maxValue: 100,
+      };
+
+      // Act
+      render(<ColorLegend {...props} />);
+
+      // Assert
+      expect(screen.getByText("N/A")).toBeInTheDocument();
+      expect(screen.getByText("100")).toBeInTheDocument();
+    });
+
+    it("should display N/A for Infinity max value", () => {
+      // Arrange
+      const props = {
+        computeName: "c_test",
+        minValue: 0,
+        maxValue: Infinity,
+      };
+
+      // Act
+      render(<ColorLegend {...props} />);
+
+      // Assert
+      expect(screen.getByText("0.00e+0")).toBeInTheDocument();
+      expect(screen.getByText("N/A")).toBeInTheDocument();
+    });
+
+    it("should display N/A for both Infinity values", () => {
+      // Arrange
+      const props = {
+        computeName: "c_test",
+        minValue: Infinity,
+        maxValue: Infinity,
+      };
+
+      // Act
+      render(<ColorLegend {...props} />);
+
+      // Assert
+      const naElements = screen.getAllByText("N/A");
+      expect(naElements).toHaveLength(2);
+    });
+
+    it("should display N/A for NaN values", () => {
+      // Arrange
+      const props = {
+        computeName: "c_test",
+        minValue: NaN,
+        maxValue: NaN,
+      };
+
+      // Act
+      render(<ColorLegend {...props} />);
+
+      // Assert
+      const naElements = screen.getAllByText("N/A");
+      expect(naElements).toHaveLength(2);
+    });
+  });
+
   describe("canvas gradient", () => {
     it("should create canvas element", () => {
       // Arrange
