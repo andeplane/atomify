@@ -73,17 +73,11 @@ const ColorLegend = ({ computeName, minValue, maxValue, type, colormap: colormap
         <div style={{ position: "absolute", top: "8px", right: "8px", zIndex: 1 }}>
           <SettingOutlined
             onClick={onSettingsClick}
+            className="color-legend-settings-icon"
             style={{
               color: "#fff",
               fontSize: "16px",
               cursor: "pointer",
-              opacity: 0.8,
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.opacity = "1";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.opacity = "0.8";
             }}
           />
         </div>

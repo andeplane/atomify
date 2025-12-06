@@ -348,6 +348,15 @@ body,
   transform: translateZ(0);
 }
 
+.color-legend-settings-icon {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.color-legend-settings-icon:hover {
+  opacity: 1;
+}
+
 .ant-layout-sider-children {
   height: 100%;
   overflow: auto;
