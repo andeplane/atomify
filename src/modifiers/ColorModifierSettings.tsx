@@ -5,7 +5,7 @@ import { track } from "../utils/metrics";
 import ColorModifier from "./colormodifier";
 const { Option, OptGroup } = Select;
 
-const ColorModifierSettings = ({ onClose }: { onClose: () => void }) => {
+const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const postTimestepModifiers = useStoreState(
     (state) => state.processing.postTimestepModifiers,
@@ -101,10 +101,36 @@ const ColorModifierSettings = ({ onClose }: { onClose: () => void }) => {
     : "type";
   
   const showRangeControls = colorModifier.computeName !== undefined;
+
+  const colormapOptions = [
+    "jet",
+    "viridis",
+    "magma",
+    "plasma",
+    "inferno",
+    "cool",
+    "hot",
+    "hsv",
+    "rainbow",
+    "portland",
+    "warm",
+    "coolwarm",
+    "seismic",
+    "rdbu",
+  ];
+
+  const handleColormapChange = useCallback(
+    (value: string) => {
+      colorModifier.colormap = value;
+      track("Settings.Render.Colormap", { colormap: value });
+    },
+    [colorModifier],
+  );
+  
   return (
     <Modal
       title="Particle color settings"
-      open
+      open={open}
       footer={null}
       onCancel={onClose}
       width={480}
@@ -128,6 +154,26 @@ const ColorModifierSettings = ({ onClose }: { onClose: () => void }) => {
             <OptGroup label="Fixes"></OptGroup>
           </Select>
         </div>
+
+        {showRangeControls && (
+          <>
+            <Divider style={{ margin: "8px 0" }} />
+            <div>
+              <div style={{ marginBottom: 8, fontWeight: 500 }}>Colormap:</div>
+              <Select
+                defaultValue={colorModifier.colormap}
+                style={{ width: "100%" }}
+                onChange={handleColormapChange}
+              >
+                {colormapOptions.map((cm) => (
+                  <Option key={cm} value={cm}>
+                    {cm.charAt(0).toUpperCase() + cm.slice(1)}
+                  </Option>
+                ))}
+              </Select>
+            </div>
+          </>
+        )}
 
         {showRangeControls && (
           <>

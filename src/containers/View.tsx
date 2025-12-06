@@ -9,6 +9,7 @@ import SimulationSummaryModal from "../components/SimulationSummaryModal";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import ColorLegend from "../components/ColorLegend";
 import SimulationSummary from "./SimulationSummary";
+import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import { SettingOutlined, AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
@@ -81,6 +82,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showColorSettings, setShowColorSettings] = useState(false);
   const [showAnalyze, setShowAnalyze] = useState(false);
   const [showMobileSummaryModal, setShowMobileSummaryModal] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
@@ -450,6 +452,12 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             open={showSettings}
             onClose={() => setShowSettings(false)}
           />
+          {showColorSettings && (
+            <ColorModifierSettings
+              open={true}
+              onClose={() => setShowColorSettings(false)}
+            />
+          )}
           {embedConfig.showSimulationSummary && (
             <ResponsiveSimulationSummary
               isEmbeddedMode={isEmbeddedMode}
@@ -474,6 +482,8 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
               minValue={colorModifier.getEffectiveMinValue()}
               maxValue={colorModifier.getEffectiveMaxValue()}
               type={getModifierType(colorModifier.computeName)}
+              colormap={colorModifier.colormap}
+              onSettingsClick={() => setShowColorSettings(true)}
             />
           )}
         </VisualizerWrapper>

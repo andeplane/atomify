@@ -135,6 +135,9 @@ class ColorModifier extends Modifier {
   // Flag to reset global min/max
   public resetMinMax: boolean = false;
 
+  // Colormap selection
+  public colormap: string = "jet";
+
   constructor({ name, active }: ColorModifierProps) {
     super({ name, active });
     this.computeName = undefined;
@@ -167,7 +170,7 @@ class ColorModifier extends Modifier {
     const visualizer = input.renderState.visualizer;
 
     let colors = colormap({
-      colormap: "jet",
+      colormap: this.colormap,
       nshades: 72,
       format: "float",
       alpha: 1,

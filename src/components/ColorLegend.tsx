@@ -1,14 +1,17 @@
 import { useEffect, useRef } from "react";
 import colormap from "colormap";
+import { SettingOutlined } from "@ant-design/icons";
 
 interface ColorLegendProps {
   computeName: string;
   minValue: number;
   maxValue: number;
   type?: "compute" | "fix" | "variable";
+  colormap?: string;
+  onSettingsClick?: () => void;
 }
 
-const ColorLegend = ({ computeName, minValue, maxValue, type }: ColorLegendProps) => {
+const ColorLegend = ({ computeName, minValue, maxValue, type, colormap: colormapName = "jet", onSettingsClick }: ColorLegendProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -23,7 +26,7 @@ const ColorLegend = ({ computeName, minValue, maxValue, type }: ColorLegendProps
     canvas.height = 30;
 
     const colors = colormap({
-      colormap: "jet",
+      colormap: colormapName,
       nshades: 72,
       format: "float",
       alpha: 1,
@@ -43,7 +46,7 @@ const ColorLegend = ({ computeName, minValue, maxValue, type }: ColorLegendProps
     // Draw gradient
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }, []);
+  }, [colormapName]);
 
   const formatValue = (value: number): string => {
     if (!isFinite(value)) {
@@ -66,6 +69,25 @@ const ColorLegend = ({ computeName, minValue, maxValue, type }: ColorLegendProps
 
   return (
     <div className="color-legend">
+      {onSettingsClick && (
+        <div style={{ position: "absolute", top: "8px", right: "8px", zIndex: 1 }}>
+          <SettingOutlined
+            onClick={onSettingsClick}
+            style={{
+              color: "#fff",
+              fontSize: "16px",
+              cursor: "pointer",
+              opacity: 0.8,
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.opacity = "1";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.opacity = "0.8";
+            }}
+          />
+        </div>
+      )}
       <div style={{ fontWeight: "bold", marginBottom: "8px", fontSize: "13px" }}>
         {formatTitle()}
       </div>
