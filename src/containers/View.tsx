@@ -139,12 +139,24 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const postTimestepModifiers = useStoreState(
     (state) => state.processing.postTimestepModifiers,
   );
+  const computes = useStoreState((state) => state.simulationStatus.computes);
+  const fixes = useStoreState((state) => state.simulationStatus.fixes);
+  const variables = useStoreState((state) => state.simulationStatus.variables);
   const boxGroupRef = useRef<THREE.Group | null>(null);
   
   // Get color modifier for legend display
   const colorModifier = postTimestepModifiers.find(
     (modifier) => modifier.name === "Colors",
   ) as ColorModifier | undefined;
+
+  // Determine the type of the computeName (compute, fix, or variable)
+  const getModifierType = (name: string | undefined): "compute" | "fix" | "variable" | undefined => {
+    if (!name) return undefined;
+    if (computes[name]) return "compute";
+    if (fixes[name]) return "fix";
+    if (variables[name]) return "variable";
+    return undefined;
+  };
 
   const handleClearSelection = useCallback(() => {
     setSelectedAtoms(new Set());
@@ -461,6 +473,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
               computeName={colorModifier.computeName}
               minValue={colorModifier.getEffectiveMinValue()}
               maxValue={colorModifier.getEffectiveMaxValue()}
+              type={getModifierType(colorModifier.computeName)}
             />
           )}
         </VisualizerWrapper>

@@ -46,6 +46,54 @@ describe("ColorLegend", () => {
       expect(screen.getByText("c_potential")).toBeInTheDocument();
     });
 
+    it("should display compute name with type when type is provided", () => {
+      // Arrange
+      const props = {
+        computeName: "c_ke",
+        minValue: 0,
+        maxValue: 100,
+        type: "compute" as const,
+      };
+
+      // Act
+      render(<ColorLegend {...props} />);
+
+      // Assert
+      expect(screen.getByText("c_ke (Compute)")).toBeInTheDocument();
+    });
+
+    it("should display fix name with type when type is fix", () => {
+      // Arrange
+      const props = {
+        computeName: "displace",
+        minValue: 0,
+        maxValue: 10,
+        type: "fix" as const,
+      };
+
+      // Act
+      render(<ColorLegend {...props} />);
+
+      // Assert
+      expect(screen.getByText("displace (Fix)")).toBeInTheDocument();
+    });
+
+    it("should display variable name with type when type is variable", () => {
+      // Arrange
+      const props = {
+        computeName: "displace",
+        minValue: 0,
+        maxValue: 10,
+        type: "variable" as const,
+      };
+
+      // Act
+      render(<ColorLegend {...props} />);
+
+      // Assert
+      expect(screen.getByText("displace (Variable)")).toBeInTheDocument();
+    });
+
     it("should display min and max values", () => {
       // Arrange
       const props = {

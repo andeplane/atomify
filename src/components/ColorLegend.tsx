@@ -3,8 +3,8 @@ import styled from "styled-components";
 import colormap from "colormap";
 
 const LegendContainer = styled.div`
-  position: fixed;
-  bottom: 80px;
+  position: absolute;
+  bottom: 20px;
   left: 20px;
   background: rgba(0, 0, 0, 0.7);
   border-radius: 8px;
@@ -47,9 +47,10 @@ interface ColorLegendProps {
   computeName: string;
   minValue: number;
   maxValue: number;
+  type?: "compute" | "fix" | "variable";
 }
 
-const ColorLegend = ({ computeName, minValue, maxValue }: ColorLegendProps) => {
+const ColorLegend = ({ computeName, minValue, maxValue, type }: ColorLegendProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -94,9 +95,17 @@ const ColorLegend = ({ computeName, minValue, maxValue }: ColorLegendProps) => {
     return value.toPrecision(3);
   };
 
+  const formatTitle = (): string => {
+    if (type) {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1);
+      return `${computeName} (${capitalizedType})`;
+    }
+    return computeName;
+  };
+
   return (
     <LegendContainer>
-      <LegendTitle>{computeName}</LegendTitle>
+      <LegendTitle>{formatTitle()}</LegendTitle>
       <GradientCanvas ref={canvasRef} />
       <ValueRow>
         <ValueLabel>Min:</ValueLabel>
