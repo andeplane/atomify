@@ -7,11 +7,14 @@ import Settings from "./Settings";
 import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSummary";
 import SimulationSummaryModal from "../components/SimulationSummaryModal";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
+import ColorLegend from "../components/ColorLegend";
 import SimulationSummary from "./SimulationSummary";
+import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import { SettingOutlined, AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
 import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
+import ColorModifier from "../modifiers/colormodifier";
 import * as THREE from "three";
 import {
   createBoxGeometry,
@@ -79,6 +82,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showColorSettings, setShowColorSettings] = useState(false);
   const [showAnalyze, setShowAnalyze] = useState(false);
   const [showMobileSummaryModal, setShowMobileSummaryModal] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
@@ -134,7 +138,27 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const simulationOrigo = useStoreState(
     (state) => state.simulationStatus.origo,
   );
+  const postTimestepModifiers = useStoreState(
+    (state) => state.processing.postTimestepModifiers,
+  );
+  const computes = useStoreState((state) => state.simulationStatus.computes);
+  const fixes = useStoreState((state) => state.simulationStatus.fixes);
+  const variables = useStoreState((state) => state.simulationStatus.variables);
   const boxGroupRef = useRef<THREE.Group | null>(null);
+  
+  // Get color modifier for legend display
+  const colorModifier = postTimestepModifiers.find(
+    (modifier) => modifier.name === "Colors",
+  ) as ColorModifier | undefined;
+
+  // Determine the type of the computeName (compute, fix, or variable)
+  const getModifierType = (name: string | undefined): "compute" | "fix" | "variable" | undefined => {
+    if (!name) return undefined;
+    if (computes[name]) return "compute";
+    if (fixes[name]) return "fix";
+    if (variables[name]) return "variable";
+    return undefined;
+  };
 
   const handleClearSelection = useCallback(() => {
     setSelectedAtoms(new Set());
@@ -428,6 +452,12 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             open={showSettings}
             onClose={() => setShowSettings(false)}
           />
+          {showColorSettings && (
+            <ColorModifierSettings
+              open={true}
+              onClose={() => setShowColorSettings(false)}
+            />
+          )}
           {embedConfig.showSimulationSummary && (
             <ResponsiveSimulationSummary
               isEmbeddedMode={isEmbeddedMode}
@@ -446,6 +476,16 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             timesteps={timesteps}
             onClearSelection={handleClearSelection}
           />
+          {colorModifier?.computeName && (
+            <ColorLegend
+              computeName={colorModifier.computeName}
+              minValue={colorModifier.getEffectiveMinValue()}
+              maxValue={colorModifier.getEffectiveMaxValue()}
+              type={getModifierType(colorModifier.computeName)}
+              colormap={colorModifier.colormap}
+              onSettingsClick={() => setShowColorSettings(true)}
+            />
+          )}
         </VisualizerWrapper>
       </div>
       {!isEmbeddedMode && (

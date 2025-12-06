@@ -440,7 +440,7 @@ const SimulationSummaryContent = () => {
         <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />
       )}
       {visibleSettings === "Colors" && (
-        <ColorModifierSettings onClose={() => setVisibleSettings(undefined)} />
+        <ColorModifierSettings open={true} onClose={() => setVisibleSettings(undefined)} />
       )}
       {visibleCompute && (
         <Figure
