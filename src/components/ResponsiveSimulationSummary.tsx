@@ -27,13 +27,13 @@ const ResponsiveSimulationSummary = ({
   const isDesktop = !isMobile;
 
   // In embedded mode: show overlay only if showSimulationSummary=true
-  // On mobile: no expand button, no expanded view possible
+  // On mobile: no expand button icon, no expanded view possible
   if (isEmbeddedMode) {
     if (showSimulationSummary) {
       return (
         <SimulationSummary
           isCollapsed={isOverlayCollapsed}
-          onExpand={isDesktop ? onExpand : undefined}
+          onExpand={onExpand}
           onCollapse={onCollapse}
         />
       );
@@ -51,12 +51,12 @@ const ResponsiveSimulationSummary = ({
   }
 
   // Show regular overlay
-  // On mobile: no expand button, no expanded view possible
-  // On desktop: show expand button when not collapsed
+  // On mobile: no expand button icon, no expanded view possible, but can expand collapsed overlay
+  // On desktop: show expand button icon when not collapsed, can access expanded view
   return (
     <SimulationSummary
       isCollapsed={isOverlayCollapsed}
-      onExpand={isDesktop ? onExpand : undefined}
+      onExpand={onExpand}
       onCollapse={onCollapse}
       onShowMore={isDesktop ? onShowMore : undefined}
     />
