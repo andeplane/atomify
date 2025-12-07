@@ -1,0 +1,12 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=url
+command=/Applications/CMake.app/Contents/bin/cmake;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build-stamp/download-voro_build.cmake;COMMAND;/Applications/CMake.app/Contents/bin/cmake;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build-stamp/verify-voro_build.cmake;COMMAND;/Applications/CMake.app/Contents/bin/cmake;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build-stamp/extract-voro_build.cmake
+source_dir=/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build
+work_dir=/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src
+url(s)=https://download.lammps.org/thirdparty/voro++-0.4.6.tar.gz
+hash=MD5=2338b824c3b7b25590e18e8df5d68af9
+      no_extract=
+

@@ -1,0 +1,2 @@
+/Users/anderhaf/repos/emsdk/upstream/emscripten/emar qc libkokkoscontainers.a CMakeFiles/kokkoscontainers.dir/impl/Kokkos_UnorderedMap_impl.cpp.o
+/Users/anderhaf/repos/emsdk/upstream/emscripten/emranlib libkokkoscontainers.a

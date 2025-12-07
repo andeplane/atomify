@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAMMPS Raw Test - Exactly Like Atomify</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    #output {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 LAMMPS Raw Test</h1>
+  <p>Testing EXACTLY like atomify-main does it</p>
+  
+  <button id="runBtn">Run Test</button>
+  
+  <h2>Output:</h2>
+  <div id="output">Click "Run Test" to start...</div>
+
+  <script type="module">
+    // Import exactly like atomify does - with cache buster
+    const timestamp = Date.now();
+    import(`./lammps.mjs?v=${timestamp}`).then(({ default: createModule }) => {
+      
+      const outputDiv = document.getElementById('output');
+      const runBtn = document.getElementById('runBtn');
+      
+      function log(msg) {
+        outputDiv.textContent += msg + '\n';
+        outputDiv.scrollTop = outputDiv.scrollHeight;
+      }
+
+      runBtn.addEventListener('click', async () => {
+        runBtn.disabled = true;
+        outputDiv.textContent = '';
+        
+        try {
+          log('🚀 Calling createModule...');
+          log('Module type: ' + typeof createModule);
+          
+          const onPrint = (msg) => log('LAMMPS: ' + msg);
+          
+          // Do it EXACTLY like atomify
+          createModule({
+            print: onPrint,
+            printErr: onPrint,
+          }).then((Module) => {
+            log('✅ Module loaded successfully');
+            log('Creating LAMMPSWeb instance...');
+            
+            const lammps = new Module.LAMMPSWeb();
+            log('✅ LAMMPSWeb created');
+            
+            log('\nTesting basic methods:');
+            log('  getNumAtoms(): ' + lammps.getNumAtoms());
+            log('  getTimesteps(): ' + lammps.getTimesteps());
+            
+            log('\nTesting runScript:');
+            lammps.runScript('units lj');
+            log('✅ runScript("units lj") worked!');
+            
+            lammps.runScript('atom_style atomic');
+            log('✅ runScript("atom_style atomic") worked!');
+            
+            log('\n🎉 Everything works!');
+            
+            runBtn.disabled = false;
+          }).catch((error) => {
+            log('❌ Error in then(): ' + error.message);
+            console.error(error);
+            runBtn.disabled = false;
+          });
+          
+        } catch (error) {
+          log('❌ Error: ' + error.message);
+          console.error(error);
+          runBtn.disabled = false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>

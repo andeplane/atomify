@@ -1,0 +1,1 @@
+-I"/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars" -I"/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src" -I"/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/lepton/include"

@@ -1,0 +1,1 @@
+ liblammps.a "voro_build-prefix/src/voro_build/src/libvoro++.a" liblammps_colvars.a liblammps_lepton.a lib/kokkos/containers/src/libkokkoscontainers.a lib/kokkos/core/src/libkokkoscore.a lib/kokkos/simd/src/libkokkossimd.a 

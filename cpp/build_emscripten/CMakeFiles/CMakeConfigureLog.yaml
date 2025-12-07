@@ -1,0 +1,1445 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/CMakeDetermineSystem.cmake:200 (message)"
+      - "CMakeLists.txt:31 (project)"
+    message: |
+      The target system is: Emscripten - 1 - x86
+      The host system is: Darwin - 25.1.0 - arm64
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-o9iKc6"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-o9iKc6"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmplibomp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-o9iKc6'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_d6a5d/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_d6a5d.dir/build.make CMakeFiles/cmTC_d6a5d.dir/build
+        Building C object CMakeFiles/cmTC_d6a5d.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libomp -fPIE -MD -MT CMakeFiles/cmTC_d6a5d.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_d6a5d.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_d6a5d.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-o9iKc6/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-o9iKc6/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_d6a5d.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_d6a5d/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-v6U2fX"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-v6U2fX"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmplibiomp5"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-v6U2fX'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_7a07f/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_7a07f.dir/build.make CMakeFiles/cmTC_7a07f.dir/build
+        Building C object CMakeFiles/cmTC_7a07f.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libiomp5 -fPIE -MD -MT CMakeFiles/cmTC_7a07f.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_7a07f.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_7a07f.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-v6U2fX/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-v6U2fX/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_7a07f.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_7a07f/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-DeAPMx"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-DeAPMx"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-DeAPMx'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_00357/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_00357.dir/build.make CMakeFiles/cmTC_00357.dir/build
+        Building C object CMakeFiles/cmTC_00357.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp -fPIE -MD -MT CMakeFiles/cmTC_00357.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_00357.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_00357.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-DeAPMx/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-DeAPMx/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_00357.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_00357/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-nzhF1N"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-nzhF1N"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-nzhF1N'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_2d86e/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_2d86e.dir/build.make CMakeFiles/cmTC_2d86e.dir/build
+        Building C object CMakeFiles/cmTC_2d86e.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -Xclang -fopenmp -fPIE -MD -MT CMakeFiles/cmTC_2d86e.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_2d86e.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_2d86e.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-nzhF1N/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-nzhF1N/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_2d86e.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_2d86e/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-rckCdy"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-rckCdy"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmplibomp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-rckCdy'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_133e8/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_133e8.dir/build.make CMakeFiles/cmTC_133e8.dir/build
+        Building CXX object CMakeFiles/cmTC_133e8.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libomp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_133e8.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_133e8.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_133e8.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-rckCdy/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-rckCdy/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_133e8.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_133e8/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-RvoC6i"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-RvoC6i"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmplibiomp5"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-RvoC6i'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_a3952/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_a3952.dir/build.make CMakeFiles/cmTC_a3952.dir/build
+        Building CXX object CMakeFiles/cmTC_a3952.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libiomp5 -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_a3952.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_a3952.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_a3952.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-RvoC6i/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-RvoC6i/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_a3952.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_a3952/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-xMK3XR"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-xMK3XR"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-xMK3XR'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_fb09f/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_fb09f.dir/build.make CMakeFiles/cmTC_fb09f.dir/build
+        Building CXX object CMakeFiles/cmTC_fb09f.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_fb09f.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_fb09f.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_fb09f.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-xMK3XR/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-xMK3XR/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_fb09f.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_fb09f/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-woMWvW"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-woMWvW"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-woMWvW'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_83f2b/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_83f2b.dir/build.make CMakeFiles/cmTC_83f2b.dir/build
+        Building CXX object CMakeFiles/cmTC_83f2b.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -Xclang -fopenmp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_83f2b.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_83f2b.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_83f2b.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-woMWvW/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-woMWvW/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_83f2b.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_83f2b/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/CheckIncludeFileCXX.cmake:98 (try_compile)"
+      - "CMakeLists.txt:621 (check_include_file_cxx)"
+    checks:
+      - "Looking for C++ include cmath"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-4BCIs7"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-4BCIs7"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "FOUND_CMATH"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-4BCIs7'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_6782b/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_6782b.dir/build.make CMakeFiles/cmTC_6782b.dir/build
+        Building CXX object CMakeFiles/cmTC_6782b.dir/CheckIncludeFile.cxx.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_6782b.dir/CheckIncludeFile.cxx.o -MF CMakeFiles/cmTC_6782b.dir/CheckIncludeFile.cxx.o.d -o CMakeFiles/cmTC_6782b.dir/CheckIncludeFile.cxx.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-4BCIs7/CheckIncludeFile.cxx
+        Linking CXX executable cmTC_6782b.js
+        /Applications/CMake.app/Contents/bin/cmake -E cmake_link_script CMakeFiles/cmTC_6782b.dir/link.txt --verbose=1
+        cache:INFO: generating system asset: sysroot/lib/wasm64-emscripten/lto/crtbegin.o... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/crtbegin.o" for subsequent builds)
+        system_libs:INFO: compiled 1 inputs in 0.22s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libGL-mt-getprocaddr.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libGL-mt-getprocaddr.a" for subsequent builds)
+        system_libs:INFO: compiled 4 inputs in 0.50s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libal.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libal.a" for subsequent builds)
+        system_libs:INFO: compiled 1 inputs in 0.21s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libhtml5.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libhtml5.a" for subsequent builds)
+        system_libs:INFO: compiled 5 inputs in 0.67s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libc_optz-mt.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libc_optz-mt.a" for subsequent builds)
+        system_libs:INFO: compiled 7 inputs in 0.82s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libstubs.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libstubs.a" for subsequent builds)
+        system_libs:INFO: compiled 2 inputs in 0.34s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libnoexit.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libnoexit.a" for subsequent builds)
+        system_libs:INFO: compiled 1 inputs in 0.21s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libc-mt.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libc-mt.a" for subsequent builds)
+        system_libs:INFO: compiled 1130 inputs in 109.56s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libdlmalloc-mt.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libdlmalloc-mt.a" for subsequent builds)
+        system_libs:INFO: compiled 2 inputs in 0.38s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libcompiler_rt-mt.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libcompiler_rt-mt.a" for subsequent builds)
+        system_libs:INFO: compiled 183 inputs in 20.16s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libc++-mt.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libc++-mt.a" for subsequent builds)
+        system_libs:INFO: compiled 56 inputs in 6.06s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libc++abi-mt.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libc++abi-mt.a" for subsequent builds)
+        system_libs:INFO: compiled 17 inputs in 1.91s
+        cache:INFO:  - ok
+        cache:INFO: generating system library: sysroot/lib/wasm64-emscripten/lto/libsockets-mt.a... (this will be cached in "/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/lib/wasm64-emscripten/lto/libsockets-mt.a" for subsequent builds)
+        system_libs:INFO: compiled 27 inputs in 3.01s
+        cache:INFO:  - ok
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++ -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  @CMakeFiles/cmTC_6782b.dir/objects1.rsp -o cmTC_6782b.js
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_test_cxx_std.cmake:98 (try_compile)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_tribits.cmake:158 (include)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/CMakeLists.txt:220 (kokkos_setup_build_environment)"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules;cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "CAN_COMPILE_CPP17"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_81bd7/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_81bd7.dir/build.make CMakeFiles/cmTC_81bd7.dir/build
+        Building CXX object CMakeFiles/cmTC_81bd7.dir/cplusplus17.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_81bd7.dir/cplusplus17.cpp.o -MF CMakeFiles/cmTC_81bd7.dir/cplusplus17.cpp.o.d -o CMakeFiles/cmTC_81bd7.dir/cplusplus17.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/compile_tests/cplusplus17.cpp
+        Linking CXX executable cmTC_81bd7.js
+        /Applications/CMake.app/Contents/bin/cmake -E cmake_link_script CMakeFiles/cmTC_81bd7.dir/link.txt --verbose=1
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++ -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  @CMakeFiles/cmTC_81bd7.dir/objects1.rsp -o cmTC_81bd7.js
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/Internal/CheckSourceCompiles.cmake:108 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/CheckCSourceCompiles.cmake:58 (cmake_check_source_compiles)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindThreads.cmake:97 (CHECK_C_SOURCE_COMPILES)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindThreads.cmake:163 (_threads_check_libc)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/Modules/FindTPLTHREADS.cmake:2 (find_package)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_functions.cmake:260 (find_package)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_tpls.cmake:86 (kokkos_import_tpl)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_tribits.cmake:161 (include)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/CMakeLists.txt:220 (kokkos_setup_build_environment)"
+    checks:
+      - "Performing Test CMAKE_HAVE_LIBC_PTHREAD"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-3dw49u"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-3dw49u"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules;cmake/Modules;/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/Modules/"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "CMAKE_HAVE_LIBC_PTHREAD"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-3dw49u'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_55fc9/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_55fc9.dir/build.make CMakeFiles/cmTC_55fc9.dir/build
+        Building C object CMakeFiles/cmTC_55fc9.dir/src.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc -DCMAKE_HAVE_LIBC_PTHREAD  -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  -fPIE -MD -MT CMakeFiles/cmTC_55fc9.dir/src.c.o -MF CMakeFiles/cmTC_55fc9.dir/src.c.o.d -o CMakeFiles/cmTC_55fc9.dir/src.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-3dw49u/src.c
+        Linking C executable cmTC_55fc9.js
+        /Applications/CMake.app/Contents/bin/cmake -E cmake_link_script CMakeFiles/cmTC_55fc9.dir/link.txt --verbose=1
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  @CMakeFiles/cmTC_55fc9.dir/objects1.rsp -o cmTC_55fc9.js
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/CheckIncludeFileCXX.cmake:98 (try_compile)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/core/src/CMakeLists.txt:158 (check_include_file_cxx)"
+    checks:
+      - "Looking for C++ include experimental/mdspan"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-xrHEA3"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-xrHEA3"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules;cmake/Modules;/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/Modules/"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "KOKKOS_COMPILER_SUPPORTS_EXPERIMENTAL_MDSPAN"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-xrHEA3'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_368a4/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_368a4.dir/build.make CMakeFiles/cmTC_368a4.dir/build
+        Building CXX object CMakeFiles/cmTC_368a4.dir/CheckIncludeFile.cxx.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_368a4.dir/CheckIncludeFile.cxx.o -MF CMakeFiles/cmTC_368a4.dir/CheckIncludeFile.cxx.o.d -o CMakeFiles/cmTC_368a4.dir/CheckIncludeFile.cxx.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-xrHEA3/CheckIncludeFile.cxx
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-xrHEA3/CheckIncludeFile.cxx:1:10: fatal error: 'experimental/mdspan' file not found
+            1 | #include <experimental/mdspan>
+              |          ^~~~~~~~~~~~~~~~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_368a4.dir/CheckIncludeFile.cxx.o] Error 1
+        make: *** [cmTC_368a4/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/CheckIncludeFileCXX.cmake:98 (try_compile)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/core/src/CMakeLists.txt:159 (check_include_file_cxx)"
+    checks:
+      - "Looking for C++ include mdspan"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-bhXrxK"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-bhXrxK"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules;cmake/Modules;/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/Modules/"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "KOKKOS_COMPILER_SUPPORTS_MDSPAN"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-bhXrxK'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_44b25/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_44b25.dir/build.make CMakeFiles/cmTC_44b25.dir/build
+        Building CXX object CMakeFiles/cmTC_44b25.dir/CheckIncludeFile.cxx.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_44b25.dir/CheckIncludeFile.cxx.o -MF CMakeFiles/cmTC_44b25.dir/CheckIncludeFile.cxx.o.d -o CMakeFiles/cmTC_44b25.dir/CheckIncludeFile.cxx.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-bhXrxK/CheckIncludeFile.cxx
+        Linking CXX executable cmTC_44b25.js
+        /Applications/CMake.app/Contents/bin/cmake -E cmake_link_script CMakeFiles/cmTC_44b25.dir/link.txt --verbose=1
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++ -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  @CMakeFiles/cmTC_44b25.dir/objects1.rsp -o cmTC_44b25.js
+        
+      exitCode: 0
+...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-bCPHmU"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-bCPHmU"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmplibomp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-bCPHmU'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_dea2b/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_dea2b.dir/build.make CMakeFiles/cmTC_dea2b.dir/build
+        Building C object CMakeFiles/cmTC_dea2b.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libomp -fPIE -MD -MT CMakeFiles/cmTC_dea2b.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_dea2b.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_dea2b.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-bCPHmU/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-bCPHmU/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_dea2b.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_dea2b/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-9n0ZFk"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-9n0ZFk"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmplibiomp5"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-9n0ZFk'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_53f94/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_53f94.dir/build.make CMakeFiles/cmTC_53f94.dir/build
+        Building C object CMakeFiles/cmTC_53f94.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libiomp5 -fPIE -MD -MT CMakeFiles/cmTC_53f94.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_53f94.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_53f94.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-9n0ZFk/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-9n0ZFk/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_53f94.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_53f94/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-5DvZxp"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-5DvZxp"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-5DvZxp'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_753fb/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_753fb.dir/build.make CMakeFiles/cmTC_753fb.dir/build
+        Building C object CMakeFiles/cmTC_753fb.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp -fPIE -MD -MT CMakeFiles/cmTC_753fb.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_753fb.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_753fb.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-5DvZxp/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-5DvZxp/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_753fb.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_753fb/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-vkKRuG"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-vkKRuG"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-vkKRuG'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_93bb2/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_93bb2.dir/build.make CMakeFiles/cmTC_93bb2.dir/build
+        Building C object CMakeFiles/cmTC_93bb2.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -Xclang -fopenmp -fPIE -MD -MT CMakeFiles/cmTC_93bb2.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_93bb2.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_93bb2.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-vkKRuG/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-vkKRuG/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_93bb2.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_93bb2/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Bie5fH"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Bie5fH"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmplibomp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Bie5fH'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_455ea/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_455ea.dir/build.make CMakeFiles/cmTC_455ea.dir/build
+        Building CXX object CMakeFiles/cmTC_455ea.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libomp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_455ea.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_455ea.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_455ea.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Bie5fH/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Bie5fH/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_455ea.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_455ea/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-iQcvpR"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-iQcvpR"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmplibiomp5"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-iQcvpR'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_2c144/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_2c144.dir/build.make CMakeFiles/cmTC_2c144.dir/build
+        Building CXX object CMakeFiles/cmTC_2c144.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libiomp5 -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_2c144.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_2c144.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_2c144.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-iQcvpR/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-iQcvpR/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_2c144.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_2c144/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-e7vlB1"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-e7vlB1"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-e7vlB1'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_b9499/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_b9499.dir/build.make CMakeFiles/cmTC_b9499.dir/build
+        Building CXX object CMakeFiles/cmTC_b9499.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_b9499.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_b9499.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_b9499.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-e7vlB1/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-e7vlB1/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_b9499.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_b9499/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Uw2mcR"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Uw2mcR"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Uw2mcR'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_488d6/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_488d6.dir/build.make CMakeFiles/cmTC_488d6.dir/build
+        Building CXX object CMakeFiles/cmTC_488d6.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -Xclang -fopenmp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_488d6.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_488d6.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_488d6.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Uw2mcR/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Uw2mcR/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_488d6.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_488d6/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_test_cxx_std.cmake:98 (try_compile)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_tribits.cmake:158 (include)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/CMakeLists.txt:220 (kokkos_setup_build_environment)"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules;cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "CAN_COMPILE_CPP17"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_62af0/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_62af0.dir/build.make CMakeFiles/cmTC_62af0.dir/build
+        Building CXX object CMakeFiles/cmTC_62af0.dir/cplusplus17.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_62af0.dir/cplusplus17.cpp.o -MF CMakeFiles/cmTC_62af0.dir/cplusplus17.cpp.o.d -o CMakeFiles/cmTC_62af0.dir/cplusplus17.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/compile_tests/cplusplus17.cpp
+        Linking CXX executable cmTC_62af0.js
+        /Applications/CMake.app/Contents/bin/cmake -E cmake_link_script CMakeFiles/cmTC_62af0.dir/link.txt --verbose=1
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++ -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  @CMakeFiles/cmTC_62af0.dir/objects1.rsp -o cmTC_62af0.js
+        
+      exitCode: 0
+...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Oi7i6f"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Oi7i6f"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmplibomp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Oi7i6f'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_859b4/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_859b4.dir/build.make CMakeFiles/cmTC_859b4.dir/build
+        Building C object CMakeFiles/cmTC_859b4.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libomp -fPIE -MD -MT CMakeFiles/cmTC_859b4.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_859b4.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_859b4.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Oi7i6f/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Oi7i6f/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_859b4.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_859b4/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Xb45UL"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Xb45UL"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmplibiomp5"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Xb45UL'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_7d6b0/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_7d6b0.dir/build.make CMakeFiles/cmTC_7d6b0.dir/build
+        Building C object CMakeFiles/cmTC_7d6b0.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libiomp5 -fPIE -MD -MT CMakeFiles/cmTC_7d6b0.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_7d6b0.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_7d6b0.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Xb45UL/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Xb45UL/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_7d6b0.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_7d6b0/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-HQH5zp"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-HQH5zp"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-HQH5zp'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_13347/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_13347.dir/build.make CMakeFiles/cmTC_13347.dir/build
+        Building C object CMakeFiles/cmTC_13347.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp -fPIE -MD -MT CMakeFiles/cmTC_13347.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_13347.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_13347.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-HQH5zp/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-HQH5zp/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_13347.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_13347/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-TP1tqc"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-TP1tqc"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-TP1tqc'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_7dd54/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_7dd54.dir/build.make CMakeFiles/cmTC_7dd54.dir/build
+        Building C object CMakeFiles/cmTC_7dd54.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -Xclang -fopenmp -fPIE -MD -MT CMakeFiles/cmTC_7dd54.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_7dd54.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_7dd54.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-TP1tqc/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-TP1tqc/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_7dd54.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_7dd54/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-70B9Hi"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-70B9Hi"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmplibomp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-70B9Hi'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_363b6/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_363b6.dir/build.make CMakeFiles/cmTC_363b6.dir/build
+        Building CXX object CMakeFiles/cmTC_363b6.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libomp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_363b6.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_363b6.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_363b6.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-70B9Hi/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-70B9Hi/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_363b6.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_363b6/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-3qk5I3"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-3qk5I3"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmplibiomp5"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-3qk5I3'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_644b2/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_644b2.dir/build.make CMakeFiles/cmTC_644b2.dir/build
+        Building CXX object CMakeFiles/cmTC_644b2.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp=libiomp5 -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_644b2.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_644b2.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_644b2.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-3qk5I3/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-3qk5I3/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_644b2.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_644b2/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-umWTQi"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-umWTQi"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-umWTQi'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_b9a2c/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_b9a2c.dir/build.make CMakeFiles/cmTC_b9a2c.dir/build
+        Building CXX object CMakeFiles/cmTC_b9a2c.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -fopenmp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_b9a2c.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_b9a2c.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_b9a2c.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-umWTQi/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-umWTQi/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_b9a2c.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_b9a2c/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Vh96tw"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Vh96tw"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Vh96tw'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_efe99/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_efe99.dir/build.make CMakeFiles/cmTC_efe99.dir/build
+        Building CXX object CMakeFiles/cmTC_efe99.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -Xclang -fopenmp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_efe99.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_efe99.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_efe99.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Vh96tw/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-Vh96tw/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_efe99.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_efe99/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_test_cxx_std.cmake:98 (try_compile)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_tribits.cmake:158 (include)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/CMakeLists.txt:220 (kokkos_setup_build_environment)"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules;cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "CAN_COMPILE_CPP17"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_998e2/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_998e2.dir/build.make CMakeFiles/cmTC_998e2.dir/build
+        Building CXX object CMakeFiles/cmTC_998e2.dir/cplusplus17.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_998e2.dir/cplusplus17.cpp.o -MF CMakeFiles/cmTC_998e2.dir/cplusplus17.cpp.o.d -o CMakeFiles/cmTC_998e2.dir/cplusplus17.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/compile_tests/cplusplus17.cpp
+        Linking CXX executable cmTC_998e2.js
+        /Applications/CMake.app/Contents/bin/cmake -E cmake_link_script CMakeFiles/cmTC_998e2.dir/link.txt --verbose=1
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++ -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread  @CMakeFiles/cmTC_998e2.dir/objects1.rsp -o cmTC_998e2.js
+        
+      exitCode: 0
+...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-h8Aebx"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-h8Aebx"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmplibomp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-h8Aebx'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_944f5/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_944f5.dir/build.make CMakeFiles/cmTC_944f5.dir/build
+        Building C object CMakeFiles/cmTC_944f5.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -fopenmp=libomp -fPIE -MD -MT CMakeFiles/cmTC_944f5.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_944f5.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_944f5.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-h8Aebx/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-h8Aebx/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_944f5.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_944f5/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-SfEooQ"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-SfEooQ"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmplibiomp5"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-SfEooQ'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_e84e4/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_e84e4.dir/build.make CMakeFiles/cmTC_e84e4.dir/build
+        Building C object CMakeFiles/cmTC_e84e4.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -fopenmp=libiomp5 -fPIE -MD -MT CMakeFiles/cmTC_e84e4.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_e84e4.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_e84e4.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-SfEooQ/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-SfEooQ/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_e84e4.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_e84e4/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-jmaigD"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-jmaigD"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-jmaigD'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_6334e/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_6334e.dir/build.make CMakeFiles/cmTC_6334e.dir/build
+        Building C object CMakeFiles/cmTC_6334e.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -fopenmp -fPIE -MD -MT CMakeFiles/cmTC_6334e.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_6334e.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_6334e.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-jmaigD/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-jmaigD/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_6334e.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_6334e/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting C OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-lVtZZh"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-lVtZZh"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_C_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_C_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-lVtZZh'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_bf68b/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_bf68b.dir/build.make CMakeFiles/cmTC_bf68b.dir/build
+        Building C object CMakeFiles/cmTC_bf68b.dir/OpenMPTryFlag.c.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -Xclang -fopenmp -fPIE -MD -MT CMakeFiles/cmTC_bf68b.dir/OpenMPTryFlag.c.o -MF CMakeFiles/cmTC_bf68b.dir/OpenMPTryFlag.c.o.d -o CMakeFiles/cmTC_bf68b.dir/OpenMPTryFlag.c.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-lVtZZh/OpenMPTryFlag.c
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-lVtZZh/OpenMPTryFlag.c:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_bf68b.dir/OpenMPTryFlag.c.o] Error 1
+        make: *** [cmTC_bf68b/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-qGyCZD"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-qGyCZD"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmplibomp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-qGyCZD'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_7cc4b/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_7cc4b.dir/build.make CMakeFiles/cmTC_7cc4b.dir/build
+        Building CXX object CMakeFiles/cmTC_7cc4b.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -fopenmp=libomp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_7cc4b.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_7cc4b.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_7cc4b.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-qGyCZD/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-qGyCZD/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_7cc4b.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_7cc4b/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-KPCjkS"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-KPCjkS"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmplibiomp5"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-KPCjkS'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_8fa73/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_8fa73.dir/build.make CMakeFiles/cmTC_8fa73.dir/build
+        Building CXX object CMakeFiles/cmTC_8fa73.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -fopenmp=libiomp5 -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_8fa73.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_8fa73.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_8fa73.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-KPCjkS/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-KPCjkS/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_8fa73.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_8fa73/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-mJJR4f"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-mJJR4f"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-mJJR4f'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_a642d/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_a642d.dir/build.make CMakeFiles/cmTC_a642d.dir/build
+        Building CXX object CMakeFiles/cmTC_a642d.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -fopenmp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_a642d.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_a642d.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_a642d.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-mJJR4f/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-mJJR4f/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_a642d.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_a642d/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:252 (try_compile)"
+      - "/Applications/CMake.app/Contents/share/cmake-3.31/Modules/FindOpenMP.cmake:522 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:458 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-pUBD1p"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-pUBD1p"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_Xclang fopenmp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-pUBD1p'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_f550b/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_f550b.dir/build.make CMakeFiles/cmTC_f550b.dir/build
+        Building CXX object CMakeFiles/cmTC_f550b.dir/OpenMPTryFlag.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -Xclang -fopenmp -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_f550b.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_f550b.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_f550b.dir/OpenMPTryFlag.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-pUBD1p/OpenMPTryFlag.cpp
+        /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/CMakeScratch/TryCompile-pUBD1p/OpenMPTryFlag.cpp:2:10: fatal error: 'omp.h' file not found
+            2 | #include <omp.h>
+              |          ^~~~~~~
+        1 error generated.
+        make[1]: *** [CMakeFiles/cmTC_f550b.dir/OpenMPTryFlag.cpp.o] Error 1
+        make: *** [cmTC_f550b/fast] Error 2
+        
+      exitCode: 2
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_test_cxx_std.cmake:98 (try_compile)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/kokkos_tribits.cmake:158 (include)"
+      - "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/CMakeLists.txt:220 (kokkos_setup_build_environment)"
+    directories:
+      source: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp"
+      binary: "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/Users/anderhaf/repos/emsdk/upstream/emscripten/emscan-deps"
+      CMAKE_CXX_FLAGS: "-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS"
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/cmake/Modules;cmake/Modules"
+      CMAKE_POSITION_INDEPENDENT_CODE: "ON"
+    buildResult:
+      variable: "CAN_COMPILE_CPP17"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/corner_cases/CMakeFiles/CMakeTmp'
+        
+        Run Build Command(s): /Applications/CMake.app/Contents/bin/cmake -E env VERBOSE=1 /usr/bin/make -f Makefile cmTC_b6d23/fast
+        /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_b6d23.dir/build.make CMakeFiles/cmTC_b6d23.dir/build
+        Building CXX object CMakeFiles/cmTC_b6d23.dir/cplusplus17.cpp.o
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++   -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS  -std=c++17 -fPIE -MD -MT CMakeFiles/cmTC_b6d23.dir/cplusplus17.cpp.o -MF CMakeFiles/cmTC_b6d23.dir/cplusplus17.cpp.o.d -o CMakeFiles/cmTC_b6d23.dir/cplusplus17.cpp.o -c /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/cmake/compile_tests/cplusplus17.cpp
+        Linking CXX executable cmTC_b6d23.js
+        /Applications/CMake.app/Contents/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b6d23.dir/link.txt --verbose=1
+        /Users/anderhaf/repos/emsdk/upstream/emscripten/em++ -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS  @CMakeFiles/cmTC_b6d23.dir/objects1.rsp -o cmTC_b6d23.js
+        
+      exitCode: 0
+...

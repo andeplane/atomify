@@ -1,0 +1,2 @@
+/Users/anderhaf/repos/emsdk/upstream/emscripten/emar qc libkokkossimd.a CMakeFiles/kokkossimd.dir/Kokkos_SIMD_dummy.cpp.o
+/Users/anderhaf/repos/emsdk/upstream/emscripten/emranlib libkokkossimd.a

@@ -22,6 +22,11 @@ export type LammpsWeb = {
   syncVariables: () => void;
   getMemoryUsage: () => number;
 
+  // Group access
+  getGroupNames: () => CPPArray<string>;
+  getGroupBit: (name: string) => number;
+  getGroupMaskPointer: () => number;
+
   getPositionsPointer: () => number;
   getIdPointer: () => number;
   getTypePointer: () => number;

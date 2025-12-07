@@ -1,0 +1,1 @@
+-I"/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src" -I"/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/third_party" -I"/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/KOKKOS" -I"/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/includes" -I"/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/STUBS"

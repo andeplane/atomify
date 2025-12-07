@@ -16,6 +16,12 @@ import {
   parseAtomType,
   parseBond,
   parseAtomSizeAndColor,
+  parseColor,
+  parseColormap,
+  parseColormapRange,
+  parseAtomRadius,
+  parseAtomColor,
+  parseGroup,
 } from "../utils/parsers";
 
 localforage.config({
@@ -156,6 +162,41 @@ export const simulationModel: SimulationModel = {
               atomType: atomType,
             });
           }
+
+          // Handle atom radius-only command: "atom <type> radius <value>"
+          const atomRadius = parseAtomRadius(line);
+          if (atomRadius) {
+            const renderState = getStoreState().render;
+            const existingStyle = renderState.particleStyles[atomRadius.atomTypeIndex];
+            const atomType: AtomType = {
+              color: existingStyle?.color ?? new THREE.Color(255, 102, 102),
+              radius: atomRadius.radius,
+              shortname: existingStyle?.shortname ?? atomRadius.atomTypeIndex.toString(),
+              fullname: existingStyle?.fullname ?? atomRadius.atomTypeIndex.toString(),
+            };
+            (getStoreActions() as Actions<StoreModel>).render.addParticleStyle({
+              index: atomRadius.atomTypeIndex,
+              atomType: atomType,
+            });
+          }
+
+          // Handle atom color-only command: "atom <type> color #RRGGBB"
+          const atomColor = parseAtomColor(line);
+          if (atomColor) {
+            const renderState = getStoreState().render;
+            const existingStyle = renderState.particleStyles[atomColor.atomTypeIndex];
+            const atomType: AtomType = {
+              color: new THREE.Color(...hexToRgb(atomColor.color)),
+              radius: existingStyle?.radius ?? 1.2,
+              shortname: existingStyle?.shortname ?? atomColor.atomTypeIndex.toString(),
+              fullname: existingStyle?.fullname ?? atomColor.atomTypeIndex.toString(),
+            };
+            (getStoreActions() as Actions<StoreModel>).render.addParticleStyle({
+              index: atomColor.atomTypeIndex,
+              atomType: atomType,
+            });
+          }
+
           const bond = parseBond(line);
           if (bond) {
             // we map the 2D coordinate into 1D
@@ -172,6 +213,73 @@ export const simulationModel: SimulationModel = {
           const cameraTarget = parseCameraTarget(line);
           if (cameraTarget) {
             actions.setCameraTarget(cameraTarget);
+          }
+
+          // Handle color commands
+          const colorCommand = parseColor(line);
+          if (colorCommand) {
+            const postTimestepModifiers =
+              getStoreState().processing.postTimestepModifiers;
+            const colorModifier = postTimestepModifiers.filter(
+              (modifier: Modifier) => modifier.name === "Colors",
+            )[0] as ColorModifier;
+            if (colorModifier) {
+              colorModifier.setColorSource(colorCommand.source, colorCommand.name);
+            }
+          }
+
+          // Handle colormap command
+          const colormapName = parseColormap(line);
+          if (colormapName) {
+            const postTimestepModifiers =
+              getStoreState().processing.postTimestepModifiers;
+            const colorModifier = postTimestepModifiers.filter(
+              (modifier: Modifier) => modifier.name === "Colors",
+            )[0] as ColorModifier;
+            if (colorModifier) {
+              colorModifier.colormap = colormapName;
+            }
+          }
+
+          // Handle colormaprange command
+          const colormapRange = parseColormapRange(line);
+          if (colormapRange) {
+            const postTimestepModifiers =
+              getStoreState().processing.postTimestepModifiers;
+            const colorModifier = postTimestepModifiers.filter(
+              (modifier: Modifier) => modifier.name === "Colors",
+            )[0] as ColorModifier;
+            if (colorModifier) {
+              if (colormapRange.auto) {
+                colorModifier.customMinValue = undefined;
+                colorModifier.customMaxValue = undefined;
+                colorModifier.resetMinMax = true;
+              } else {
+                colorModifier.customMinValue = colormapRange.min;
+                colorModifier.customMaxValue = colormapRange.max;
+              }
+            }
+          }
+
+          // Handle group commands
+          const groupCommand = parseGroup(line);
+          if (groupCommand) {
+            const postTimestepModifiers =
+              getStoreState().processing.postTimestepModifiers;
+            const colorModifier = postTimestepModifiers.filter(
+              (modifier: Modifier) => modifier.name === "Colors",
+            )[0] as ColorModifier;
+            if (colorModifier) {
+              if (groupCommand.property === "color") {
+                colorModifier.setGroupStyle(groupCommand.groupName, {
+                  color: groupCommand.value as typeof groupCommand.value & { type: string },
+                });
+              } else if (groupCommand.property === "radius") {
+                colorModifier.setGroupStyle(groupCommand.groupName, {
+                  radius: groupCommand.value as number,
+                });
+              }
+            }
           }
         }
       });
@@ -428,7 +536,7 @@ export const simulationModel: SimulationModel = {
       actions.setSimulation(simulation);
       actions.resetLammpsOutput();
 
-      // Reset potentially chosen per atom coloring
+      // Reset potentially chosen per atom coloring and group styles
       const postTimestepModifiers =
         getStoreState().processing.postTimestepModifiers;
       const colorModifier = postTimestepModifiers.filter(
@@ -436,6 +544,7 @@ export const simulationModel: SimulationModel = {
       )[0] as ColorModifier;
       if (colorModifier) {
         colorModifier.computeName = undefined;
+        colorModifier.clearGroupStyles();
       }
 
       (getStoreActions() as Actions<StoreModel>).render.resetParticleStyles();

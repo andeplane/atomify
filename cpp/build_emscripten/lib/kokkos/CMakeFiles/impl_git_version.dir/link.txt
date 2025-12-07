@@ -1,0 +1,2 @@
+/Users/anderhaf/repos/emsdk/upstream/emscripten/emar qc libimpl_git_version.a CMakeFiles/impl_git_version.dir/generated/Kokkos_Version_Info.cpp.o
+/Users/anderhaf/repos/emsdk/upstream/emscripten/emranlib libimpl_git_version.a

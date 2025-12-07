@@ -1,0 +1,31 @@
+CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/my_pool_chunk.cpp.o: \
+  /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/my_pool_chunk.cpp \
+  /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/my_pool_chunk.h \
+  /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/lmptype.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/cinttypes \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/__config \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/__config_site \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/__configuration/abi.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/__configuration/compiler.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/__configuration/platform.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/__configuration/availability.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/__configuration/language.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/cstdint \
+  /Users/anderhaf/repos/emsdk/upstream/lib/clang/22/include/stdint.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/stdint.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/bits/alltypes.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/bits/stdint.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/inttypes.h \
+  /Users/anderhaf/repos/emsdk/upstream/lib/clang/22/include/inttypes.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/inttypes.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/features.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/climits \
+  /Users/anderhaf/repos/emsdk/upstream/lib/clang/22/include/limits.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/limits.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/bits/limits.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/cstdlib \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/__cstddef/size_t.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/compat/stdlib.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/c++/v1/stdlib.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/stdlib.h \
+  /Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/alloca.h

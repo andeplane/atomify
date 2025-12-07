@@ -1,0 +1,782 @@
+Setting up EMSDK environment (suppress these messages with EMSDK_QUIET=1)
+Adding directories to PATH:
+PATH += /Users/anderhaf/repos/emsdk
+PATH += /Users/anderhaf/repos/emsdk/upstream/emscripten
+
+Setting environment variables:
+PATH = /Users/anderhaf/repos/emsdk:/Users/anderhaf/repos/emsdk/upstream/emscripten:/Users/anderhaf/.nvm/versions/node/v22.20.0/bin:/Users/anderhaf/.codeium/windsurf/bin:/Users/anderhaf/.modular/pkg/packages.modular.com_mojo/bin:/opt/homebrew/opt/llvm/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pmk/env/global/bin:/Library/Apple/usr/bin:/Users/anderhaf/Library/pnpm:/Applications/iTerm.app/Contents/Resources/utilities:/Users/anderhaf/.local/bin
+EMSDK = /Users/anderhaf/repos/emsdk
+EMSDK_NODE = /Users/anderhaf/repos/emsdk/node/22.16.0_64bit/bin/node
+EMSDK_PYTHON = /Users/anderhaf/repos/emsdk/python/3.13.3_64bit/bin/python3
+SSL_CERT_FILE = /Users/anderhaf/repos/emsdk/python/3.13.3_64bit/lib/python3.13/site-packages/certifi/cacert.pem
+Clearing existing environment variable: EMSDK_PATH
+emcmake: cmake ../lammps/cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=17 -DCMAKE_CXX_STANDARD_REQUIRED=ON -DLAMMPS_SIZES=bigbig -DBUILD_MPI=OFF -DDOWNLOAD_VORO=ON -DKokkos_ENABLE_THREADS=ON -DKokkos_ENABLE_LIBDL=OFF -DKokkos_ENABLE_DEBUG_BOUNDS_CHECK=OFF -DKokkos_ENABLE_DEBUG=OFF '-DCMAKE_CXX_FLAGS=-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread' '-DCMAKE_C_FLAGS=-Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread' -DPKG_RIGID=ON -DPKG_CLASS2=ON -DPKG_MANYBODY=ON -DPKG_MC=ON -DPKG_MOLECULE=ON -DPKG_GRANULAR=ON -DPKG_KSPACE=ON -DPKG_SHOCK=ON -DPKG_MISC=ON -DPKG_QEQ=ON -DPKG_REAXFF=ON -DPKG_EXTRA-MOLECULE=ON -DPKG_VORONOI=ON -DPKG_COLVARS=ON -DPKG_KOKKOS=ON -DCMAKE_TOOLCHAIN_FILE=/Users/anderhaf/repos/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_CROSSCOMPILING_EMULATOR=/Users/anderhaf/repos/emsdk/node/22.16.0_64bit/bin/node in directory /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten
+CMake Deprecation Warning at CMakeLists.txt:22 (cmake_policy):
+  The OLD behavior for policy CMP0109 will be removed from a future version
+  of CMake.
+
+  The cmake-policies(7) manual explains that the OLD behaviors of all
+  policies are deprecated and that a policy should be set to OLD only under
+  specific short-term circumstances.  Projects should be ported to the NEW
+  behavior and not rely on setting a policy to OLD.
+
+
+-- Found Git: /usr/bin/git (found version "2.50.1 (Apple Git-155)")
+-- Running check for auto-generated files from make-based build system
+-- Found GZIP: /usr/bin/gzip
+-- Found FFMPEG: /opt/homebrew/bin/ffmpeg
+-- Found PkgConfig: /opt/homebrew/bin/pkg-config (found version "2.5.1")
+-- Checking for module 'fftw3'
+--   Package 'fftw3' not found
+-- Could NOT find VORO (missing: VORO_LIBRARY VORO_INCLUDE_DIR) 
+-- Voro++ download requested - we will build our own
+-- Looking for C++ include cmath
+-- Looking for C++ include cmath - found
+-- Setting default Kokkos CXX standard to 17
+-- Kokkos version: 4.6.2
+-- The project name is: Kokkos
+-- Using internal gtest for testing
+-- Using -std=c++17 for C++17 standard as feature
+-- Built-in Execution Spaces:
+--     Device Parallel: NoTypeDefined
+--     Host Parallel: Kokkos::Threads
+--       Host Serial: NONE
+-- 
+-- Architectures:
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD
+-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success
+-- Found Threads: TRUE
+-- Found TPLTHREADS: TRUE
+-- Using internal desul_atomics copy
+-- Experimental mdspan support is enabled
+-- Looking for C++ include experimental/mdspan
+-- Looking for C++ include experimental/mdspan - not found
+-- Looking for C++ include mdspan
+-- Looking for C++ include mdspan - found
+-- Using internal mdspan directory /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/kokkos/tpls/mdspan/include
+-- Kokkos Backends: THREADS
+-- Generating style headers...
+-- Generating package headers...
+-- Generating lmpinstalledpkgs.h...
+-- Found Python3: /opt/homebrew/Frameworks/Python.framework/Versions/3.14/bin/python3.14 (found version "3.14.0") found components: Interpreter
+-- The following tools and libraries have been found and configured:
+ * PkgConfig
+ * Threads
+ * TPLTHREADS
+ * Python3
+
+-- <<< Build configuration >>>
+   LAMMPS Version:   2025.7.22.1 stable_22Jul2025_update1-modified
+   Operating System: Emscripten  
+   CMake Version:    3.31.6
+   Build type:       Release
+   Install path:     /Users/anderhaf/.local
+   Generator:        Unix Makefiles using /usr/bin/make
+-- Cross compiling on Darwin-25.1.0
+-- Enabled packages: CLASS2;COLVARS;EXTRA-MOLECULE;GRANULAR;KOKKOS;KSPACE;MANYBODY;MC;MISC;MOLECULE;QEQ;REAXFF;RIGID;SHOCK;VORONOI
+-- <<< Compilers and Flags: >>>
+-- C++ Compiler:     /Users/anderhaf/repos/emsdk/upstream/emscripten/em++
+      Type:          Clang
+      Version:       22.0.0
+      C++ Standard:  17
+      C++ Flags:    -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -O3 -DNDEBUG
+      Defines:       LAMMPS_BIGBIG;LAMMPS_MEMALIGN=64;LAMMPS_GZIP;LAMMPS_FFMPEG;FFT_KISS;$<BUILD_INTERFACE:LMP_KOKKOS>;FFT_KOKKOS_KISS
+-- C compiler:       /Users/anderhaf/repos/emsdk/upstream/emscripten/emcc
+      Type:          Clang
+      Version:       22.0.0
+      C Flags:      -Oz -DNDEBUG -flto -DLAMMPS_EXCEPTIONS -s NO_DISABLE_EXCEPTION_CATCHING=1 -DCOLVARS_LAMMPS -sMEMORY64=2 -pthread -O3 -DNDEBUG
+-- <<< Linker flags: >>>
+-- Executable name:  lmp
+-- Static library flags:    
+-- Kokkos Devices: Kokkos_ENABLE_THREADS
+-- <<< FFT settings >>>
+-- Primary FFT lib:  KISS
+-- Using double precision FFTs
+-- Using non-threaded FFTs
+-- Using builtin distributed FFT algorithms
+-- Kokkos FFT: KISS
+-- Configuring done (170.4s)
+-- Generating done (0.7s)
+-- Build files have been written to: /Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten
+Setting up EMSDK environment (suppress these messages with EMSDK_QUIET=1)
+Adding directories to PATH:
+PATH += /Users/anderhaf/repos/emsdk
+PATH += /Users/anderhaf/repos/emsdk/upstream/emscripten
+
+Setting environment variables:
+PATH = /Users/anderhaf/repos/emsdk:/Users/anderhaf/repos/emsdk/upstream/emscripten:/Users/anderhaf/.nvm/versions/node/v22.20.0/bin:/Users/anderhaf/.codeium/windsurf/bin:/Users/anderhaf/.modular/pkg/packages.modular.com_mojo/bin:/opt/homebrew/opt/llvm/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/opt/pmk/env/global/bin:/Library/Apple/usr/bin:/Users/anderhaf/Library/pnpm:/Applications/iTerm.app/Contents/Resources/utilities:/Users/anderhaf/.local/bin
+EMSDK = /Users/anderhaf/repos/emsdk
+EMSDK_NODE = /Users/anderhaf/repos/emsdk/node/22.16.0_64bit/bin/node
+EMSDK_PYTHON = /Users/anderhaf/repos/emsdk/python/3.13.3_64bit/bin/python3
+SSL_CERT_FILE = /Users/anderhaf/repos/emsdk/python/3.13.3_64bit/lib/python3.13/site-packages/certifi/cacert.pem
+Clearing existing environment variable: EMSDK_PATH
+[  0%] Generating includes/lammps/citeme.h
+[  1%] Generating includes/lammps/compute.h
+[  1%] Generating includes/lammps/domain.h
+[  1%] Generating includes/lammps/atom.h
+[  1%] Built target citeme.h
+[  1%] Building CXX object CMakeFiles/lepton.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/lepton/src/CompiledExpression.cpp.o
+[  1%] Building CXX object lib/kokkos/simd/src/CMakeFiles/kokkossimd.dir/Kokkos_SIMD_dummy.cpp.o
+[  1%] Generating includes/lammps/comm.h
+[  1%] Generating includes/lammps/command.h
+-- Git Directory: /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/.git
+[  1%] Generating includes/lammps/bond.h
+-- Generating lmpgitversion.h...
+[  1%] Built target atom.h
+[  1%] Generating includes/lammps/fix.h
+[  1%] Built target compute.h
+[  1%] Built target gitversion
+[  1%] Built target comm.h
+[  1%] Built target fix.h
+[  1%] Creating directories for 'voro_build'
+[  1%] Built target command.h
+[  1%] Generating includes/lammps/force.h
+[  1%] Building CXX object CMakeFiles/lepton.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/lepton/src/Operation.cpp.o
+[  1%] Generating includes/lammps/error.h
+[  1%] Generating includes/lammps/angle.h
+[  1%] Performing download step (download, verify and extract) for 'voro_build'
+[  1%] Built target force.h
+[  1%] Generating includes/lammps/dihedral.h
+[  1%] Building CXX object CMakeFiles/lepton.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/lepton/src/ExpressionTreeNode.cpp.o
+[  1%] Built target domain.h
+[  1%] Building CXX object CMakeFiles/lepton.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/lepton/src/ParsedExpression.cpp.o
+[  1%] Generating includes/lammps/group.h
+[  1%] Built target angle.h
+[  1%] Generating includes/lammps/exceptions.h
+[  1%] Building CXX object CMakeFiles/lepton.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/lepton/src/Parser.cpp.o
+[  1%] Built target error.h
+[  1%] Built target bond.h
+[  1%] Built target dihedral.h
+[  1%] Linking CXX static library libkokkossimd.a
+-- Downloading...
+   dst='/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro++-0.4.6.tar.gz'
+   timeout='none'
+   inactivity timeout='none'
+-- Using src='https://download.lammps.org/thirdparty/voro++-0.4.6.tar.gz'
+[  1%] Generating includes/lammps/improper.h
+[  1%] Building CXX object CMakeFiles/lepton.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/lepton/src/CompiledVectorExpression.cpp.o
+[  1%] Building CXX object CMakeFiles/lepton.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/lepton/src/ExpressionProgram.cpp.o
+[  1%] Built target group.h
+[  1%] Built target exceptions.h
+[  1%] Generating includes/lammps/lammps.h
+[  1%] Built target improper.h
+[  1%] Built target lammps.h
+[  1%] Built target kokkossimd
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/lepton/src/ParsedExpression.cpp:50:19: warning: reference cannot be bound to dereferenced null pointer in well-defined C++ code; comparison may be assumed to always evaluate to false [-Wtautological-undefined-compare]
+   50 |     if (&rootNode.getOperation() == NULL)
+      |          ~~~~~~~~~^~~~~~~~~~~~~~    ~~~~
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/lepton/include/lepton/ExpressionTreeNode.h:96:22: note: 'getOperation' returns a reference
+   96 |     const Operation& getOperation() const;
+      |                      ^
+[  1%] Generating includes/lammps/lmptype.h
+[  1%] Generating includes/lammps/input.h
+[  1%] Generating includes/lammps/lmppython.h
+[  2%] Generating includes/lammps/lattice.h
+1 warning generated.
+[  2%] Generating includes/lammps/info.h
+-- [download 2% complete]
+-- [download 4% complete]
+[  2%] Built target lmppython.h
+[  2%] Built target input.h
+[  2%] Built target lmptype.h
+[  2%] Built target lattice.h
+-- [download 8% complete]
+-- [download 10% complete]
+-- [download 12% complete]
+[  2%] Built target info.h
+[  2%] Generating includes/lammps/neigh_list.h
+-- [download 14% complete]
+[  3%] Generating includes/lammps/output.h
+-- [download 16% complete]
+-- [download 18% complete]
+-- [download 20% complete]
+-- [download 22% complete]
+-- [download 24% complete]
+-- [download 26% complete]
+[  3%] Generating includes/lammps/modify.h
+[  4%] Generating includes/lammps/library.h
+-- [download 28% complete]
+-- [download 30% complete]
+-- [download 32% complete]
+-- [download 34% complete]
+-- [download 36% complete]
+-- [download 38% complete]
+-- [download 40% complete]
+-- [download 42% complete]
+-- [download 45% complete]
+-- [download 47% complete]
+-- [download 49% complete]
+-- [download 53% complete]
+-- [download 55% complete]
+[  4%] Linking CXX static library liblammps_lepton.a
+[  4%] Generating includes/lammps/region.h
+[  4%] Generating includes/lammps/pair.h
+[  4%] Generating includes/lammps/pointers.h
+-- [download 59% complete]
+-- [download 61% complete]
+-- [download 63% complete]
+-- [download 65% complete]
+-- [download 67% complete]
+-- [download 69% complete]
+-- [download 71% complete]
+[  4%] Generating includes/lammps/universe.h
+-- [download 75% complete]
+-- [download 77% complete]
+-- [download 79% complete]
+-- [download 81% complete]
+-- [download 83% complete]
+-- [download 85% complete]
+-- [download 87% complete]
+-- [download 89% complete]
+-- [download 91% complete]
+-- [download 93% complete]
+-- [download 95% complete]
+-- [download 99% complete]
+-- [download 100% complete]
+-- verifying file...
+       file='/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro++-0.4.6.tar.gz'
+-- Downloading... done
+[  4%] Built target output.h
+[  4%] Generating includes/lammps/kspace.h
+[  4%] Generating includes/lammps/memory.h
+[  4%] Built target region.h
+[  4%] Built target pair.h
+[  4%] Built target memory.h
+[  4%] Built target kspace.h
+-- extracting...
+     src='/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro++-0.4.6.tar.gz'
+     dst='/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build'
+-- extracting... [tar xfz]
+[  4%] Generating includes/lammps/update.h
+[  4%] Built target library.h
+-- extracting... [analysis]
+-- extracting... [rename]
+-- extracting... [clean up]
+-- extracting... done
+[  4%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_CPUDiscovery.cpp.o
+[  4%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_Abort.cpp.o
+[  4%] Built target lepton
+[  5%] Generating includes/lammps/variable.h
+[  5%] Built target update.h
+[  5%] Generating includes/lammps/platform.h
+[  6%] Generating includes/lammps/fmt/core.h
+[  6%] Built target pointers.h
+[  6%] Built target modify.h
+[  6%] Built target fmt_core.h
+[  6%] Built target platform.h
+[  6%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_Command_Line_Parsing.cpp.o
+[  6%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_HostBarrier.cpp.o
+[  6%] Generating includes/lammps/neighbor.h
+[  6%] Generating includes/lammps/timer.h
+[  6%] Generating includes/lammps/fmt/format.h
+[  6%] Built target neigh_list.h
+[  6%] Built target timer.h
+[  6%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_Error.cpp.o
+[  7%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvar_neuralnetworkcompute.cpp.o
+[  7%] Built target fmt_format.h
+[  7%] Built target universe.h
+[  8%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_HostSpace.cpp.o
+[  8%] Built target variable.h
+[  8%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvaratoms.cpp.o
+[  8%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_Core.cpp.o
+[  8%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvar.cpp.o
+[  8%] Built target neighbor.h
+[  8%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_HostSpace_deepcopy.cpp.o
+[  8%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_HostThreadTeam.cpp.o
+[  8%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_Profiling.cpp.o
+[  8%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_MemoryPool.cpp.o
+[  8%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_ExecPolicy.cpp.o
+[  8%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarbias.cpp.o
+[  9%] No update step for 'voro_build'
+[  9%] Generating includes/lammps/utils.h
+[  9%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarbias_abf.cpp.o
+[  9%] Built target utils.h
+[  9%] Performing patch step for 'voro_build'
+patching file Makefile
+patching file 'src/Makefile'
+[  9%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_SharedAlloc.cpp.o
+[  9%] No configure step for 'voro_build'
+[  9%] Performing build step for 'voro_build'
+[  9%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarbias_abmd.cpp.o
+[  9%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_Stacktrace.cpp.o
+[  9%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/impl/Kokkos_hwloc.cpp.o
+[  9%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarbias_alb.cpp.o
+[  9%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/Threads/Kokkos_Threads_Instance.cpp.o
+[  9%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarbias_histogram.cpp.o
+[ 10%] Building CXX object lib/kokkos/core/src/CMakeFiles/kokkoscore.dir/Threads/Kokkos_Threads_Spinwait.cpp.o
+[ 10%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarbias_histogram_reweight_amd.cpp.o
+[ 10%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarbias_meta.cpp.o
+[ 11%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarbias_opes.cpp.o
+[ 11%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarbias_restraint.cpp.o
+[ 11%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp.cpp.o
+[ 11%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_alchlambda.cpp.o
+[ 11%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_angles.cpp.o
+[ 11%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_apath.cpp.o
+[ 11%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_combination.cpp.o
+[ 11%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_coordnums.cpp.o
+[ 11%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_distances.cpp.o
+[ 12%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_gpath.cpp.o
+[ 12%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_neuralnetwork.cpp.o
+[ 12%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_protein.cpp.o
+[ 12%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_rotations.cpp.o
+[ 12%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_torchann.cpp.o
+[ 12%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarcomp_volmaps.cpp.o
+[ 12%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvardeps.cpp.o
+[ 12%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvargrid.cpp.o
+[ 12%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarmodule.cpp.o
+[ 13%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarparams.cpp.o
+[ 13%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarparse.cpp.o
+ar: creating archive libvoro++.a
+[ 13%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarproxy.cpp.o
+[ 13%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarproxy_io.cpp.o
+[ 13%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarproxy_replicas.cpp.o
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: Unknown attribute kind (102) (Producer: 'LLVM22.0.0git' Reader: 'LLVM APPLE_1_1700.4.4.1_0')
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: Unknown attribute kind (102) (Producer: 'LLVM22.0.0git' Reader: 'LLVM APPLE_1_1700.4.4.1_0')
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: Unknown attribute kind (102) (Producer: 'LLVM22.0.0git' Reader: 'LLVM APPLE_1_1700.4.4.1_0')
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: Unknown attribute kind (102) (Producer: 'LLVM22.0.0git' Reader: 'LLVM APPLE_1_1700.4.4.1_0')
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: Unknown attribute kind (102) (Producer: 'LLVM22.0.0git' Reader: 'LLVM APPLE_1_1700.4.4.1_0')
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: Unknown attribute kind (102) (Producer: 'LLVM22.0.0git' Reader: 'LLVM APPLE_1_1700.4.4.1_0')
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: Unknown attribute kind (102) (Producer: 'LLVM22.0.0git' Reader: 'LLVM APPLE_1_1700.4.4.1_0')
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: Unknown attribute kind (102) (Producer: 'LLVM22.0.0git' Reader: 'LLVM APPLE_1_1700.4.4.1_0')
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: Unknown attribute kind (102) (Producer: 'LLVM22.0.0git' Reader: 'LLVM APPLE_1_1700.4.4.1_0')
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: Unknown attribute kind (102) (Producer: 'LLVM22.0.0git' Reader: 'LLVM APPLE_1_1700.4.4.1_0')
+warning: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ranlib: archive library: libvoro++.a the table of contents is empty (no object file members in the library define global symbols)
+[ 13%] No install step for 'voro_build'
+[ 13%] Completed 'voro_build'
+[ 13%] Built target voro_build
+[ 13%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarproxy_system.cpp.o
+[ 13%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarproxy_tcl.cpp.o
+[ 13%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarproxy_volmaps.cpp.o
+[ 13%] Linking CXX static library libkokkoscore.a
+[ 13%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvars_memstream.cpp.o
+[ 14%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarscript.cpp.o
+[ 14%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarscript_commands.cpp.o
+[ 14%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarscript_commands_bias.cpp.o
+[ 14%] Built target kokkoscore
+[ 14%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarscript_commands_colvar.cpp.o
+[ 15%] Building CXX object lib/kokkos/containers/src/CMakeFiles/kokkoscontainers.dir/impl/Kokkos_UnorderedMap_impl.cpp.o
+[ 15%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvartypes.cpp.o
+[ 15%] Building CXX object CMakeFiles/colvars.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/lib/colvars/colvarvalue.cpp.o
+[ 15%] Linking CXX static library libkokkoscontainers.a
+[ 15%] Built target kokkoscontainers
+[ 15%] Linking CXX static library liblammps_colvars.a
+[ 15%] Built target colvars
+[ 15%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/angle.cpp.o
+[ 15%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom_vec_charge.cpp.o
+[ 15%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom_vec_hybrid.cpp.o
+[ 15%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom_vec.cpp.o
+[ 16%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom_vec_ellipsoid.cpp.o
+[ 16%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom_vec_body.cpp.o
+[ 16%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom_vec_sphere.cpp.o
+[ 16%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom.cpp.o
+[ 16%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom_map.cpp.o
+[ 16%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/arg_info.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/angle_zero.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/angle_write.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/angle_deprecated.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom_vec_line.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/angle_hybrid.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom_vec_atomic.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atom_vec_tri.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atomify_compute.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atomify_fix.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atomify_modify.cpp.o
+[ 17%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/atomify_variable.cpp.o
+[ 18%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/balance.cpp.o
+[ 18%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/body.cpp.o
+[ 18%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/bond.cpp.o
+[ 18%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/bond_deprecated.cpp.o
+[ 18%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/bond_hybrid.cpp.o
+[ 18%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/bond_zero.cpp.o
+[ 18%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/change_box.cpp.o
+[ 18%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/citeme.cpp.o
+[ 18%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/comm.cpp.o
+[ 19%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/comm_brick.cpp.o
+[ 19%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/comm_tiled.cpp.o
+[ 19%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute.cpp.o
+[ 19%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_aggregate_atom.cpp.o
+[ 19%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_angle.cpp.o
+[ 19%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_angle_local.cpp.o
+[ 19%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_angmom_chunk.cpp.o
+[ 19%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_bond.cpp.o
+[ 19%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_bond_local.cpp.o
+[ 20%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_centro_atom.cpp.o
+[ 20%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_centroid_stress_atom.cpp.o
+[ 20%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_chunk.cpp.o
+[ 20%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_chunk_atom.cpp.o
+[ 20%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_chunk_spread_atom.cpp.o
+[ 20%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_cluster_atom.cpp.o
+[ 20%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_cna_atom.cpp.o
+[ 20%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_com.cpp.o
+[ 20%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_com_chunk.cpp.o
+[ 21%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_coord_atom.cpp.o
+[ 21%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_count_type.cpp.o
+[ 21%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_deprecated.cpp.o
+[ 21%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_dihedral.cpp.o
+[ 21%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_dihedral_local.cpp.o
+[ 21%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_dipole.cpp.o
+[ 21%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_dipole_chunk.cpp.o
+[ 21%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_displace_atom.cpp.o
+[ 21%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_erotate_sphere.cpp.o
+[ 22%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_erotate_sphere_atom.cpp.o
+[ 22%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_fragment_atom.cpp.o
+[ 22%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_global_atom.cpp.o
+[ 22%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_group_group.cpp.o
+[ 22%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_gyration.cpp.o
+[ 22%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_gyration_chunk.cpp.o
+[ 22%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_heat_flux.cpp.o
+[ 22%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_improper.cpp.o
+[ 22%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_improper_local.cpp.o
+[ 23%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_inertia_chunk.cpp.o
+[ 23%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_ke.cpp.o
+[ 23%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_ke_atom.cpp.o
+[ 23%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_msd.cpp.o
+[ 23%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_msd_chunk.cpp.o
+[ 23%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_omega_chunk.cpp.o
+[ 23%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_orientorder_atom.cpp.o
+[ 23%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_pair.cpp.o
+[ 23%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_pair_local.cpp.o
+[ 24%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_pe.cpp.o
+[ 24%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_pe_atom.cpp.o
+[ 24%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_pressure.cpp.o
+[ 24%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_property_atom.cpp.o
+[ 24%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_property_chunk.cpp.o
+[ 24%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_property_grid.cpp.o
+[ 24%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_property_local.cpp.o
+[ 24%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_rdf.cpp.o
+[ 24%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_reduce.cpp.o
+[ 25%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_reduce_chunk.cpp.o
+[ 25%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_reduce_region.cpp.o
+[ 25%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_slice.cpp.o
+[ 25%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_stress_atom.cpp.o
+[ 25%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_temp.cpp.o
+[ 25%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_temp_chunk.cpp.o
+[ 25%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_temp_com.cpp.o
+[ 25%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_temp_deform.cpp.o
+[ 25%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_temp_partial.cpp.o
+[ 26%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_temp_profile.cpp.o
+[ 26%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_temp_ramp.cpp.o
+[ 26%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_temp_region.cpp.o
+[ 26%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_temp_sphere.cpp.o
+[ 26%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_torque_chunk.cpp.o
+[ 26%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_vacf.cpp.o
+[ 26%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_vacf_chunk.cpp.o
+[ 26%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/compute_vcm_chunk.cpp.o
+[ 26%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/create_atoms.cpp.o
+[ 27%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/create_bonds.cpp.o
+[ 27%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/create_box.cpp.o
+[ 27%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/data1d.cpp.o
+[ 27%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/delete_atoms.cpp.o
+[ 27%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/delete_bonds.cpp.o
+[ 27%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/deprecated.cpp.o
+[ 27%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dihedral.cpp.o
+[ 27%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dihedral_deprecated.cpp.o
+[ 28%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dihedral_hybrid.cpp.o
+[ 28%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dihedral_write.cpp.o
+[ 28%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dihedral_zero.cpp.o
+[ 28%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/displace_atoms.cpp.o
+[ 28%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/domain.cpp.o
+[ 28%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump.cpp.o
+[ 28%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump_atom.cpp.o
+[ 28%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump_cfg.cpp.o
+[ 28%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump_custom.cpp.o
+[ 29%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump_deprecated.cpp.o
+[ 29%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump_grid.cpp.o
+[ 29%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump_grid_vtk.cpp.o
+[ 29%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump_image.cpp.o
+[ 29%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump_local.cpp.o
+[ 29%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump_movie.cpp.o
+[ 29%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/dump_xyz.cpp.o
+[ 29%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/error.cpp.o
+[ 29%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/finish.cpp.o
+[ 30%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix.cpp.o
+[ 30%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_adapt.cpp.o
+[ 30%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_addforce.cpp.o
+[ 30%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_atomify.cpp.o
+[ 30%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_ave_atom.cpp.o
+[ 30%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_ave_chunk.cpp.o
+[ 30%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_ave_correlate.cpp.o
+[ 30%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_ave_grid.cpp.o
+[ 30%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_ave_histo.cpp.o
+[ 31%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_ave_histo_weight.cpp.o
+[ 31%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_ave_time.cpp.o
+[ 31%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_aveforce.cpp.o
+[ 31%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_balance.cpp.o
+[ 31%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_bond_history.cpp.o
+[ 31%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_box_relax.cpp.o
+[ 31%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_deform.cpp.o
+[ 31%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_deposit.cpp.o
+[ 31%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_deprecated.cpp.o
+[ 32%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_dt_reset.cpp.o
+[ 32%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_dummy.cpp.o
+[ 32%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_efield.cpp.o
+[ 32%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_enforce2d.cpp.o
+[ 32%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_evaporate.cpp.o
+[ 32%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_external.cpp.o
+[ 32%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_gravity.cpp.o
+[ 32%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_group.cpp.o
+[ 32%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_halt.cpp.o
+[ 33%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_heat.cpp.o
+[ 33%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_indent.cpp.o
+[ 33%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_langevin.cpp.o
+[ 33%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_lineforce.cpp.o
+[ 33%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_minimize.cpp.o
+[ 33%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_momentum.cpp.o
+[ 33%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_move.cpp.o
+[ 33%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_neigh_history.cpp.o
+[ 33%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nh.cpp.o
+[ 34%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nh_sphere.cpp.o
+[ 34%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nph.cpp.o
+[ 34%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nph_sphere.cpp.o
+[ 34%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_npt.cpp.o
+[ 34%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_npt_sphere.cpp.o
+[ 34%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nve.cpp.o
+[ 34%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nve_limit.cpp.o
+[ 34%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nve_noforce.cpp.o
+[ 34%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nve_sphere.cpp.o
+[ 35%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nvt.cpp.o
+[ 35%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nvt_sllod.cpp.o
+[ 35%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_nvt_sphere.cpp.o
+[ 35%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_pair.cpp.o
+[ 35%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_planeforce.cpp.o
+[ 35%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_press_berendsen.cpp.o
+[ 35%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_press_langevin.cpp.o
+[ 35%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_print.cpp.o
+[ 35%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_property_atom.cpp.o
+[ 36%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_read_restart.cpp.o
+[ 36%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_recenter.cpp.o
+[ 36%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_respa.cpp.o
+[ 36%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_restrain.cpp.o
+[ 36%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_set.cpp.o
+[ 36%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_setforce.cpp.o
+[ 36%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_spring.cpp.o
+[ 36%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_spring_chunk.cpp.o
+[ 36%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_spring_self.cpp.o
+[ 37%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_store_atom.cpp.o
+[ 37%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_store_force.cpp.o
+[ 37%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_store_global.cpp.o
+[ 37%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_store_local.cpp.o
+[ 37%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_store_state.cpp.o
+[ 37%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_temp_berendsen.cpp.o
+[ 37%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_temp_rescale.cpp.o
+[ 37%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_thermal_conductivity.cpp.o
+[ 37%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_vector.cpp.o
+[ 38%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_viscous.cpp.o
+[ 38%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_wall.cpp.o
+[ 38%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_wall_harmonic.cpp.o
+[ 38%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_wall_lj1043.cpp.o
+[ 38%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_wall_lj126.cpp.o
+[ 38%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_wall_lj93.cpp.o
+[ 38%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_wall_morse.cpp.o
+[ 38%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_wall_reflect.cpp.o
+[ 39%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_wall_region.cpp.o
+[ 39%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fix_wall_table.cpp.o
+[ 39%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fmtlib_format.cpp.o
+[ 39%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/fmtlib_os.cpp.o
+[ 39%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/force.cpp.o
+[ 39%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/grid2d.cpp.o
+[ 39%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/grid3d.cpp.o
+[ 39%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/group.cpp.o
+[ 39%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/hashlittle.cpp.o
+[ 40%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/image.cpp.o
+[ 40%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/imbalance.cpp.o
+[ 40%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/imbalance_group.cpp.o
+[ 40%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/imbalance_neigh.cpp.o
+[ 40%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/imbalance_store.cpp.o
+[ 40%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/imbalance_time.cpp.o
+[ 40%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/imbalance_var.cpp.o
+[ 40%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/improper.cpp.o
+[ 40%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/improper_deprecated.cpp.o
+[ 41%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/improper_hybrid.cpp.o
+[ 41%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/improper_zero.cpp.o
+[ 41%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/info.cpp.o
+[ 41%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/input.cpp.o
+[ 41%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/integrate.cpp.o
+[ 41%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/irregular.cpp.o
+[ 41%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/kspace.cpp.o
+[ 41%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/kspace_deprecated.cpp.o
+[ 41%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/kspace_zero.cpp.o
+[ 42%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/label_map.cpp.o
+[ 42%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/lammps.cpp.o
+[ 42%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/lammpsweb.cpp.o
+[ 42%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/lattice.cpp.o
+[ 42%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/library.cpp.o
+[ 42%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/lmppython.cpp.o
+[ 42%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/math_eigen.cpp.o
+[ 42%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/math_extra.cpp.o
+In file included from /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/lammpsweb.cpp:1:
+In file included from /Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/lammpsweb.h:16:
+/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/emscripten/bind.h:464:5: warning: delete called on 'Modify' that is abstract but has non-virtual destructor [-Wdelete-abstract-non-virtual-dtor]
+  464 |     delete ptr;
+      |     ^
+/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/emscripten/bind.h:1440:28: note: in instantiation of function template specialization 'emscripten::internal::raw_destructor<Modify>' requested here
+ 1440 |         auto destructor = &raw_destructor<ClassType>;
+      |                            ^
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/lammpsweb.h:149:3: note: in instantiation of member function 'emscripten::class_<Modify>::class_' requested here
+  149 |   class_<Modify>("Modify")
+      |   ^
+/Users/anderhaf/repos/emsdk/upstream/emscripten/cache/sysroot/include/emscripten/wire.h:336:13: note: unnamed type used in template argument was declared here
+  336 |     typedef struct {
+      |             ^
+[ 42%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/math_special.cpp.o
+[ 43%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/memory.cpp.o
+1 warning generated.
+[ 43%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/min.cpp.o
+[ 43%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/min_cg.cpp.o
+[ 43%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/min_deprecated.cpp.o
+[ 43%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/min_fire.cpp.o
+[ 43%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/min_hftn.cpp.o
+[ 43%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/min_linesearch.cpp.o
+[ 43%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/min_quickmin.cpp.o
+[ 43%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/min_sd.cpp.o
+[ 44%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/minimize.cpp.o
+[ 44%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/modify.cpp.o
+[ 44%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/molecule.cpp.o
+[ 44%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/my_page.cpp.o
+[ 44%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/my_pool_chunk.cpp.o
+[ 44%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/nbin.cpp.o
+[ 44%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/nbin_multi.cpp.o
+[ 44%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/nbin_standard.cpp.o
+[ 44%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/neigh_list.cpp.o
+[ 45%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/neigh_request.cpp.o
+[ 45%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/neighbor.cpp.o
+[ 45%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair.cpp.o
+[ 45%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_bin.cpp.o
+[ 45%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_bin_ghost.cpp.o
+[ 45%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_copy.cpp.o
+[ 45%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_halffull.cpp.o
+[ 45%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_multi.cpp.o
+[ 45%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_multi_old.cpp.o
+[ 46%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_nsq.cpp.o
+[ 46%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_nsq_ghost.cpp.o
+[ 46%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_respa_bin.cpp.o
+[ 46%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_respa_nsq.cpp.o
+[ 46%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_skip.cpp.o
+[ 46%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_skip_respa.cpp.o
+[ 46%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_skip_size_off2on.cpp.o
+[ 46%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_skip_size_off2on_oneside.cpp.o
+[ 46%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/npair_trim.cpp.o
+[ 47%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/nstencil.cpp.o
+[ 47%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/nstencil_bin.cpp.o
+[ 47%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/nstencil_ghost_bin.cpp.o
+[ 47%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/nstencil_multi.cpp.o
+[ 47%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/nstencil_multi_old.cpp.o
+[ 47%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo.cpp.o
+[ 47%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_angle_all.cpp.o
+[ 47%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_angle_partial.cpp.o
+[ 47%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_angle_template.cpp.o
+[ 48%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_bond_all.cpp.o
+[ 48%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_bond_partial.cpp.o
+[ 48%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_bond_template.cpp.o
+[ 48%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_dihedral_all.cpp.o
+[ 48%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_dihedral_partial.cpp.o
+[ 48%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_dihedral_template.cpp.o
+[ 48%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_improper_all.cpp.o
+[ 48%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_improper_partial.cpp.o
+[ 48%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/ntopo_improper_template.cpp.o
+[ 49%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/output.cpp.o
+[ 49%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair.cpp.o
+[ 49%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_born.cpp.o
+[ 49%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_buck.cpp.o
+[ 49%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_buck_coul_cut.cpp.o
+[ 49%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_coul_cut.cpp.o
+[ 49%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_coul_debye.cpp.o
+[ 49%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_coul_dsf.cpp.o
+[ 50%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_coul_wolf.cpp.o
+[ 50%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_deprecated.cpp.o
+[ 50%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_hybrid.cpp.o
+[ 50%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_hybrid_molecular.cpp.o
+[ 50%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_hybrid_overlay.cpp.o
+[ 50%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_hybrid_scaled.cpp.o
+[ 50%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_charmm_coul_charmm_inter.cpp.o
+[ 50%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_cut.cpp.o
+[ 50%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_cut_coul_cut.cpp.o
+[ 51%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_expand.cpp.o
+[ 51%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_remix.cpp.o
+[ 51%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_softcore2.cpp.o
+[ 51%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_morse.cpp.o
+[ 51%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_soft.cpp.o
+[ 51%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_table.cpp.o
+[ 51%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_yukawa.cpp.o
+[ 51%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_zbl.cpp.o
+[ 51%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_zero.cpp.o
+[ 52%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/platform.cpp.o
+[ 52%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/potential_file_reader.cpp.o
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_remix.cpp:28:9: warning: 'NDEBUG' macro redefined [-Wmacro-redefined]
+   28 | #define NDEBUG //(disable assert())
+      |         ^
+<command line>:15:9: note: previous definition is here
+   15 | #define NDEBUG 1
+      |         ^
+1 warning generated.
+[ 52%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/procmap.cpp.o
+[ 52%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/random_mars.cpp.o
+[ 52%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/random_park.cpp.o
+[ 52%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/rcb.cpp.o
+[ 52%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/read_data.cpp.o
+[ 52%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/read_dump.cpp.o
+[ 52%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/read_restart.cpp.o
+[ 53%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/reader.cpp.o
+[ 53%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/reader_native.cpp.o
+[ 53%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/reader_xyz.cpp.o
+[ 53%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/region.cpp.o
+[ 53%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/region_block.cpp.o
+[ 53%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/region_cone.cpp.o
+[ 53%] Building CXX object CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/region_cylinder.cpp.o
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_charmm_coul_charmm_inter.cpp:35:9: warning: 'NDEBUG' macro redefined [-Wmacro-redefined]
+   35 | #define NDEBUG //(disable assert())
+      |         ^
+<command line>:15:9: note: previous definition is here
+   15 | #define NDEBUG 1
+      |         ^
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_charmm_coul_charmm_inter.cpp:148:8: error: cannot initialize a variable of type 'int *' with an lvalue of type 'tagint *' (aka 'long long *')
+  148 |   int *molecule = atom->molecule;
+      |        ^          ~~~~~~~~~~~~~~
+1 warning and 1 error generated.
+make[3]: *** [CMakeFiles/lammps.dir/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_charmm_coul_charmm_inter.cpp.o] Error 1
+make[3]: *** Waiting for unfinished jobs....
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_softcore2.cpp:28:9: warning: 'NDEBUG' macro redefined [-Wmacro-redefined]
+   28 | #define NDEBUG //(disable assert())
+      |         ^
+<command line>:15:9: note: previous definition is here
+   15 | #define NDEBUG 1
+      |         ^
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_softcore2.cpp:312:26: warning: format string is not a string literal (potentially insecure) [-Wformat-security]
+  312 |         fprintf(logfile, status_msg);
+      |                          ^~~~~~~~~~
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_softcore2.cpp:312:26: note: treat the string as an argument to avoid this
+  312 |         fprintf(logfile, status_msg);
+      |                          ^
+      |                          "%s", 
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_softcore2.cpp:314:25: warning: format string is not a string literal (potentially insecure) [-Wformat-security]
+  314 |         fprintf(screen, status_msg);
+      |                         ^~~~~~~~~~
+/Users/anderhaf/repos/atomify/atomify-main/cpp/lammps/src/pair_lj_softcore2.cpp:314:25: note: treat the string as an argument to avoid this
+  314 |         fprintf(screen, status_msg);
+      |                         ^
+      |                         "%s", 
+3 warnings generated.
+make[2]: *** [CMakeFiles/lammps.dir/all] Error 2
+make[1]: *** [CMakeFiles/lammps.dir/rule] Error 2
+make: *** [lammps] Error 2
+Copying modified files ...
+Cleaning build directory to force full recompilation...
+Clean complete, proceeding with build...
+Building in RELEASE mode (optimized)...
+Configuring CMake with Emscripten...
+CMake configuration complete!
+Applying KOKKOS MEMORY64+pthread fix...
+Copying kokkos_fixes/neigh_list_kokkos.h to lammps/src/KOKKOS/neigh_list_kokkos.h...
+KOKKOS neigh_list fix applied successfully
+Building LAMMPS library...
+Traceback (most recent call last):
+  File "/Users/anderhaf/repos/atomify/atomify-main/cpp/build.py", line 395, in <module>
+    build_lammps_library(emsdk_env)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/Users/anderhaf/repos/atomify/atomify-main/cpp/build.py", line 230, in build_lammps_library
+    subprocess.run(build_cmd, shell=True, executable="/bin/bash", check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.0_1/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command 'source /Users/anderhaf/repos/emsdk/emsdk_env.sh && cd build_emscripten && cmake --build . --target lammps -j16' returned non-zero exit status 2.

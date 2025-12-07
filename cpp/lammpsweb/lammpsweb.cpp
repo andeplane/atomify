@@ -7,6 +7,7 @@
 #include "update.h"
 #include "modify.h"
 #include "info.h"
+#include "group.h"
 #include "fix_ave_chunk.h"
 #include "fix_ave_histo.h"
 #include "fix_ave_time.h"
@@ -53,9 +54,11 @@ LAMMPSWeb::LAMMPSWeb() :
   m_numBonds(0),
   m_bondsCapacity(0),
   m_particlesCapacity(0),
+  m_groupMaskArrayCapacity(0),
   m_bondsPosition1(nullptr),
   m_bondsPosition2(nullptr),
   m_particlesPosition(nullptr),
+  m_groupMaskArray(nullptr),
   m_bondsDistanceMap(new float[100 * 100]) {
 
 }
@@ -66,6 +69,7 @@ LAMMPSWeb::~LAMMPSWeb() {
   delete[] m_bondsPosition1;
   delete[] m_bondsPosition2;
   delete[] m_particlesPosition;
+  delete[] m_groupMaskArray;
   delete[] m_bondsDistanceMap;
   stop();
 }
@@ -673,4 +677,55 @@ void LAMMPSWeb::step() {
 
 void LAMMPSWeb::runCommand(std::string command) {
   lammps_commands_string((void *)m_lmp, command.c_str());
+}
+
+std::vector<std::string> LAMMPSWeb::getGroupNames() {
+  std::vector<std::string> names;
+  if (!m_lmp || !m_lmp->group) {
+    return names;
+  }
+  
+  LAMMPS_NS::Group *group = m_lmp->group;
+  for (int i = 0; i < group->ngroup; i++) {
+    if (group->names[i]) {
+      names.push_back(std::string(group->names[i]));
+    }
+  }
+  return names;
+}
+
+int LAMMPSWeb::getGroupBit(std::string name) {
+  if (!m_lmp || !m_lmp->group) {
+    return -1;
+  }
+  
+  LAMMPS_NS::Group *group = m_lmp->group;
+  int igroup = group->find(name);
+  if (igroup < 0) {
+    return -1;
+  }
+  return group->bitmask[igroup];
+}
+
+long LAMMPSWeb::getGroupMaskPointer() {
+  if (!m_lmp || !m_lmp->atom) {
+    return 0;
+  }
+  
+  LAMMPS_NS::Atom *atom = m_lmp->atom;
+  int numAtoms = atom->natoms;
+  
+  // Reallocate if necessary
+  if (numAtoms > m_groupMaskArrayCapacity) {
+    delete[] m_groupMaskArray;
+    m_groupMaskArrayCapacity = numAtoms * 2;
+    m_groupMaskArray = new int[m_groupMaskArrayCapacity];
+  }
+  
+  // Copy mask data to our array
+  for (int i = 0; i < numAtoms; i++) {
+    m_groupMaskArray[i] = atom->mask[i];
+  }
+  
+  return reinterpret_cast<long>(m_groupMaskArray);
 }

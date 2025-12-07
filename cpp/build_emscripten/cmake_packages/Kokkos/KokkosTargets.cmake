@@ -1,0 +1,1 @@
+include(/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/lib/kokkos/KokkosTargets.cmake)

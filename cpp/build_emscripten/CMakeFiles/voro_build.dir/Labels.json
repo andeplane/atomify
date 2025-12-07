@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/voro_build"
+		},
+		{
+			"file" : "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/voro_build.rule"
+		},
+		{
+			"file" : "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/CMakeFiles/voro_build-complete.rule"
+		},
+		{
+			"file" : "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build-stamp/voro_build-build.rule"
+		},
+		{
+			"file" : "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build-stamp/voro_build-configure.rule"
+		},
+		{
+			"file" : "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build-stamp/voro_build-download.rule"
+		},
+		{
+			"file" : "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build-stamp/voro_build-install.rule"
+		},
+		{
+			"file" : "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build-stamp/voro_build-mkdir.rule"
+		},
+		{
+			"file" : "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build-stamp/voro_build-patch.rule"
+		},
+		{
+			"file" : "/Users/anderhaf/repos/atomify/atomify-main/cpp/build_emscripten/voro_build-prefix/src/voro_build-stamp/voro_build-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"voro_build"
+		],
+		"name" : "voro_build"
+	}
+}

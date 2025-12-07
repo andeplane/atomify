@@ -4,6 +4,7 @@
 #include "fix.h"
 #include "compute.h"
 #include "fix.h"
+#include "group.h"
 #include "atomify_compute.h"
 #include "atomify_fix.h"
 #include "atomify_variable.h"
@@ -31,6 +32,8 @@ private:
   float *m_bondsPosition2;
   float *m_bondsDistanceMap;
   float *m_particlesPosition;
+  int *m_groupMaskArray;  // Per-atom group mask array
+  int m_groupMaskArrayCapacity;
   int m_bondsCapacity;
   int m_particlesCapacity;
   int m_numBonds;
@@ -60,6 +63,11 @@ public:
   std::vector<std::string> getVariableNames();
   Variable getVariable(std::string name);
   long getMemoryUsage();
+  
+  // Group access
+  std::vector<std::string> getGroupNames();
+  int getGroupBit(std::string name);
+  long getGroupMaskPointer();
   
   // Pointer getters
   long getBondsDistanceMapPointer();
@@ -125,6 +133,9 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .function("syncFixes", &LAMMPSWeb::syncFixes)
     .function("syncVariables", &LAMMPSWeb::syncVariables)
     .function("getMemoryUsage", &LAMMPSWeb::getMemoryUsage)
+    .function("getGroupNames", &LAMMPSWeb::getGroupNames)
+    .function("getGroupBit", &LAMMPSWeb::getGroupBit)
+    .function("getGroupMaskPointer", &LAMMPSWeb::getGroupMaskPointer)
     
     .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
     .function("getBondsDistanceMapPointer", &LAMMPSWeb::getBondsDistanceMapPointer)
