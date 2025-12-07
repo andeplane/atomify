@@ -111,10 +111,12 @@ body,
 /* Remove padding/margin/borders from ant-menu-sub that make items look smaller */
 .ant-menu-sub,
 .ant-menu-sub.ant-menu-inline {
-  padding: 0;
-  margin: 0;
-  border: none;
-  background: transparent;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
 }
 
 .ant-menu-item {
@@ -124,20 +126,20 @@ body,
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   background: transparent;
   position: relative;
-  border: none;
-  outline: none;
-  box-shadow: none;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .ant-menu-dark .ant-menu-item-selected {
-  background: linear-gradient(135deg, rgb(73, 107, 187), rgb(100, 173, 230));
+  background: linear-gradient(135deg, rgb(73, 107, 187), rgb(100, 173, 230)) !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #fff;
   font-weight: 600;
-  border: none;
-  outline: none;
-  box-shadow: none;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .ant-menu-item:hover:not(.ant-menu-item-selected) {
