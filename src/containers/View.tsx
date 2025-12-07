@@ -240,7 +240,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   // Auto-reset selection when simulation changes
   useEffect(() => {
     handleClearSelection();
-  }, [handleClearSelection]);
+  }, [simulation, handleClearSelection]);
 
   const prevParticlesRef = useRef<Particles>();
   useEffect(() => {
