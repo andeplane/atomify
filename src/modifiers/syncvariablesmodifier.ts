@@ -1,5 +1,5 @@
 import Modifier from "./modifier";
-import { ModifierInput, ModifierOutput } from "./types";
+import type { ModifierInput, ModifierOutput } from "./types";
 
 interface SyncVariablesModifierProps {
   name: string;
@@ -11,11 +11,7 @@ class SyncVariablesModifier extends Modifier {
     super({ name, active });
   }
 
-  run = (
-    input: ModifierInput,
-    output: ModifierOutput,
-    everything: boolean = false,
-  ) => {
+  run = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => {
     if (!this.active || !input.hasSynchronized) {
       return;
     }
@@ -56,7 +52,7 @@ class SyncVariablesModifier extends Modifier {
       variable.hasData1D = data1DNamesWrapper.size() > 0;
       const data1DNamesSize = data1DNamesWrapper.size();
       data1DNamesWrapper.delete(); // Delete WASM wrapper to prevent memory leak
-      
+
       if (data1DNamesSize > 0) {
         variable.clearPerSync = variable.lmpVariable.getClearPerSync();
         if (variable.data1D == null) {
@@ -82,7 +78,7 @@ class SyncVariablesModifier extends Modifier {
 
           // Get data1DVector once before the loop for better performance
           const data1DVector = variable.lmpVariable.getData1D();
-          
+
           for (let j = 0; j < data1DNamesSize; j++) {
             const lmpData = data1DVector.get(j);
 
@@ -95,11 +91,11 @@ class SyncVariablesModifier extends Modifier {
             const yValuesPointer = lmpData.getYValuesPointer() / 4;
             const xValues = input.wasm.HEAPF32.subarray(
               xValuesPointer,
-              xValuesPointer + lmpData.getNumPoints(),
+              xValuesPointer + lmpData.getNumPoints()
             ) as Float32Array;
             const yValues = input.wasm.HEAPF32.subarray(
               yValuesPointer,
-              yValuesPointer + lmpData.getNumPoints(),
+              yValuesPointer + lmpData.getNumPoints()
             ) as Float32Array;
             for (let k = lengthBeforeWeStart; k < xValues.length; k++) {
               if (j === 0) {
@@ -107,11 +103,11 @@ class SyncVariablesModifier extends Modifier {
               }
               variable.data1D.data[k].push(yValues[k]);
             }
-            
+
             // Delete the Data1D copy to prevent memory leak
             lmpData.delete();
           }
-          
+
           // Delete the vector wrapper after the loop to prevent memory leak
           data1DVector.delete();
         }

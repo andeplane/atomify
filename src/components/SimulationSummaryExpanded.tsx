@@ -1,16 +1,16 @@
-import { useStoreState, useStoreActions } from "../hooks";
-import { SettingOutlined, MinusOutlined } from "@ant-design/icons";
-import { Table, Row, Col, Button, Slider } from "antd";
+import { MinusOutlined, SettingOutlined } from "@ant-design/icons";
+import { Button, Col, Row, Slider, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TableRowSelection } from "antd/es/table/interface";
-import { Compute, Fix, Variable } from "../types";
-import React, { useState, useMemo, useCallback } from "react";
-import Modifier from "../modifiers/modifier";
+import React, { useCallback, useMemo, useState } from "react";
+import Figure from "../components/Figure";
+import { useStoreActions, useStoreState } from "../hooks";
+import ColorModifierSettings from "../modifiers/ColorModifierSettings";
+import type ColorModifier from "../modifiers/colormodifier";
+import type Modifier from "../modifiers/modifier";
 import SyncBondsSettings from "../modifiers/SyncBondsSettings";
 import SyncParticlesSettings from "../modifiers/SyncParticlesSettings";
-import ColorModifierSettings from "../modifiers/ColorModifierSettings";
-import ColorModifier from "../modifiers/colormodifier";
-import Figure from "../components/Figure";
+import type { Compute, Fix, Variable } from "../types";
 import { track } from "../utils/metrics";
 
 interface SimulationSummaryType {
@@ -27,59 +27,37 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
   const [visibleSettings, setVisibleSettings] = useState<string | undefined>();
   const [visibleCompute, setVisibleCompute] = useState<Compute | undefined>();
   const [visibleFix, setVisibleFix] = useState<Fix | undefined>();
-  const [visibleVariable, setVisibleVariable] = useState<
-    Variable | undefined
-  >();
+  const [visibleVariable, setVisibleVariable] = useState<Variable | undefined>();
 
-  const simulationSettings = useStoreState(
-    (state) => state.settings.simulation,
-  );
-  const modifiers = useStoreState(
-    (state) => state.processing.postTimestepModifiers,
-  );
-  const postTimestepModifiers = useStoreState(
-    (state) => state.processing.postTimestepModifiers,
-  );
+  const simulationSettings = useStoreState((state) => state.settings.simulation);
+  const modifiers = useStoreState((state) => state.processing.postTimestepModifiers);
+  const postTimestepModifiers = useStoreState((state) => state.processing.postTimestepModifiers);
   const colorModifier = postTimestepModifiers.filter(
-    (modifier) => modifier.name === "Colors",
+    (modifier) => modifier.name === "Colors"
   )[0] as ColorModifier;
-  const selectedModifiers = postTimestepModifiers
-    .filter((m) => m.active)
-    .map((m) => m.name);
+  const selectedModifiers = postTimestepModifiers.filter((m) => m.active).map((m) => m.name);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const runType = useStoreState((state) => state.simulationStatus.runType);
   const numAtoms = useStoreState((state) => state.simulationStatus.numAtoms);
   const numBonds = useStoreState((state) => state.simulationStatus.numBonds);
   const timesteps = useStoreState((state) => state.simulationStatus.timesteps);
-  const remainingTime = useStoreState(
-    (state) => state.simulationStatus.remainingTime,
-  );
-  const timestepsPerSecond = useStoreState(
-    (state) => state.simulationStatus.timestepsPerSecond,
-  );
-  const memoryUsage = useStoreState(
-    (state) => state.simulationStatus.memoryUsage,
-  );
+  const remainingTime = useStoreState((state) => state.simulationStatus.remainingTime);
+  const timestepsPerSecond = useStoreState((state) => state.simulationStatus.timestepsPerSecond);
+  const memoryUsage = useStoreState((state) => state.simulationStatus.memoryUsage);
 
-  const setSimulationSettings = useStoreActions(
-    (actions) => actions.settings.setSimulation,
-  );
+  const setSimulationSettings = useStoreActions((actions) => actions.settings.setSimulation);
 
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
   const variables = useStoreState((state) => state.simulationStatus.variables);
   const setModifierSyncDataPointsAction = useStoreActions(
-    (actions) => actions.simulationStatus.setModifierSyncDataPoints,
+    (actions) => actions.simulationStatus.setModifierSyncDataPoints
   );
   const handleToggleSyncDataPoints = useCallback(
-    (
-      name: string,
-      type: "compute" | "fix" | "variable",
-      value: boolean,
-    ) => {
+    (name: string, type: "compute" | "fix" | "variable", value: boolean) => {
       setModifierSyncDataPointsAction({ name, type, value });
     },
-    [setModifierSyncDataPointsAction],
+    [setModifierSyncDataPointsAction]
   );
 
   const setSyncFrequency = (value: number | null) => {
@@ -137,10 +115,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
               >
                 {value}
               </Button>{" "}
-              {" " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+              {" " + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         } else {
@@ -148,9 +123,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
             <>
               {value +
                 " " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+                (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         }
@@ -177,10 +150,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
               >
                 {value}
               </Button>{" "}
-              {" " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+              {" " + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         } else {
@@ -188,9 +158,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
             <>
               {value +
                 " " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+                (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         }
@@ -217,10 +185,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
               >
                 {value}
               </Button>{" "}
-              {" " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+              {" " + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         } else {
@@ -228,9 +193,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
             <>
               {value +
                 " " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+                (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         }
@@ -374,7 +337,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
               type="text"
               icon={<MinusOutlined />}
               onClick={handleShowLess}
-              style={{ color: '#fff', padding: 0 }}
+              style={{ color: "#fff", padding: 0 }}
             />
           </div>
         )}

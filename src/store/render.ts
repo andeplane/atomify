@@ -1,6 +1,6 @@
-import { action, Action } from "easy-peasy";
-import { Particles, Bonds, Visualizer } from "omovi";
-import { AtomType } from "../utils/atomtypes";
+import { type Action, action } from "easy-peasy";
+import type { Bonds, Particles, Visualizer } from "omovi";
+import type { AtomType } from "../utils/atomtypes";
 import { track } from "../utils/metrics";
 
 interface ParticleStyle {

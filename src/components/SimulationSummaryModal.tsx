@@ -1,6 +1,6 @@
 import { Modal } from "antd";
-import SimulationSummaryContent from "./SimulationSummaryContent";
 import { track } from "../utils/metrics";
+import SimulationSummaryContent from "./SimulationSummaryContent";
 
 interface SimulationSummaryModalProps {
   open: boolean;
@@ -28,4 +28,3 @@ const SimulationSummaryModal = ({ open, onClose }: SimulationSummaryModalProps) 
 };
 
 export default SimulationSummaryModal;
-

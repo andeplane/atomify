@@ -6,11 +6,7 @@ export const hexToRgb = (hex: string) => {
   if (!result) {
     throw new Error(`Invalid hex color string: ${hex}`);
   }
-  return [
-    parseInt(result[1], 16),
-    parseInt(result[2], 16),
-    parseInt(result[3], 16),
-  ];
+  return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)];
 };
 
 export interface AtomType {

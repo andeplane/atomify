@@ -1,4 +1,4 @@
-import { ModifierInput, ModifierOutput } from "./types";
+import type { ModifierInput, ModifierOutput } from "./types";
 
 interface ModifierProps {
   name: string;
@@ -16,10 +16,6 @@ class Modifier {
     this.active = active;
   }
 
-  run = (
-    input: ModifierInput,
-    output: ModifierOutput,
-    everything: boolean = false,
-  ) => {};
+  run = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => {};
 }
 export default Modifier;

@@ -1,7 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  type Compute,
+  type Fix,
+  type LMPModifier,
+  ModifierType,
+  type PlotData,
+  type Variable,
+} from "../types";
 import Figure from "./Figure";
-import { Compute, Fix, Variable, PlotData, LMPModifier, ModifierType } from "../types";
 
 // Mock useStoreState hook
 vi.mock("../hooks", () => ({
@@ -21,9 +28,20 @@ vi.mock("dygraphs", () => {
 
 // Mock antd Modal and Empty components
 vi.mock("antd", () => ({
-  Modal: ({ children, open, onCancel }: { children: React.ReactNode; open: boolean; onCancel: () => void }) => (
-    open ? <div data-testid="modal" onClick={onCancel}>{children}</div> : null
-  ),
+  Modal: ({
+    children,
+    open,
+    onCancel,
+  }: {
+    children: React.ReactNode;
+    open: boolean;
+    onCancel: () => void;
+  }) =>
+    open ? (
+      <div data-testid="modal" onClick={onCancel}>
+        {children}
+      </div>
+    ) : null,
   Empty: () => <div data-testid="empty">Empty</div>,
 }));
 
@@ -32,7 +50,7 @@ describe("Figure", () => {
   let mockOnToggleSyncDataPoints: (
     name: string,
     type: "compute" | "fix" | "variable",
-    value: boolean,
+    value: boolean
   ) => void;
 
   beforeEach(() => {
@@ -73,7 +91,10 @@ describe("Figure", () => {
       hasScalarData: true,
       scalarValue: 1.0,
       data1D: {
-        data: [[0, 1], [1, 2]],
+        data: [
+          [0, 1],
+          [1, 2],
+        ],
         labels: ["x", "y"],
       },
       xLabel: "Time",
@@ -95,7 +116,10 @@ describe("Figure", () => {
       hasScalarData: true,
       scalarValue: 1.0,
       data1D: {
-        data: [[0, 1], [1, 2]],
+        data: [
+          [0, 1],
+          [1, 2],
+        ],
         labels: ["x", "y"],
       },
       xLabel: "Time",
@@ -117,7 +141,10 @@ describe("Figure", () => {
       hasScalarData: true,
       scalarValue: 1.0,
       data1D: {
-        data: [[0, 1], [1, 2]],
+        data: [
+          [0, 1],
+          [1, 2],
+        ],
         labels: ["x", "y"],
       },
       xLabel: "Time",
@@ -134,7 +161,10 @@ describe("Figure", () => {
   const createMockPlotData = (overrides?: Partial<PlotData>): PlotData => ({
     name: "test-plot",
     data1D: {
-      data: [[0, 1], [1, 2]],
+      data: [
+        [0, 1],
+        [1, 2],
+      ],
       labels: ["x", "y"],
     },
     xLabel: "Time",
@@ -233,12 +263,7 @@ describe("Figure", () => {
       const plotData = createMockPlotData();
 
       // Act
-      render(
-        <Figure
-          plotData={plotData}
-          onClose={mockOnClose}
-        />
-      );
+      render(<Figure plotData={plotData} onClose={mockOnClose} />);
 
       // Assert
       expect(mockOnToggleSyncDataPoints).not.toHaveBeenCalled();
@@ -249,13 +274,7 @@ describe("Figure", () => {
       const modifier = createMockCompute();
 
       // Act
-      render(
-        <Figure
-          modifier={modifier}
-          modifierType="compute"
-          onClose={mockOnClose}
-        />
-      );
+      render(<Figure modifier={modifier} modifierType="compute" onClose={mockOnClose} />);
 
       // Assert
       expect(mockOnToggleSyncDataPoints).not.toHaveBeenCalled();
@@ -325,4 +344,3 @@ describe("Figure", () => {
     });
   });
 });
-

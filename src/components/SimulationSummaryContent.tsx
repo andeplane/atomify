@@ -1,16 +1,16 @@
-import { useStoreState, useStoreActions } from "../hooks";
 import { SettingOutlined } from "@ant-design/icons";
-import { Table, Row, Col, Button, Slider, Checkbox } from "antd";
+import { Button, Checkbox, Col, Row, Slider, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TableRowSelection } from "antd/es/table/interface";
-import { Compute, Fix, Variable } from "../types";
-import React, { useState, useMemo, useCallback } from "react";
-import Modifier from "../modifiers/modifier";
+import React, { useCallback, useMemo, useState } from "react";
+import Figure from "../components/Figure";
+import { useStoreActions, useStoreState } from "../hooks";
+import ColorModifierSettings from "../modifiers/ColorModifierSettings";
+import type ColorModifier from "../modifiers/colormodifier";
+import type Modifier from "../modifiers/modifier";
 import SyncBondsSettings from "../modifiers/SyncBondsSettings";
 import SyncParticlesSettings from "../modifiers/SyncParticlesSettings";
-import ColorModifierSettings from "../modifiers/ColorModifierSettings";
-import ColorModifier from "../modifiers/colormodifier";
-import Figure from "../components/Figure";
+import type { Compute, Fix, Variable } from "../types";
 import { track } from "../utils/metrics";
 
 interface SimulationSummaryType {
@@ -23,60 +23,38 @@ const SimulationSummaryContent = () => {
   const [visibleSettings, setVisibleSettings] = useState<string | undefined>();
   const [visibleCompute, setVisibleCompute] = useState<Compute | undefined>();
   const [visibleFix, setVisibleFix] = useState<Fix | undefined>();
-  const [visibleVariable, setVisibleVariable] = useState<
-    Variable | undefined
-  >();
+  const [visibleVariable, setVisibleVariable] = useState<Variable | undefined>();
 
-  const simulationSettings = useStoreState(
-    (state) => state.settings.simulation,
-  );
-  const modifiers = useStoreState(
-    (state) => state.processing.postTimestepModifiers,
-  );
-  const colorModifier = modifiers.find(
-    (modifier) => modifier.name === "Colors",
-  ) as ColorModifier | undefined;
-  const selectedModifiers = modifiers
-    .filter((m) => m.active)
-    .map((m) => m.name);
+  const simulationSettings = useStoreState((state) => state.settings.simulation);
+  const modifiers = useStoreState((state) => state.processing.postTimestepModifiers);
+  const colorModifier = modifiers.find((modifier) => modifier.name === "Colors") as
+    | ColorModifier
+    | undefined;
+  const selectedModifiers = modifiers.filter((m) => m.active).map((m) => m.name);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const runType = useStoreState((state) => state.simulationStatus.runType);
   const numAtoms = useStoreState((state) => state.simulationStatus.numAtoms);
   const numBonds = useStoreState((state) => state.simulationStatus.numBonds);
   const timesteps = useStoreState((state) => state.simulationStatus.timesteps);
-  const remainingTime = useStoreState(
-    (state) => state.simulationStatus.remainingTime,
-  );
-  const timestepsPerSecond = useStoreState(
-    (state) => state.simulationStatus.timestepsPerSecond,
-  );
-  const memoryUsage = useStoreState(
-    (state) => state.simulationStatus.memoryUsage,
-  );
+  const remainingTime = useStoreState((state) => state.simulationStatus.remainingTime);
+  const timestepsPerSecond = useStoreState((state) => state.simulationStatus.timestepsPerSecond);
+  const memoryUsage = useStoreState((state) => state.simulationStatus.memoryUsage);
 
-  const setSimulationSettings = useStoreActions(
-    (actions) => actions.settings.setSimulation,
-  );
+  const setSimulationSettings = useStoreActions((actions) => actions.settings.setSimulation);
   const renderSettings = useStoreState((state) => state.settings.render);
-  const setRenderSettings = useStoreActions(
-    (actions) => actions.settings.setRender,
-  );
+  const setRenderSettings = useStoreActions((actions) => actions.settings.setRender);
 
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
   const variables = useStoreState((state) => state.simulationStatus.variables);
   const setModifierSyncDataPointsAction = useStoreActions(
-    (actions) => actions.simulationStatus.setModifierSyncDataPoints,
+    (actions) => actions.simulationStatus.setModifierSyncDataPoints
   );
   const handleToggleSyncDataPoints = useCallback(
-    (
-      name: string,
-      type: "compute" | "fix" | "variable",
-      value: boolean,
-    ) => {
+    (name: string, type: "compute" | "fix" | "variable", value: boolean) => {
       setModifierSyncDataPointsAction({ name, type, value });
     },
-    [setModifierSyncDataPointsAction],
+    [setModifierSyncDataPointsAction]
   );
 
   const setSyncFrequency = (value: number | null) => {
@@ -131,10 +109,7 @@ const SimulationSummaryContent = () => {
               >
                 {value}
               </Button>{" "}
-              {" " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+              {" " + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         } else {
@@ -142,9 +117,7 @@ const SimulationSummaryContent = () => {
             <>
               {value +
                 " " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+                (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         }
@@ -171,10 +144,7 @@ const SimulationSummaryContent = () => {
               >
                 {value}
               </Button>{" "}
-              {" " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+              {" " + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         } else {
@@ -182,9 +152,7 @@ const SimulationSummaryContent = () => {
             <>
               {value +
                 " " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+                (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         }
@@ -211,10 +179,7 @@ const SimulationSummaryContent = () => {
               >
                 {value}
               </Button>{" "}
-              {" " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+              {" " + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         } else {
@@ -222,9 +187,7 @@ const SimulationSummaryContent = () => {
             <>
               {value +
                 " " +
-                (record.hasScalarData
-                  ? record.scalarValue.toPrecision(5).toString()
-                  : "")}
+                (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
             </>
           );
         }
@@ -471,4 +434,3 @@ const SimulationSummaryContent = () => {
 };
 
 export default React.memo(SimulationSummaryContent);
-

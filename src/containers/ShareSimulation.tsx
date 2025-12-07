@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Modal, Button, Input, Alert, Spin, message, Checkbox } from "antd";
-import { CopyOutlined, CheckOutlined } from "@ant-design/icons";
-import { Simulation } from "../store/simulation";
+import { CheckOutlined, CopyOutlined } from "@ant-design/icons";
+import { Alert, Button, Checkbox, Input, Modal, message, Spin } from "antd";
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { Simulation } from "../store/simulation";
 import { encodeSimulation } from "../utils/embed/codec";
 import { track } from "../utils/metrics";
 
@@ -14,11 +15,7 @@ interface ShareSimulationProps {
   simulation: Simulation;
 }
 
-const ShareSimulation: React.FC<ShareSimulationProps> = ({
-  visible,
-  onClose,
-  simulation,
-}) => {
+const ShareSimulation: React.FC<ShareSimulationProps> = ({ visible, onClose, simulation }) => {
   const [shareUrl, setShareUrl] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
@@ -31,33 +28,33 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
     setError(undefined);
     try {
       const encodedData = await encodeSimulation(simulation);
-      
+
       // Track with file details
-      const fileNames = simulation.files.map(f => f.fileName);
-      track("ShareSimulation.Generate", { 
+      const fileNames = simulation.files.map((f) => f.fileName);
+      track("ShareSimulation.Generate", {
         simulationId: simulation.id,
         embedMode,
         autoStart,
         fileNames,
         fileCount: simulation.files.length,
-        urlLength: encodedData.length  // Just the encoded data part
+        urlLength: encodedData.length, // Just the encoded data part
       });
-      
+
       // Get the base URL (without query parameters)
       const baseUrl = `${window.location.origin}${window.location.pathname}`;
-      const embedParam = embedMode ? '&embed=true' : '';
+      const embedParam = embedMode ? "&embed=true" : "";
       // When embedMode is true, autoStart is always true
       const effectiveAutoStart = embedMode || autoStart;
-      const autoStartParam = effectiveAutoStart ? '&autostart=true' : '';
+      const autoStartParam = effectiveAutoStart ? "&autostart=true" : "";
       const url = `${baseUrl}?data=${encodedData}${embedParam}${autoStartParam}`;
-      
+
       setShareUrl(url);
     } catch (err) {
       console.error("Error generating share URL:", err);
       setError(`Failed to generate share URL: ${err instanceof Error ? err.message : String(err)}`);
-      track("ShareSimulation.Error", { 
+      track("ShareSimulation.Error", {
         simulationId: simulation.id,
-        error: err instanceof Error ? err.message : String(err)
+        error: err instanceof Error ? err.message : String(err),
       });
     } finally {
       setLoading(false);
@@ -106,9 +103,8 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
     >
       <div style={{ marginBottom: 16 }}>
         <p>
-          Share this simulation by copying the URL below. The entire simulation
-          (including all files) is encoded in the URL, so no external hosting is
-          required.
+          Share this simulation by copying the URL below. The entire simulation (including all
+          files) is encoded in the URL, so no external hosting is required.
         </p>
       </div>
 
@@ -123,13 +119,10 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
       </div>
 
       <div style={{ marginBottom: 16 }}>
-        <Checkbox
-          checked={embedMode}
-          onChange={(e) => setEmbedMode(e.target.checked)}
-        >
-          <strong>Embedded mode:</strong> Share in full screen, embedded mode. Use this for presentations, 
-          embedding in websites, or sharing with users who just want to view 
-          the simulation.
+        <Checkbox checked={embedMode} onChange={(e) => setEmbedMode(e.target.checked)}>
+          <strong>Embedded mode:</strong> Share in full screen, embedded mode. Use this for
+          presentations, embedding in websites, or sharing with users who just want to view the
+          simulation.
         </Checkbox>
       </div>
 
@@ -184,16 +177,10 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
       )}
 
       {!loading && !shareUrl && error && (
-        <Alert
-          message="Error"
-          description={error}
-          type="error"
-          showIcon
-        />
+        <Alert message="Error" description={error} type="error" showIcon />
       )}
     </Modal>
   );
 };
 
 export default ShareSimulation;
-

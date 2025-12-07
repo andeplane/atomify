@@ -9,13 +9,13 @@
     "ignoreUnknown": false,
     "includes": [
       "**",
-      "!**/node_modules/**",
-      "!**/dist/**",
-      "!**/build/**",
-      "!**/cpp/**",
+      "!**/node_modules",
+      "!**/dist",
+      "!**/build",
+      "!**/cpp",
       "!**/public/lammps.mjs",
       "!**/public/lammps.wasm",
-      "!**/src/wasm/**"
+      "!**/src/wasm"
     ]
   },
   "formatter": {

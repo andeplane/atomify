@@ -7,11 +7,7 @@ import * as THREE from "three";
  */
 export const parseCameraPosition = (line: string) => {
   const splitted = line.split(/\s+/);
-  if (
-    splitted[0] === "camera" &&
-    splitted[1] === "position" &&
-    splitted.length === 5
-  ) {
+  if (splitted[0] === "camera" && splitted[1] === "position" && splitted.length === 5) {
     const x = parseFloat(splitted[2]);
     const y = parseFloat(splitted[3]);
     const z = parseFloat(splitted[4]);
@@ -26,11 +22,7 @@ export const parseCameraPosition = (line: string) => {
  */
 export const parseCameraTarget = (line: string) => {
   const splitted = line.split(/\s+/);
-  if (
-    splitted[0] === "camera" &&
-    splitted[1] === "target" &&
-    splitted.length === 5
-  ) {
+  if (splitted[0] === "camera" && splitted[1] === "target" && splitted.length === 5) {
     const x = parseFloat(splitted[2]);
     const y = parseFloat(splitted[3]);
     const z = parseFloat(splitted[4]);
@@ -87,4 +79,3 @@ export const parseAtomSizeAndColor = (line: string) => {
     };
   }
 };
-

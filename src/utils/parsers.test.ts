@@ -1,11 +1,11 @@
-import { describe, it, expect } from "vitest";
 import * as THREE from "three";
+import { describe, expect, it } from "vitest";
 import {
-  parseCameraPosition,
-  parseCameraTarget,
+  parseAtomSizeAndColor,
   parseAtomType,
   parseBond,
-  parseAtomSizeAndColor,
+  parseCameraPosition,
+  parseCameraTarget,
 } from "./parsers";
 
 describe("parseCameraPosition", () => {
@@ -391,4 +391,3 @@ describe("parseAtomSizeAndColor", () => {
     expect(result).toBeUndefined();
   });
 });
-

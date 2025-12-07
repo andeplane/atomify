@@ -1,8 +1,7 @@
-import { LammpsWeb } from "../types";
-import { Particles, Bonds } from "omovi";
-import { Compute, Fix, Variable } from "../types";
-import { AtomifyWasmModule } from "../wasm/types";
-import { RenderModel } from "../store/render";
+import type { Bonds, Particles } from "omovi";
+import type { RenderModel } from "../store/render";
+import type { Compute, Fix, LammpsWeb, Variable } from "../types";
+import type { AtomifyWasmModule } from "../wasm/types";
 
 type RenderState = Pick<
   RenderModel,

@@ -1,22 +1,22 @@
-import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
-import { StoreModel } from "./model";
-import { LammpsWeb } from "../types";
 import { notification } from "antd";
-import { AtomTypes, AtomType, hexToRgb } from "../utils/atomtypes";
-import AnalyzeNotebook from "../utils/AnalyzeNotebook";
-import { track, time_event, getEmbeddingParams } from "../utils/metrics";
-import * as THREE from "three";
+import { type Action, type Actions, action, type State, type Thunk, thunk } from "easy-peasy";
 import localforage from "localforage";
-import ColorModifier from "../modifiers/colormodifier";
-import Modifier from "../modifiers/modifier";
-import { SimulationFile } from "./app";
+import * as THREE from "three";
+import type ColorModifier from "../modifiers/colormodifier";
+import type Modifier from "../modifiers/modifier";
+import type { LammpsWeb } from "../types";
+import AnalyzeNotebook from "../utils/AnalyzeNotebook";
+import { type AtomType, AtomTypes, hexToRgb } from "../utils/atomtypes";
+import { getEmbeddingParams, time_event, track } from "../utils/metrics";
 import {
-  parseCameraPosition,
-  parseCameraTarget,
+  parseAtomSizeAndColor,
   parseAtomType,
   parseBond,
-  parseAtomSizeAndColor,
+  parseCameraPosition,
+  parseCameraTarget,
 } from "../utils/parsers";
+import type { SimulationFile } from "./app";
+import type { StoreModel } from "./model";
 
 localforage.config({
   driver: localforage.INDEXEDDB,
@@ -104,7 +104,10 @@ export const simulationModel: SimulationModel = {
     (
       actions,
       inputScript: string,
-      { getStoreActions, getStoreState }: { getStoreActions: () => Actions<StoreModel>; getStoreState: () => State<StoreModel> }
+      {
+        getStoreActions,
+        getStoreState,
+      }: { getStoreActions: () => Actions<StoreModel>; getStoreState: () => State<StoreModel> }
     ) => {
       const lines = inputScript.split("\n");
 
@@ -118,7 +121,7 @@ export const simulationModel: SimulationModel = {
       const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
       const bondsDistanceMapSubarray = wasm.HEAPF32.subarray(
         bondsDistanceMapPointer,
-        bondsDistanceMapPointer + 10000,
+        bondsDistanceMapPointer + 10000
       ) as Float32Array;
 
       lines.forEach((line) => {
@@ -129,7 +132,7 @@ export const simulationModel: SimulationModel = {
           const parsedAtomType = parseAtomType(line);
           if (parsedAtomType) {
             const atomType: AtomType | undefined = AtomTypes.filter(
-              (at) => at.fullname === parsedAtomType.atomName,
+              (at) => at.fullname === parsedAtomType.atomName
             )[0];
 
             if (atomType) {
@@ -159,10 +162,8 @@ export const simulationModel: SimulationModel = {
           const bond = parseBond(line);
           if (bond) {
             // we map the 2D coordinate into 1D
-            bondsDistanceMapSubarray[100 * bond.atomType1 + bond.atomType2] =
-              bond.distance;
-            bondsDistanceMapSubarray[100 * bond.atomType2 + bond.atomType1] =
-              bond.distance;
+            bondsDistanceMapSubarray[100 * bond.atomType1 + bond.atomType2] = bond.distance;
+            bondsDistanceMapSubarray[100 * bond.atomType2 + bond.atomType1] = bond.distance;
             lammps.setBuildNeighborlist(true);
           }
           const cameraPosition = parseCameraPosition(line);
@@ -175,10 +176,14 @@ export const simulationModel: SimulationModel = {
           }
         }
       });
-    },
+    }
   ),
   syncFilesWasm: thunk(
-    async (actions, fileName: string | undefined, { getStoreState }: { getStoreState: () => State<StoreModel> }) => {
+    async (
+      actions,
+      fileName: string | undefined,
+      { getStoreState }: { getStoreState: () => State<StoreModel> }
+    ) => {
       const simulation = getStoreState().simulation.simulation;
       if (!simulation) {
         return;
@@ -191,10 +196,14 @@ export const simulationModel: SimulationModel = {
           wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content);
         }
       }
-    },
+    }
   ),
   syncFilesJupyterLite: thunk(
-    async (actions, dummy: undefined, { getStoreState }: { getStoreState: () => State<StoreModel> }) => {
+    async (
+      actions,
+      dummy: undefined,
+      { getStoreState }: { getStoreState: () => State<StoreModel> }
+    ) => {
       const simulation = getStoreState().simulation.simulation;
       if (!simulation) {
         return;
@@ -221,18 +230,14 @@ export const simulationModel: SimulationModel = {
         name: string,
         path: string,
         type: JupyterFileType,
-        content?: string | Object,
+        content?: string | Object
       ) => {
         let mimetype = "text/plain";
         let format = "text";
         let size = 0;
         const now = new Date().toISOString();
 
-        if (
-          type === "directory" ||
-          type === "notebook" ||
-          typeof content === "object"
-        ) {
+        if (type === "directory" || type === "notebook" || typeof content === "object") {
           mimetype = "application/json";
           format = "json";
         }
@@ -267,13 +272,13 @@ export const simulationModel: SimulationModel = {
           analyzeFileName,
           analyzeFileName,
           "notebook",
-          AnalyzeNotebook(simulation),
-        ),
+          AnalyzeNotebook(simulation)
+        )
       );
 
       await localforage.setItem(
         simulation.id,
-        createLocalForageObject(simulation.id, simulation.id, "directory"),
+        createLocalForageObject(simulation.id, simulation.id, "directory")
       );
       for (const file of Object.values(files)) {
         let type: JupyterFileType = "file";
@@ -291,134 +296,148 @@ export const simulationModel: SimulationModel = {
         }
         await localforage.setItem(
           filePath,
-          createLocalForageObject(file.fileName, filePath, type, content),
+          createLocalForageObject(file.fileName, filePath, type, content)
         );
       }
-    },
+    }
   ),
-  run: thunk(async (actions, payload, { getStoreState, getStoreActions }: { getStoreState: () => State<StoreModel>; getStoreActions: () => Actions<StoreModel> }) => {
-    const simulation = getStoreState().simulation.simulation;
-    if (!simulation) {
-      return;
-    }
-    const lammps = getStoreState().simulation.lammps;
-    if (!lammps || lammps.getIsRunning()) {
-      return;
-    }
+  run: thunk(
+    async (
+      actions,
+      payload,
+      {
+        getStoreState,
+        getStoreActions,
+      }: { getStoreState: () => State<StoreModel>; getStoreActions: () => Actions<StoreModel> }
+    ) => {
+      const simulation = getStoreState().simulation.simulation;
+      if (!simulation) {
+        return;
+      }
+      const lammps = getStoreState().simulation.lammps;
+      if (!lammps || lammps.getIsRunning()) {
+        return;
+      }
 
-    const allActions = getStoreActions() as Actions<StoreModel>;
+      const allActions = getStoreActions() as Actions<StoreModel>;
 
-    allActions.render.resetParticleStyles();
-    allActions.simulationStatus.reset();
-    actions.setShowConsole(false);
-    actions.resetLammpsOutput();
+      allActions.render.resetParticleStyles();
+      allActions.simulationStatus.reset();
+      actions.setShowConsole(false);
+      actions.resetLammpsOutput();
 
-    await actions.syncFilesWasm(undefined);
+      await actions.syncFilesWasm(undefined);
 
-    lammps.start();
-    actions.setRunning(true);
-    track("Simulation.Start", { 
-      simulationId: simulation?.id,
-      ...getEmbeddingParams()
-    });
-    time_event("Simulation.Stop");
+      lammps.start();
+      actions.setRunning(true);
+      track("Simulation.Start", {
+        simulationId: simulation?.id,
+        ...getEmbeddingParams(),
+      });
+      time_event("Simulation.Stop");
 
-    const inputScriptFile = simulation.files.filter(
-      (file) => file.fileName === simulation.inputScript,
-    )[0];
-    if (inputScriptFile.content) {
-      actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
-    }
+      const inputScriptFile = simulation.files.filter(
+        (file) => file.fileName === simulation.inputScript
+      )[0];
+      if (inputScriptFile.content) {
+        actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
+      }
 
-    // Inject URL variables if provided
-    if (simulation.vars && Object.keys(simulation.vars).length > 0) {
-      const varsScript = Object.entries(simulation.vars)
-        .map(([name, value]) => `variable ${name} equal ${value}`)
-        .join('\n') + '\n\n';
-      
-      const wasm = (window as any).wasm;
-      const varsFileName = `_vars_${simulation.inputScript}`;
-      wasm.FS.writeFile(`/${simulation.id}/${varsFileName}`, varsScript);
-      
-      // Create a wrapper script that includes vars then the original script
-      const wrapperScript = varsScript + inputScriptFile.content;
-      const wrapperFileName = `_wrapper_${simulation.inputScript}`;
-      wasm.FS.writeFile(`/${simulation.id}/${wrapperFileName}`, wrapperScript);
-    }
+      // Inject URL variables if provided
+      if (simulation.vars && Object.keys(simulation.vars).length > 0) {
+        const varsScript =
+          Object.entries(simulation.vars)
+            .map(([name, value]) => `variable ${name} equal ${value}`)
+            .join("\n") + "\n\n";
 
-    let errorMessage: string | undefined = undefined;
-    const startTime = performance.now();
-    try {
-      // Use wrapper script if we have vars, otherwise use original
-      const scriptToRun = simulation.vars && Object.keys(simulation.vars).length > 0 
-        ? `_wrapper_${simulation.inputScript}`
-        : simulation.inputScript;
-      await lammps.runFile(`/${simulation.id}/${scriptToRun}`);
-    } catch (exception: any) {
-      console.log("Got exception: ", exception);
-      errorMessage = lammps.getExceptionMessage(exception);
-      console.log("Got error running LAMMPS: ", errorMessage);
-    }
+        const wasm = (window as any).wasm;
+        const varsFileName = `_vars_${simulation.inputScript}`;
+        wasm.FS.writeFile(`/${simulation.id}/${varsFileName}`, varsScript);
 
-    if (!errorMessage) {
-      errorMessage = lammps.getErrorMessage();
-    }
+        // Create a wrapper script that includes vars then the original script
+        const wrapperScript = varsScript + inputScriptFile.content;
+        const wrapperFileName = `_wrapper_${simulation.inputScript}`;
+        wasm.FS.writeFile(`/${simulation.id}/${wrapperFileName}`, wrapperScript);
+      }
 
-    const computes = getStoreState().simulationStatus.computes;
+      let errorMessage: string | undefined;
+      const startTime = performance.now();
+      try {
+        // Use wrapper script if we have vars, otherwise use original
+        const scriptToRun =
+          simulation.vars && Object.keys(simulation.vars).length > 0
+            ? `_wrapper_${simulation.inputScript}`
+            : simulation.inputScript;
+        await lammps.runFile(`/${simulation.id}/${scriptToRun}`);
+      } catch (exception: any) {
+        console.log("Got exception: ", exception);
+        errorMessage = lammps.getExceptionMessage(exception);
+        console.log("Got error running LAMMPS: ", errorMessage);
+      }
 
-    const endTime = performance.now();
-    const duration = (endTime - startTime) / 1000; // seconds
-    const metricsData = {
-      timesteps: lammps.getTimesteps(),
-      timestepsPerSecond: (lammps.getTimesteps() / duration).toFixed(3),
-      numAtoms: lammps.getNumAtoms(),
-      computes: Object.keys(computes),
-    };
-    actions.setPaused(false);
+      if (!errorMessage) {
+        errorMessage = lammps.getErrorMessage();
+      }
 
-    if (errorMessage) {
-      if (errorMessage.includes("Atomify::canceled")) {
-        allActions.processing.runPostTimestep(true);
-        // Simulation got canceled.
-        actions.setRunning(false);
-        actions.setShowConsole(true);
-        track("Simulation.Stop", {
-          simulationId: simulation?.id,
-          stopReason: "canceled",
-          ...metricsData,
-        });
+      const computes = getStoreState().simulationStatus.computes;
+
+      const endTime = performance.now();
+      const duration = (endTime - startTime) / 1000; // seconds
+      const metricsData = {
+        timesteps: lammps.getTimesteps(),
+        timestepsPerSecond: (lammps.getTimesteps() / duration).toFixed(3),
+        numAtoms: lammps.getNumAtoms(),
+        computes: Object.keys(computes),
+      };
+      actions.setPaused(false);
+
+      if (errorMessage) {
+        if (errorMessage.includes("Atomify::canceled")) {
+          allActions.processing.runPostTimestep(true);
+          // Simulation got canceled.
+          actions.setRunning(false);
+          actions.setShowConsole(true);
+          track("Simulation.Stop", {
+            simulationId: simulation?.id,
+            stopReason: "canceled",
+            ...metricsData,
+          });
+        } else {
+          notification.error({
+            message: errorMessage,
+            duration: 5,
+          });
+          actions.setRunning(false);
+          actions.setShowConsole(true);
+          track("Simulation.Stop", {
+            simulationId: simulation?.id,
+            stopReason: "failed",
+            errorMessage,
+            ...metricsData,
+          });
+        }
       } else {
-        notification.error({
-          message: errorMessage,
-          duration: 5,
-        });
+        allActions.processing.runPostTimestep(true);
         actions.setRunning(false);
         actions.setShowConsole(true);
         track("Simulation.Stop", {
           simulationId: simulation?.id,
-          stopReason: "failed",
-          errorMessage,
+          stopReason: "completed",
           ...metricsData,
         });
       }
-    } else {
-      allActions.processing.runPostTimestep(true);
-      actions.setRunning(false);
-      actions.setShowConsole(true);
-      track("Simulation.Stop", {
-        simulationId: simulation?.id,
-        stopReason: "completed",
-        ...metricsData,
-      });
+      actions.syncFilesJupyterLite();
+      allActions.simulationStatus.setLastCommand(undefined);
     }
-    actions.syncFilesJupyterLite();
-    allActions.simulationStatus.setLastCommand(undefined);
-  }),
+  ),
   newSimulation: thunk(
     async (
       actions,
       simulation: Simulation,
-      { getStoreState, getStoreActions }: { getStoreState: () => State<StoreModel>; getStoreActions: () => Actions<StoreModel> },
+      {
+        getStoreState,
+        getStoreActions,
+      }: { getStoreState: () => State<StoreModel>; getStoreActions: () => Actions<StoreModel> }
     ) => {
       const allActions = getStoreActions() as Actions<StoreModel>;
 
@@ -429,10 +448,9 @@ export const simulationModel: SimulationModel = {
       actions.resetLammpsOutput();
 
       // Reset potentially chosen per atom coloring
-      const postTimestepModifiers =
-        getStoreState().processing.postTimestepModifiers;
+      const postTimestepModifiers = getStoreState().processing.postTimestepModifiers;
       const colorModifier = postTimestepModifiers.filter(
-        (modifier: Modifier) => modifier.name === "Colors",
+        (modifier: Modifier) => modifier.name === "Colors"
       )[0] as ColorModifier;
       if (colorModifier) {
         colorModifier.computeName = undefined;
@@ -454,7 +472,7 @@ export const simulationModel: SimulationModel = {
       const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
       const bondsDistanceMapSubarray = wasm.HEAPF32.subarray(
         bondsDistanceMapPointer,
-        bondsDistanceMapPointer + 10000,
+        bondsDistanceMapPointer + 10000
       ) as Float32Array;
       bondsDistanceMapSubarray.fill(0);
       lammps.setBuildNeighborlist(false);
@@ -489,21 +507,21 @@ export const simulationModel: SimulationModel = {
 
       actions.setSimulation(simulation); // Set it again now that files are updated
       wasm.FS.chdir(`/${simulation.id}`);
-      
+
       // Sync files to JupyterLite storage now that they're available in WASM filesystem
       await actions.syncFilesJupyterLite();
-      
+
       await allActions.app.setStatus(undefined);
       if (simulation.start) {
         actions.run();
       } else {
         const inputScriptFile = simulation.files.filter(
-          (file) => file.fileName === simulation.inputScript,
+          (file) => file.fileName === simulation.inputScript
         )[0];
         allActions.app.setSelectedFile(inputScriptFile);
       }
       track("Simulation.New", { simulationId: simulation?.id });
-    },
+    }
   ),
   reset: action((state) => {
     state.files = [];

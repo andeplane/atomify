@@ -18,6 +18,3 @@ declare global {
     files?: SimulationFile[];
   }
 }
-
-export {};
-

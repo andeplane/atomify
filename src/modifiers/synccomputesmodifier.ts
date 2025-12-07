@@ -1,5 +1,5 @@
 import Modifier from "./modifier";
-import { ModifierInput, ModifierOutput } from "./types";
+import type { ModifierInput, ModifierOutput } from "./types";
 
 interface SyncComputesModifierProps {
   name: string;
@@ -11,11 +11,7 @@ class SyncComputesModifier extends Modifier {
     super({ name, active });
   }
 
-  run = (
-    input: ModifierInput,
-    output: ModifierOutput,
-    everything: boolean = false,
-  ) => {
+  run = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => {
     if (!this.active || !input.hasSynchronized) {
       return;
     }
@@ -84,7 +80,7 @@ class SyncComputesModifier extends Modifier {
 
             // Get data1DVector once before the loop for better performance
             const data1DVector = compute.lmpCompute.getData1D();
-            
+
             for (let j = 0; j < data1DNamesSize; j++) {
               const lmpData = data1DVector.get(j);
 
@@ -97,11 +93,11 @@ class SyncComputesModifier extends Modifier {
               const yValuesPointer = lmpData.getYValuesPointer() / 4;
               const xValues = input.wasm.HEAPF32.subarray(
                 xValuesPointer,
-                xValuesPointer + lmpData.getNumPoints(),
+                xValuesPointer + lmpData.getNumPoints()
               ) as Float32Array;
               const yValues = input.wasm.HEAPF32.subarray(
                 yValuesPointer,
-                yValuesPointer + lmpData.getNumPoints(),
+                yValuesPointer + lmpData.getNumPoints()
               ) as Float32Array;
               for (let k = lengthBeforeWeStart; k < xValues.length; k++) {
                 if (j === 0) {
@@ -109,11 +105,11 @@ class SyncComputesModifier extends Modifier {
                 }
                 compute.data1D.data[k].push(yValues[k]);
               }
-              
+
               // Delete the Data1D copy to prevent memory leak
               lmpData.delete();
             }
-            
+
             // Delete the vector wrapper after the loop to prevent memory leak
             data1DVector.delete();
           }

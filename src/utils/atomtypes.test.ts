@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { hexToRgb } from "./atomtypes";
 
 describe("hexToRgb", () => {
@@ -112,4 +112,3 @@ describe("hexToRgb", () => {
     expect(() => hexToRgb(empty)).toThrow("Invalid hex color string");
   });
 });
-

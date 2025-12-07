@@ -1,7 +1,7 @@
-import { Modal, Table, Slider } from "antd";
+import { Modal, Slider, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useStoreState, useStoreActions } from "../hooks";
 import { useCallback } from "react";
+import { useStoreActions, useStoreState } from "../hooks";
 
 interface SettingsType {
   key: React.ReactNode;
@@ -11,9 +11,7 @@ interface SettingsType {
 
 const SyncBondsSettings = ({ onClose }: { onClose: () => void }) => {
   const bondRadius = useStoreState((state) => state.render.bondRadius);
-  const setBondRadius = useStoreActions(
-    (actions) => actions.render.setBondRadius,
-  );
+  const setBondRadius = useStoreActions((actions) => actions.render.setBondRadius);
   const bonds = useStoreState((state) => state.render.bonds);
 
   const onBondRadiusChanged = useCallback(
@@ -24,7 +22,7 @@ const SyncBondsSettings = ({ onClose }: { onClose: () => void }) => {
         bonds.markNeedsUpdate();
       }
     },
-    [setBondRadius, bonds],
+    [setBondRadius, bonds]
   );
 
   const columns: ColumnsType<SettingsType> = [
@@ -39,13 +37,7 @@ const SyncBondsSettings = ({ onClose }: { onClose: () => void }) => {
       key: "value",
       width: "80%",
       render: (value, record) => (
-        <Slider
-          min={0.2}
-          max={2}
-          step={0.02}
-          onChange={onBondRadiusChanged}
-          value={value}
-        />
+        <Slider min={0.2} max={2} step={0.02} onChange={onBondRadiusChanged} value={value} />
       ),
     },
   ];

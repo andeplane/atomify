@@ -1,10 +1,9 @@
 /* Four-corner gradient background - optimized (static, no animation) */
 html {
   /* Simplified to 3 layers for better performance while maintaining four-corner effect */
-  background: 
-    /* Top-left corner */
-    radial-gradient(circle at 0% 0%, rgb(57, 76, 93) 0%, transparent 60%),
-    /* Bottom-right corner */
+  /* Top-left corner */
+  background:
+    radial-gradient(circle at 0% 0%, rgb(57, 76, 93) 0%, transparent 60%), /* Bottom-right corner */
     radial-gradient(circle at 100% 100%, rgb(41, 63, 86) 0%, transparent 60%),
     /* Base gradient blend */
     linear-gradient(135deg, rgb(42, 44, 52) 0%, rgb(31, 36, 47) 50%, rgb(41, 63, 86) 100%);
@@ -19,12 +18,7 @@ html::before {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    135deg,
-    transparent 0%,
-    rgba(30, 35, 45, 0.3) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(135deg, transparent 0%, rgba(30, 35, 45, 0.3) 50%, transparent 100%);
   pointer-events: none;
   z-index: 0;
 }
@@ -32,9 +26,9 @@ html::before {
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell",
+    "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
@@ -43,8 +37,7 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 html,
@@ -104,11 +97,7 @@ body,
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.15) 0%,
-    transparent 50%
-  );
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
   pointer-events: none;
   opacity: 0.6;
   z-index: 0;
@@ -215,7 +204,9 @@ body,
   right: 10px;
   color: #fff;
   opacity: 1;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
   z-index: 1000;
@@ -229,11 +220,7 @@ body,
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.15) 0%,
-    transparent 50%
-  );
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
   pointer-events: none;
   opacity: 0.5;
   transform: translateZ(0);
@@ -313,7 +300,6 @@ body,
   z-index: 1;
 }
 
-
 .selected-atoms-info {
   position: absolute;
   background: rgba(42, 41, 47, 0.6);
@@ -327,7 +313,9 @@ body,
   left: 20px;
   color: #fff;
   z-index: 1000;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   contain: layout style paint;
 }
@@ -339,11 +327,7 @@ body,
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.15) 0%,
-    transparent 50%
-  );
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
   pointer-events: none;
   opacity: 0.5;
   transform: translateZ(0);
@@ -362,7 +346,9 @@ body,
   left: 20px;
   color: #fff;
   z-index: 1000;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   contain: layout style paint;
   font-family: monospace;
@@ -376,11 +362,7 @@ body,
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.15) 0%,
-    transparent 50%
-  );
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
   pointer-events: none;
   opacity: 0.5;
   transform: translateZ(0);
@@ -472,7 +454,9 @@ body,
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
   padding: 16px;
@@ -486,11 +470,7 @@ body,
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.15) 0%,
-    transparent 50%
-  );
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
   pointer-events: none;
   opacity: 0.5;
   transform: translateZ(0);

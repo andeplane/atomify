@@ -1,6 +1,6 @@
-import { describe, it } from "vitest";
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { describe, it } from "vitest";
 import App from "./App";
 
 describe("App", () => {

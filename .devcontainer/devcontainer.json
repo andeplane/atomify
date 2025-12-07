@@ -1,7 +1,7 @@
 {
   "name": "Atomify Dev Container with Emscripten",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
-  
+
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "lts"
@@ -18,10 +18,7 @@
 
   "customizations": {
     "vscode": {
-      "extensions": [
-        "ms-vscode.cpptools",
-        "ms-python.python"
-      ],
+      "extensions": ["ms-vscode.cpptools", "ms-python.python"],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash"
       }
@@ -30,4 +27,3 @@
 
   "remoteUser": "vscode"
 }
-

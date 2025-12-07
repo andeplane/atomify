@@ -1,14 +1,7 @@
-import {
-  Layout,
-  Checkbox,
-  Select,
-  Input,
-  Form,
-  Button,
-  notification,
-} from "antd";
-import { useState, useCallback } from "react";
+import { Button, Checkbox, Form, Input, Layout, notification, Select } from "antd";
+import { useCallback, useState } from "react";
 import { track } from "../utils/metrics";
+
 const { Header } = Layout;
 
 const RunInCloud = () => {
@@ -46,18 +39,16 @@ const RunInCloud = () => {
         Run in cloud
       </Header>
       <div style={{ padding: 10, margin: 10 }}>
-        Running simulations in the browser is a fantastic way to get started
-        with LAMMPS and can be used to run smaller simulations. However,
-        simulations often require more powerful compute power than what is
-        available in the browser. We are considering adding cloud support, so
-        that you can test your simulations in the browser and then run them on
-        high performance computers in the cloud. Before adding this feature, we
-        want to gather more information about the interest.
+        Running simulations in the browser is a fantastic way to get started with LAMMPS and can be
+        used to run smaller simulations. However, simulations often require more powerful compute
+        power than what is available in the browser. We are considering adding cloud support, so
+        that you can test your simulations in the browser and then run them on high performance
+        computers in the cloud. Before adding this feature, we want to gather more information about
+        the interest.
         <br />
         <br />
-        We would appreaciate if you could fill in this form. It would be of
-        great help to decide on whether or not this is a good idea, and how to
-        do it right.
+        We would appreaciate if you could fill in this form. It would be of great help to decide on
+        whether or not this is a good idea, and how to do it right.
         <br />
         <br />
         <Form
@@ -67,9 +58,7 @@ const RunInCloud = () => {
           style={{ maxWidth: 600 }}
         >
           <Form.Item name="wouldUse" valuePropName="checked">
-            <Checkbox onChange={(e) => setWouldUse(e.target.checked)}>
-              I would buy this
-            </Checkbox>
+            <Checkbox onChange={(e) => setWouldUse(e.target.checked)}>I would buy this</Checkbox>
           </Form.Item>
           How many CPU cores would you want?
           <Form.Item name="cpu" valuePropName="checked">
@@ -97,18 +86,10 @@ const RunInCloud = () => {
               defaultValue={"n/a"}
             >
               <Select.Option value="n/a">Does not matter</Select.Option>
-              <Select.Option value="lowgpu">
-                Low end GPU (NVIDIA K80)
-              </Select.Option>
-              <Select.Option value="mediumgpu">
-                Medium end GPU (NVIDIA P100)
-              </Select.Option>
-              <Select.Option value="highgpu">
-                High end GPU (NVIDIA V100)
-              </Select.Option>
-              <Select.Option value="veryhighgpu">
-                Very high end GPU (NVIDIA A100)
-              </Select.Option>
+              <Select.Option value="lowgpu">Low end GPU (NVIDIA K80)</Select.Option>
+              <Select.Option value="mediumgpu">Medium end GPU (NVIDIA P100)</Select.Option>
+              <Select.Option value="highgpu">High end GPU (NVIDIA V100)</Select.Option>
+              <Select.Option value="veryhighgpu">Very high end GPU (NVIDIA A100)</Select.Option>
             </Select>
           </Form.Item>
           {gpuType !== "nogpu" && (

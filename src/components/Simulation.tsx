@@ -1,10 +1,10 @@
+import { notification } from "antd";
 import { useCallback, useEffect, useRef } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
-import createModule from "../wasm/lammps.mjs";
 import { LammpsWeb } from "../types";
-import { AtomifyWasmModule } from "../wasm/types";
-import { notification } from "antd";
 import { time_event, track } from "../utils/metrics";
+import createModule from "../wasm/lammps.mjs";
+import { AtomifyWasmModule } from "../wasm/types";
 
 const SimulationComponent = () => {
   const wasm = window.wasm;
@@ -12,27 +12,19 @@ const SimulationComponent = () => {
   const simulation = useStoreState((state) => state.simulation.simulation);
   const paused = useStoreState((state) => state.simulation.paused);
   const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
-  const simulationSettings = useStoreState(
-    (state) => state.settings.simulation,
-  );
-  const setSimulationSettings = useStoreActions(
-    (actions) => actions.settings.setSimulation,
-  );
+  const simulationSettings = useStoreState((state) => state.settings.simulation);
+  const setSimulationSettings = useStoreActions((actions) => actions.settings.setSimulation);
   const running = useStoreState((state) => state.simulation.running);
-  const addLammpsOutput = useStoreActions(
-    (actions) => actions.simulation.addLammpsOutput,
-  );
+  const addLammpsOutput = useStoreActions((actions) => actions.simulation.addLammpsOutput);
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
   const setLammps = useStoreActions((actions) => actions.simulation.setLammps);
   const setStatus = useStoreActions((actions) => actions.app.setStatus);
-  const runPostTimestep = useStoreActions(
-    (actions) => actions.processing.runPostTimestep,
-  );
+  const runPostTimestep = useStoreActions((actions) => actions.processing.runPostTimestep);
   const runPostTimestepRendering = useStoreActions(
-    (actions) => actions.processing.runPostTimestepRendering,
+    (actions) => actions.processing.runPostTimestepRendering
   );
   const setHasSynchronized = useStoreActions(
-    (actions) => actions.simulationStatus.setHasSynchronized,
+    (actions) => actions.simulationStatus.setHasSynchronized
   );
   const renderCycleCounter = useRef(0);
 
@@ -45,7 +37,7 @@ const SimulationComponent = () => {
       addLammpsOutput(text);
       console.log(text);
     },
-    [addLammpsOutput],
+    [addLammpsOutput]
   );
 
   useEffect(() => {
@@ -107,10 +99,10 @@ const SimulationComponent = () => {
       }
       if (lammps && wasm && simulation) {
         setHasSynchronized(true);
-        
+
         // Always update 3D rendering (high frequency)
         runPostTimestepRendering();
-        
+
         // Update UI state only every Nth cycle (low frequency)
         renderCycleCounter.current += 1;
         const uiUpdateFrequency = simulationSettings.uiUpdateFrequency || 15;
@@ -155,11 +147,11 @@ const SimulationComponent = () => {
           print: onPrint,
           printErr: onPrint,
           locateFile: (path: string) => {
-            if (path.endsWith('.wasm')) {
+            if (path.endsWith(".wasm")) {
               return import.meta.env.BASE_URL + path;
             }
             return path;
-          }
+          },
         }).then((Module) => {
           track("WASM.Load");
           setStatus({

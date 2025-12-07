@@ -1,9 +1,5 @@
-import { Simulation } from "../store/simulation";
-import type {
-  INotebookContent,
-  ICodeCell,
-  IMarkdownCell,
-} from "@jupyterlab/nbformat";
+import type { ICodeCell, IMarkdownCell, INotebookContent } from "@jupyterlab/nbformat";
+import type { Simulation } from "../store/simulation";
 
 const AnalyzeNotebook = (simulation: Simulation): INotebookContent => {
   const cells: ICodeCell[] = [
