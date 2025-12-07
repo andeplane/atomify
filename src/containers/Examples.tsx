@@ -139,11 +139,18 @@ const Examples = () => {
   keywords.sort();
 
   const renderCard = (example: Example) => (
-    <div key={example.id} className="modern-card" onClick={() => onPlay(example)}>
+    <button
+      type="button"
+      key={example.id}
+      className="modern-card"
+      onClick={() => onPlay(example)}
+      style={{ all: "unset", display: "block", cursor: "pointer" }}
+    >
       <div className="card-image-container">
         <img alt={example.title} src={example.imageUrl} className="card-image" />
         <div className="card-overlay">
           <button
+            type="button"
             className="overlay-button"
             onClick={(e) => {
               e.stopPropagation();
@@ -154,6 +161,7 @@ const Examples = () => {
             <CaretRightOutlined />
           </button>
           <button
+            type="button"
             className="overlay-button"
             onClick={(e) => {
               e.stopPropagation();
@@ -186,7 +194,7 @@ const Examples = () => {
           </div>
         )}
       </div>
-    </div>
+    </button>
   );
 
   // No more chunking needed - CSS Grid handles responsive layout automatically

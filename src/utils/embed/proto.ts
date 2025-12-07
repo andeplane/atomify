@@ -264,6 +264,7 @@ export const File = {
 declare var self: any | undefined;
 declare var window: any | undefined;
 declare var global: any | undefined;
+// biome-ignore lint/suspicious/noShadowRestrictedNames: Required for protobufjs compatibility
 var globalThis: any = (() => {
   if (typeof globalThis !== "undefined") {
     return globalThis;

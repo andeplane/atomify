@@ -464,7 +464,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         <Modal
           open
           onCancel={() => setHideNoSimulation(true)}
-          footer={[<Button onClick={() => setHideNoSimulation(true)}>OK</Button>]}
+          footer={[
+            <Button key="ok" onClick={() => setHideNoSimulation(true)}>
+              OK
+            </Button>,
+          ]}
           title="No simulation"
         >
           You can create a new simulation or run one of the built-in examples.

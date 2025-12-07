@@ -277,9 +277,14 @@ const App: React.FC = () => {
             onCollapse={(value) => setCollapsed(value)}
             trigger={null}
           >
-            <div className="sider-collapse-trigger" onClick={() => setCollapsed(!collapsed)}>
+            <button
+              type="button"
+              className="sider-collapse-trigger"
+              onClick={() => setCollapsed(!collapsed)}
+              style={{ all: "unset", cursor: "pointer" }}
+            >
               {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            </div>
+            </button>
             <Menu
               theme="dark"
               selectedKeys={[selectedMenu]}

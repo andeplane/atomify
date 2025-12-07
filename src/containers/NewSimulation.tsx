@@ -149,7 +149,9 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
           </p>
           <Select style={{ width: "100%" }} onChange={(value) => setInputScript(value)}>
             {files.map((file) => (
-              <Option value={file.fileName}>{file.fileName}</Option>
+              <Option key={file.fileName} value={file.fileName}>
+                {file.fileName}
+              </Option>
             ))}
           </Select>
         </>
