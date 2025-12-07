@@ -22,6 +22,7 @@ import {
   parseAtomRadius,
   parseAtomColor,
   parseGroup,
+  GroupColorType,
 } from "../utils/parsers";
 
 localforage.config({
@@ -272,7 +273,7 @@ export const simulationModel: SimulationModel = {
             if (colorModifier) {
               if (groupCommand.property === "color") {
                 colorModifier.setGroupStyle(groupCommand.groupName, {
-                  color: groupCommand.value as typeof groupCommand.value & { type: string },
+                  color: groupCommand.value as GroupColorType,
                 });
               } else if (groupCommand.property === "radius") {
                 colorModifier.setGroupStyle(groupCommand.groupName, {
