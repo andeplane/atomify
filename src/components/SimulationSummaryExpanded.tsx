@@ -12,17 +12,18 @@ import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import ColorModifier from "../modifiers/colormodifier";
 import Figure from "../components/Figure";
 import { track } from "../utils/metrics";
+
 interface SimulationSummaryType {
   key: React.ReactNode;
   name: string;
   value: string | number;
 }
 
-interface SimulationSummaryProps {
+interface SimulationSummaryExpandedProps {
   onShowLess?: () => void;
 }
 
-const SimulationSummary = ({ onShowLess }: SimulationSummaryProps) => {
+const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProps) => {
   const [visibleSettings, setVisibleSettings] = useState<string | undefined>();
   const [visibleCompute, setVisibleCompute] = useState<Compute | undefined>();
   const [visibleFix, setVisibleFix] = useState<Fix | undefined>();
@@ -92,6 +93,13 @@ const SimulationSummary = ({ onShowLess }: SimulationSummaryProps) => {
     if (value && value > 0) {
       track("UIUpdateFrequency.Change", { frequency: value });
       setSimulationSettings({ ...simulationSettings, uiUpdateFrequency: value });
+    }
+  };
+
+  const handleShowLess = () => {
+    if (onShowLess) {
+      track("SimulationSummary.ShowLess");
+      onShowLess();
     }
   };
 
@@ -357,16 +365,9 @@ const SimulationSummary = ({ onShowLess }: SimulationSummaryProps) => {
     simulationSettings.uiUpdateFrequency,
   ]);
 
-  const handleShowLess = () => {
-    if (onShowLess) {
-      track("SimulationSummary.ShowLess");
-      onShowLess();
-    }
-  };
-
   return (
     <>
-      <div className="simulation-summary-drawer-content">
+      <div className="simulationsummary simulationsummary-expanded">
         {onShowLess && (
           <div className="simulation-summary-minimize-button">
             <Button
@@ -377,7 +378,7 @@ const SimulationSummary = ({ onShowLess }: SimulationSummaryProps) => {
             />
           </div>
         )}
-        <div className="liquid-glass-container">
+        <div className="simulation-summary-expanded-content">
           <Table
             title={() => <b>Modifiers</b>}
             size="small"
@@ -465,4 +466,4 @@ const SimulationSummary = ({ onShowLess }: SimulationSummaryProps) => {
   );
 };
 
-export default React.memo(SimulationSummary);
+export default React.memo(SimulationSummaryExpanded);
