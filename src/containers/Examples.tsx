@@ -139,12 +139,19 @@ const Examples = () => {
   keywords.sort();
 
   const renderCard = (example: Example) => (
-    <button
-      type="button"
+    // biome-ignore lint/a11y/useSemanticElements: Card styling requires div, accessibility handled via role and keyboard events
+    <div
       key={example.id}
       className="modern-card"
+      role="button"
+      tabIndex={0}
       onClick={() => onPlay(example)}
-      style={{ all: "unset", display: "block", cursor: "pointer" }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onPlay(example);
+        }
+      }}
     >
       <div className="card-image-container">
         <img alt={example.title} src={example.imageUrl} className="card-image" />
@@ -194,7 +201,7 @@ const Examples = () => {
           </div>
         )}
       </div>
-    </button>
+    </div>
   );
 
   // No more chunking needed - CSS Grid handles responsive layout automatically
