@@ -57,25 +57,19 @@ const SimulationSummaryContent = () => {
     [setModifierSyncDataPointsAction]
   );
 
-  const setSyncFrequency = useCallback(
-    (value: number | null) => {
-      if (value && value > 0) {
-        track("SimulationSpeed.Change", { speed: value });
-        setSimulationSettings({ ...simulationSettings, speed: value });
-      }
-    },
-    [simulationSettings, setSimulationSettings]
-  );
+  const setSyncFrequency = (value: number | null) => {
+    if (value && value > 0) {
+      track("SimulationSpeed.Change", { speed: value });
+      setSimulationSettings({ ...simulationSettings, speed: value });
+    }
+  };
 
-  const setUIUpdateFrequency = useCallback(
-    (value: number | null) => {
-      if (value && value > 0) {
-        track("UIUpdateFrequency.Change", { frequency: value });
-        setSimulationSettings({ ...simulationSettings, uiUpdateFrequency: value });
-      }
-    },
-    [simulationSettings, setSimulationSettings]
-  );
+  const setUIUpdateFrequency = (value: number | null) => {
+    if (value && value > 0) {
+      track("UIUpdateFrequency.Change", { frequency: value });
+      setSimulationSettings({ ...simulationSettings, uiUpdateFrequency: value });
+    }
+  };
 
   const computeColumns: ColumnsType<Compute> = [
     {
@@ -225,71 +219,60 @@ const SimulationSummaryContent = () => {
     },
   };
 
-  const simulationSummaryColumns: ColumnsType<SimulationSummaryType> = useMemo(
-    () => [
-      {
-        title: "Name",
-        dataIndex: "name",
-        key: "name",
-        width: "160px",
+  const simulationSummaryColumns: ColumnsType<SimulationSummaryType> = [
+    {
+      title: "Name",
+      dataIndex: "name",
+      key: "name",
+      width: "160px",
+    },
+    {
+      title: "Value",
+      dataIndex: "value",
+      key: "value",
+      render: (text, record) => {
+        if (record.key === "simulationspeed") {
+          return (
+            <Slider
+              min={1}
+              step={1}
+              max={200}
+              value={simulationSettings.speed}
+              onChange={(value) => setSyncFrequency(value)}
+            />
+          );
+        }
+        if (record.key === "uiupdatefrequency") {
+          return (
+            <Slider
+              min={1}
+              step={1}
+              max={15}
+              value={simulationSettings.uiUpdateFrequency || 15}
+              onChange={(value) => setUIUpdateFrequency(value)}
+            />
+          );
+        }
+        if (record.key === "showsimulationbox") {
+          return (
+            <Checkbox
+              checked={renderSettings.showSimulationBox}
+              onChange={(e) => {
+                track("Settings.Render.ShowSimulationBox", {
+                  value: e.target.checked,
+                });
+                setRenderSettings({
+                  ...renderSettings,
+                  showSimulationBox: e.target.checked,
+                });
+              }}
+            />
+          );
+        }
+        return <>{text}</>;
       },
-      {
-        title: "Value",
-        dataIndex: "value",
-        key: "value",
-        render: (text, record) => {
-          if (record.key === "simulationspeed") {
-            return (
-              <Slider
-                min={1}
-                step={1}
-                max={200}
-                value={simulationSettings.speed}
-                onChange={(value) => setSyncFrequency(value)}
-              />
-            );
-          }
-          if (record.key === "uiupdatefrequency") {
-            return (
-              <Slider
-                min={1}
-                step={1}
-                max={15}
-                value={simulationSettings.uiUpdateFrequency || 15}
-                onChange={(value) => setUIUpdateFrequency(value)}
-              />
-            );
-          }
-          if (record.key === "showsimulationbox") {
-            return (
-              <Checkbox
-                checked={renderSettings.showSimulationBox}
-                onChange={(e) => {
-                  track("Settings.Render.ShowSimulationBox", {
-                    value: e.target.checked,
-                  });
-                  setRenderSettings({
-                    ...renderSettings,
-                    showSimulationBox: e.target.checked,
-                  });
-                }}
-              />
-            );
-          }
-          return <>{text}</>;
-        },
-      },
-    ],
-    [
-      simulationSettings.speed,
-      simulationSettings.uiUpdateFrequency,
-      renderSettings.showSimulationBox,
-      renderSettings,
-      setRenderSettings,
-      setSyncFrequency,
-      setUIUpdateFrequency,
-    ]
-  );
+    },
+  ];
 
   const simulationStatusData: SimulationSummaryType[] = useMemo(() => {
     if (!simulation) {
@@ -358,6 +341,8 @@ const SimulationSummaryContent = () => {
     memoryUsage,
     simulationSettings.speed,
     simulationSettings.uiUpdateFrequency,
+    // biome-ignore lint/correctness/useExhaustiveDependencies: renderSettings.showSimulationBox is used in simulationSummaryColumns render function
+    renderSettings.showSimulationBox,
   ]);
 
   return (
