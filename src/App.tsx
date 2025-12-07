@@ -14,6 +14,7 @@ import {
   ShareAltOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { useMeasure } from "react-use";
 import React, { useState, useEffect, useCallback } from "react";
@@ -25,6 +26,7 @@ import { useStoreActions, useStoreState } from "./hooks";
 import { track } from "./utils/metrics";
 import NewSimulation from "./containers/NewSimulation";
 import ShareSimulation from "./containers/ShareSimulation";
+import Settings from "./containers/Settings";
 import AutoStartSimulation from "./components/AutoStartSimulation";
 import { useEmbeddedMode } from "./hooks/useEmbeddedMode";
 const { Sider } = Layout;
@@ -87,6 +89,7 @@ const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [showNewSimulation, setShowNewSimulation] = useState(false);
   const [showShareSimulation, setShowShareSimulation] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const selectedFile = useStoreState((state) => state.app.selectedFile);
@@ -175,6 +178,18 @@ const App: React.FC = () => {
     simulation == null || running,
   );
 
+  const settingsButton = getItem(
+    "Settings",
+    "settings",
+    <SettingOutlined />,
+    undefined,
+    () => {
+      track("Settings.Open");
+      setShowSettings(true);
+      setPreferredView(selectedMenu); // This is another hack. Should really rethink menu system.
+    },
+  );
+
   const items: MenuItem[] = [
     getItem("View", "view", <AlignLeftOutlined />),
     getItem("Console", "console", <BorderOuterOutlined />),
@@ -210,6 +225,8 @@ const App: React.FC = () => {
       simulation == null,
     ),
     pauseButton,
+    { type: "divider" },
+    settingsButton,
   ];
 
   useEffect(() => {
@@ -238,7 +255,7 @@ const App: React.FC = () => {
         paused,
       });
 
-      if (selected === "run") {
+      if (selected === "run" || selected === "settings" || selected === "newsimulation" || selected === "share") {
         return;
       }
 
@@ -303,6 +320,12 @@ const App: React.FC = () => {
           visible={showShareSimulation}
           onClose={() => setShowShareSimulation(false)}
           simulation={simulation}
+        />
+      )}
+      {showSettings && (
+        <Settings
+          open={showSettings}
+          onClose={() => setShowSettings(false)}
         />
       )}
     </ConfigProvider>

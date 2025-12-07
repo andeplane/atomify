@@ -3,14 +3,13 @@ import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 
 import { useStoreState, useStoreActions } from "../hooks";
 import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
-import Settings from "./Settings";
 import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSummary";
 import SimulationSummaryModal from "../components/SimulationSummaryModal";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import ColorLegend from "../components/ColorLegend";
 import SimulationSummary from "./SimulationSummary";
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
-import { SettingOutlined, AreaChartOutlined } from "@ant-design/icons";
+import { AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
 import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
@@ -43,13 +42,6 @@ interface ViewProps {
   isEmbeddedMode?: boolean;
 }
 
-const SettingsButtonContainer = styled.div`
-  position: fixed !important;
-  bottom: 0;
-  right: 0;
-  margin-bottom: 20px;
-`;
-
 const AnalyzeButtonContainer = styled.div`
   position: fixed !important;
   bottom: 0;
@@ -81,7 +73,6 @@ const MOBILE_BREAKPOINT = 900;
 const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
   const [showColorSettings, setShowColorSettings] = useState(false);
   const [showAnalyze, setShowAnalyze] = useState(false);
   const [showMobileSummaryModal, setShowMobileSummaryModal] = useState(false);
@@ -448,10 +439,6 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       </Header>
       <div id="canvas-container" style={{ height: "100%", width: "100%" }}>
         <VisualizerWrapper ref={domElement}>
-          <Settings
-            open={showSettings}
-            onClose={() => setShowSettings(false)}
-          />
           {showColorSettings && (
             <ColorModifierSettings
               open={true}
@@ -525,20 +512,6 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
               />
             </MobileSummaryButtonContainer>
           )}
-          <SettingsButtonContainer>
-            <SettingOutlined
-              style={{
-                fontSize: "32px",
-                color: "#fff",
-                marginRight: 20,
-                zIndex: 1000,
-              }}
-              onClick={() => {
-                track("Settings.Open");
-                setShowSettings(true);
-              }}
-            />
-          </SettingsButtonContainer>
         </>
       )}
       {showAnalyze && !isEmbeddedMode && (
