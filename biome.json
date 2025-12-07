@@ -6,13 +6,14 @@
     "useIgnoreFile": true
   },
   "files": {
-    "ignoreUnknown": false,
+    "ignoreUnknown": true,
     "includes": [
       "**",
       "!**/node_modules",
       "!**/dist",
       "!**/build",
       "!**/cpp",
+      "!**/public/jupyter",
       "!**/public/lammps.mjs",
       "!**/public/lammps.wasm",
       "!**/src/wasm"
