@@ -53,18 +53,18 @@ const AutoStartSimulation: React.FC = () => {
             if (autoStart) {
               setPreferredView("view"); // Visualizer showing atoms
             } else {
-              setPreferredView("file" + decodedSimulation.inputScript); // Editor with script
+              setPreferredView(`file${decodedSimulation.inputScript}`); // Editor with script
             }
           }
           return;
         }
 
         // Handle URL-based embedding (only in embedded mode)
-        if (!isEmbeddedMode) {
+        if (!isEmbeddedMode || !embeddedSimulationUrl) {
           return;
         }
 
-        const response = await fetch(embeddedSimulationUrl!);
+        const response = await fetch(embeddedSimulationUrl);
         const data: ExamplesData = await response.json();
 
         // Override baseUrl for localhost development

@@ -32,7 +32,7 @@ const Figure = ({
   onToggleSyncDataPoints,
 }: FigureProps) => {
   const [graph, setGraph] = useState<Dygraph>();
-  const timesteps = useStoreState((state) => state.simulationStatus.timesteps);
+  const _timesteps = useStoreState((state) => state.simulationStatus.timesteps);
   const graphId = useId();
   const width = window.innerWidth < 1000 ? window.innerWidth * 0.8 : window.innerWidth * 0.6;
   const height = (width * 3) / 4;
@@ -47,16 +47,7 @@ const Figure = ({
       yLabel: source.yLabel,
       name: source.name,
     };
-  }, [
-    modifier?.name,
-    modifier?.xLabel,
-    modifier?.yLabel,
-    modifier?.data1D,
-    plotData?.name,
-    plotData?.xLabel,
-    plotData?.yLabel,
-    plotData?.data1D,
-  ]);
+  }, [modifier, plotData]);
 
   // Only set syncDataPoints when a modifier is provided
   // Use ref to track previous modifier name to detect actual changes
@@ -112,8 +103,8 @@ const Figure = ({
           data.series.forEach((series) => {
             if (!series.isVisible) return;
             const color = series.color;
-            html += '<span class="dygraph-legend-dot" style="color: ' + color + ';">● </span>';
-            html += series.labelHTML + ": " + series.yHTML + "<br/>";
+            html += `<span class="dygraph-legend-dot" style="color: ${color};">● </span>`;
+            html += `${series.labelHTML}: ${series.yHTML}<br/>`;
           });
           html += "</div>";
           return html;
@@ -127,7 +118,7 @@ const Figure = ({
     if (graph && plotConfig?.data1D) {
       graph.updateOptions({ file: plotConfig.data1D.data });
     }
-  }, [graph, plotConfig, timesteps]);
+  }, [graph, plotConfig]);
 
   return (
     <Modal open width={width} footer={null} onCancel={onClose}>

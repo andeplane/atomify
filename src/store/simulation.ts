@@ -180,7 +180,7 @@ export const simulationModel: SimulationModel = {
   ),
   syncFilesWasm: thunk(
     async (
-      actions,
+      _actions,
       fileName: string | undefined,
       { getStoreState }: { getStoreState: () => State<StoreModel> }
     ) => {
@@ -200,8 +200,8 @@ export const simulationModel: SimulationModel = {
   ),
   syncFilesJupyterLite: thunk(
     async (
-      actions,
-      dummy: undefined,
+      _actions,
+      _dummy: undefined,
       { getStoreState }: { getStoreState: () => State<StoreModel> }
     ) => {
       const simulation = getStoreState().simulation.simulation;
@@ -304,7 +304,7 @@ export const simulationModel: SimulationModel = {
   run: thunk(
     async (
       actions,
-      payload,
+      _payload,
       {
         getStoreState,
         getStoreActions,
@@ -345,10 +345,9 @@ export const simulationModel: SimulationModel = {
 
       // Inject URL variables if provided
       if (simulation.vars && Object.keys(simulation.vars).length > 0) {
-        const varsScript =
-          Object.entries(simulation.vars)
-            .map(([name, value]) => `variable ${name} equal ${value}`)
-            .join("\n") + "\n\n";
+        const varsScript = `${Object.entries(simulation.vars)
+          .map(([name, value]) => `variable ${name} equal ${value}`)
+          .join("\n")}\n\n`;
 
         const wasm = (window as any).wasm;
         const varsFileName = `_vars_${simulation.inputScript}`;

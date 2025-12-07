@@ -2,7 +2,7 @@ import { Button } from "antd";
 import type { Particles } from "omovi";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useStoreState } from "../hooks";
-import { type Data1D, PlotData } from "../types";
+import type { Data1D } from "../types";
 import Figure from "./Figure";
 
 interface SelectedAtomsInfoProps {

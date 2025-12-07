@@ -44,16 +44,16 @@ const Examples = () => {
     const fetchExamples = async (examplesUrl: string) => {
       let response = await fetch(examplesUrl, { cache: "no-store" });
       const data = await response.json();
-      const baseUrl = data["baseUrl"];
-      const title = data["title"] || "Examples";
-      const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`;
+      const baseUrl = data.baseUrl;
+      const title = data.title || "Examples";
+      const descriptionsUrl = `${baseUrl}/${data.descriptionFile}`;
       response = await fetch(descriptionsUrl);
       if (response.status !== 404) {
         const description = await response.text();
         setDescription(description);
       }
 
-      const examples: Example[] = data["examples"];
+      const examples: Example[] = data.examples;
       examples.forEach((example) => {
         example.imageUrl = `${baseUrl}/${example.imageUrl}`;
         example.files.forEach((file) => {
@@ -62,7 +62,7 @@ const Examples = () => {
       });
 
       setTitle(title);
-      setExamples(data["examples"]);
+      setExamples(data.examples);
       track("Examples.Fetch", { examplesUrl });
     };
 
@@ -72,13 +72,13 @@ const Examples = () => {
 
       const defaultExamplesUrl = "examples/examples.json";
       let examplesUrl = defaultExamplesUrl;
-      if (params["examplesUrl"] != null) {
-        examplesUrl = params["examplesUrl"];
+      if (params.examplesUrl != null) {
+        examplesUrl = params.examplesUrl;
       }
 
       try {
         await fetchExamples(examplesUrl);
-      } catch (e) {
+      } catch (_e) {
         notification.error({
           message: `Could not fetch examples from ${examplesUrl}. Fetching default.`,
         });
@@ -123,7 +123,7 @@ const Examples = () => {
       if (simulation?.id !== newSimulation.id) {
         setNewSimulation(newSimulation);
       } else {
-        setPreferredView("file" + newSimulation.inputScript);
+        setPreferredView(`file${newSimulation.inputScript}`);
       }
     },
     [setNewSimulation, setPreferredView, simulation?.id]

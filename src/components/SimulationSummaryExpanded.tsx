@@ -115,7 +115,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
               >
                 {value}
               </Button>{" "}
-              {" " + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
+              {` ${record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : ""}`}
             </>
           );
         } else {
@@ -150,7 +150,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
               >
                 {value}
               </Button>{" "}
-              {" " + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
+              {` ${record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : ""}`}
             </>
           );
         } else {
@@ -185,7 +185,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
               >
                 {value}
               </Button>{" "}
-              {" " + (record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : "")}
+              {` ${record.hasScalarData ? record.scalarValue.toPrecision(5).toString() : ""}`}
             </>
           );
         } else {
@@ -206,7 +206,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (text, record) => (
+      render: (text, _record) => (
         <Row justify="space-between">
           <Col span={8}>{text}</Col>{" "}
           <Col span={2}>
@@ -218,7 +218,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
   ];
 
   const rowSelection: TableRowSelection<Modifier> = {
-    onChange: (selectedRowKeys, selectedRows) => {
+    onChange: (_selectedRowKeys, selectedRows) => {
       modifiers.forEach((modifier) => {
         modifier.active = selectedRows.indexOf(modifier) >= 0;
       });
@@ -292,7 +292,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
       {
         key: "timeremain",
         name: "Remaining time",
-        value: Math.ceil(remainingTime).toString() + " s",
+        value: `${Math.ceil(remainingTime).toString()} s`,
       },
       {
         key: "tsps",
@@ -302,7 +302,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
       {
         key: "memory",
         name: "Memory usage",
-        value: (memoryUsage / 1024 / 1024).toFixed(2).toString() + " MB",
+        value: `${(memoryUsage / 1024 / 1024).toFixed(2).toString()} MB`,
       },
       {
         key: "simulationspeed",

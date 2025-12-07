@@ -40,7 +40,7 @@ export const parseAtomType = (line: string) => {
   const matches = line.match(regex);
   if (matches) {
     return {
-      atomType: parseInt(matches[1]),
+      atomType: parseInt(matches[1], 10),
       atomName: matches[2],
     };
   }
@@ -56,8 +56,8 @@ export const parseBond = (line: string) => {
   const matches = line.match(regex);
   if (matches) {
     return {
-      atomType1: parseInt(matches[1]),
-      atomType2: parseInt(matches[2]),
+      atomType1: parseInt(matches[1], 10),
+      atomType2: parseInt(matches[2], 10),
       distance: parseFloat(matches[3]),
     };
   }
@@ -73,7 +73,7 @@ export const parseAtomSizeAndColor = (line: string) => {
   const matches = line.match(regex);
   if (matches) {
     return {
-      atomTypeIndex: parseInt(matches[1]),
+      atomTypeIndex: parseInt(matches[1], 10),
       radius: parseFloat(matches[2]),
       color: matches[3],
     };

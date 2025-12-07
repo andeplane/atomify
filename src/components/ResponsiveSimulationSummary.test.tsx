@@ -17,14 +17,18 @@ vi.mock("./SimulationSummary", () => ({
   }: ComponentProps<typeof SimulationSummary>) => (
     <div data-testid="simulation-summary">
       {isCollapsed && <div data-testid="collapsed">Collapsed</div>}
-      {onShowMore && <button data-testid="expand-button">Expand</button>}
+      {onShowMore && (
+        <button type="button" data-testid="expand-button">
+          Expand
+        </button>
+      )}
       {onExpand && (
-        <button data-testid="expand-handler" onClick={onExpand}>
+        <button type="button" data-testid="expand-handler" onClick={onExpand}>
           Expand Handler
         </button>
       )}
       {onCollapse && (
-        <button data-testid="collapse-handler" onClick={onCollapse}>
+        <button type="button" data-testid="collapse-handler" onClick={onCollapse}>
           Collapse Handler
         </button>
       )}
@@ -36,7 +40,7 @@ vi.mock("./SimulationSummaryExpanded", () => ({
   default: ({ onShowLess }: ComponentProps<typeof SimulationSummaryExpanded>) => (
     <div data-testid="simulation-summary-expanded">
       {onShowLess && (
-        <button data-testid="show-less-button" onClick={onShowLess}>
+        <button type="button" data-testid="show-less-button" onClick={onShowLess}>
           Show Less
         </button>
       )}

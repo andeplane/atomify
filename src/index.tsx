@@ -2,7 +2,6 @@ import "./index.css";
 import "dygraphs/dist/dygraph.css";
 import { StoreProvider } from "easy-peasy";
 import mixpanel from "mixpanel-browser";
-import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import store from "./store";

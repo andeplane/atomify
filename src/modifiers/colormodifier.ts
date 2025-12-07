@@ -239,7 +239,7 @@ class ColorModifier extends Modifier {
     return;
   };
 
-  runByType = (input: ModifierInput, output: ModifierOutput, everything: boolean = false) => {
+  runByType = (input: ModifierInput, output: ModifierOutput, _everything: boolean = false) => {
     if (
       (this.previousColoringMethod === "type" && !output.colorsDirty) ||
       !input.renderState.visualizer

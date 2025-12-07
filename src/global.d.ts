@@ -14,7 +14,7 @@ declare global {
     syncFrequency?: number;
     visualizer?: Visualizer;
     cancel?: boolean;
-    postStepCallback?: () => boolean | void;
+    postStepCallback?: () => boolean | undefined;
     files?: SimulationFile[];
   }
 }

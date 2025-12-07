@@ -56,7 +56,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
       setFiles(window.files);
       message.success(`${file.fileName} uploaded successfully.`);
     },
-    [files, setFiles]
+    [files]
   );
 
   const props: UploadProps = {

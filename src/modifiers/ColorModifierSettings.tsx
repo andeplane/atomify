@@ -48,8 +48,12 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
         colorModifier.customMaxValue = undefined;
       } else {
         // Initialize with global values only if they are finite
-        const minValue = isFinite(colorModifier.globalMinValue) ? colorModifier.globalMinValue : 0;
-        const maxValue = isFinite(colorModifier.globalMaxValue) ? colorModifier.globalMaxValue : 1;
+        const minValue = Number.isFinite(colorModifier.globalMinValue)
+          ? colorModifier.globalMinValue
+          : 0;
+        const maxValue = Number.isFinite(colorModifier.globalMaxValue)
+          ? colorModifier.globalMaxValue
+          : 1;
         colorModifier.customMinValue = customMin ?? minValue;
         colorModifier.customMaxValue = customMax ?? maxValue;
         setCustomMin(colorModifier.customMinValue);
@@ -164,11 +168,11 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
                 <div style={{ fontWeight: 500, marginBottom: 4 }}>Value Range:</div>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>
                   Global: [
-                  {isFinite(colorModifier.globalMinValue)
+                  {Number.isFinite(colorModifier.globalMinValue)
                     ? colorModifier.globalMinValue.toExponential(2)
                     : "N/A"}
                   ,{" "}
-                  {isFinite(colorModifier.globalMaxValue)
+                  {Number.isFinite(colorModifier.globalMaxValue)
                     ? colorModifier.globalMaxValue.toExponential(2)
                     : "N/A"}
                   ]
@@ -180,7 +184,8 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
                 onChange={(e) => handleCustomRangeToggle(e.target.checked)}
                 style={{ marginBottom: 12 }}
                 disabled={
-                  !isFinite(colorModifier.globalMinValue) || !isFinite(colorModifier.globalMaxValue)
+                  !Number.isFinite(colorModifier.globalMinValue) ||
+                  !Number.isFinite(colorModifier.globalMaxValue)
                 }
               >
                 Use custom range

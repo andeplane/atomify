@@ -25,7 +25,7 @@ function parseVars(varsString: string | null): Record<string, number> {
     if (parts.length >= 2) {
       const name = parts[0];
       const value = parseFloat(parts[1]);
-      if (!isNaN(value)) {
+      if (!Number.isNaN(value)) {
         vars[name] = value;
       }
     }

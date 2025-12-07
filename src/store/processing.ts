@@ -12,8 +12,8 @@ import type { LammpsWeb } from "../types";
 import type { AtomifyWasmModule } from "../wasm/types";
 import type { StoreModel } from "./model";
 
-const cellMatrix = new THREE.Matrix3();
-const origo = new THREE.Vector3();
+const _cellMatrix = new THREE.Matrix3();
+const _origo = new THREE.Vector3();
 
 const getSimulationBox = (
   lammps: LammpsWeb,
@@ -173,7 +173,7 @@ export const processingModel: ProcessingModel = {
     state.postTimestepModifiers = value;
   }),
   runPostTimestep: thunk(
-    async (actions, everything: boolean, { getStoreState, getStoreActions }) => {
+    async (_actions, everything: boolean, { getStoreState, getStoreActions }) => {
       const { modifierInput, modifierOutput, allActions, particles, bonds, lammps, wasm } =
         getModifierContext(getStoreState, getStoreActions);
 
@@ -224,7 +224,7 @@ export const processingModel: ProcessingModel = {
     }
   ),
   runPostTimestepRendering: thunk(
-    async (actions, payload: void, { getStoreState, getStoreActions }) => {
+    async (_actions, _payload: undefined, { getStoreState, getStoreActions }) => {
       const { modifierInput, modifierOutput, allActions, particles, bonds } = getModifierContext(
         getStoreState,
         getStoreActions

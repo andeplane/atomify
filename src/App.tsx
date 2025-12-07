@@ -114,7 +114,7 @@ const App: React.FC = () => {
       setCollapsed(false);
     }
   }, [width]);
-  const editMenuLabel = "Edit " + (simulation ? simulation?.id : "");
+  const editMenuLabel = `Edit ${simulation ? simulation?.id : ""}`;
   const runStopButtonTitle = running ? "Stop" : "Run";
 
   const runStopButton = getItem(
@@ -190,7 +190,7 @@ const App: React.FC = () => {
       <EditOutlined />,
       simulation
         ? simulation.files.map((file) => {
-            return getItem(file.fileName, "file" + file.fileName, <FileOutlined />);
+            return getItem(file.fileName, `file${file.fileName}`, <FileOutlined />);
           })
         : [],
       undefined,
@@ -228,7 +228,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (selectedFile) {
-      setSelectedMenu("file" + selectedFile.fileName);
+      setSelectedMenu(`file${selectedFile.fileName}`);
     }
   }, [selectedFile, setSelectedMenu]);
 

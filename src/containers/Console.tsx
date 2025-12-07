@@ -27,7 +27,7 @@ const Console = ({ width, height }: ConsoleProps) => {
         editor.revealLine(model.getLineCount());
       }
     }
-  }, [lammpsOutput]);
+  }, []);
 
   const handleEditorDidMount = (editor: Monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;

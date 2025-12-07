@@ -146,9 +146,9 @@ export function createBoxGeometry(
 
     // Validate targetAxis is valid
     if (
-      !isFinite(targetAxis.x) ||
-      !isFinite(targetAxis.y) ||
-      !isFinite(targetAxis.z) ||
+      !Number.isFinite(targetAxis.x) ||
+      !Number.isFinite(targetAxis.y) ||
+      !Number.isFinite(targetAxis.z) ||
       targetAxis.length() < MIN_NORMALIZED_LENGTH
     ) {
       // Invalid direction, skip this edge
@@ -161,10 +161,10 @@ export function createBoxGeometry(
 
     // Validate final quaternion
     if (
-      !isFinite(cylinder.quaternion.x) ||
-      !isFinite(cylinder.quaternion.y) ||
-      !isFinite(cylinder.quaternion.z) ||
-      !isFinite(cylinder.quaternion.w)
+      !Number.isFinite(cylinder.quaternion.x) ||
+      !Number.isFinite(cylinder.quaternion.y) ||
+      !Number.isFinite(cylinder.quaternion.z) ||
+      !Number.isFinite(cylinder.quaternion.w)
     ) {
       // Last resort: identity quaternion
       cylinder.quaternion.set(0, 0, 0, 1);

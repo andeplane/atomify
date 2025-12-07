@@ -56,7 +56,7 @@ const ColorLegend = ({
   }, [colormapName]);
 
   const formatValue = (value: number): string => {
-    if (!isFinite(value)) {
+    if (!Number.isFinite(value)) {
       return "N/A";
     }
     // Format to 3 significant figures
