@@ -464,7 +464,10 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
               onCollapse={() => setIsOverlayCollapsed(true)}
               onShowMore={() => {
                 track("SimulationSummary.ShowMore");
-                setShowAnalyze(true);
+                // Only allow expanded view on desktop
+                if (!isMobile) {
+                  setShowAnalyze(true);
+                }
               }}
               onShowLess={() => {
                 track("SimulationSummary.ShowLess");

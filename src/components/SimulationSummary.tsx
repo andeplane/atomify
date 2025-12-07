@@ -65,7 +65,8 @@ const SimulationSummary = ({
   if (isCollapsed) {
     return (
       <div className="simulationsummary simulationsummary-collapsed">
-        {onExpand && (
+        {/* Only show expand button icon if onShowMore is provided (desktop only) */}
+        {onShowMore && onExpand && (
           <div className="simulation-summary-minimize-button">
             <Button
               type="text"
