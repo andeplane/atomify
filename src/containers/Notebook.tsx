@@ -1,7 +1,7 @@
+import localforage from "localforage";
+import { useEffect, useState } from "react";
 import Iframe from "react-iframe";
 import { useStoreState } from "../hooks";
-import { useEffect, useState } from "react";
-import localforage from "localforage";
 
 const Notebook = () => {
   const simulation = useStoreState((state) => state.simulation.simulation);
@@ -15,7 +15,9 @@ const Notebook = () => {
 
       let path = "analyze.ipynb";
       if (simulation?.analysisScript) {
-        const scriptName = simulation.analysisScript.substring(simulation.analysisScript.lastIndexOf('/') + 1);
+        const scriptName = simulation.analysisScript.substring(
+          simulation.analysisScript.lastIndexOf("/") + 1
+        );
         path = `${simulation.id}/${scriptName}`;
       }
 
@@ -40,19 +42,17 @@ const Notebook = () => {
   }, [simulation]);
 
   return (
-    <>
-      <div style={{ height: "100vh", width: "100%" }}>
-        <Iframe
-          url={notebookUrl}
-          width="100%"
-          height="100%"
-          id=""
-          className=""
-          display="block"
-          position="relative"
-        />
-      </div>
-    </>
+    <div style={{ height: "100vh", width: "100%" }}>
+      <Iframe
+        url={notebookUrl}
+        width="100%"
+        height="100%"
+        id=""
+        className=""
+        display="block"
+        position="relative"
+      />
+    </div>
   );
 };
 export default Notebook;

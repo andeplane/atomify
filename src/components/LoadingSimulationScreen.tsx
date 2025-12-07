@@ -1,4 +1,4 @@
-import { Spin, Progress } from "antd";
+import { Progress, Spin } from "antd";
 import styled from "styled-components";
 
 interface LoadingSimulationScreenProps {
@@ -38,11 +38,9 @@ const StatusSubtext = styled.div`
   margin-top: 8px;
 `;
 
-const LoadingSimulationScreen = ({
-  status,
-  wasmReady,
-}: LoadingSimulationScreenProps) => {
-  const displayTitle = status?.title || (wasmReady ? "Loading simulation..." : "Initializing simulation engine...");
+const LoadingSimulationScreen = ({ status, wasmReady }: LoadingSimulationScreenProps) => {
+  const displayTitle =
+    status?.title || (wasmReady ? "Loading simulation..." : "Initializing simulation engine...");
   const displayText = status?.text || "";
   const progress = status?.progress ?? 0;
 

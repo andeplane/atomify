@@ -1,6 +1,6 @@
-import Modifier from "./modifier";
-import { ModifierInput, ModifierOutput } from "./types";
 import { Particles } from "omovi";
+import Modifier from "./modifier";
+import type { ModifierInput, ModifierOutput } from "./types";
 
 interface SyncParticlesModifierProps {
   name: string;
@@ -12,11 +12,7 @@ class SyncParticlesModifier extends Modifier {
     super({ name, active });
   }
 
-  run = (
-    input: ModifierInput,
-    output: ModifierOutput,
-    everything: boolean = false,
-  ) => {
+  run = (input: ModifierInput, output: ModifierOutput, _everything: boolean = false) => {
     if (!this.active) {
       if (output.particles) {
         output.particles.count = 0;
@@ -51,16 +47,10 @@ class SyncParticlesModifier extends Modifier {
     const idPtr = input.lammps.getIdPointer() / 4;
     const positionsSubarray = input.wasm.HEAPF32.subarray(
       positionsPtr,
-      positionsPtr + 3 * numParticles,
+      positionsPtr + 3 * numParticles
     ) as Float32Array;
-    const typeSubarray = input.wasm.HEAP32.subarray(
-      typePtr,
-      typePtr + numParticles,
-    ) as Int32Array;
-    const idSubarray = input.wasm.HEAP32.subarray(
-      idPtr,
-      idPtr + numParticles,
-    ) as Int32Array;
+    const typeSubarray = input.wasm.HEAP32.subarray(typePtr, typePtr + numParticles) as Int32Array;
+    const idSubarray = input.wasm.HEAP32.subarray(idPtr, idPtr + numParticles) as Int32Array;
 
     newParticles.positions.set(positionsSubarray);
     newParticles.types.set(typeSubarray);

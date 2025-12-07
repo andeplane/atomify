@@ -1,8 +1,8 @@
-import { describe, it, expect } from "vitest";
 import * as THREE from "three";
+import { describe, expect, it } from "vitest";
 import {
-  createBoxGeometry,
   calculateBoxRadius,
+  createBoxGeometry,
   extractBasisVectors,
   getSimulationBoxBounds,
 } from "./boxGeometry";

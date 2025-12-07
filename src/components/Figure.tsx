@@ -1,15 +1,15 @@
-import { Modal, Empty } from "antd";
-import { Compute, Fix, Variable, PlotData } from "../types";
-import { useEffect, useState, useId, useMemo, useRef } from "react";
-import { useStoreState } from "../hooks";
+import { Empty, Modal } from "antd";
 import Dygraph from "dygraphs";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useStoreState } from "../hooks";
+import type { Compute, Fix, PlotData, Variable } from "../types";
 
 type FigureProps = {
   onClose: () => void;
   onToggleSyncDataPoints?: (
     name: string,
     type: "compute" | "fix" | "variable",
-    value: boolean,
+    value: boolean
   ) => void;
 } & (
   | {
@@ -34,10 +34,7 @@ const Figure = ({
   const [graph, setGraph] = useState<Dygraph>();
   const timesteps = useStoreState((state) => state.simulationStatus.timesteps);
   const graphId = useId();
-  const width =
-    window.innerWidth < 1000
-      ? window.innerWidth * 0.8
-      : window.innerWidth * 0.6;
+  const width = window.innerWidth < 1000 ? window.innerWidth * 0.8 : window.innerWidth * 0.6;
   const height = (width * 3) / 4;
 
   // Extract plot configuration from either modifier or plotData
@@ -50,38 +47,29 @@ const Figure = ({
       yLabel: source.yLabel,
       name: source.name,
     };
-  }, [
-    modifier?.name,
-    modifier?.xLabel,
-    modifier?.yLabel,
-    modifier?.data1D,
-    plotData?.name,
-    plotData?.xLabel,
-    plotData?.yLabel,
-    plotData?.data1D,
-  ]);
+  }, [modifier, plotData]);
 
   // Only set syncDataPoints when a modifier is provided
   // Use ref to track previous modifier name to detect actual changes
   const prevModifierNameRef = useRef<string | undefined>(undefined);
-  
+
   useEffect(() => {
     if (modifier && modifierType && onToggleSyncDataPoints) {
       const modifierName = modifier.name;
       const prevModifierName = prevModifierNameRef.current;
-      
+
       // Only update if modifier name actually changed (not just object reference)
       if (prevModifierName !== modifierName) {
         // Cleanup previous modifier if name changed
         if (prevModifierName !== undefined) {
           onToggleSyncDataPoints(prevModifierName, modifierType, false);
         }
-        
+
         // Set up new modifier
         onToggleSyncDataPoints(modifierName, modifierType, true);
         prevModifierNameRef.current = modifierName;
       }
-      
+
       return () => {
         // Cleanup on unmount
         if (prevModifierNameRef.current !== undefined) {
@@ -106,19 +94,19 @@ const Figure = ({
         height,
         legend: "always",
         // Dark theme styling
-        colors: ['#40a9ff', '#52c41a', '#f5222d', '#fa8c16', '#13c2c2', '#eb2f96', '#722ed1'],
-        legendFormatter: function(data) {
+        colors: ["#40a9ff", "#52c41a", "#f5222d", "#fa8c16", "#13c2c2", "#eb2f96", "#722ed1"],
+        legendFormatter: (data) => {
           if (data.x == null) {
-            return '';
+            return "";
           }
           let html = '<div class="dygraph-custom-legend">';
-          data.series.forEach(function(series) {
+          data.series.forEach((series) => {
             if (!series.isVisible) return;
             const color = series.color;
-            html += '<span class="dygraph-legend-dot" style="color: ' + color + ';">● </span>';
-            html += series.labelHTML + ': ' + series.yHTML + '<br/>';
+            html += `<span class="dygraph-legend-dot" style="color: ${color};">● </span>`;
+            html += `${series.labelHTML}: ${series.yHTML}<br/>`;
           });
-          html += '</div>';
+          html += "</div>";
           return html;
         },
       });
@@ -126,6 +114,7 @@ const Figure = ({
     }
   }, [plotConfig, graph, height, width, graphId]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: timesteps is needed to trigger graph updates when new data points arrive
   useEffect(() => {
     if (graph && plotConfig?.data1D) {
       graph.updateOptions({ file: plotConfig.data1D.data });

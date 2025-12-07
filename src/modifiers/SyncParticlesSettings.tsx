@@ -1,7 +1,7 @@
-import { Modal, Table, Slider } from "antd";
+import { Modal, Slider, Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useStoreState, useStoreActions } from "../hooks";
 import { useCallback } from "react";
+import { useStoreActions, useStoreState } from "../hooks";
 
 interface SettingsType {
   key: React.ReactNode;
@@ -11,11 +11,9 @@ interface SettingsType {
 
 const SyncParticlesSettings = ({ onClose }: { onClose: () => void }) => {
   const particleRadius = useStoreState((state) => state.render.particleRadius);
-  const setParticleRadius = useStoreActions(
-    (actions) => actions.render.setParticleRadius,
-  );
+  const setParticleRadius = useStoreActions((actions) => actions.render.setParticleRadius);
   const setParticleStylesUpdated = useStoreActions(
-    (actions) => actions.render.setParticleStylesUpdated,
+    (actions) => actions.render.setParticleStylesUpdated
   );
 
   const onParticleRadiusChanged = useCallback(
@@ -23,7 +21,7 @@ const SyncParticlesSettings = ({ onClose }: { onClose: () => void }) => {
       setParticleRadius(value);
       setParticleStylesUpdated(true);
     },
-    [setParticleStylesUpdated, setParticleRadius],
+    [setParticleStylesUpdated, setParticleRadius]
   );
 
   const columns: ColumnsType<SettingsType> = [
@@ -37,14 +35,8 @@ const SyncParticlesSettings = ({ onClose }: { onClose: () => void }) => {
       dataIndex: "value",
       key: "value",
       width: "80%",
-      render: (value, record) => (
-        <Slider
-          min={0.2}
-          max={2}
-          step={0.02}
-          onChange={onParticleRadiusChanged}
-          value={value}
-        />
+      render: (value, _record) => (
+        <Slider min={0.2} max={2} step={0.02} onChange={onParticleRadiusChanged} value={value} />
       ),
     },
   ];

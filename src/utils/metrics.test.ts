@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getEmbeddingParams } from "./metrics";
 
 describe("getEmbeddingParams", () => {
@@ -167,4 +167,3 @@ describe("getEmbeddingParams", () => {
     expect(result.embedAutoStart).toBe(false);
   });
 });
-

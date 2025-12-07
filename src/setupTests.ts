@@ -24,16 +24,17 @@ Object.defineProperty(window, "matchMedia", {
 vi.mock("@monaco-editor/react", () => ({
   default: vi.fn(() => null),
   loader: {
-    init: vi.fn(() => Promise.resolve({
-      languages: {
-        register: vi.fn(),
-        setMonarchTokensProvider: vi.fn(),
-      },
-      editor: {
-        create: vi.fn(),
-      },
-    })),
+    init: vi.fn(() =>
+      Promise.resolve({
+        languages: {
+          register: vi.fn(),
+          setMonarchTokensProvider: vi.fn(),
+        },
+        editor: {
+          create: vi.fn(),
+        },
+      })
+    ),
     config: vi.fn(),
   },
 }));
-

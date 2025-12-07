@@ -1,15 +1,14 @@
-import { useCallback, useState, useEffect } from "react";
-import { Select, Divider } from "antd";
-import { Simulation } from "../store/simulation";
-import { SimulationFile } from "../store/app";
-import { useStoreActions, useStoreState } from "../hooks";
 import { CaretRightOutlined, EditOutlined } from "@ant-design/icons";
-import { Layout, Skeleton, notification } from "antd";
-import { track } from "../utils/metrics";
+import { Divider, Layout, notification, Select, Skeleton } from "antd";
+import { useCallback, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
 import rehypeExternalLinks from "rehype-external-links";
+import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
+import { useStoreActions, useStoreState } from "../hooks";
+import type { SimulationFile } from "../store/app";
+import type { Simulation } from "../store/simulation";
+import { track } from "../utils/metrics";
 import "katex/dist/katex.min.css";
 import "./Examples.css";
 
@@ -36,29 +35,25 @@ const Examples = () => {
   const [examples, setExamples] = useState<Example[]>([]);
   const [filterKeywords, setFilterKeywords] = useState<string[]>([]);
   // Width measurement no longer needed with CSS Grid
-  const setNewSimulation = useStoreActions(
-    (actions) => actions.simulation.newSimulation,
-  );
+  const setNewSimulation = useStoreActions((actions) => actions.simulation.newSimulation);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const running = useStoreState((state) => state.simulation.running);
-  const setPreferredView = useStoreActions(
-    (actions) => actions.app.setPreferredView,
-  );
+  const setPreferredView = useStoreActions((actions) => actions.app.setPreferredView);
 
   useEffect(() => {
     const fetchExamples = async (examplesUrl: string) => {
       let response = await fetch(examplesUrl, { cache: "no-store" });
       const data = await response.json();
-      const baseUrl = data["baseUrl"];
-      const title = data["title"] || "Examples";
-      const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`;
+      const baseUrl = data.baseUrl;
+      const title = data.title || "Examples";
+      const descriptionsUrl = `${baseUrl}/${data.descriptionFile}`;
       response = await fetch(descriptionsUrl);
       if (response.status !== 404) {
         const description = await response.text();
         setDescription(description);
       }
 
-      const examples: Example[] = data["examples"];
+      const examples: Example[] = data.examples;
       examples.forEach((example) => {
         example.imageUrl = `${baseUrl}/${example.imageUrl}`;
         example.files.forEach((file) => {
@@ -67,7 +62,7 @@ const Examples = () => {
       });
 
       setTitle(title);
-      setExamples(data["examples"]);
+      setExamples(data.examples);
       track("Examples.Fetch", { examplesUrl });
     };
 
@@ -75,15 +70,15 @@ const Examples = () => {
       const urlSearchParams = new URLSearchParams(window.location.search);
       const params = Object.fromEntries(urlSearchParams.entries());
 
-      let defaultExamplesUrl = "examples/examples.json";
+      const defaultExamplesUrl = "examples/examples.json";
       let examplesUrl = defaultExamplesUrl;
-      if (params["examplesUrl"] != null) {
-        examplesUrl = params["examplesUrl"];
+      if (params.examplesUrl != null) {
+        examplesUrl = params.examplesUrl;
       }
 
       try {
         await fetchExamples(examplesUrl);
-      } catch (e) {
+      } catch (_e) {
         notification.error({
           message: `Could not fetch examples from ${examplesUrl}. Fetching default.`,
         });
@@ -106,15 +101,14 @@ const Examples = () => {
       if (running) {
         notification.info({
           message: "Simulation already running",
-          description:
-            "You can't start a new simulation while another one is running.",
+          description: "You can't start a new simulation while another one is running.",
         });
       } else {
         setNewSimulation(newSimulation);
         setPreferredView("view");
       }
     },
-    [running, setNewSimulation, setPreferredView],
+    [running, setNewSimulation, setPreferredView]
   );
 
   const onEdit = useCallback(
@@ -129,35 +123,43 @@ const Examples = () => {
       if (simulation?.id !== newSimulation.id) {
         setNewSimulation(newSimulation);
       } else {
-        setPreferredView("file" + newSimulation.inputScript);
+        setPreferredView(`file${newSimulation.inputScript}`);
       }
     },
-    [setNewSimulation, setPreferredView, simulation?.id],
+    [setNewSimulation, setPreferredView, simulation?.id]
   );
 
-  let keywordsSet: Set<string> = new Set();
+  const keywordsSet: Set<string> = new Set();
   examples.forEach((example) => {
     if (example.keywords) {
-      example.keywords.forEach((keyword) => keywordsSet.add(keyword));
+      example.keywords.forEach((keyword) => {
+        keywordsSet.add(keyword);
+      });
     }
   });
   const keywords = Array.from(keywordsSet);
   keywords.sort();
 
   const renderCard = (example: Example) => (
-    <div 
-      key={example.id} 
+    // biome-ignore lint/a11y/useSemanticElements: Card styling requires div, accessibility handled via role and keyboard events
+    <div
+      key={example.id}
       className="modern-card"
+      role="button"
+      tabIndex={0}
       onClick={() => onPlay(example)}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onPlay(example);
+        }
+      }}
     >
       <div className="card-image-container">
-        <img
-          alt={example.title}
-          src={example.imageUrl}
-          className="card-image"
-        />
+        <img alt={example.title} src={example.imageUrl} className="card-image" />
         <div className="card-overlay">
-          <button 
+          <button
+            type="button"
             className="overlay-button"
             onClick={(e) => {
               e.stopPropagation();
@@ -167,7 +169,8 @@ const Examples = () => {
           >
             <CaretRightOutlined />
           </button>
-          <button 
+          <button
+            type="button"
             className="overlay-button"
             onClick={(e) => {
               e.stopPropagation();
@@ -180,13 +183,18 @@ const Examples = () => {
         </div>
       </div>
       <div className="card-content">
-        <div className="card-title" title={example.title}>{example.title}</div>
-        <div className="card-description" title={example.description}>{example.description}</div>
+        <div className="card-title" title={example.title}>
+          {example.title}
+        </div>
+        <div className="card-description" title={example.description}>
+          {example.description}
+        </div>
         {example.author && (
           <div className="card-author">
-            By <a 
-              href={example.authorUrl} 
-              target="_blank" 
+            By{" "}
+            <a
+              href={example.authorUrl}
+              target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
             >
@@ -245,9 +253,7 @@ const Examples = () => {
             <Option key={keyword}>{keyword}</Option>
           ))}
         </Select>
-        <div className="cards-grid">
-          {filteredExamples.map(renderCard)}
-        </div>
+        <div className="cards-grid">{filteredExamples.map(renderCard)}</div>
         {examples.length === 0 && <Skeleton active />}
       </div>
     </>

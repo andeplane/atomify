@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type { Simulation } from "../store/simulation";
 import AnalyzeNotebook from "./AnalyzeNotebook";
-import { Simulation } from "../store/simulation";
 
 // Helper function to create mock simulation with defaults
 const createMockSimulation = (overrides: Partial<Simulation> = {}): Simulation => ({
@@ -71,9 +71,7 @@ describe("AnalyzeNotebook", () => {
     // Assert
     expect(notebook.cells).toHaveLength(4); // markdown + 3 default cells
     expect(notebook.cells[0].cell_type).toBe("markdown");
-    expect(notebook.cells[0].source).toBe(
-      "# Analysis\nThis is a test analysis description"
-    );
+    expect(notebook.cells[0].source).toBe("# Analysis\nThis is a test analysis description");
   });
 
   it("should place markdown cell before pip install cell", () => {
@@ -155,4 +153,3 @@ describe("AnalyzeNotebook", () => {
     expect(notebook.cells[3].source).toBe("");
   });
 });
-

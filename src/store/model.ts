@@ -1,13 +1,10 @@
-import { SimulationModel, simulationModel } from "./simulation";
-import { SettingsModel, settingsModel } from "./settings";
-import {
-  SimulationStatusModel,
-  simulationStatusModel,
-} from "./simulationstatus";
-import { ProcessingModel, processingModel } from "./processing";
-import { RenderModel, renderModel } from "./render";
-import { AppModel, appModel } from "./app";
 import { persist } from "easy-peasy";
+import { type AppModel, appModel } from "./app";
+import { type ProcessingModel, processingModel } from "./processing";
+import { type RenderModel, renderModel } from "./render";
+import { type SettingsModel, settingsModel } from "./settings";
+import { type SimulationModel, simulationModel } from "./simulation";
+import { type SimulationStatusModel, simulationStatusModel } from "./simulationstatus";
 
 export interface StoreModel {
   simulation: SimulationModel;

@@ -15,9 +15,9 @@ const MIN_NORMALIZED_LENGTH = 0.001;
  * @returns Object containing the three basis vectors { a, b, c }
  */
 export function extractBasisVectors(cellMatrix: THREE.Matrix3): {
-  a: THREE.Vector3
-  b: THREE.Vector3
-  c: THREE.Vector3
+  a: THREE.Vector3;
+  b: THREE.Vector3;
+  c: THREE.Vector3;
 } {
   // LAMMPS stores vectors as rows, but extractBasis gets columns - transpose first
   const transposed = cellMatrix.clone().transpose();
@@ -26,7 +26,7 @@ export function extractBasisVectors(cellMatrix: THREE.Matrix3): {
   const c = new THREE.Vector3();
   transposed.extractBasis(a, b, c);
 
-  return { a, b, c }
+  return { a, b, c };
 }
 
 /**
@@ -47,7 +47,7 @@ export function calculateBoxRadius(cellMatrix: THREE.Matrix3): number {
  * Creates a Group of cylinders for a parallelepiped wireframe from a cell matrix and origin.
  * Handles both orthogonal and triclinic (non-orthogonal) simulation boxes.
  * Uses cylinders instead of lines to ensure proper thickness across all systems.
- * 
+ *
  * @param cellMatrix - THREE.Matrix3 where rows represent the a, b, c vectors (LAMMPS convention)
  * @param origin - THREE.Vector3 representing the origin point
  * @param radius - Radius of the cylinder edges (default: MIN_RADIUS)
@@ -56,7 +56,7 @@ export function calculateBoxRadius(cellMatrix: THREE.Matrix3): number {
 export function createBoxGeometry(
   cellMatrix: THREE.Matrix3,
   origin: THREE.Vector3,
-  radius: number = MIN_RADIUS,
+  radius: number = MIN_RADIUS
 ): THREE.Group {
   // Extract basis vectors using shared helper function
   const { a, b, c } = extractBasisVectors(cellMatrix);
@@ -64,13 +64,32 @@ export function createBoxGeometry(
   // Compute the 8 vertices of the parallelepiped
   const vertices: THREE.Vector3[] = [
     origin.clone(), // v0
-    origin.clone().add(a), // v1
-    origin.clone().add(b), // v2
-    origin.clone().add(c), // v3
-    origin.clone().add(a).add(b), // v4
-    origin.clone().add(a).add(c), // v5
-    origin.clone().add(b).add(c), // v6
-    origin.clone().add(a).add(b).add(c), // v7
+    origin
+      .clone()
+      .add(a), // v1
+    origin
+      .clone()
+      .add(b), // v2
+    origin
+      .clone()
+      .add(c), // v3
+    origin
+      .clone()
+      .add(a)
+      .add(b), // v4
+    origin
+      .clone()
+      .add(a)
+      .add(c), // v5
+    origin
+      .clone()
+      .add(b)
+      .add(c), // v6
+    origin
+      .clone()
+      .add(a)
+      .add(b)
+      .add(c), // v7
   ];
 
   // Define the 12 edges of the parallelepiped
@@ -94,7 +113,7 @@ export function createBoxGeometry(
   ];
 
   const group = new THREE.Group();
-  
+
   // Create material once and reuse for all edges
   const material = new THREE.MeshBasicMaterial({
     color: 0xffffff,
@@ -113,12 +132,7 @@ export function createBoxGeometry(
     }
 
     // Create cylinder geometry (default orientation is along Y-axis)
-    const geometry = new THREE.CylinderGeometry(
-      radius,
-      radius,
-      length,
-      CYLINDER_RADIAL_SEGMENTS,
-    );
+    const geometry = new THREE.CylinderGeometry(radius, radius, length, CYLINDER_RADIAL_SEGMENTS);
 
     // Create mesh
     const cylinder = new THREE.Mesh(geometry, material);
@@ -126,34 +140,31 @@ export function createBoxGeometry(
     // Position at midpoint
     const midpoint = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
     cylinder.position.copy(midpoint);
-    
+
     // Orient cylinder along the edge direction
     const targetAxis = direction.clone().normalize();
-    
+
     // Validate targetAxis is valid
     if (
-      !isFinite(targetAxis.x) ||
-      !isFinite(targetAxis.y) ||
-      !isFinite(targetAxis.z) ||
+      !Number.isFinite(targetAxis.x) ||
+      !Number.isFinite(targetAxis.y) ||
+      !Number.isFinite(targetAxis.z) ||
       targetAxis.length() < MIN_NORMALIZED_LENGTH
     ) {
       // Invalid direction, skip this edge
       geometry.dispose();
       return;
     }
-    
+
     // Align cylinder to edge direction
-    cylinder.quaternion.setFromUnitVectors(
-      new THREE.Vector3(0, 1, 0),
-      targetAxis
-    );
-    
+    cylinder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), targetAxis);
+
     // Validate final quaternion
     if (
-      !isFinite(cylinder.quaternion.x) ||
-      !isFinite(cylinder.quaternion.y) ||
-      !isFinite(cylinder.quaternion.z) ||
-      !isFinite(cylinder.quaternion.w)
+      !Number.isFinite(cylinder.quaternion.x) ||
+      !Number.isFinite(cylinder.quaternion.y) ||
+      !Number.isFinite(cylinder.quaternion.z) ||
+      !Number.isFinite(cylinder.quaternion.w)
     ) {
       // Last resort: identity quaternion
       cylinder.quaternion.set(0, 0, 0, 1);
@@ -168,14 +179,14 @@ export function createBoxGeometry(
 /**
  * Calculates the axis-aligned bounding box (AABB) of a simulation box parallelepiped.
  * Handles both orthogonal and triclinic (non-orthogonal) simulation boxes.
- * 
+ *
  * @param cellMatrix - THREE.Matrix3 where rows represent the a, b, c vectors (LAMMPS convention)
  * @param origin - THREE.Vector3 representing the origin point
  * @returns THREE.Box3 representing the axis-aligned bounding box
  */
 export function getSimulationBoxBounds(
   cellMatrix: THREE.Matrix3,
-  origin: THREE.Vector3,
+  origin: THREE.Vector3
 ): THREE.Box3 {
   // Extract basis vectors using shared helper function
   const { a, b, c } = extractBasisVectors(cellMatrix);
@@ -183,13 +194,32 @@ export function getSimulationBoxBounds(
   // Compute the 8 vertices of the parallelepiped
   const vertices: THREE.Vector3[] = [
     origin.clone(), // v0
-    origin.clone().add(a), // v1
-    origin.clone().add(b), // v2
-    origin.clone().add(c), // v3
-    origin.clone().add(a).add(b), // v4
-    origin.clone().add(a).add(c), // v5
-    origin.clone().add(b).add(c), // v6
-    origin.clone().add(a).add(b).add(c), // v7
+    origin
+      .clone()
+      .add(a), // v1
+    origin
+      .clone()
+      .add(b), // v2
+    origin
+      .clone()
+      .add(c), // v3
+    origin
+      .clone()
+      .add(a)
+      .add(b), // v4
+    origin
+      .clone()
+      .add(a)
+      .add(c), // v5
+    origin
+      .clone()
+      .add(b)
+      .add(c), // v6
+    origin
+      .clone()
+      .add(a)
+      .add(b)
+      .add(c), // v7
   ];
 
   // Create bounding box from all vertices
@@ -197,5 +227,3 @@ export function getSimulationBoxBounds(
 
   return box;
 }
-
-

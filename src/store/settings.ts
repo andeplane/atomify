@@ -1,4 +1,4 @@
-import { action, Action } from "easy-peasy";
+import { type Action, action } from "easy-peasy";
 
 export interface RenderSettings {
   ssao: boolean;

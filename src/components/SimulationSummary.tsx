@@ -1,6 +1,6 @@
-import { useStoreState, useStoreActions } from "../hooks";
-import { Slider, Button } from "antd";
-import { MinusOutlined, ExpandOutlined } from "@ant-design/icons";
+import { ExpandOutlined, MinusOutlined } from "@ant-design/icons";
+import { Button, Slider } from "antd";
+import { useStoreActions, useStoreState } from "../hooks";
 import { track } from "../utils/metrics";
 
 interface SimulationSummaryProps {
@@ -10,29 +10,21 @@ interface SimulationSummaryProps {
   onCollapse?: () => void;
 }
 
-const SimulationSummary = ({ 
-  onShowMore, 
-  isCollapsed = false, 
+const SimulationSummary = ({
+  onShowMore,
+  isCollapsed = false,
   onExpand,
-  onCollapse
+  onCollapse,
 }: SimulationSummaryProps) => {
-  const simulationSettings = useStoreState(
-    (state) => state.settings.simulation,
-  );
-  const setSimulationSettings = useStoreActions(
-    (actions) => actions.settings.setSimulation,
-  );
+  const simulationSettings = useStoreState((state) => state.settings.simulation);
+  const setSimulationSettings = useStoreActions((actions) => actions.settings.setSimulation);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const runType = useStoreState((state) => state.simulationStatus.runType);
   const numAtoms = useStoreState((state) => state.simulationStatus.numAtoms);
   const numBonds = useStoreState((state) => state.simulationStatus.numBonds);
   const timesteps = useStoreState((state) => state.simulationStatus.timesteps);
-  const remainingTime = useStoreState(
-    (state) => state.simulationStatus.remainingTime,
-  );
-  const timestepsPerSecond = useStoreState(
-    (state) => state.simulationStatus.timestepsPerSecond,
-  );
+  const remainingTime = useStoreState((state) => state.simulationStatus.remainingTime);
+  const timestepsPerSecond = useStoreState((state) => state.simulationStatus.timestepsPerSecond);
 
   const setSyncFrequency = (value: number | null) => {
     if (value && value > 0) {
@@ -67,9 +59,7 @@ const SimulationSummary = ({
       <div className="simulationsummary simulationsummary-collapsed">
         {/* No buttons when collapsed - just clickable text */}
         <button type="button" onClick={handleExpand}>
-          <div>
-            Show simulation summary
-          </div>
+          <div>Show simulation summary</div>
         </button>
       </div>
     );
@@ -79,13 +69,16 @@ const SimulationSummary = ({
     <div className="simulationsummary">
       {simulation && (
         <>
-          <div className="simulation-summary-minimize-button" style={{ display: 'flex', gap: '4px' }}>
+          <div
+            className="simulation-summary-minimize-button"
+            style={{ display: "flex", gap: "4px" }}
+          >
             {onCollapse && (
               <Button
                 type="text"
                 icon={<MinusOutlined />}
                 onClick={handleCollapse}
-                style={{ color: '#fff', padding: 0 }}
+                style={{ color: "#fff", padding: 0 }}
                 title="Collapse"
               />
             )}
@@ -94,7 +87,7 @@ const SimulationSummary = ({
                 type="text"
                 icon={<ExpandOutlined />}
                 onClick={handleShowMore}
-                style={{ color: '#fff', padding: 0 }}
+                style={{ color: "#fff", padding: 0 }}
                 title="Expand"
               />
             )}

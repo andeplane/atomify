@@ -1,21 +1,11 @@
 import { InboxOutlined } from "@ant-design/icons";
+import type { UploadFile, UploadProps } from "antd";
+import { Button, Checkbox, Divider, Input, Modal, message, Select, Tooltip, Upload } from "antd";
+import type { UploadChangeParam } from "antd/es/upload";
 import { useCallback, useEffect, useState } from "react";
 import { useStoreActions } from "../hooks";
-import {
-  message,
-  Upload,
-  Modal,
-  Button,
-  Select,
-  Divider,
-  Tooltip,
-  Input,
-  Checkbox,
-} from "antd";
-import type { UploadProps, UploadFile } from "antd";
-import type { UploadChangeParam } from "antd/es/upload";
-import { Simulation } from "../store/simulation";
-import { SimulationFile } from "../store/app";
+import type { SimulationFile } from "../store/app";
+import type { Simulation } from "../store/simulation";
 import { track } from "../utils/metrics";
 
 const { Option } = Select;
@@ -31,12 +21,8 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
   const [files, setFiles] = useState<SimulationFile[]>([]);
   const [startImmediately, setStartImmediately] = useState(false);
   const [inputScript, setInputScript] = useState<string>();
-  const setNewSimulation = useStoreActions(
-    (actions) => actions.simulation.newSimulation,
-  );
-  const setPreferredView = useStoreActions(
-    (actions) => actions.app.setPreferredView,
-  );
+  const setNewSimulation = useStoreActions((actions) => actions.simulation.newSimulation);
+  const setPreferredView = useStoreActions((actions) => actions.app.setPreferredView);
 
   const validSimulation =
     name != null &&
@@ -52,9 +38,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
     async (info: UploadChangeParam<UploadFile>) => {
       // Need to use window.files because these async functions can't seem to agree on the state
       if (info.file.status === "removed") {
-        const newFiles = files.filter(
-          (file) => file.fileName !== info.file.name,
-        );
+        const newFiles = files.filter((file) => file.fileName !== info.file.name);
         window.files = newFiles;
         setFiles(newFiles);
         return;
@@ -72,7 +56,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
       setFiles(window.files);
       message.success(`${file.fileName} uploaded successfully.`);
     },
-    [files, setFiles],
+    [files]
   );
 
   const props: UploadProps = {
@@ -105,15 +89,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
       setPreferredView("view");
     }
     onClose();
-  }, [
-    files,
-    inputScript,
-    name,
-    onClose,
-    startImmediately,
-    setPreferredView,
-    setNewSimulation,
-  ]);
+  }, [files, inputScript, name, onClose, startImmediately, setPreferredView, setNewSimulation]);
 
   return (
     <Modal
@@ -150,10 +126,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
       <p>
         <b>Name</b>
       </p>
-      <Input
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Simulation name"
-      ></Input>
+      <Input onChange={(e) => setName(e.target.value)} placeholder="Simulation name"></Input>
       <Divider />
       <p>
         <b>Files</b>
@@ -162,12 +135,10 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
         <p className="ant-upload-drag-icon">
           <InboxOutlined />
         </p>
-        <p className="ant-upload-text">
-          Click or drag file to this area to upload
-        </p>
+        <p className="ant-upload-text">Click or drag file to this area to upload</p>
         <p className="ant-upload-hint">
-          Upload the files you need for your simulation. Note that these files
-          are not stored across Atomify sessions yet.
+          Upload the files you need for your simulation. Note that these files are not stored across
+          Atomify sessions yet.
         </p>
       </Dragger>
       {files.length > 0 && (
@@ -176,12 +147,11 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
           <p>
             <b>Select input script</b>
           </p>
-          <Select
-            style={{ width: "100%" }}
-            onChange={(value) => setInputScript(value)}
-          >
+          <Select style={{ width: "100%" }} onChange={(value) => setInputScript(value)}>
             {files.map((file) => (
-              <Option value={file.fileName}>{file.fileName}</Option>
+              <Option key={file.fileName} value={file.fileName}>
+                {file.fileName}
+              </Option>
             ))}
           </Select>
         </>

@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
-import ResponsiveSimulationSummary from "./ResponsiveSimulationSummary";
 import type { ComponentProps } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import ResponsiveSimulationSummary from "./ResponsiveSimulationSummary";
 import type SimulationSummary from "./SimulationSummary";
 import type SimulationSummaryExpanded from "./SimulationSummaryExpanded";
 
@@ -9,17 +9,29 @@ import type SimulationSummaryExpanded from "./SimulationSummaryExpanded";
 // Note: Using string paths for vi.mock as it's more reliable with JSX in mock factories
 // Type safety is maintained through ComponentProps<typeof Component> for prop types
 vi.mock("./SimulationSummary", () => ({
-  default: ({ 
-    isCollapsed, 
-    onShowMore, 
-    onExpand, 
-    onCollapse 
+  default: ({
+    isCollapsed,
+    onShowMore,
+    onExpand,
+    onCollapse,
   }: ComponentProps<typeof SimulationSummary>) => (
     <div data-testid="simulation-summary">
       {isCollapsed && <div data-testid="collapsed">Collapsed</div>}
-      {onShowMore && <button data-testid="expand-button">Expand</button>}
-      {onExpand && <button data-testid="expand-handler" onClick={onExpand}>Expand Handler</button>}
-      {onCollapse && <button data-testid="collapse-handler" onClick={onCollapse}>Collapse Handler</button>}
+      {onShowMore && (
+        <button type="button" data-testid="expand-button">
+          Expand
+        </button>
+      )}
+      {onExpand && (
+        <button type="button" data-testid="expand-handler" onClick={onExpand}>
+          Expand Handler
+        </button>
+      )}
+      {onCollapse && (
+        <button type="button" data-testid="collapse-handler" onClick={onCollapse}>
+          Collapse Handler
+        </button>
+      )}
     </div>
   ),
 }));
@@ -27,7 +39,11 @@ vi.mock("./SimulationSummary", () => ({
 vi.mock("./SimulationSummaryExpanded", () => ({
   default: ({ onShowLess }: ComponentProps<typeof SimulationSummaryExpanded>) => (
     <div data-testid="simulation-summary-expanded">
-      {onShowLess && <button data-testid="show-less-button" onClick={onShowLess}>Show Less</button>}
+      {onShowLess && (
+        <button type="button" data-testid="show-less-button" onClick={onShowLess}>
+          Show Less
+        </button>
+      )}
     </div>
   ),
 }));
@@ -146,7 +162,11 @@ describe("ResponsiveSimulationSummary", () => {
     it("should pass isCollapsed prop to SimulationSummary", () => {
       // Arrange & Act
       render(
-        <ResponsiveSimulationSummary {...defaultProps} isOverlayCollapsed={true} showAnalyze={false} />
+        <ResponsiveSimulationSummary
+          {...defaultProps}
+          isOverlayCollapsed={true}
+          showAnalyze={false}
+        />
       );
 
       // Assert

@@ -1,34 +1,36 @@
 import {
-  BorderOuterOutlined,
-  LineChartOutlined,
-  EditOutlined,
-  InsertRowAboveOutlined,
-  FileOutlined,
-  PlaySquareOutlined,
-  BorderOutlined,
   AlignLeftOutlined,
-  PlusSquareOutlined,
+  BorderOuterOutlined,
+  BorderOutlined,
   CaretRightOutlined,
   CloudOutlined,
-  PauseOutlined,
-  ShareAltOutlined,
+  EditOutlined,
+  FileOutlined,
+  InsertRowAboveOutlined,
+  LineChartOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  PauseOutlined,
+  PlaySquareOutlined,
+  PlusSquareOutlined,
   SettingOutlined,
+  ShareAltOutlined,
 } from "@ant-design/icons";
-import { useMeasure } from "react-use";
-import React, { useState, useEffect, useCallback } from "react";
 import type { MenuProps } from "antd";
-import { Layout, Menu, Badge, ConfigProvider, theme } from "antd";
+import { Badge, ConfigProvider, Layout, Menu, theme } from "antd";
+import type React from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useMeasure } from "react-use";
+import AutoStartSimulation from "./components/AutoStartSimulation";
 import Simulation from "./components/Simulation";
 import Main from "./containers/Main";
-import { useStoreActions, useStoreState } from "./hooks";
-import { track } from "./utils/metrics";
 import NewSimulation from "./containers/NewSimulation";
-import ShareSimulation from "./containers/ShareSimulation";
 import Settings from "./containers/Settings";
-import AutoStartSimulation from "./components/AutoStartSimulation";
+import ShareSimulation from "./containers/ShareSimulation";
+import { useStoreActions, useStoreState } from "./hooks";
 import { useEmbeddedMode } from "./hooks/useEmbeddedMode";
+import { track } from "./utils/metrics";
+
 const { Sider } = Layout;
 
 type MenuItem = Required<MenuProps>["items"][number];
@@ -36,16 +38,16 @@ type MenuItem = Required<MenuProps>["items"][number];
 const darkThemeConfig = {
   algorithm: theme.darkAlgorithm,
   token: {
-    colorPrimary: '#1890ff',
+    colorPrimary: "#1890ff",
     borderRadius: 8,
-    colorBgBase: '#29282d',
-    colorBgContainer: '#2a292f',
+    colorBgBase: "#29282d",
+    colorBgContainer: "#2a292f",
     fontSizeHeading1: 48,
     fontSizeHeading2: 36,
   },
   components: {
     Menu: {
-      colorBgContainer: 'transparent',
+      colorBgContainer: "transparent",
       itemBorderRadius: 8,
       itemMarginInline: 8,
       itemActiveBorderWidth: 0,
@@ -53,17 +55,17 @@ const darkThemeConfig = {
       subMenuItemBorderRadius: 8,
     },
     Layout: {
-      siderBg: 'transparent',
-      triggerBg: '#1f1f1f',
+      siderBg: "transparent",
+      triggerBg: "#1f1f1f",
     },
     Select: {
-      selectorBg: '#2a292f',
-      optionSelectedBg: '#2a2a2a',
-      colorText: '#ffffff',
-      colorTextPlaceholder: '#888',
-      colorBorder: '#3a3a3a',
-    }
-  }
+      selectorBg: "#2a292f",
+      optionSelectedBg: "#2a2a2a",
+      colorText: "#ffffff",
+      colorTextPlaceholder: "#888",
+      colorBorder: "#3a3a3a",
+    },
+  },
 };
 
 function getItem(
@@ -72,7 +74,7 @@ function getItem(
   icon?: React.ReactNode,
   children?: MenuItem[],
   onClick?: () => void,
-  disabled?: boolean,
+  disabled?: boolean
 ): MenuItem {
   return {
     key,
@@ -93,16 +95,10 @@ const App: React.FC = () => {
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const selectedFile = useStoreState((state) => state.app.selectedFile);
-  const setSelectedFile = useStoreActions(
-    (actions) => actions.app.setSelectedFile,
-  );
-  const setSelectedMenu = useStoreActions(
-    (actions) => actions.app.setSelectedMenu,
-  );
+  const setSelectedFile = useStoreActions((actions) => actions.app.setSelectedFile);
+  const setSelectedMenu = useStoreActions((actions) => actions.app.setSelectedMenu);
   const preferredView = useStoreState((state) => state.app.preferredView);
-  const setPreferredView = useStoreActions(
-    (actions) => actions.app.setPreferredView,
-  );
+  const setPreferredView = useStoreActions((actions) => actions.app.setPreferredView);
   const paused = useStoreState((state) => state.simulation.paused);
   const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
@@ -118,7 +114,7 @@ const App: React.FC = () => {
       setCollapsed(false);
     }
   }, [width]);
-  const editMenuLabel = "Edit " + (simulation ? simulation?.id : "");
+  const editMenuLabel = `Edit ${simulation ? simulation?.id : ""}`;
   const runStopButtonTitle = running ? "Stop" : "Run";
 
   const runStopButton = getItem(
@@ -136,7 +132,7 @@ const App: React.FC = () => {
         setPreferredView("view");
       }
     },
-    simulation == null,
+    simulation == null
   );
 
   const pauseButtonTitle = paused ? "Continue" : "Pause";
@@ -149,7 +145,7 @@ const App: React.FC = () => {
       setPaused(!paused);
       setPreferredView(selectedMenu); // This is another hack. Should really rethink menu system.
     },
-    running === false,
+    running === false
   );
 
   const newSimulationButton = getItem(
@@ -161,12 +157,12 @@ const App: React.FC = () => {
       setShowNewSimulation(true);
       setPreferredView(selectedMenu); // This is another hack. Should really rethink menu system.
     },
-    running,
+    running
   );
 
   const shareSimulationButton = getItem(
     <span>
-      Share simulation <Badge count="NEW" style={{ backgroundColor: '#52c41a', marginLeft: 8 }} />
+      Share simulation <Badge count="NEW" style={{ backgroundColor: "#52c41a", marginLeft: 8 }} />
     </span>,
     "share",
     <ShareAltOutlined />,
@@ -175,20 +171,14 @@ const App: React.FC = () => {
       setShowShareSimulation(true);
       setPreferredView(selectedMenu); // This is another hack. Should really rethink menu system.
     },
-    simulation == null || running,
+    simulation == null || running
   );
 
-  const settingsButton = getItem(
-    "Settings",
-    "settings",
-    <SettingOutlined />,
-    undefined,
-    () => {
-      track("Settings.Open");
-      setShowSettings(true);
-      setPreferredView(selectedMenu); // This is another hack. Should really rethink menu system.
-    },
-  );
+  const settingsButton = getItem("Settings", "settings", <SettingOutlined />, undefined, () => {
+    track("Settings.Open");
+    setShowSettings(true);
+    setPreferredView(selectedMenu); // This is another hack. Should really rethink menu system.
+  });
 
   const items: MenuItem[] = [
     getItem("View", "view", <AlignLeftOutlined />),
@@ -200,15 +190,11 @@ const App: React.FC = () => {
       <EditOutlined />,
       simulation
         ? simulation.files.map((file) => {
-            return getItem(
-              file.fileName,
-              "file" + file.fileName,
-              <FileOutlined />,
-            );
+            return getItem(file.fileName, `file${file.fileName}`, <FileOutlined />);
           })
         : [],
       undefined,
-      selectedFile == null,
+      selectedFile == null
     ),
     { type: "divider" },
     newSimulationButton,
@@ -222,7 +208,7 @@ const App: React.FC = () => {
       <CloudOutlined />,
       undefined,
       undefined,
-      simulation == null,
+      simulation == null
     ),
     pauseButton,
     { type: "divider" },
@@ -242,7 +228,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (selectedFile) {
-      setSelectedMenu("file" + selectedFile.fileName);
+      setSelectedMenu(`file${selectedFile.fileName}`);
     }
   }, [selectedFile, setSelectedMenu]);
 
@@ -255,7 +241,12 @@ const App: React.FC = () => {
         paused,
       });
 
-      if (selected === "run" || selected === "settings" || selected === "newsimulation" || selected === "share") {
+      if (
+        selected === "run" ||
+        selected === "settings" ||
+        selected === "newsimulation" ||
+        selected === "share"
+      ) {
         return;
       }
 
@@ -264,16 +255,14 @@ const App: React.FC = () => {
         // Oh god this is ugly
         const fileName = selected.substring(4);
         const files = simulation?.files;
-        const selectedFile = files?.filter(
-          (file) => file.fileName === fileName,
-        )[0];
+        const selectedFile = files?.filter((file) => file.fileName === fileName)[0];
 
         if (selectedFile) {
           setSelectedFile(selectedFile);
         }
       }
     },
-    [simulation, setSelectedFile, running, paused, setSelectedMenu],
+    [simulation, setSelectedFile, running, paused, setSelectedMenu]
   );
 
   return (
@@ -288,9 +277,18 @@ const App: React.FC = () => {
             onCollapse={(value) => setCollapsed(value)}
             trigger={null}
           >
+            {/* biome-ignore lint/a11y/useSemanticElements: Styling requires div, accessibility handled via role and keyboard events */}
             <div
               className="sider-collapse-trigger"
+              role="button"
+              tabIndex={0}
               onClick={() => setCollapsed(!collapsed)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setCollapsed(!collapsed);
+                }
+              }}
             >
               {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
             </div>
@@ -302,7 +300,7 @@ const App: React.FC = () => {
               mode="inline"
               items={items}
               onSelect={(info) => onMenuSelect(info.key)}
-              style={{ background: 'transparent' }}
+              style={{ background: "transparent" }}
             />
           </Sider>
         )}
@@ -312,9 +310,7 @@ const App: React.FC = () => {
           <Main isEmbedded={isEmbeddedMode} />
         </Layout>
       </Layout>
-      {showNewSimulation && (
-        <NewSimulation onClose={() => setShowNewSimulation(false)} />
-      )}
+      {showNewSimulation && <NewSimulation onClose={() => setShowNewSimulation(false)} />}
       {showShareSimulation && simulation && (
         <ShareSimulation
           visible={showShareSimulation}
@@ -322,12 +318,7 @@ const App: React.FC = () => {
           simulation={simulation}
         />
       )}
-      {showSettings && (
-        <Settings
-          open={showSettings}
-          onClose={() => setShowSettings(false)}
-        />
-      )}
+      {showSettings && <Settings open={showSettings} onClose={() => setShowSettings(false)} />}
     </ConfigProvider>
   );
 };

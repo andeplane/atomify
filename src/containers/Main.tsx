@@ -1,13 +1,14 @@
-import { Modal, Tabs, Progress, Button, Layout } from "antd";
-import { useState, useEffect, useMemo } from "react";
-import View from "./View";
-import Notebook from "./Notebook";
-import Edit from "./Edit";
-import Console from "./Console";
-import Examples from "./Examples";
-import RunInCloud from "./RunInCloud";
+import { Button, Layout, Modal, Progress, Tabs } from "antd";
+import { useEffect, useMemo, useState } from "react";
 import LoadingSimulationScreen from "../components/LoadingSimulationScreen";
 import { useStoreActions, useStoreState } from "../hooks";
+import Console from "./Console";
+import Edit from "./Edit";
+import Examples from "./Examples";
+import Notebook from "./Notebook";
+import RunInCloud from "./RunInCloud";
+import View from "./View";
+
 const { Content } = Layout;
 
 const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
@@ -15,17 +16,13 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
   const showConsole = useStoreState((state) => state.simulation.showConsole);
   const [consoleKey, setConsoleKey] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
-  const setShowConsole = useStoreActions(
-    (actions) => actions.simulation.setShowConsole,
-  );
+  const setShowConsole = useStoreActions((actions) => actions.simulation.setShowConsole);
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
   const running = useStoreState((state) => state.simulation.running);
 
-  const setPreferredView = useStoreActions(
-    (actions) => actions.app.setPreferredView,
-  );
+  const setPreferredView = useStoreActions((actions) => actions.app.setPreferredView);
   const status = useStoreState((state) => state.app.status);
-  
+
   // Update console key when modal opens
   useEffect(() => {
     if (showConsole) {
@@ -46,11 +43,12 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
       {
         key: "view",
         label: "View",
-        children: isEmbedded && !hasStarted ? (
-          <LoadingSimulationScreen status={status} wasmReady={wasm != null} />
-        ) : (
-          <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbedded} />
-        ),
+        children:
+          isEmbedded && !hasStarted ? (
+            <LoadingSimulationScreen status={status} wasmReady={wasm != null} />
+          ) : (
+            <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbedded} />
+          ),
       },
       {
         key: "console",
@@ -80,9 +78,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
     ];
 
     // Filter out Examples tab in embedded mode
-    return isEmbedded
-      ? allTabs.filter(tab => tab.key !== "examples")
-      : allTabs;
+    return isEmbedded ? allTabs.filter((tab) => tab.key !== "examples") : allTabs;
   }, [isEmbedded, selectedMenu, hasStarted, status, wasm]);
 
   return (

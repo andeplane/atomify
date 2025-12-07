@@ -1,6 +1,6 @@
-import { useEffect, useRef } from "react";
-import colormap from "colormap";
 import { SettingOutlined } from "@ant-design/icons";
+import colormap from "colormap";
+import { useEffect, useRef } from "react";
 
 interface ColorLegendProps {
   computeName: string;
@@ -11,7 +11,14 @@ interface ColorLegendProps {
   onSettingsClick?: () => void;
 }
 
-const ColorLegend = ({ computeName, minValue, maxValue, type, colormap: colormapName = "jet", onSettingsClick }: ColorLegendProps) => {
+const ColorLegend = ({
+  computeName,
+  minValue,
+  maxValue,
+  type,
+  colormap: colormapName = "jet",
+  onSettingsClick,
+}: ColorLegendProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -34,7 +41,7 @@ const ColorLegend = ({ computeName, minValue, maxValue, type, colormap: colormap
 
     // Create gradient
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-    
+
     colors.forEach((color, index) => {
       const position = index / (colors.length - 1);
       const r = Math.floor(color[0] * 255);
@@ -49,7 +56,7 @@ const ColorLegend = ({ computeName, minValue, maxValue, type, colormap: colormap
   }, [colormapName]);
 
   const formatValue = (value: number): string => {
-    if (!isFinite(value)) {
+    if (!Number.isFinite(value)) {
       return "N/A";
     }
     // Format to 3 significant figures

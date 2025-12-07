@@ -32,8 +32,8 @@ jobs:
         run: npm run typecheck
       - name: Run Tests
         run: npm run test:run
-      - name: Run Prettier
-        run: npx prettier .
+      - name: Run Lint
+        run: npm run lint
       - name: Build app
         run: npm run predeploy
       - name: Upload artifact

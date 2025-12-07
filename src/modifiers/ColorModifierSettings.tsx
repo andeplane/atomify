@@ -1,35 +1,27 @@
-import { Modal, Select, Divider, InputNumber, Checkbox, Button, Space } from "antd";
-import { useStoreState, useStoreActions } from "../hooks";
+import { Button, Checkbox, Divider, InputNumber, Modal, Select, Space } from "antd";
 import { useCallback, useState } from "react";
+import { useStoreActions, useStoreState } from "../hooks";
 import { track } from "../utils/metrics";
-import ColorModifier from "./colormodifier";
+import type ColorModifier from "./colormodifier";
+
 const { Option, OptGroup } = Select;
 
 const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const computes = useStoreState((state) => state.simulationStatus.computes);
-  const postTimestepModifiers = useStoreState(
-    (state) => state.processing.postTimestepModifiers,
-  );
+  const postTimestepModifiers = useStoreState((state) => state.processing.postTimestepModifiers);
   const setParticleStylesUpdated = useStoreActions(
-    (actions) => actions.render.setParticleStylesUpdated,
+    (actions) => actions.render.setParticleStylesUpdated
   );
   const colorModifier = postTimestepModifiers.filter(
-    (modifier) => modifier.name === "Colors",
+    (modifier) => modifier.name === "Colors"
   )[0] as ColorModifier;
-  const perAtomComputes = Object.values(computes).filter(
-    (compute) => compute.isPerAtom,
-  );
+  const perAtomComputes = Object.values(computes).filter((compute) => compute.isPerAtom);
 
   const [useCustomRange, setUseCustomRange] = useState(
-    colorModifier.customMinValue !== undefined || 
-    colorModifier.customMaxValue !== undefined
+    colorModifier.customMinValue !== undefined || colorModifier.customMaxValue !== undefined
   );
-  const [customMin, setCustomMin] = useState<number | null>(
-    colorModifier.customMinValue ?? null
-  );
-  const [customMax, setCustomMax] = useState<number | null>(
-    colorModifier.customMaxValue ?? null
-  );
+  const [customMin, setCustomMin] = useState<number | null>(colorModifier.customMinValue ?? null);
+  const [customMax, setCustomMax] = useState<number | null>(colorModifier.customMaxValue ?? null);
 
   const onChange = useCallback(
     (value: string) => {
@@ -45,7 +37,7 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
         setParticleStylesUpdated(true);
       }
     },
-    [colorModifier, setParticleStylesUpdated],
+    [colorModifier, setParticleStylesUpdated]
   );
 
   const handleCustomRangeToggle = useCallback(
@@ -56,15 +48,19 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
         colorModifier.customMaxValue = undefined;
       } else {
         // Initialize with global values only if they are finite
-        const minValue = isFinite(colorModifier.globalMinValue) ? colorModifier.globalMinValue : 0;
-        const maxValue = isFinite(colorModifier.globalMaxValue) ? colorModifier.globalMaxValue : 1;
+        const minValue = Number.isFinite(colorModifier.globalMinValue)
+          ? colorModifier.globalMinValue
+          : 0;
+        const maxValue = Number.isFinite(colorModifier.globalMaxValue)
+          ? colorModifier.globalMaxValue
+          : 1;
         colorModifier.customMinValue = customMin ?? minValue;
         colorModifier.customMaxValue = customMax ?? maxValue;
         setCustomMin(colorModifier.customMinValue);
         setCustomMax(colorModifier.customMaxValue);
       }
     },
-    [colorModifier, customMin, customMax],
+    [colorModifier, customMin, customMax]
   );
 
   const handleMinChange = useCallback(
@@ -74,7 +70,7 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
         colorModifier.customMinValue = value;
       }
     },
-    [colorModifier, useCustomRange],
+    [colorModifier, useCustomRange]
   );
 
   const handleMaxChange = useCallback(
@@ -84,7 +80,7 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
         colorModifier.customMaxValue = value;
       }
     },
-    [colorModifier, useCustomRange],
+    [colorModifier, useCustomRange]
   );
 
   const handleResetRange = useCallback(() => {
@@ -96,10 +92,8 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
     setUseCustomRange(false);
   }, [colorModifier]);
 
-  const defaultValue = colorModifier.computeName
-    ? colorModifier.computeName
-    : "type";
-  
+  const defaultValue = colorModifier.computeName ? colorModifier.computeName : "type";
+
   const showRangeControls = colorModifier.computeName !== undefined;
 
   const colormapOptions = [
@@ -124,25 +118,15 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
       colorModifier.colormap = value;
       track("Settings.Render.Colormap", { colormap: value });
     },
-    [colorModifier],
+    [colorModifier]
   );
-  
+
   return (
-    <Modal
-      title="Particle color settings"
-      open={open}
-      footer={null}
-      onCancel={onClose}
-      width={480}
-    >
+    <Modal title="Particle color settings" open={open} footer={null} onCancel={onClose} width={480}>
       <Space direction="vertical" style={{ width: "100%" }} size="large">
         <div>
           <div style={{ marginBottom: 8, fontWeight: 500 }}>Color by:</div>
-          <Select
-            defaultValue={defaultValue}
-            style={{ width: "100%" }}
-            onChange={onChange}
-          >
+          <Select defaultValue={defaultValue} style={{ width: "100%" }} onChange={onChange}>
             <Option value="type">Particle type</Option>
             <OptGroup label="Computes">
               {perAtomComputes.map((compute) => (
@@ -178,12 +162,20 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
         {showRangeControls && (
           <>
             <Divider style={{ margin: "8px 0" }} />
-            
+
             <div>
               <div style={{ marginBottom: 12 }}>
                 <div style={{ fontWeight: 500, marginBottom: 4 }}>Value Range:</div>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>
-                  Global: [{isFinite(colorModifier.globalMinValue) ? colorModifier.globalMinValue.toExponential(2) : "N/A"}, {isFinite(colorModifier.globalMaxValue) ? colorModifier.globalMaxValue.toExponential(2) : "N/A"}]
+                  Global: [
+                  {Number.isFinite(colorModifier.globalMinValue)
+                    ? colorModifier.globalMinValue.toExponential(2)
+                    : "N/A"}
+                  ,{" "}
+                  {Number.isFinite(colorModifier.globalMaxValue)
+                    ? colorModifier.globalMaxValue.toExponential(2)
+                    : "N/A"}
+                  ]
                 </div>
               </div>
 
@@ -191,7 +183,10 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
                 checked={useCustomRange}
                 onChange={(e) => handleCustomRangeToggle(e.target.checked)}
                 style={{ marginBottom: 12 }}
-                disabled={!isFinite(colorModifier.globalMinValue) || !isFinite(colorModifier.globalMaxValue)}
+                disabled={
+                  !Number.isFinite(colorModifier.globalMinValue) ||
+                  !Number.isFinite(colorModifier.globalMaxValue)
+                }
               >
                 Use custom range
               </Checkbox>
@@ -219,11 +214,7 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
                 </Space>
               )}
 
-              <Button 
-                onClick={handleResetRange}
-                style={{ marginTop: 12 }}
-                size="small"
-              >
+              <Button onClick={handleResetRange} style={{ marginTop: 12 }} size="small">
                 Reset global min/max
               </Button>
             </div>

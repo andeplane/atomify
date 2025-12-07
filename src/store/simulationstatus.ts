@@ -1,6 +1,6 @@
-import { action, Action } from "easy-peasy";
-import { Compute, Fix, Variable } from "../types";
-import * as THREE from "three";
+import { type Action, action } from "easy-peasy";
+import type * as THREE from "three";
+import type { Compute, Fix, Variable } from "../types";
 
 export interface SimulationStatusModel {
   timesteps: number;
@@ -107,7 +107,7 @@ export const simulationStatusModel: SimulationStatusModel = {
   setModifierSyncDataPoints: action(
     (
       state,
-      { name, type, value }: { name: string; type: "compute" | "fix" | "variable"; value: boolean },
+      { name, type, value }: { name: string; type: "compute" | "fix" | "variable"; value: boolean }
     ) => {
       switch (type) {
         case "compute":
@@ -126,7 +126,7 @@ export const simulationStatusModel: SimulationStatusModel = {
           }
           break;
       }
-    },
+    }
   ),
   reset: action((state) => {
     state.hasSynchronized = false;

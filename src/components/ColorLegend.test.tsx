@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import ColorLegend from "./ColorLegend";
 
 describe("ColorLegend", () => {
@@ -12,7 +12,9 @@ describe("ColorLegend", () => {
       fillRect: vi.fn(),
     };
 
-    HTMLCanvasElement.prototype.getContext = vi.fn(() => mockContext) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = vi.fn(
+      () => mockContext
+    ) as unknown as typeof HTMLCanvasElement.prototype.getContext;
   });
 
   describe("rendering", () => {

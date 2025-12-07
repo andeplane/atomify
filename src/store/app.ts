@@ -1,4 +1,4 @@
-import { action, Action } from "easy-peasy";
+import { type Action, action } from "easy-peasy";
 import { isEmbeddedMode } from "../utils/embeddedMode";
 
 interface Status {

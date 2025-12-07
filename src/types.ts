@@ -175,7 +175,7 @@ export type GithubFile = {
 /**
  * Configuration options for embedded simulations.
  * These can be passed via base64-encoded JSON in the 'config' URL parameter.
- * 
+ *
  * Note: When parsed from URL, all properties are guaranteed to have values (defaults applied).
  */
 export interface EmbedConfig {

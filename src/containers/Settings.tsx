@@ -1,6 +1,6 @@
-import { Modal, Checkbox, Slider, Tabs, Table, Collapse } from "antd";
-import { useStoreState, useStoreActions } from "../hooks";
+import { Checkbox, Collapse, Modal, Slider, Table, Tabs } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { useStoreActions, useStoreState } from "../hooks";
 import { track } from "../utils/metrics";
 
 interface SettingsProps {
@@ -10,9 +10,7 @@ interface SettingsProps {
 
 const Settings = ({ open, onClose }: SettingsProps) => {
   const renderSettings = useStoreState((state) => state.settings.render);
-  const setRenderSettings = useStoreActions(
-    (actions) => actions.settings.setRender,
-  );
+  const setRenderSettings = useStoreActions((actions) => actions.settings.setRender);
 
   interface KeyboardShortcutsDataType {
     key: React.Key;
@@ -128,11 +126,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
           <Checkbox
             checked={renderSettings.orthographic}
             onChange={(e) =>
-              handleSettingChange(
-                "orthographic",
-                e.target.checked,
-                "Settings.Render.Orthographic"
-              )
+              handleSettingChange("orthographic", e.target.checked, "Settings.Render.Orthographic")
             }
           >
             Orthographic camera
@@ -148,8 +142,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
               children: (
                 <>
                   <div style={{ marginBottom: "8px" }}>
-                    Ambient Light Intensity:{" "}
-                    {renderSettings.ambientLightIntensity.toFixed(2)}
+                    Ambient Light Intensity: {renderSettings.ambientLightIntensity.toFixed(2)}
                     <Slider
                       min={0}
                       max={1.0}
@@ -165,8 +158,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
                     />
                   </div>
                   <div>
-                    Point Light Intensity:{" "}
-                    {renderSettings.pointLightIntensity.toFixed(0)}
+                    Point Light Intensity: {renderSettings.pointLightIntensity.toFixed(0)}
                     <Slider
                       min={0}
                       max={50}
@@ -192,11 +184,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
                   <Checkbox
                     checked={renderSettings.ssao}
                     onChange={(e) =>
-                      handleSettingChange(
-                        "ssao",
-                        e.target.checked,
-                        "Settings.Render.SSAO"
-                      )
+                      handleSettingChange("ssao", e.target.checked, "Settings.Render.SSAO")
                     }
                   >
                     Enable SSAO
@@ -212,11 +200,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
                           step={0.5}
                           value={renderSettings.ssaoRadius}
                           onChange={(value) =>
-                            handleSettingChange(
-                              "ssaoRadius",
-                              value,
-                              "Settings.Render.SSAORadius"
-                            )
+                            handleSettingChange("ssaoRadius", value, "Settings.Render.SSAORadius")
                           }
                         />
                       </div>
@@ -248,13 +232,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
   };
 
   return (
-    <Modal
-      width={"70%"}
-      title="Settings"
-      footer={null}
-      open={open}
-      onCancel={() => onClose()}
-    >
+    <Modal width={"70%"} title="Settings" footer={null} open={open} onCancel={() => onClose()}>
       <Tabs
         defaultActiveKey="render"
         items={[

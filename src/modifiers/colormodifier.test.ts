@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import ColorModifier from "./colormodifier";
-import { ModifierInput, ModifierOutput } from "./types";
+import type { ModifierInput, ModifierOutput } from "./types";
 
 describe("ColorModifier", () => {
   let colorModifier: ColorModifier;
@@ -119,7 +119,7 @@ describe("ColorModifier", () => {
           visualizer: mockVisualizer,
         } as unknown as ModifierInput["renderState"],
         computes: {
-          "c_test": mockCompute as unknown as ModifierInput["computes"][string],
+          c_test: mockCompute as unknown as ModifierInput["computes"][string],
         },
         wasm: mockWasm as unknown as ModifierInput["wasm"],
       };
@@ -134,10 +134,7 @@ describe("ColorModifier", () => {
       colorModifier.computeName = "c_test";
 
       // Act
-      colorModifier.runByProperty(
-        input as ModifierInput,
-        output as ModifierOutput
-      );
+      colorModifier.runByProperty(input as ModifierInput, output as ModifierOutput);
 
       // Assert
       expect(colorModifier.globalMinValue).toBe(1.0);
@@ -164,7 +161,7 @@ describe("ColorModifier", () => {
           visualizer: mockVisualizer,
         } as unknown as ModifierInput["renderState"],
         computes: {
-          "c_test": mockCompute as unknown as ModifierInput["computes"][string],
+          c_test: mockCompute as unknown as ModifierInput["computes"][string],
         },
         wasm: {} as unknown as ModifierInput["wasm"],
       };
@@ -185,10 +182,7 @@ describe("ColorModifier", () => {
         },
       } as unknown as ModifierInput["wasm"];
 
-      colorModifier.runByProperty(
-        input as ModifierInput,
-        output as ModifierOutput
-      );
+      colorModifier.runByProperty(input as ModifierInput, output as ModifierOutput);
 
       expect(colorModifier.globalMinValue).toBe(1.0);
       expect(colorModifier.globalMaxValue).toBe(3.0);
@@ -201,10 +195,7 @@ describe("ColorModifier", () => {
       } as unknown as ModifierInput["wasm"];
 
       // Act
-      colorModifier.runByProperty(
-        input as ModifierInput,
-        output as ModifierOutput
-      );
+      colorModifier.runByProperty(input as ModifierInput, output as ModifierOutput);
 
       // Assert - should keep the extremes from both timesteps
       expect(colorModifier.globalMinValue).toBe(0.5);
@@ -237,7 +228,7 @@ describe("ColorModifier", () => {
           visualizer: mockVisualizer,
         } as unknown as ModifierInput["renderState"],
         computes: {
-          "c_test": mockCompute as unknown as ModifierInput["computes"][string],
+          c_test: mockCompute as unknown as ModifierInput["computes"][string],
         },
         wasm: mockWasm as unknown as ModifierInput["wasm"],
       };
@@ -255,10 +246,7 @@ describe("ColorModifier", () => {
       colorModifier.resetMinMax = true;
 
       // Act
-      colorModifier.runByProperty(
-        input as ModifierInput,
-        output as ModifierOutput
-      );
+      colorModifier.runByProperty(input as ModifierInput, output as ModifierOutput);
 
       // Assert
       expect(colorModifier.globalMinValue).toBe(10.0);
@@ -292,7 +280,7 @@ describe("ColorModifier", () => {
           visualizer: mockVisualizer,
         } as unknown as ModifierInput["renderState"],
         computes: {
-          "c_test": mockCompute as unknown as ModifierInput["computes"][string],
+          c_test: mockCompute as unknown as ModifierInput["computes"][string],
         },
         wasm: mockWasm as unknown as ModifierInput["wasm"],
       };
@@ -309,10 +297,7 @@ describe("ColorModifier", () => {
       colorModifier.customMaxValue = 20;
 
       // Act
-      colorModifier.runByProperty(
-        input as ModifierInput,
-        output as ModifierOutput
-      );
+      colorModifier.runByProperty(input as ModifierInput, output as ModifierOutput);
 
       // Assert - should have called setColor for each particle
       expect(mockVisualizer.setColor).toHaveBeenCalledTimes(3);

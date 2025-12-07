@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { u8aToBase64, base64ToU8A } from "./codec";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { base64ToU8A, u8aToBase64 } from "./codec";
 
 // Store original implementations for restoration
 let originalBtoa: typeof global.btoa;
@@ -207,4 +207,3 @@ describe("base64 round-trip", () => {
     expect(decoded).toEqual(original);
   });
 });
-

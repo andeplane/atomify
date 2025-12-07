@@ -1,7 +1,7 @@
 import Editor from "@monaco-editor/react";
+import type * as Monaco from "monaco-editor";
 import { useEffect, useRef } from "react";
 import { useStoreState } from "../hooks";
-import type * as Monaco from "monaco-editor";
 
 interface ConsoleProps {
   width?: number | string;
@@ -18,7 +18,8 @@ const Console = ({ width, height }: ConsoleProps) => {
     selectOnLineNumbers: true,
     readOnly: true,
   };
-  
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: lammpsOutput is needed to trigger scroll when output changes
   useEffect(() => {
     const editor = editorRef.current;
     if (editor) {

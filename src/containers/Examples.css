@@ -2,9 +2,14 @@
 .modern-card {
   border-radius: 16px;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
   background: rgba(42, 41, 47, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -20,11 +25,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.15) 0%,
-    transparent 50%
-  );
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
   pointer-events: none;
   opacity: 0.5;
   z-index: 1;
@@ -34,7 +35,9 @@
 
 .modern-card:hover {
   transform: translateY(-4px);
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3), 0 12px 40px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    inset 0 0 30px rgba(0, 0, 0, 0.3),
+    0 12px 40px rgba(0, 0, 0, 0.2);
   border-color: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -220,7 +223,7 @@
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 16px;
   }
-  
+
   .card-image {
     height: 160px;
   }
