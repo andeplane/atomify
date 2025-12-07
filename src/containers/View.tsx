@@ -8,7 +8,7 @@ import SimulationSummaryModal from "../components/SimulationSummaryModal";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import ColorLegend from "../components/ColorLegend";
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
-import { AreaChartOutlined, SettingOutlined } from "@ant-design/icons";
+import { AreaChartOutlined } from "@ant-design/icons";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
 import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
