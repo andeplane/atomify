@@ -19,6 +19,7 @@ const Console = ({ width, height }: ConsoleProps) => {
     readOnly: true,
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: lammpsOutput is needed to trigger scroll when output changes
   useEffect(() => {
     const editor = editorRef.current;
     if (editor) {
@@ -27,7 +28,7 @@ const Console = ({ width, height }: ConsoleProps) => {
         editor.revealLine(model.getLineCount());
       }
     }
-  }, []);
+  }, [lammpsOutput]);
 
   const handleEditorDidMount = (editor: Monaco.editor.IStandaloneCodeEditor) => {
     editorRef.current = editor;
