@@ -1,4 +1,4 @@
-import SimulationSummaryOverlay from "./SimulationSummaryOverlay";
+import SimulationSummary from "./SimulationSummary";
 import SimulationSummaryExpanded from "./SimulationSummaryExpanded";
 
 interface ResponsiveSimulationSummaryProps {
@@ -30,7 +30,7 @@ const ResponsiveSimulationSummary = ({
   if (isEmbeddedMode) {
     if (showSimulationSummary) {
       return (
-        <SimulationSummaryOverlay
+        <SimulationSummary
           isCollapsed={isOverlayCollapsed}
           onExpand={onExpand}
           onCollapse={onCollapse}
@@ -49,9 +49,9 @@ const ResponsiveSimulationSummary = ({
     );
   }
 
-  // Show regular overlay with "Show more" button
+  // Show regular overlay with Expand button
   return (
-    <SimulationSummaryOverlay
+    <SimulationSummary
       isCollapsed={isOverlayCollapsed}
       onExpand={onExpand}
       onCollapse={onCollapse}

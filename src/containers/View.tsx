@@ -77,14 +77,14 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [selectedAtoms, setSelectedAtoms] = useState<Set<number>>(new Set());
   const { embedConfig } = useEmbeddedMode();
   
-  // Initialize from localStorage, defaulting to true (visible by default)
+  // Initialize from localStorage, defaulting to false (show overlay, not expanded)
   // Embedded mode override is handled in useEffect below
   const [showAnalyze, setShowAnalyze] = useState(() => {
     if (typeof window !== 'undefined' && window.localStorage) {
       const stored = localStorage.getItem(SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY);
-      return stored !== null ? stored === 'true' : true;
+      return stored !== null ? stored === 'true' : false;
     }
-    return true;
+    return false;
   });
 
   // Track window width for responsive behavior
