@@ -32,7 +32,8 @@
       "recommended": true,
       "correctness": {
         "noUnusedVariables": "error",
-        "useJsxKeyInIterable": "warn"
+        "useJsxKeyInIterable": "warn",
+        "useExhaustiveDependencies": "warn"
       },
       "suspicious": {
         "noExplicitAny": "warn",
