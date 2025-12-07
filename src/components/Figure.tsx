@@ -32,7 +32,7 @@ const Figure = ({
   onToggleSyncDataPoints,
 }: FigureProps) => {
   const [graph, setGraph] = useState<Dygraph>();
-  const _timesteps = useStoreState((state) => state.simulationStatus.timesteps);
+  const timesteps = useStoreState((state) => state.simulationStatus.timesteps);
   const graphId = useId();
   const width = window.innerWidth < 1000 ? window.innerWidth * 0.8 : window.innerWidth * 0.6;
   const height = (width * 3) / 4;
@@ -114,11 +114,12 @@ const Figure = ({
     }
   }, [plotConfig, graph, height, width, graphId]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: timesteps is needed to trigger graph updates when new data points arrive
   useEffect(() => {
     if (graph && plotConfig?.data1D) {
       graph.updateOptions({ file: plotConfig.data1D.data });
     }
-  }, [graph, plotConfig]);
+  }, [graph, plotConfig, timesteps]);
 
   return (
     <Modal open width={width} footer={null} onCancel={onClose}>
