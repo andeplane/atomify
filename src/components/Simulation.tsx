@@ -1,10 +1,8 @@
 import { notification } from "antd";
 import { useCallback, useEffect, useRef } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
-import { LammpsWeb } from "../types";
 import { time_event, track } from "../utils/metrics";
 import createModule from "../wasm/lammps.mjs";
-import { AtomifyWasmModule } from "../wasm/types";
 
 const SimulationComponent = () => {
   const wasm = window.wasm;
@@ -80,16 +78,7 @@ const SimulationComponent = () => {
         });
       }
     };
-  }, [
-    lammps,
-    running,
-    selectedMenu,
-    paused,
-    setPaused,
-    setSimulationSettings,
-    simulation,
-    simulationSettings,
-  ]);
+  }, [running, selectedMenu, paused, setPaused, setSimulationSettings, simulationSettings]);
 
   useEffect(() => {
     window.postStepCallback = () => {
@@ -170,6 +159,7 @@ const SimulationComponent = () => {
       }, 100);
     }
   }, [onPrint, setLammps, setStatus]);
+  // biome-ignore lint/complexity/noUselessFragments: Component only has side effects, needs to return valid JSX
   return <></>;
 };
 export default SimulationComponent;

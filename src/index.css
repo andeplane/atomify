@@ -80,7 +80,7 @@ body,
 
 /* Liquid Glass Sidebar - optimized */
 .ant-layout-sider {
-  background: rgba(41, 40, 45, 0.3) !important;
+  background: rgba(41, 40, 45, 0.3);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
@@ -105,43 +105,43 @@ body,
 }
 
 .ant-menu-dark {
-  background: transparent !important;
+  background: transparent;
 }
 
 /* Remove padding/margin/borders from ant-menu-sub that make items look smaller */
 .ant-menu-sub,
 .ant-menu-sub.ant-menu-inline {
-  padding: 0 !important;
-  margin: 0 !important;
-  border: none !important;
-  background: transparent !important;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
 }
 
 .ant-menu-item {
-  margin: 4px 8px !important;
-  width: calc(100% - 16px) !important;
+  margin: 4px 8px;
+  width: calc(100% - 16px);
   border-radius: 8px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  background: transparent !important;
+  background: transparent;
   position: relative;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .ant-menu-dark .ant-menu-item-selected {
-  background: linear-gradient(135deg, rgb(73, 107, 187), rgb(100, 173, 230)) !important;
+  background: linear-gradient(135deg, rgb(73, 107, 187), rgb(100, 173, 230));
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  color: #fff !important;
+  color: #fff;
   font-weight: 600;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
+  border: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .ant-menu-item:hover:not(.ant-menu-item-selected) {
-  background-color: rgba(255, 255, 255, 0.05) !important;
+  background-color: rgba(255, 255, 255, 0.05);
   transform: translateX(4px);
 }
 
@@ -151,11 +151,11 @@ body,
 }
 
 .ant-layout-content {
-  background: transparent !important;
+  background: transparent;
 }
 
 .ant-layout {
-  background: transparent !important;
+  background: transparent;
 }
 
 .site-layout .site-layout-background h1 {
@@ -171,11 +171,11 @@ body,
 }
 
 .console-modal .ant-modal-footer {
-  background-color: #1e1e1e !important;
+  background-color: #1e1e1e;
 }
 
 .settingsbutton {
-  position: fixed !important;
+  position: fixed;
   bottom: 0;
   right: 0;
   margin-right: 20px;
@@ -183,7 +183,7 @@ body,
 }
 
 .analyzebutton {
-  position: fixed !important;
+  position: fixed;
   bottom: 0;
   right: 0;
   margin-right: 70px;
@@ -192,7 +192,7 @@ body,
 
 /* Liquid Glass Overlay Components - optimized */
 .simulationsummary {
-  position: fixed !important;
+  position: fixed;
   background: rgba(42, 41, 47, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -207,7 +207,6 @@ body,
   box-shadow:
     inset 0 0 20px rgba(0, 0, 0, 0.2),
     0 8px 32px rgba(0, 0, 0, 0.1);
-  position: relative;
   overflow: hidden;
   z-index: 1000;
   contain: layout style paint;
@@ -227,9 +226,9 @@ body,
 }
 
 .simulationsummary-collapsed {
-  width: auto !important;
+  width: auto;
   min-width: 200px;
-  padding: 8px 16px !important;
+  padding: 8px 16px;
   cursor: pointer;
   transition: all 0.2s ease;
   border: none;
@@ -240,7 +239,7 @@ body,
 }
 
 .simulationsummary-collapsed:hover {
-  background: rgba(42, 41, 47, 0.8) !important;
+  background: rgba(42, 41, 47, 0.8);
 }
 
 .simulationsummary-collapsed button {
@@ -259,8 +258,8 @@ body,
 }
 
 .show-more-button {
-  padding: 0 !important;
-  color: #fff !important;
+  padding: 0;
+  color: #fff;
   text-decoration: underline;
   font-size: 12px;
 }
@@ -283,15 +282,16 @@ body,
 }
 
 .simulation-summary-minimize-button button {
-  pointer-events: auto !important;
+  pointer-events: auto;
   z-index: 101;
-  cursor: pointer !important;
+  cursor: pointer;
 }
 
 .simulationsummary-expanded {
-  width: 400px !important;
-  height: calc(100vh - 20px) !important;
-  top: 10px !important;
+  position: fixed;
+  width: 400px;
+  height: calc(100vh - 20px);
+  top: 10px;
   overflow-y: auto;
 }
 
@@ -403,11 +403,11 @@ body,
 
 /* Dygraph dark theme styling */
 .dygraph-legend {
-  background: rgba(0, 0, 0, 0.8) !important;
-  color: #fff !important;
-  border: 1px solid #333 !important;
-  border-radius: 4px !important;
-  padding: 8px !important;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 8px;
 }
 
 .dygraph-custom-legend {
@@ -422,28 +422,28 @@ body,
 }
 
 .dygraph-axis-label {
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .dygraph-title {
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .dygraph-xlabel,
 .dygraph-ylabel {
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 .dygraph-label {
-  color: #ffffff !important;
+  color: #ffffff;
 }
 
 /* Respect user motion preferences */
 @media (prefers-reduced-motion: reduce) {
   * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
   }
 }
 
@@ -493,25 +493,25 @@ body,
 
 /* Make tables transparent to show glass effect */
 .ant-table-wrapper {
-  background: transparent !important;
+  background: transparent;
 }
 
 .ant-table {
-  background: transparent !important;
+  background: transparent;
 }
 
 .ant-table-thead > tr > th {
-  background: transparent !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #ffffff !important;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .ant-table-tbody > tr > td {
-  background: transparent !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
-  color: #ffffff !important;
+  background: transparent;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #ffffff;
 }
 
 .ant-table-tbody > tr:hover > td {
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: rgba(255, 255, 255, 0.05);
 }

@@ -38,7 +38,17 @@ vi.mock("antd", () => ({
     onCancel: () => void;
   }) =>
     open ? (
-      <div data-testid="modal" onClick={onCancel}>
+      <div
+        data-testid="modal"
+        role="dialog"
+        onClick={onCancel}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onCancel();
+          }
+        }}
+      >
         {children}
       </div>
     ) : null,
