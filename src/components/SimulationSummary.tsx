@@ -66,7 +66,7 @@ const SimulationSummary = ({
     return (
       <div className="simulationsummary simulationsummary-collapsed">
         {/* No buttons when collapsed - just clickable text */}
-        <button type="button" onClick={handleExpand} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', width: '100%', textAlign: 'left', padding: 0 }}>
+        <button type="button" onClick={handleExpand}>
           <div>
             Show simulation summary
           </div>

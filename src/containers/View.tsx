@@ -39,13 +39,6 @@ interface ViewProps {
   isEmbeddedMode?: boolean;
 }
 
-const SettingsButtonContainer = styled.div`
-  position: fixed !important;
-  bottom: 0;
-  right: 0;
-  margin-bottom: 20px;
-`;
-
 const VisualizerWrapper = styled.div`
   height: 100vh;
   width: 100%;
