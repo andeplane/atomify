@@ -90,16 +90,8 @@ const SimulationSummary = ({
     <div className="simulationsummary">
       {simulation && (
         <>
-          <div className="simulation-summary-minimize-button">
-            {onShowMore ? (
-              <Button
-                type="text"
-                icon={<ExpandOutlined />}
-                onClick={handleShowMore}
-                style={{ color: '#fff', padding: 0 }}
-                title="Expand"
-              />
-            ) : onCollapse ? (
+          <div className="simulation-summary-minimize-button" style={{ display: 'flex', gap: '4px' }}>
+            {onCollapse && (
               <Button
                 type="text"
                 icon={<MinusOutlined />}
@@ -107,7 +99,16 @@ const SimulationSummary = ({
                 style={{ color: '#fff', padding: 0 }}
                 title="Collapse"
               />
-            ) : null}
+            )}
+            {onShowMore && (
+              <Button
+                type="text"
+                icon={<ExpandOutlined />}
+                onClick={handleShowMore}
+                style={{ color: '#fff', padding: 0 }}
+                title="Expand"
+              />
+            )}
           </div>
           <div>
             Type: {runType}
