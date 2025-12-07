@@ -65,18 +65,7 @@ const SimulationSummary = ({
   if (isCollapsed) {
     return (
       <div className="simulationsummary simulationsummary-collapsed">
-        {/* Only show expand button icon if onShowMore is provided (desktop only) */}
-        {onShowMore && onExpand && (
-          <div className="simulation-summary-minimize-button">
-            <Button
-              type="text"
-              icon={<ExpandOutlined />}
-              onClick={handleExpand}
-              style={{ color: '#fff', padding: 0 }}
-              title="Expand"
-            />
-          </div>
-        )}
+        {/* No buttons when collapsed - just clickable text */}
         <button type="button" onClick={handleExpand} style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', width: '100%', textAlign: 'left', padding: 0 }}>
           <div>
             Show simulation summary
