@@ -274,6 +274,7 @@ const SimulationSummaryContent = () => {
     },
   ];
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies(renderSettings.showSimulationBox): needed for simulationSummaryColumns render function
   const simulationStatusData: SimulationSummaryType[] = useMemo(() => {
     if (!simulation) {
       return [];
@@ -341,7 +342,6 @@ const SimulationSummaryContent = () => {
     memoryUsage,
     simulationSettings.speed,
     simulationSettings.uiUpdateFrequency,
-    // biome-ignore lint/correctness/useExhaustiveDependencies: renderSettings.showSimulationBox is used in simulationSummaryColumns render function
     renderSettings.showSimulationBox,
   ]);
 
