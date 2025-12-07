@@ -1,6 +1,6 @@
 import { useStoreState, useStoreActions } from "../hooks";
-import { SettingOutlined } from "@ant-design/icons";
-import { Table, Row, Col, Button, Slider, Checkbox } from "antd";
+import { SettingOutlined, MinusOutlined } from "@ant-design/icons";
+import { Table, Row, Col, Button, Slider } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TableRowSelection } from "antd/es/table/interface";
 import { Compute, Fix, Variable } from "../types";
@@ -12,13 +12,18 @@ import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import ColorModifier from "../modifiers/colormodifier";
 import Figure from "../components/Figure";
 import { track } from "../utils/metrics";
+
 interface SimulationSummaryType {
   key: React.ReactNode;
   name: string;
   value: string | number;
 }
 
-const SimulationSummary = () => {
+interface SimulationSummaryExpandedProps {
+  onShowLess?: () => void;
+}
+
+const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProps) => {
   const [visibleSettings, setVisibleSettings] = useState<string | undefined>();
   const [visibleCompute, setVisibleCompute] = useState<Compute | undefined>();
   const [visibleFix, setVisibleFix] = useState<Fix | undefined>();
@@ -59,10 +64,6 @@ const SimulationSummary = () => {
   const setSimulationSettings = useStoreActions(
     (actions) => actions.settings.setSimulation,
   );
-  const renderSettings = useStoreState((state) => state.settings.render);
-  const setRenderSettings = useStoreActions(
-    (actions) => actions.settings.setRender,
-  );
 
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
@@ -92,6 +93,13 @@ const SimulationSummary = () => {
     if (value && value > 0) {
       track("UIUpdateFrequency.Change", { frequency: value });
       setSimulationSettings({ ...simulationSettings, uiUpdateFrequency: value });
+    }
+  };
+
+  const handleShowLess = () => {
+    if (onShowLess) {
+      track("SimulationSummary.ShowLess");
+      onShowLess();
     }
   };
 
@@ -288,22 +296,6 @@ const SimulationSummary = () => {
             />
           );
         }
-        if (record.key === "showsimulationbox") {
-          return (
-            <Checkbox
-              checked={renderSettings.showSimulationBox}
-              onChange={(e) => {
-                track("Settings.Render.ShowSimulationBox", {
-                  value: e.target.checked,
-                });
-                setRenderSettings({
-                  ...renderSettings,
-                  showSimulationBox: e.target.checked,
-                });
-              }}
-            />
-          );
-        }
         return <>{text}</>;
       },
     },
@@ -359,11 +351,6 @@ const SimulationSummary = () => {
         name: "UI update frequency",
         value: simulationSettings.uiUpdateFrequency || 15,
       },
-      {
-        key: "showsimulationbox",
-        name: "Show simulation box",
-        value: "",
-      },
     ];
   }, [
     simulation,
@@ -376,60 +363,71 @@ const SimulationSummary = () => {
     memoryUsage,
     simulationSettings.speed,
     simulationSettings.uiUpdateFrequency,
-    renderSettings.showSimulationBox,
   ]);
 
   return (
     <>
-      <div className="liquid-glass-container">
-        <Table
-          title={() => <b>Modifiers</b>}
-          size="small"
-          showHeader={false}
-          columns={modiferColumns}
-          rowSelection={{ ...rowSelection, selectedRowKeys: selectedModifiers }}
-          dataSource={modifiers}
-          pagination={{ hideOnSinglePage: true }}
-        />
-        {simulation && (
-          <>
-            <Table
-              title={() => <b>Summary</b>}
-              size="small"
-              showHeader={false}
-              columns={simulationSummaryColumns}
-              dataSource={simulationStatusData}
-              pagination={{ hideOnSinglePage: true }}
+      <div className="simulationsummary simulationsummary-expanded">
+        {onShowLess && (
+          <div className="simulation-summary-minimize-button">
+            <Button
+              type="text"
+              icon={<MinusOutlined />}
+              onClick={handleShowLess}
+              style={{ color: '#fff', padding: 0 }}
             />
-            <Table
-              title={() => <b>Computes</b>}
-              size="small"
-              rowKey="name"
-              showHeader={false}
-              columns={computeColumns}
-              dataSource={Object.values(computes)}
-              pagination={{ hideOnSinglePage: true }}
-            />
-            <Table
-              title={() => <b>Variables</b>}
-              size="small"
-              rowKey="name"
-              showHeader={false}
-              columns={variableColumns}
-              dataSource={Object.values(variables)}
-              pagination={{ hideOnSinglePage: true }}
-            />
-            <Table
-              title={() => <b>Fixes</b>}
-              size="small"
-              rowKey="name"
-              showHeader={false}
-              columns={fixColumns}
-              dataSource={Object.values(fixes)}
-              pagination={{ hideOnSinglePage: true }}
-            />
-          </>
+          </div>
         )}
+        <div className="simulation-summary-expanded-content">
+          <Table
+            title={() => <b>Modifiers</b>}
+            size="small"
+            showHeader={false}
+            columns={modiferColumns}
+            rowSelection={{ ...rowSelection, selectedRowKeys: selectedModifiers }}
+            dataSource={modifiers}
+            pagination={{ hideOnSinglePage: true }}
+          />
+          {simulation && (
+            <>
+              <Table
+                title={() => <b>Summary</b>}
+                size="small"
+                showHeader={false}
+                columns={simulationSummaryColumns}
+                dataSource={simulationStatusData}
+                pagination={{ hideOnSinglePage: true }}
+              />
+              <Table
+                title={() => <b>Computes</b>}
+                size="small"
+                rowKey="name"
+                showHeader={false}
+                columns={computeColumns}
+                dataSource={Object.values(computes)}
+                pagination={{ hideOnSinglePage: true }}
+              />
+              <Table
+                title={() => <b>Variables</b>}
+                size="small"
+                rowKey="name"
+                showHeader={false}
+                columns={variableColumns}
+                dataSource={Object.values(variables)}
+                pagination={{ hideOnSinglePage: true }}
+              />
+              <Table
+                title={() => <b>Fixes</b>}
+                size="small"
+                rowKey="name"
+                showHeader={false}
+                columns={fixColumns}
+                dataSource={Object.values(fixes)}
+                pagination={{ hideOnSinglePage: true }}
+              />
+            </>
+          )}
+        </div>
       </div>
       {visibleSettings === "Bonds" && (
         <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />
@@ -468,4 +466,4 @@ const SimulationSummary = () => {
   );
 };
 
-export default React.memo(SimulationSummary);
+export default React.memo(SimulationSummaryExpanded);

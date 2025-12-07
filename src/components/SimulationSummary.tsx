@@ -1,21 +1,21 @@
 import { useStoreState, useStoreActions } from "../hooks";
 import { Slider, Button } from "antd";
-import { MinusOutlined } from "@ant-design/icons";
+import { MinusOutlined, ExpandOutlined } from "@ant-design/icons";
 import { track } from "../utils/metrics";
 
-interface SimulationSummaryOverlayProps {
+interface SimulationSummaryProps {
   onShowMore?: () => void;
   isCollapsed?: boolean;
   onExpand?: () => void;
   onCollapse?: () => void;
 }
 
-const SimulationSummaryOverlay = ({ 
+const SimulationSummary = ({ 
   onShowMore, 
   isCollapsed = false, 
   onExpand,
   onCollapse
-}: SimulationSummaryOverlayProps) => {
+}: SimulationSummaryProps) => {
   const simulationSettings = useStoreState(
     (state) => state.settings.simulation,
   );
@@ -64,11 +64,14 @@ const SimulationSummaryOverlay = ({
 
   if (isCollapsed) {
     return (
-      <button type="button" className="simulationsummary simulationsummary-collapsed" onClick={handleExpand}>
-        <div>
-          Show simulation summary
-        </div>
-      </button>
+      <div className="simulationsummary simulationsummary-collapsed">
+        {/* No buttons when collapsed - just clickable text */}
+        <button type="button" onClick={handleExpand}>
+          <div>
+            Show simulation summary
+          </div>
+        </button>
+      </div>
     );
   }
 
@@ -76,16 +79,26 @@ const SimulationSummaryOverlay = ({
     <div className="simulationsummary">
       {simulation && (
         <>
-          {onCollapse && (
-            <div className="simulation-summary-minimize-button">
+          <div className="simulation-summary-minimize-button" style={{ display: 'flex', gap: '4px' }}>
+            {onCollapse && (
               <Button
                 type="text"
                 icon={<MinusOutlined />}
                 onClick={handleCollapse}
                 style={{ color: '#fff', padding: 0 }}
+                title="Collapse"
               />
-            </div>
-          )}
+            )}
+            {onShowMore && (
+              <Button
+                type="text"
+                icon={<ExpandOutlined />}
+                onClick={handleShowMore}
+                style={{ color: '#fff', padding: 0 }}
+                title="Expand"
+              />
+            )}
+          </div>
           <div>
             Type: {runType}
             <br />
@@ -105,21 +118,10 @@ const SimulationSummaryOverlay = ({
               defaultValue={simulationSettings.speed}
               onChange={(value) => setSyncFrequency(value)}
             />
-            {onShowMore && (
-              <div className="show-more-container">
-                <Button
-                  type="link"
-                  onClick={handleShowMore}
-                  className="show-more-button"
-                >
-                  Show more →
-                </Button>
-              </div>
-            )}
           </div>
         </>
       )}
     </div>
   );
 };
-export default SimulationSummaryOverlay;
+export default SimulationSummary;

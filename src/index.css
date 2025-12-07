@@ -256,6 +256,16 @@ body,
   background: rgba(42, 41, 47, 0.8) !important;
 }
 
+.simulationsummary-collapsed button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+}
+
 .show-more-container {
   text-align: right;
   margin-top: 8px;
@@ -272,6 +282,34 @@ body,
   position: absolute;
   top: 8px;
   right: 8px;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.simulation-summary-minimize-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 100;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.simulation-summary-minimize-button button {
+  pointer-events: auto !important;
+  z-index: 101;
+  cursor: pointer !important;
+}
+
+.simulationsummary-expanded {
+  width: 400px !important;
+  height: calc(100vh - 20px) !important;
+  top: 10px !important;
+  overflow-y: auto;
+}
+
+.simulation-summary-expanded-content {
+  position: relative;
   z-index: 1;
 }
 
