@@ -320,7 +320,8 @@ body,
 
 .simulationsummary-expanded {
   width: 400px !important;
-  max-height: 90vh !important;
+  height: calc(100vh - 20px) !important;
+  top: 10px !important;
   overflow-y: auto;
 }
 
