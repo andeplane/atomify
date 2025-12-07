@@ -419,9 +419,9 @@ const SelectedAtomsInfo = ({
                 Geometry
               </div>
               <div style={{ fontFamily: "monospace", fontSize: "11px" }}>
-                {distanceMeasurements.map((measurement, idx) => (
+                {distanceMeasurements.map((measurement) => (
                   <MeasurementRow
-                    key={idx}
+                    key={measurement.label}
                     label={measurement.label}
                     value={measurement.value}
                     unit={measurement.unit}
@@ -432,9 +432,9 @@ const SelectedAtomsInfo = ({
                 ))}
               </div>
               <div style={{ marginTop: "5px" }}>
-                {angleMeasurements.map((measurement, idx) => (
+                {angleMeasurements.map((measurement) => (
                   <MeasurementRow
-                    key={idx}
+                    key={measurement.label}
                     label={measurement.label}
                     value={measurement.value}
                     unit={measurement.unit}

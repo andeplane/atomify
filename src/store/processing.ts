@@ -177,9 +177,9 @@ export const processingModel: ProcessingModel = {
       const { modifierInput, modifierOutput, allActions, particles, bonds, lammps, wasm } =
         getModifierContext(getStoreState, getStoreActions);
 
-      getStoreState().processing.postTimestepModifiers.forEach((modifier) =>
-        modifier.run(modifierInput, modifierOutput, true)
-      );
+      getStoreState().processing.postTimestepModifiers.forEach((modifier) => {
+        modifier.run(modifierInput, modifierOutput, true);
+      });
       allActions.render.setParticleStylesUpdated(false);
 
       allActions.simulationStatus.setComputes(modifierOutput.computes);
@@ -236,9 +236,9 @@ export const processingModel: ProcessingModel = {
           modifier.name === "Particles" || modifier.name === "Bonds" || modifier.name === "Colors"
       ) as Modifier[];
 
-      renderingModifiers.forEach((modifier: Modifier) =>
-        modifier.run(modifierInput, modifierOutput, true)
-      );
+      renderingModifiers.forEach((modifier: Modifier) => {
+        modifier.run(modifierInput, modifierOutput, true);
+      });
       allActions.render.setParticleStylesUpdated(false);
 
       // Only update rendering state, skip UI state updates

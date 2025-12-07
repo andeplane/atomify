@@ -132,7 +132,9 @@ const Examples = () => {
   const keywordsSet: Set<string> = new Set();
   examples.forEach((example) => {
     if (example.keywords) {
-      example.keywords.forEach((keyword) => keywordsSet.add(keyword));
+      example.keywords.forEach((keyword) => {
+        keywordsSet.add(keyword);
+      });
     }
   });
   const keywords = Array.from(keywordsSet);

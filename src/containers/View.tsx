@@ -23,7 +23,10 @@ interface VisualizerWithCameraPlanes extends Visualizer {
 }
 
 function visualizerHasCameraPlanes(v: Visualizer): v is VisualizerWithCameraPlanes {
-  return "updateCameraPlanes" in v && typeof (v as any).updateCameraPlanes === "function";
+  return (
+    "updateCameraPlanes" in v &&
+    typeof (v as unknown as VisualizerWithCameraPlanes).updateCameraPlanes === "function"
+  );
 }
 
 const { Header } = Layout;
@@ -282,7 +285,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     }
 
     if (prevBonds && prevBonds !== bonds) {
-      visualizer.remove(prevBonds!);
+      visualizer.remove(prevBonds);
       prevBonds.dispose();
     }
 

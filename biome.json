@@ -41,7 +41,8 @@
         "noAssignInExpressions": "warn"
       },
       "complexity": {
-        "noBannedTypes": "warn"
+        "noBannedTypes": "warn",
+        "noImportantStyles": "off"
       }
     }
   },
