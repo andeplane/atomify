@@ -41,14 +41,9 @@ const { Header, Sider } = Layout;
 interface ViewProps {
   visible: boolean;
   isEmbeddedMode?: boolean;
+  showSettings?: boolean;
+  onCloseSettings?: () => void;
 }
-
-const SettingsButtonContainer = styled.div`
-  position: fixed !important;
-  bottom: 0;
-  right: 0;
-  margin-bottom: 20px;
-`;
 
 const AnalyzeButtonContainer = styled.div`
   position: fixed !important;
@@ -78,11 +73,21 @@ const VisualizerWrapper = styled.div`
 
 const MOBILE_BREAKPOINT = 900;
 
-const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
+const View = ({ visible, isEmbeddedMode = false, showSettings: externalShowSettings, onCloseSettings }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showColorSettings, setShowColorSettings] = useState(false);
+  
+  // Use external settings state if provided, otherwise use internal state
+  const isSettingsOpen = externalShowSettings !== undefined ? externalShowSettings : showSettings;
+  const handleCloseSettings = () => {
+    if (onCloseSettings) {
+      onCloseSettings();
+    } else {
+      setShowSettings(false);
+    }
+  };
   const [showAnalyze, setShowAnalyze] = useState(false);
   const [showMobileSummaryModal, setShowMobileSummaryModal] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
@@ -449,8 +454,8 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       <div id="canvas-container" style={{ height: "100%", width: "100%" }}>
         <VisualizerWrapper ref={domElement}>
           <Settings
-            open={showSettings}
-            onClose={() => setShowSettings(false)}
+            open={isSettingsOpen}
+            onClose={handleCloseSettings}
           />
           {showColorSettings && (
             <ColorModifierSettings
@@ -525,20 +530,6 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
               />
             </MobileSummaryButtonContainer>
           )}
-          <SettingsButtonContainer>
-            <SettingOutlined
-              style={{
-                fontSize: "32px",
-                color: "#fff",
-                marginRight: 20,
-                zIndex: 1000,
-              }}
-              onClick={() => {
-                track("Settings.Open");
-                setShowSettings(true);
-              }}
-            />
-          </SettingsButtonContainer>
         </>
       )}
       {showAnalyze && !isEmbeddedMode && (

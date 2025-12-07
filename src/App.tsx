@@ -14,6 +14,7 @@ import {
   ShareAltOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { useMeasure } from "react-use";
 import React, { useState, useEffect, useCallback } from "react";
@@ -87,6 +88,7 @@ const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [showNewSimulation, setShowNewSimulation] = useState(false);
   const [showShareSimulation, setShowShareSimulation] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const selectedFile = useStoreState((state) => state.app.selectedFile);
@@ -210,6 +212,18 @@ const App: React.FC = () => {
       simulation == null,
     ),
     pauseButton,
+    { type: "divider" },
+    getItem(
+      "Settings",
+      "settings",
+      <SettingOutlined />,
+      undefined,
+      () => {
+        track("Settings.Open");
+        setSelectedMenu("view");
+        setShowSettings(true);
+      },
+    ),
   ];
 
   useEffect(() => {
@@ -239,6 +253,11 @@ const App: React.FC = () => {
       });
 
       if (selected === "run") {
+        return;
+      }
+
+      if (selected === "settings") {
+        // Settings is handled by the onClick in the menu item
         return;
       }
 
@@ -292,7 +311,7 @@ const App: React.FC = () => {
         <Layout className="site-layout">
           <AutoStartSimulation />
           <Simulation />
-          <Main isEmbedded={isEmbeddedMode} />
+          <Main isEmbedded={isEmbeddedMode} showSettings={showSettings} onCloseSettings={() => setShowSettings(false)} />
         </Layout>
       </Layout>
       {showNewSimulation && (

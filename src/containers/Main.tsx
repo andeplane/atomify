@@ -10,7 +10,13 @@ import LoadingSimulationScreen from "../components/LoadingSimulationScreen";
 import { useStoreActions, useStoreState } from "../hooks";
 const { Content } = Layout;
 
-const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
+interface MainProps {
+  isEmbedded: boolean;
+  showSettings?: boolean;
+  onCloseSettings?: () => void;
+}
+
+const Main = ({ isEmbedded, showSettings, onCloseSettings }: MainProps) => {
   const wasm = window.wasm; // TODO: This is an ugly hack because wasm object is so big that Redux debugger hangs.
   const showConsole = useStoreState((state) => state.simulation.showConsole);
   const [consoleKey, setConsoleKey] = useState(0);
@@ -49,7 +55,12 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
         children: isEmbedded && !hasStarted ? (
           <LoadingSimulationScreen status={status} wasmReady={wasm != null} />
         ) : (
-          <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbedded} />
+          <View 
+            visible={selectedMenu === "view"} 
+            isEmbeddedMode={isEmbedded}
+            showSettings={showSettings}
+            onCloseSettings={onCloseSettings}
+          />
         ),
       },
       {
