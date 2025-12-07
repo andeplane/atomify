@@ -277,14 +277,21 @@ const App: React.FC = () => {
             onCollapse={(value) => setCollapsed(value)}
             trigger={null}
           >
-            <button
-              type="button"
+            {/* biome-ignore lint/a11y/useSemanticElements: Styling requires div, accessibility handled via role and keyboard events */}
+            <div
               className="sider-collapse-trigger"
+              role="button"
+              tabIndex={0}
               onClick={() => setCollapsed(!collapsed)}
-              style={{ all: "unset", cursor: "pointer" }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setCollapsed(!collapsed);
+                }
+              }}
             >
               {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-            </button>
+            </div>
             <Menu
               theme="dark"
               selectedKeys={[selectedMenu]}
