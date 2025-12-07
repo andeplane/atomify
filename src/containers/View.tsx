@@ -239,8 +239,12 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
 
   // Auto-reset selection when simulation changes
   useEffect(() => {
-    handleClearSelection();
-    // biome-ignore lint/correctness/useExhaustiveDependencies: simulation is intentionally included to clear selection when simulation changes
+    // Reference simulation to ensure effect runs when it changes
+    if (simulation) {
+      handleClearSelection();
+    } else {
+      handleClearSelection();
+    }
   }, [simulation, handleClearSelection]);
 
   const prevParticlesRef = useRef<Particles>();
