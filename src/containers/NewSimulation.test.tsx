@@ -371,10 +371,26 @@ describe("NewSimulation", () => {
     it("should not overwrite user's manual selection", async () => {
       // Arrange
       const files = ["run.in", "other.in"].map((name) => createMockFile(name));
+      const newFile = createMockFile("new.in");
 
-      // Act
-      const { container } = await triggerFileUpload(files);
+      // Act - render component ONCE
+      const { container } = render(<NewSimulation onClose={mockOnClose} />);
       
+      await waitFor(() => {
+        expect(capturedOnChange).toBeDefined();
+      });
+
+      if (!capturedOnChange) {
+        throw new Error("onChange handler not captured");
+      }
+
+      // Upload initial files
+      const initialUploadParam = createMockUploadChangeParam(files);
+      await act(async () => {
+        await capturedOnChange!(initialUploadParam);
+      });
+
+      // Wait for UI to update and select to appear
       await waitFor(() => {
         const select = container.querySelector('[data-testid="input-script-select"]') as HTMLSelectElement;
         expect(select).toBeInTheDocument();
@@ -386,11 +402,16 @@ describe("NewSimulation", () => {
         await userEvent.selectOptions(select, "other.in");
       });
 
-      // Upload another .in file
-      const newFile = createMockFile("new.in");
-      await triggerFileUpload([...files, newFile]);
+      // Verify selection was set
+      expect(select.value).toBe("other.in");
 
-      // Assert - should still have user's selection
+      // Upload another .in file to the SAME component instance
+      const newUploadParam = createMockUploadChangeParam([...files, newFile]);
+      await act(async () => {
+        await capturedOnChange!(newUploadParam);
+      });
+
+      // Assert - should still have user's selection (not overwritten by auto-select)
       await waitFor(() => {
         expect(select.value).toBe("other.in");
       });
