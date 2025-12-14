@@ -48,6 +48,16 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
     window.files = [];
   }, []);
 
+  // Auto-select first .in file if no input script is selected
+  useEffect(() => {
+    if (!inputScript && files.length > 0) {
+      const inFile = files.find((file) => file.fileName.endsWith(".in"));
+      if (inFile) {
+        setInputScript(inFile.fileName);
+      }
+    }
+  }, [files, inputScript]);
+
   const onChange = useCallback(
     async (info: UploadChangeParam<UploadFile>) => {
       // Need to use window.files because these async functions can't seem to agree on the state
@@ -60,17 +70,33 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
         return;
       }
 
-      const originFile = info.file.originFileObj;
-      if (!originFile) {
-        return;
+      // Process all files in the list that haven't been processed yet
+      for (const uploadFile of info.fileList) {
+        // Check current state right before processing to avoid race conditions
+        const currentFiles = window.files || [];
+        if (currentFiles.some((f) => f.fileName === uploadFile.name)) {
+          continue; // Already processed
+        }
+        
+        const originFile = uploadFile.originFileObj;
+        if (!originFile) {
+          continue; // Not ready yet
+        }
+
+        const file: SimulationFile = {
+          fileName: uploadFile.name,
+          content: await originFile.text(),
+        };
+        
+        // Double-check before adding to prevent race conditions
+        const filesBeforeAdd = window.files || [];
+        if (!filesBeforeAdd.some((f) => f.fileName === uploadFile.name)) {
+          window.files = [...filesBeforeAdd, file];
+          message.success(`${file.fileName} uploaded successfully.`);
+        }
       }
-      const file: SimulationFile = {
-        fileName: info.file.name,
-        content: await originFile.text(),
-      };
-      window.files = [...(window.files || []), file];
-      setFiles(window.files);
-      message.success(`${file.fileName} uploaded successfully.`);
+      
+      setFiles(window.files || []);
     },
     [files, setFiles],
   );
@@ -178,6 +204,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
           </p>
           <Select
             style={{ width: "100%" }}
+            value={inputScript}
             onChange={(value) => setInputScript(value)}
           >
             {files.map((file) => (
