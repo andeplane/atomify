@@ -12,7 +12,11 @@ venv/
 *.sqlite
 
 # Environment
-.env
+# .env.local  # Use for local overrides if needed
+
+# Service account keys (NEVER commit these)
+*-key.json
+service-account.json
 
 # IDE
 .idea/
