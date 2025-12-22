@@ -5,26 +5,27 @@ description = "Atomify Backend API"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.32.0",
-    "pydantic>=2.10.0",
-    "pydantic-settings>=2.6.0",
-    "sqlmodel>=0.0.22",
-    "aiosqlite>=0.20.0",
-    "greenlet>=3.0.0",
-    "alembic>=1.14.0",
-    "firebase-admin>=6.6.0",
-    "gcloud-aio-storage>=9.3.0",
-    "httpx>=0.28.0",
-    "python-multipart>=0.0.18",
+    "fastapi==0.127.0",
+    "uvicorn[standard]==0.40.0",
+    "pydantic==2.12.5",
+    "pydantic-settings==2.12.0",
+    "sqlmodel==0.0.27",
+    "aiosqlite==0.22.0",
+    "greenlet==3.3.0",
+    "alembic==1.17.2",
+    "firebase-admin==7.1.0",
+    "gcloud-aio-storage==9.6.1",
+    "google-cloud-storage==3.7.0",
+    "httpx==0.28.1",
+    "python-multipart==0.0.21",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "ty>=0.0.1-alpha.22",
-    "pytest>=8.0.0",
-    "pytest-asyncio>=0.24.0",
-    "ruff>=0.8.0",
+    "ty==0.0.5",
+    "pytest==9.0.2",
+    "pytest-asyncio==1.3.0",
+    "ruff==0.14.10",
 ]
 
 [build-system]
