@@ -15,15 +15,11 @@ on:
       - ".github/workflows/backend.yaml"
 
 env:
+  # GCP/Deploy settings (used by deploy job)
   GCP_PROJECT_ID: atomify-ee7b5
-  GCP_PROJECT_NUMBER: "917312770790"
-  FIREBASE_PROJECT_ID: atomify-ee7b5
   REGION: europe-west1
   SERVICE_NAME: atomify-api
   IMAGE_NAME: atomify-api
-  DATABASE_URL: sqlite+aiosqlite:////data/atomify.db
-  GCS_BUCKET_NAME: atomify-user-files
-  CORS_ORIGINS: http://localhost:3000,https://andeplane.github.io
 
 jobs:
   test:
@@ -102,7 +98,7 @@ jobs:
             --platform=managed \
             --allow-unauthenticated \
             --service-account=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
-            --set-env-vars="DATABASE_URL=${{ env.DATABASE_URL }},FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }},GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }},CORS_ORIGINS=${{ env.CORS_ORIGINS }}" \
+            --set-env-vars="DATABASE_URL=sqlite+aiosqlite:////data/atomify.db,FIREBASE_PROJECT_ID=atomify-ee7b5,GCS_BUCKET_NAME=atomify-user-files,CORS_ORIGINS=http://localhost:3000,https://andeplane.github.io" \
             --memory=512Mi \
             --cpu=1 \
             --min-instances=0 \
