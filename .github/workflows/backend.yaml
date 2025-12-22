@@ -92,12 +92,7 @@ jobs:
 
       - name: Create env vars file
         run: |
-          cat > /tmp/env-vars.yaml << 'EOF'
-          DATABASE_URL: "sqlite+aiosqlite:////data/atomify.db"
-          FIREBASE_PROJECT_ID: "atomify-ee7b5"
-          GCS_BUCKET_NAME: "atomify-user-files"
-          CORS_ORIGINS: '["http://localhost:3000","https://andeplane.github.io"]'
-          EOF
+          printf 'DATABASE_URL: "sqlite+aiosqlite:////data/atomify.db"\nFIREBASE_PROJECT_ID: "atomify-ee7b5"\nGCS_BUCKET_NAME: "atomify-user-files"\nCORS_ORIGINS: '\''["http://localhost:3000","https://andeplane.github.io"]'\''\n' > /tmp/env-vars.yaml
 
       - name: Deploy to Cloud Run
         run: |
