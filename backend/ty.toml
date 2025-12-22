@@ -1,0 +1,16 @@
+[environment]
+python-version = "3.12"
+
+[rules]
+# Enable strict type checking
+unresolved-import = "error"
+unresolved-reference = "error"
+invalid-argument-type = "error"
+invalid-return-type = "error"
+invalid-assignment = "error"
+missing-argument = "error"
+too-many-positional-arguments = "error"
+unknown-argument = "error"
+possibly-unresolved-reference = "warn"
+unused-ignore-comment = "warn"
+
