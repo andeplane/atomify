@@ -4,6 +4,7 @@ import asyncio
 from datetime import timedelta
 from typing import Any, BinaryIO
 
+import aiohttp
 from gcloud.aio.storage import Storage
 from google.cloud import storage as sync_storage
 
@@ -123,8 +124,10 @@ class GCSClient:
         try:
             await storage.download_metadata(self.bucket_name, file_path)
             return True
-        except Exception:
-            return False
+        except aiohttp.ClientResponseError as e:
+            if e.status == 404:
+                return False
+            raise
 
     def _generate_signed_url_sync(
         self,

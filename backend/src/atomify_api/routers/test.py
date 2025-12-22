@@ -1,5 +1,6 @@
 """Simple test endpoint to verify database connectivity."""
 
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from typing import Annotated
 
@@ -55,7 +56,7 @@ async def create_test_record(
 @router.get("/test", response_model=list[TestOutput])
 async def get_test_records(
     session: Annotated[AsyncSession, Depends(get_session)],
-) -> list[TestRecord]:
+) -> Sequence[TestRecord]:
     """Retrieve all test records from the database."""
     result = await session.execute(select(TestRecord).order_by(col(TestRecord.id).desc()))
-    return list(result.scalars().all())
+    return result.scalars().all()

@@ -10,6 +10,7 @@ from atomify_api.config import get_settings
 from atomify_api.db.database import init_db
 from atomify_api.routers.health import router as health_router
 from atomify_api.routers.test import router as test_router
+from atomify_api.storage.gcs import get_gcs_client
 
 
 @asynccontextmanager
@@ -18,7 +19,8 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Startup
     await init_db()
     yield
-    # Shutdown (cleanup if needed)
+    # Shutdown
+    await get_gcs_client().close()
 
 
 def create_app() -> FastAPI:

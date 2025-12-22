@@ -26,7 +26,7 @@ uv run ruff check src/
 Copy `.env.example` to `.env` and configure:
 
 - `DATABASE_URL` - SQLite database path
-- `FIREBASE_PROJECT_ID` - Firebase project ID  
+- `FIREBASE_PROJECT_ID` - Firebase project ID
 - `GCS_BUCKET_NAME` - Google Cloud Storage bucket name
 - `CORS_ORIGINS` - Comma-separated list of allowed origins
 

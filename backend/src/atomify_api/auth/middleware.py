@@ -1,5 +1,6 @@
 """Authentication middleware and dependencies."""
 
+import logging
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, status
@@ -7,6 +8,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from firebase_admin import auth as firebase_auth
 
 from atomify_api.auth.firebase import verify_firebase_token
+
+logger = logging.getLogger(__name__)
 
 # HTTP Bearer token scheme
 security = HTTPBearer(auto_error=False)
@@ -70,6 +73,7 @@ async def get_current_user(
         ) from None
     except Exception:
         # Log full error server-side; return generic message to client
+        logger.exception("Unexpected error during token validation")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
