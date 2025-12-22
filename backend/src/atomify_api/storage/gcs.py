@@ -33,6 +33,8 @@ class GCSClient:
     @property
     def bucket_name(self) -> str:
         """Get the configured bucket name."""
+        if self.settings.gcs_bucket_name is None:
+            raise ValueError("GCS_BUCKET_NAME environment variable is not set")
         return self.settings.gcs_bucket_name
 
     async def upload_file(
@@ -68,6 +70,8 @@ class GCSClient:
     ) -> str:
         """Upload from a file-like object.
 
+        Streams the file directly to GCS to avoid loading entire file into memory.
+
         Args:
             file_path: The path within the bucket.
             file_obj: File-like object to upload.
@@ -76,8 +80,14 @@ class GCSClient:
         Returns:
             The full GCS path.
         """
-        content = file_obj.read()
-        return await self.upload_file(file_path, content, content_type)
+        storage = await self._get_storage()
+        await storage.upload(
+            self.bucket_name,
+            file_path,
+            file_obj,
+            content_type=content_type,
+        )
+        return f"gs://{self.bucket_name}/{file_path}"
 
     async def download_file(self, file_path: str) -> bytes:
         """Download a file from GCS.

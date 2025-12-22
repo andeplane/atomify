@@ -24,11 +24,11 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./atomify.db"
 
     # Firebase
-    firebase_project_id: str = ""
+    firebase_project_id: str | None = None
     google_application_credentials: str | None = None
 
     # Google Cloud Storage
-    gcs_bucket_name: str = ""
+    gcs_bucket_name: str | None = None
 
     # CORS
     cors_origins: list[str] = [

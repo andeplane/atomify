@@ -68,10 +68,11 @@ async def get_current_user(
             detail="Authentication token has been revoked",
             headers={"WWW-Authenticate": "Bearer"},
         ) from None
-    except Exception as e:
+    except Exception:
+        # Log full error server-side; return generic message to client
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Authentication failed: {e!s}",
+            detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         ) from None
 

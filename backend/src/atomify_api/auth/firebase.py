@@ -28,10 +28,10 @@ def get_firebase_app() -> firebase_admin.App:
     try:
         return firebase_admin.get_app()
     except ValueError:
-        return firebase_admin.initialize_app(
-            cred,
-            {"projectId": settings.firebase_project_id} if settings.firebase_project_id else None,
-        )
+        options = None
+        if settings.firebase_project_id:
+            options = {"projectId": settings.firebase_project_id}
+        return firebase_admin.initialize_app(cred, options)
 
 
 def _verify_token_sync(token: str) -> dict[str, Any]:

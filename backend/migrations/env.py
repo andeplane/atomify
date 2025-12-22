@@ -10,7 +10,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from sqlmodel import SQLModel
 
 from atomify_api.config import get_settings
-from atomify_api.db.models import Simulation, User  # noqa: F401 - Import models to register them
+
+# Import models to register them with SQLModel metadata
+# Note: Add model imports here as they are defined
+from atomify_api.routers.test import TestRecord  # noqa: F401
 
 # Alembic Config object
 config = context.config
