@@ -14,6 +14,17 @@ on:
       - "backend/**"
       - ".github/workflows/backend.yaml"
 
+env:
+  GCP_PROJECT_ID: atomify-ee7b5
+  GCP_PROJECT_NUMBER: "917312770790"
+  FIREBASE_PROJECT_ID: atomify-ee7b5
+  REGION: europe-west1
+  SERVICE_NAME: atomify-api
+  IMAGE_NAME: atomify-api
+  DATABASE_URL: sqlite+aiosqlite:////data/atomify.db
+  GCS_BUCKET_NAME: atomify-user-files
+  CORS_ORIGINS: http://localhost:3000,https://andeplane.github.io
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -52,5 +63,49 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Docker image
-        run: docker build -t atomify-api:test ./backend
+        run: docker build -t ${{ env.IMAGE_NAME }}:test ./backend
 
+  deploy:
+    needs: [test, docker]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for GCR
+        run: gcloud auth configure-docker
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_TAG="gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          docker build -t $IMAGE_TAG ./backend
+          docker push $IMAGE_TAG
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image=${{ env.IMAGE_TAG }} \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --service-account=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
+            --set-env-vars="DATABASE_URL=${{ env.DATABASE_URL }},FIREBASE_PROJECT_ID=${{ env.FIREBASE_PROJECT_ID }},GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }},CORS_ORIGINS=${{ env.CORS_ORIGINS }}" \
+            --memory=512Mi \
+            --cpu=1 \
+            --min-instances=0 \
+            --max-instances=10 \
+            --timeout=300 \
+            --port=8000
