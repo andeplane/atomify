@@ -90,6 +90,15 @@ jobs:
           docker push $IMAGE_TAG
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
+      - name: Create env vars file
+        run: |
+          cat > /tmp/env-vars.yaml << 'EOF'
+          DATABASE_URL: "sqlite+aiosqlite:////data/atomify.db"
+          FIREBASE_PROJECT_ID: "atomify-ee7b5"
+          GCS_BUCKET_NAME: "atomify-user-files"
+          CORS_ORIGINS: '["http://localhost:3000","https://andeplane.github.io"]'
+          EOF
+
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy ${{ env.SERVICE_NAME }} \
@@ -99,7 +108,7 @@ jobs:
             --execution-environment=gen2 \
             --allow-unauthenticated \
             --service-account=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }} \
-            --set-env-vars="DATABASE_URL=sqlite+aiosqlite:////data/atomify.db,FIREBASE_PROJECT_ID=atomify-ee7b5,GCS_BUCKET_NAME=atomify-user-files,CORS_ORIGINS=http://localhost:3000,https://andeplane.github.io" \
+            --env-vars-file=/tmp/env-vars.yaml \
             --add-volume=name=db-volume,type=cloud-storage,bucket=atomify-db \
             --add-volume-mount=volume=db-volume,mount-path=/data \
             --memory=512Mi \
