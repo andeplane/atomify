@@ -1,0 +1,56 @@
+name: Backend CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yaml"
+  pull_request:
+    branches:
+      - "*"
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend.yaml"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "0.5.11"
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies
+        run: uv sync --all-extras
+
+      - name: Run linter
+        run: uv run ruff check src/
+
+      - name: Run type checker
+        run: uv run ty check src/
+
+      - name: Run tests
+        run: uv run pytest
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t atomify-api:test ./backend
+
