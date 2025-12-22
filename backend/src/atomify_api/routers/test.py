@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlmodel import Field, SQLModel, select
+from sqlmodel import Field, SQLModel, col, select
 
 from atomify_api.db.database import get_session
 
@@ -57,6 +57,5 @@ async def get_test_records(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> list[TestRecord]:
     """Retrieve all test records from the database."""
-    result = await session.execute(select(TestRecord).order_by(TestRecord.id.desc()))  # type: ignore[union-attr]
+    result = await session.execute(select(TestRecord).order_by(col(TestRecord.id).desc()))
     return list(result.scalars().all())
-
