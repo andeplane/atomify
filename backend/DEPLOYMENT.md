@@ -19,26 +19,19 @@ The backend is deployed to Google Cloud Run automatically via GitHub Actions whe
 Set these in your GitHub repository: **Settings → Secrets and variables → Actions**
 
 ### 1. `GCP_SA_KEY`
-- **Description**: Service account JSON key with Cloud Run Admin permissions
-- **How to create**:
-  1. Google Cloud Console → IAM & Admin → Service Accounts
-  2. Create service account (e.g., `github-actions`)
-  3. Grant roles:
-     - `Cloud Run Admin`
-     - `Service Account User`
-     - `Storage Admin` (for GCR/Artifact Registry)
-  4. Create JSON key → Download → Copy entire JSON content
-  5. Paste into GitHub secret
+- **Description**: Service account JSON key for CI/CD deployment
+- **Service account**: `github-actions@atomify-ee7b5.iam.gserviceaccount.com`
+- **Roles**:
+  - `Cloud Run Admin` — deploy services
+  - `Service Account User` — impersonate runtime SA
+  - `Storage Object Admin` — push Docker images to GCR
 
 ### 2. `GCP_SERVICE_ACCOUNT_EMAIL`
-- **Description**: Email of the service account that Cloud Run will use
-- **Example**: `atomify-api@atomify-ee7b5.iam.gserviceaccount.com`
-- **How to create**:
-  1. Create service account for Cloud Run (e.g., `atomify-api`)
-  2. Grant roles:
-     - `Storage Object Admin` (for GCS)
-     - `Firebase Admin SDK Administrator Service Agent` (for Firebase Auth)
-  3. Copy the email address
+- **Description**: Email of the service account that Cloud Run uses at runtime
+- **Value**: `atomify-api@atomify-ee7b5.iam.gserviceaccount.com`
+- **Roles**:
+  - `Storage Object Admin` — access GCS buckets
+- **Note**: No Firebase role needed — token verification uses public keys
 
 ## Cloud Run Setup
 
@@ -58,13 +51,9 @@ gcloud services enable \
 gcloud iam service-accounts create atomify-api \
   --display-name="Atomify API Service Account"
 
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:atomify-api@$PROJECT_ID.iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding atomify-ee7b5 \
+  --member="serviceAccount:atomify-api@atomify-ee7b5.iam.gserviceaccount.com" \
   --role="roles/storage.objectAdmin"
-
-gcloud projects add-iam-policy-binding $PROJECT_ID \
-  --member="serviceAccount:atomify-api@$PROJECT_ID.iam.gserviceaccount.com" \
-  --role="roles/firebase.admin"
 ```
 
 ### 3. Create GCS Bucket
@@ -81,18 +70,23 @@ gcloud storage buckets add-iam-policy-binding gs://atomify-user-files \
   --role="roles/storage.objectAdmin"
 ```
 
-### 4. Set Up Cloud Run Volume (for SQLite)
+### 4. Create Database Bucket (for SQLite persistence)
 
-If using SQLite with a persistent volume:
+SQLite is persisted via GCS FUSE mount:
 
 ```bash
-# Create a Cloud Storage bucket for the volume
-gsutil mb -p $PROJECT_ID -l europe-west1 gs://atomify-db-volume
+# Create bucket for SQLite database
+gcloud storage buckets create gs://atomify-db \
+  --project=atomify-ee7b5 \
+  --location=europe-west1
 
-# Mount as volume in Cloud Run (done via gcloud run deploy or console)
+# Grant runtime service account access
+gcloud storage buckets add-iam-policy-binding gs://atomify-db \
+  --member="serviceAccount:atomify-api@atomify-ee7b5.iam.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
 ```
 
-**Note**: For production, consider using Cloud SQL (PostgreSQL) instead of SQLite.
+The deploy command mounts this bucket at `/data` using Cloud Storage FUSE.
 
 ## Database Migrations
 
@@ -117,14 +111,14 @@ Create a Cloud Run Job for migrations:
 
 ```bash
 gcloud run jobs create atomify-api-migrate \
-  --image=gcr.io/$PROJECT_ID/atomify-api:latest \
-  --region=us-central1 \
+  --image=gcr.io/atomify-ee7b5/atomify-api:latest \
+  --region=europe-west1 \
   --set-env-vars="DATABASE_URL=$DATABASE_URL" \
   --command="alembic" \
   --args="upgrade,head"
 
 # Run before each deployment
-gcloud run jobs execute atomify-api-migrate --region=us-central1 --wait
+gcloud run jobs execute atomify-api-migrate --region=europe-west1 --wait
 ```
 
 ## Manual Deployment
@@ -141,9 +135,12 @@ gcloud run deploy atomify-api \
   --image=gcr.io/atomify-ee7b5/atomify-api:latest \
   --region=europe-west1 \
   --platform=managed \
+  --execution-environment=gen2 \
   --allow-unauthenticated \
   --service-account=atomify-api@atomify-ee7b5.iam.gserviceaccount.com \
   --set-env-vars="DATABASE_URL=sqlite+aiosqlite:////data/atomify.db,FIREBASE_PROJECT_ID=atomify-ee7b5,GCS_BUCKET_NAME=atomify-user-files,CORS_ORIGINS=http://localhost:3000,https://andeplane.github.io" \
+  --add-volume=name=db-volume,type=cloud-storage,bucket=atomify-db \
+  --add-volume-mount=volume=db-volume,mount-path=/data \
   --memory=512Mi \
   --cpu=1 \
   --port=8000
@@ -158,7 +155,7 @@ gcloud run deploy atomify-api \
 ## Troubleshooting
 
 ### Service won't start
-- Check logs: `gcloud run services logs read atomify-api --region=us-central1`
+- Check logs: `gcloud run services logs read atomify-api --region=europe-west1`
 - Verify environment variables are set correctly
 - Check service account permissions
 
@@ -169,7 +166,7 @@ gcloud run deploy atomify-api \
 
 ### Firebase Auth fails
 - Verify `FIREBASE_PROJECT_ID` matches your Firebase project
-- Check service account has Firebase Admin permissions
+- Token verification uses public keys (no special permissions needed)
 - Ensure Firebase Admin SDK is initialized correctly
 
 ### GCS access fails
