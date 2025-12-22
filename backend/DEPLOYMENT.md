@@ -87,7 +87,7 @@ If using SQLite with a persistent volume:
 
 ```bash
 # Create a Cloud Storage bucket for the volume
-gsutil mb -p $PROJECT_ID -l us-central1 gs://atomify-db-volume
+gsutil mb -p $PROJECT_ID -l europe-west1 gs://atomify-db-volume
 
 # Mount as volume in Cloud Run (done via gcloud run deploy or console)
 ```
