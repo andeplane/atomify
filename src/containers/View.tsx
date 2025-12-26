@@ -252,7 +252,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
 
       if (webxrEnabled) {
         const vrButton = newVisualizer.enableXR();
-        domElement.current?.appendChild(vrButton);
+        vrButton && domElement.current?.appendChild(vrButton);
       }
     }
   }, [domElement, setVisualizer, visualizer, loading, renderSettings]);
