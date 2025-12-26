@@ -12,6 +12,7 @@ import { track } from "../utils/metrics";
 import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 import ColorModifier from "../modifiers/colormodifier";
 import * as THREE from "three";
+import { VRButton } from "three/examples/jsm/webxr/VRButton.js";
 import {
   createBoxGeometry,
   calculateBoxRadius,
@@ -245,6 +246,19 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       // Apply lighting settings
       newVisualizer.pointLight.intensity = renderSettings.pointLightIntensity;
       newVisualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
+
+      // Enable WebXR if ?webxr=true is in the URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const webxrEnabled = urlParams.get("webxr") === "true";
+
+      if (webxrEnabled) {
+        const rawRenderer = newVisualizer.renderer.getRawRenderer();
+        rawRenderer.xr.enabled = true;
+
+        // Add VR button to the DOM
+        const vrButton = VRButton.createButton(rawRenderer);
+        domElement.current?.appendChild(vrButton);
+      }
     }
   }, [domElement, setVisualizer, visualizer, loading, renderSettings]);
 
