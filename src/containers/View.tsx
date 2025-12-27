@@ -47,6 +47,7 @@ const VisualizerWrapper = styled.div`
 
 const MOBILE_BREAKPOINT = 900;
 const SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY = "simulationSummaryDrawerVisible";
+const PROGRESS_BAR_HEIGHT = 8;
 
 const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
@@ -462,6 +463,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         style={{
           backgroundColor: "rgba(0,0,0,0)",
           position: "fixed",
+          zIndex: 100,
         }}
       >
         <Col>
@@ -472,7 +474,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
                 showInfo={false}
                 style={{ marginTop: "-15px" }}
                 strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
-                size={8}
+                size={["100%", PROGRESS_BAR_HEIGHT]}
                 percent={Math.round(
                   100 * (runTimesteps / (runTotalTimesteps + 1)),
                 )}
