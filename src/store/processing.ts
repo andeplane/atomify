@@ -25,7 +25,7 @@ const getSimulationBox = (
     cellMatrixPointer,
     cellMatrixPointer + 9,
   ) as Float64Array;
-  
+
   // Check if values changed
   if (currentBox) {
     const elements = currentBox.elements;
@@ -41,7 +41,7 @@ const getSimulationBox = (
       return currentBox;
     }
   }
-  
+
   // Values changed, return new Matrix3
   return new THREE.Matrix3().set(
     cellMatrixSubArray[0],
@@ -66,7 +66,7 @@ const getSimulationOrigo = (
     origoPointer,
     origoPointer + 3,
   ) as Float64Array;
-  
+
   // Check if values changed
   if (currentOrigo) {
     if (
@@ -78,7 +78,7 @@ const getSimulationOrigo = (
       return currentOrigo;
     }
   }
-  
+
   // Values changed, return new Vector3
   return new THREE.Vector3(
     origoPointerSubArray[0],
@@ -203,7 +203,10 @@ export const processingModel: ProcessingModel = {
       }
 
       if (everything || getStoreState().app.selectedMenu === "view") {
-        if (modifierOutput.particles && modifierOutput.particles !== particles) {
+        if (
+          modifierOutput.particles &&
+          modifierOutput.particles !== particles
+        ) {
           allActions.render.setParticles(modifierOutput.particles);
         }
         if (modifierOutput.bonds && modifierOutput.bonds !== bonds) {
@@ -215,7 +218,11 @@ export const processingModel: ProcessingModel = {
         getSimulationBox(lammps, wasm, getStoreState().simulationStatus.box),
       );
       allActions.simulationStatus.setOrigo(
-        getSimulationOrigo(lammps, wasm, getStoreState().simulationStatus.origo),
+        getSimulationOrigo(
+          lammps,
+          wasm,
+          getStoreState().simulationStatus.origo,
+        ),
       );
       allActions.simulationStatus.setTimesteps(lammps.getTimesteps());
       allActions.simulationStatus.setNumAtoms(lammps.getNumAtoms());
@@ -241,27 +248,19 @@ export const processingModel: ProcessingModel = {
     },
   ),
   runPostTimestepRendering: thunk(
-    async (
-      actions,
-      payload: void,
-      { getStoreState, getStoreActions },
-    ) => {
-      const {
-        modifierInput,
-        modifierOutput,
-        allActions,
-        particles,
-        bonds,
-      } = getModifierContext(getStoreState, getStoreActions);
-      
+    async (actions, payload: void, { getStoreState, getStoreActions }) => {
+      const { modifierInput, modifierOutput, allActions, particles, bonds } =
+        getModifierContext(getStoreState, getStoreActions);
+
       // Only run rendering-related modifiers (Particles, Bonds, Colors)
-      const renderingModifiers = getStoreState().processing.postTimestepModifiers.filter(
-        (modifier: Modifier) => 
-          modifier.name === "Particles" || 
-          modifier.name === "Bonds" || 
-          modifier.name === "Colors"
-      ) as Modifier[];
-      
+      const renderingModifiers =
+        getStoreState().processing.postTimestepModifiers.filter(
+          (modifier: Modifier) =>
+            modifier.name === "Particles" ||
+            modifier.name === "Bonds" ||
+            modifier.name === "Colors",
+        ) as Modifier[];
+
       renderingModifiers.forEach((modifier: Modifier) =>
         modifier.run(modifierInput, modifierOutput, true),
       );
@@ -269,7 +268,10 @@ export const processingModel: ProcessingModel = {
 
       // Only update rendering state, skip UI state updates
       if (getStoreState().app.selectedMenu === "view") {
-        if (modifierOutput.particles && modifierOutput.particles !== particles) {
+        if (
+          modifierOutput.particles &&
+          modifierOutput.particles !== particles
+        ) {
           allActions.render.setParticles(modifierOutput.particles);
         }
         if (modifierOutput.bonds && modifierOutput.bonds !== bonds) {

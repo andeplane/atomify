@@ -107,7 +107,11 @@ export const simulationStatusModel: SimulationStatusModel = {
   setModifierSyncDataPoints: action(
     (
       state,
-      { name, type, value }: { name: string; type: "compute" | "fix" | "variable"; value: boolean },
+      {
+        name,
+        type,
+        value,
+      }: { name: string; type: "compute" | "fix" | "variable"; value: boolean },
     ) => {
       switch (type) {
         case "compute":

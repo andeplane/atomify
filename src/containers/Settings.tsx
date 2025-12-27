@@ -102,7 +102,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
     const handleSettingChange = <K extends keyof typeof renderSettings>(
       key: K,
       value: (typeof renderSettings)[K],
-      trackName: string
+      trackName: string,
     ) => {
       track(trackName, { value });
       setRenderSettings({ ...renderSettings, [key]: value });
@@ -117,7 +117,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
             handleSettingChange(
               "showSimulationBox",
               e.target.checked,
-              "Settings.Render.ShowSimulationBox"
+              "Settings.Render.ShowSimulationBox",
             )
           }
         >
@@ -131,7 +131,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
               handleSettingChange(
                 "orthographic",
                 e.target.checked,
-                "Settings.Render.Orthographic"
+                "Settings.Render.Orthographic",
               )
             }
           >
@@ -159,7 +159,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
                         handleSettingChange(
                           "ambientLightIntensity",
                           value,
-                          "Settings.Render.AmbientLightIntensity"
+                          "Settings.Render.AmbientLightIntensity",
                         )
                       }
                     />
@@ -176,7 +176,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
                         handleSettingChange(
                           "pointLightIntensity",
                           value,
-                          "Settings.Render.PointLightIntensity"
+                          "Settings.Render.PointLightIntensity",
                         )
                       }
                     />
@@ -195,7 +195,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
                       handleSettingChange(
                         "ssao",
                         e.target.checked,
-                        "Settings.Render.SSAO"
+                        "Settings.Render.SSAO",
                       )
                     }
                   >
@@ -215,7 +215,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
                             handleSettingChange(
                               "ssaoRadius",
                               value,
-                              "Settings.Render.SSAORadius"
+                              "Settings.Render.SSAORadius",
                             )
                           }
                         />
@@ -231,7 +231,7 @@ const Settings = ({ open, onClose }: SettingsProps) => {
                             handleSettingChange(
                               "ssaoIntensity",
                               value,
-                              "Settings.Render.SSAOIntensity"
+                              "Settings.Render.SSAOIntensity",
                             )
                           }
                         />

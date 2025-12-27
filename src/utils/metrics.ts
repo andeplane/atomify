@@ -4,11 +4,15 @@ let userId: string | null = null;
 
 export function getEmbeddingParams() {
   const urlParams = new URLSearchParams(window.location.search);
-  const embeddedSimulationUrl = urlParams.get('embeddedSimulationUrl');
-  const embeddedData = urlParams.get('data');
-  const embedFullscreen = urlParams.get('embed') === 'true';
-  const embedAutoStart = urlParams.get('autostart') === 'true';
-  const embedMode = embeddedSimulationUrl ? 'url' : embeddedData ? 'data' : false;
+  const embeddedSimulationUrl = urlParams.get("embeddedSimulationUrl");
+  const embeddedData = urlParams.get("data");
+  const embedFullscreen = urlParams.get("embed") === "true";
+  const embedAutoStart = urlParams.get("autostart") === "true";
+  const embedMode = embeddedSimulationUrl
+    ? "url"
+    : embeddedData
+      ? "data"
+      : false;
 
   return { embedMode, embedFullscreen, embedAutoStart };
 }

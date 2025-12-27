@@ -108,7 +108,9 @@ describe("getEmbeddingParams", () => {
 
   it("should prioritize embeddedSimulationUrl over data param", () => {
     // Arrange
-    mockWindowLocation("?embeddedSimulationUrl=https://example.com&data=someData");
+    mockWindowLocation(
+      "?embeddedSimulationUrl=https://example.com&data=someData",
+    );
 
     // Act
     const result = getEmbeddingParams();
@@ -155,7 +157,7 @@ describe("getEmbeddingParams", () => {
   it("should handle complex URL with mixed params", () => {
     // Arrange
     mockWindowLocation(
-      "?foo=bar&embeddedSimulationUrl=https://example.com/file.in&baz=qux&embed=true"
+      "?foo=bar&embeddedSimulationUrl=https://example.com/file.in&baz=qux&embed=true",
     );
 
     // Act
@@ -167,4 +169,3 @@ describe("getEmbeddingParams", () => {
     expect(result.embedAutoStart).toBe(false);
   });
 });
-

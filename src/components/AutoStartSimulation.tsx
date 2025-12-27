@@ -31,15 +31,22 @@ interface ExamplesData {
 const AutoStartSimulation: React.FC = () => {
   const hasInitiatedStart = useRef(false);
   const setNewSimulation = useStoreActions(
-    (actions) => actions.simulation.newSimulation
+    (actions) => actions.simulation.newSimulation,
   );
   const setPreferredView = useStoreActions(
-    (actions) => actions.app.setPreferredView
+    (actions) => actions.app.setPreferredView,
   );
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
-  const { embeddedSimulationUrl, simulationIndex, embeddedData, autoStart, isEmbeddedMode, vars } = useEmbeddedMode();
-  
+  const {
+    embeddedSimulationUrl,
+    simulationIndex,
+    embeddedData,
+    autoStart,
+    isEmbeddedMode,
+    vars,
+  } = useEmbeddedMode();
+
   useEffect(() => {
     const fetchAndStartSimulation = async () => {
       try {
@@ -47,11 +54,11 @@ const AutoStartSimulation: React.FC = () => {
         if (embeddedData) {
           const decodedSimulation = decodeSimulation(embeddedData, autoStart);
           decodedSimulation.vars = vars; // Add URL vars
-          
+
           if (simulation?.id !== decodedSimulation.id) {
             hasInitiatedStart.current = true;
             setNewSimulation(decodedSimulation);
-            
+
             // Set view based on autoStart
             if (autoStart) {
               setPreferredView("view"); // Visualizer showing atoms
@@ -61,28 +68,30 @@ const AutoStartSimulation: React.FC = () => {
           }
           return;
         }
-        
+
         // Handle URL-based embedding (only in embedded mode)
         if (!isEmbeddedMode) {
           return;
         }
-        
+
         const response = await fetch(embeddedSimulationUrl!);
         const data: ExamplesData = await response.json();
-        
+
         // Override baseUrl for localhost development
         // When Atomify runs on localhost, derive baseUrl from embeddedSimulationUrl
-        const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const isLocalhost =
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1";
         if (isLocalhost && embeddedSimulationUrl) {
           const url = new URL(embeddedSimulationUrl);
-          const pathParts = url.pathname.split('/');
+          const pathParts = url.pathname.split("/");
           pathParts.pop(); // Remove simulations.json filename
-          data.baseUrl = url.origin + pathParts.join('/');
+          data.baseUrl = url.origin + pathParts.join("/");
         }
-        
+
         if (simulationIndex >= 0 && simulationIndex < data.examples.length) {
           const selectedExample = data.examples[simulationIndex];
-          
+
           selectedExample.imageUrl = `${data.baseUrl}/${selectedExample.imageUrl}`;
           if (selectedExample.analysisScript) {
             selectedExample.analysisScript = `${data.baseUrl}/${selectedExample.analysisScript}`;
@@ -98,7 +107,7 @@ const AutoStartSimulation: React.FC = () => {
             analysisDescription: selectedExample.analysisDescription,
             analysisScript: selectedExample.analysisScript,
             start: true,
-            vars: vars // Add URL vars
+            vars: vars, // Add URL vars
           };
 
           if (simulation?.id !== newSimulation.id) {
@@ -128,7 +137,18 @@ const AutoStartSimulation: React.FC = () => {
     };
 
     checkWasmAndStart();
-  }, [simulation?.id, running, setNewSimulation, setPreferredView, embeddedSimulationUrl, embeddedData, autoStart, isEmbeddedMode, simulationIndex, vars]);
+  }, [
+    simulation?.id,
+    running,
+    setNewSimulation,
+    setPreferredView,
+    embeddedSimulationUrl,
+    embeddedData,
+    autoStart,
+    isEmbeddedMode,
+    simulationIndex,
+    vars,
+  ]);
 
   return null;
 };

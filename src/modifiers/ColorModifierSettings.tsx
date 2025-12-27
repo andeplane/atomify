@@ -1,11 +1,25 @@
-import { Modal, Select, Divider, InputNumber, Checkbox, Button, Space } from "antd";
+import {
+  Modal,
+  Select,
+  Divider,
+  InputNumber,
+  Checkbox,
+  Button,
+  Space,
+} from "antd";
 import { useStoreState, useStoreActions } from "../hooks";
 import { useCallback, useState } from "react";
 import { track } from "../utils/metrics";
 import ColorModifier from "./colormodifier";
 const { Option, OptGroup } = Select;
 
-const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+const ColorModifierSettings = ({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) => {
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const postTimestepModifiers = useStoreState(
     (state) => state.processing.postTimestepModifiers,
@@ -21,14 +35,14 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
   );
 
   const [useCustomRange, setUseCustomRange] = useState(
-    colorModifier.customMinValue !== undefined || 
-    colorModifier.customMaxValue !== undefined
+    colorModifier.customMinValue !== undefined ||
+      colorModifier.customMaxValue !== undefined,
   );
   const [customMin, setCustomMin] = useState<number | null>(
-    colorModifier.customMinValue ?? null
+    colorModifier.customMinValue ?? null,
   );
   const [customMax, setCustomMax] = useState<number | null>(
-    colorModifier.customMaxValue ?? null
+    colorModifier.customMaxValue ?? null,
   );
 
   const onChange = useCallback(
@@ -56,8 +70,12 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
         colorModifier.customMaxValue = undefined;
       } else {
         // Initialize with global values only if they are finite
-        const minValue = isFinite(colorModifier.globalMinValue) ? colorModifier.globalMinValue : 0;
-        const maxValue = isFinite(colorModifier.globalMaxValue) ? colorModifier.globalMaxValue : 1;
+        const minValue = isFinite(colorModifier.globalMinValue)
+          ? colorModifier.globalMinValue
+          : 0;
+        const maxValue = isFinite(colorModifier.globalMaxValue)
+          ? colorModifier.globalMaxValue
+          : 1;
         colorModifier.customMinValue = customMin ?? minValue;
         colorModifier.customMaxValue = customMax ?? maxValue;
         setCustomMin(colorModifier.customMinValue);
@@ -99,7 +117,7 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
   const defaultValue = colorModifier.computeName
     ? colorModifier.computeName
     : "type";
-  
+
   const showRangeControls = colorModifier.computeName !== undefined;
 
   const colormapOptions = [
@@ -126,7 +144,7 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
     },
     [colorModifier],
   );
-  
+
   return (
     <Modal
       title="Particle color settings"
@@ -178,12 +196,22 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
         {showRangeControls && (
           <>
             <Divider style={{ margin: "8px 0" }} />
-            
+
             <div>
               <div style={{ marginBottom: 12 }}>
-                <div style={{ fontWeight: 500, marginBottom: 4 }}>Value Range:</div>
+                <div style={{ fontWeight: 500, marginBottom: 4 }}>
+                  Value Range:
+                </div>
                 <div style={{ fontSize: 12, opacity: 0.7 }}>
-                  Global: [{isFinite(colorModifier.globalMinValue) ? colorModifier.globalMinValue.toExponential(2) : "N/A"}, {isFinite(colorModifier.globalMaxValue) ? colorModifier.globalMaxValue.toExponential(2) : "N/A"}]
+                  Global: [
+                  {isFinite(colorModifier.globalMinValue)
+                    ? colorModifier.globalMinValue.toExponential(2)
+                    : "N/A"}
+                  ,{" "}
+                  {isFinite(colorModifier.globalMaxValue)
+                    ? colorModifier.globalMaxValue.toExponential(2)
+                    : "N/A"}
+                  ]
                 </div>
               </div>
 
@@ -191,7 +219,10 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
                 checked={useCustomRange}
                 onChange={(e) => handleCustomRangeToggle(e.target.checked)}
                 style={{ marginBottom: 12 }}
-                disabled={!isFinite(colorModifier.globalMinValue) || !isFinite(colorModifier.globalMaxValue)}
+                disabled={
+                  !isFinite(colorModifier.globalMinValue) ||
+                  !isFinite(colorModifier.globalMaxValue)
+                }
               >
                 Use custom range
               </Checkbox>
@@ -199,7 +230,9 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
               {useCustomRange && (
                 <Space direction="vertical" style={{ width: "100%" }}>
                   <div>
-                    <div style={{ marginBottom: 4, fontSize: 12 }}>Minimum value:</div>
+                    <div style={{ marginBottom: 4, fontSize: 12 }}>
+                      Minimum value:
+                    </div>
                     <InputNumber
                       value={customMin}
                       onChange={handleMinChange}
@@ -208,7 +241,9 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
                     />
                   </div>
                   <div>
-                    <div style={{ marginBottom: 4, fontSize: 12 }}>Maximum value:</div>
+                    <div style={{ marginBottom: 4, fontSize: 12 }}>
+                      Maximum value:
+                    </div>
                     <InputNumber
                       value={customMax}
                       onChange={handleMaxChange}
@@ -219,7 +254,7 @@ const ColorModifierSettings = ({ open, onClose }: { open: boolean; onClose: () =
                 </Space>
               )}
 
-              <Button 
+              <Button
                 onClick={handleResetRange}
                 style={{ marginTop: 12 }}
                 size="small"

@@ -14,12 +14,14 @@ track("Page.Load", getEmbeddingParams());
 
 const container = document.getElementById("root");
 if (!container) {
-  throw new Error("Failed to find the root element. Please ensure an element with id 'root' exists in your index.html.");
+  throw new Error(
+    "Failed to find the root element. Please ensure an element with id 'root' exists in your index.html.",
+  );
 }
 
 const root = createRoot(container);
 root.render(
   <StoreProvider store={store}>
     <App />
-  </StoreProvider>
+  </StoreProvider>,
 );

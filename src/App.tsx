@@ -36,16 +36,16 @@ type MenuItem = Required<MenuProps>["items"][number];
 const darkThemeConfig = {
   algorithm: theme.darkAlgorithm,
   token: {
-    colorPrimary: '#1890ff',
+    colorPrimary: "#1890ff",
     borderRadius: 8,
-    colorBgBase: '#29282d',
-    colorBgContainer: '#2a292f',
+    colorBgBase: "#29282d",
+    colorBgContainer: "#2a292f",
     fontSizeHeading1: 48,
     fontSizeHeading2: 36,
   },
   components: {
     Menu: {
-      colorBgContainer: 'transparent',
+      colorBgContainer: "transparent",
       itemBorderRadius: 8,
       itemMarginInline: 8,
       itemActiveBorderWidth: 0,
@@ -53,17 +53,17 @@ const darkThemeConfig = {
       subMenuItemBorderRadius: 8,
     },
     Layout: {
-      siderBg: 'transparent',
-      triggerBg: '#1f1f1f',
+      siderBg: "transparent",
+      triggerBg: "#1f1f1f",
     },
     Select: {
-      selectorBg: '#2a292f',
-      optionSelectedBg: '#2a2a2a',
-      colorText: '#ffffff',
-      colorTextPlaceholder: '#888',
-      colorBorder: '#3a3a3a',
-    }
-  }
+      selectorBg: "#2a292f",
+      optionSelectedBg: "#2a2a2a",
+      colorText: "#ffffff",
+      colorTextPlaceholder: "#888",
+      colorBorder: "#3a3a3a",
+    },
+  },
 };
 
 function getItem(
@@ -166,7 +166,11 @@ const App: React.FC = () => {
 
   const shareSimulationButton = getItem(
     <span>
-      Share simulation <Badge count="NEW" style={{ backgroundColor: '#52c41a', marginLeft: 8 }} />
+      Share simulation{" "}
+      <Badge
+        count="NEW"
+        style={{ backgroundColor: "#52c41a", marginLeft: 8 }}
+      />
     </span>,
     "share",
     <ShareAltOutlined />,
@@ -255,7 +259,12 @@ const App: React.FC = () => {
         paused,
       });
 
-      if (selected === "run" || selected === "settings" || selected === "newsimulation" || selected === "share") {
+      if (
+        selected === "run" ||
+        selected === "settings" ||
+        selected === "newsimulation" ||
+        selected === "share"
+      ) {
         return;
       }
 
@@ -302,7 +311,7 @@ const App: React.FC = () => {
               mode="inline"
               items={items}
               onSelect={(info) => onMenuSelect(info.key)}
-              style={{ background: 'transparent' }}
+              style={{ background: "transparent" }}
             />
           </Sider>
         )}
@@ -323,10 +332,7 @@ const App: React.FC = () => {
         />
       )}
       {showSettings && (
-        <Settings
-          open={showSettings}
-          onClose={() => setShowSettings(false)}
-        />
+        <Settings open={showSettings} onClose={() => setShowSettings(false)} />
       )}
     </ConfigProvider>
   );

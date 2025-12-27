@@ -12,7 +12,9 @@ describe("ColorLegend", () => {
       fillRect: vi.fn(),
     };
 
-    HTMLCanvasElement.prototype.getContext = vi.fn(() => mockContext) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = vi.fn(
+      () => mockContext,
+    ) as unknown as typeof HTMLCanvasElement.prototype.getContext;
   });
 
   describe("rendering", () => {

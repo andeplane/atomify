@@ -66,7 +66,8 @@ const SimulationComponent = () => {
         "9": 200,
       };
       if (Object.keys(syncFrequencyMap).indexOf(ev.key) >= 0) {
-        const value: number = syncFrequencyMap[ev.key as keyof typeof syncFrequencyMap];
+        const value: number =
+          syncFrequencyMap[ev.key as keyof typeof syncFrequencyMap];
         setSimulationSettings({ ...simulationSettings, speed: value });
         notification.info({
           message: `Setting simulation speed to ${value}.`,
@@ -107,10 +108,10 @@ const SimulationComponent = () => {
       }
       if (lammps && wasm && simulation) {
         setHasSynchronized(true);
-        
+
         // Always update 3D rendering (high frequency)
         runPostTimestepRendering();
-        
+
         // Update UI state only every Nth cycle (low frequency)
         renderCycleCounter.current += 1;
         const uiUpdateFrequency = simulationSettings.uiUpdateFrequency || 15;
@@ -155,11 +156,11 @@ const SimulationComponent = () => {
           print: onPrint,
           printErr: onPrint,
           locateFile: (path: string) => {
-            if (path.endsWith('.wasm')) {
+            if (path.endsWith(".wasm")) {
               return import.meta.env.BASE_URL + path;
             }
             return path;
-          }
+          },
         }).then((Module) => {
           track("WASM.Load");
           setStatus({

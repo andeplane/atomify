@@ -7,7 +7,10 @@ interface SimulationSummaryModalProps {
   onClose: () => void;
 }
 
-const SimulationSummaryModal = ({ open, onClose }: SimulationSummaryModalProps) => {
+const SimulationSummaryModal = ({
+  open,
+  onClose,
+}: SimulationSummaryModalProps) => {
   const handleClose = () => {
     track("SimulationSummary.Modal.Close");
     onClose();
@@ -28,4 +31,3 @@ const SimulationSummaryModal = ({ open, onClose }: SimulationSummaryModalProps) 
 };
 
 export default SimulationSummaryModal;
-

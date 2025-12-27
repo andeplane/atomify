@@ -391,4 +391,3 @@ describe("parseAtomSizeAndColor", () => {
     expect(result).toBeUndefined();
   });
 });
-

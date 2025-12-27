@@ -5,7 +5,9 @@ import localforage from "localforage";
 
 const Notebook = () => {
   const simulation = useStoreState((state) => state.simulation.simulation);
-  const [notebookUrl, setNotebookUrl] = useState<string>("/atomify/jupyter/lab/index.html");
+  const [notebookUrl, setNotebookUrl] = useState<string>(
+    "/atomify/jupyter/lab/index.html",
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -15,7 +17,9 @@ const Notebook = () => {
 
       let path = "analyze.ipynb";
       if (simulation?.analysisScript) {
-        const scriptName = simulation.analysisScript.substring(simulation.analysisScript.lastIndexOf('/') + 1);
+        const scriptName = simulation.analysisScript.substring(
+          simulation.analysisScript.lastIndexOf("/") + 1,
+        );
         path = `${simulation.id}/${scriptName}`;
       }
 
@@ -24,7 +28,10 @@ const Notebook = () => {
           url = `${baseUrl}?path=${path}`;
         }
       } catch (error) {
-        console.log(`Could not check for notebook existence at "${path}":`, error);
+        console.log(
+          `Could not check for notebook existence at "${path}":`,
+          error,
+        );
       }
 
       if (isMounted) {

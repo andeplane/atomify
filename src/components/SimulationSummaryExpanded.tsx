@@ -23,7 +23,9 @@ interface SimulationSummaryExpandedProps {
   onShowLess?: () => void;
 }
 
-const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProps) => {
+const SimulationSummaryExpanded = ({
+  onShowLess,
+}: SimulationSummaryExpandedProps) => {
   const [visibleSettings, setVisibleSettings] = useState<string | undefined>();
   const [visibleCompute, setVisibleCompute] = useState<Compute | undefined>();
   const [visibleFix, setVisibleFix] = useState<Fix | undefined>();
@@ -72,11 +74,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
     (actions) => actions.simulationStatus.setModifierSyncDataPoints,
   );
   const handleToggleSyncDataPoints = useCallback(
-    (
-      name: string,
-      type: "compute" | "fix" | "variable",
-      value: boolean,
-    ) => {
+    (name: string, type: "compute" | "fix" | "variable", value: boolean) => {
       setModifierSyncDataPointsAction({ name, type, value });
     },
     [setModifierSyncDataPointsAction],
@@ -92,7 +90,10 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
   const setUIUpdateFrequency = (value: number | null) => {
     if (value && value > 0) {
       track("UIUpdateFrequency.Change", { frequency: value });
-      setSimulationSettings({ ...simulationSettings, uiUpdateFrequency: value });
+      setSimulationSettings({
+        ...simulationSettings,
+        uiUpdateFrequency: value,
+      });
     }
   };
 
@@ -374,7 +375,7 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
               type="text"
               icon={<MinusOutlined />}
               onClick={handleShowLess}
-              style={{ color: '#fff', padding: 0 }}
+              style={{ color: "#fff", padding: 0 }}
             />
           </div>
         )}
@@ -384,7 +385,10 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
             size="small"
             showHeader={false}
             columns={modiferColumns}
-            rowSelection={{ ...rowSelection, selectedRowKeys: selectedModifiers }}
+            rowSelection={{
+              ...rowSelection,
+              selectedRowKeys: selectedModifiers,
+            }}
             dataSource={modifiers}
             pagination={{ hideOnSinglePage: true }}
           />
@@ -436,7 +440,10 @@ const SimulationSummaryExpanded = ({ onShowLess }: SimulationSummaryExpandedProp
         <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />
       )}
       {visibleSettings === "Colors" && (
-        <ColorModifierSettings open={true} onClose={() => setVisibleSettings(undefined)} />
+        <ColorModifierSettings
+          open={true}
+          onClose={() => setVisibleSettings(undefined)}
+        />
       )}
       {visibleCompute && (
         <Figure

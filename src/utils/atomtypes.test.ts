@@ -112,4 +112,3 @@ describe("hexToRgb", () => {
     expect(() => hexToRgb(empty)).toThrow("Invalid hex color string");
   });
 });
-

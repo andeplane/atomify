@@ -11,7 +11,14 @@ interface ColorLegendProps {
   onSettingsClick?: () => void;
 }
 
-const ColorLegend = ({ computeName, minValue, maxValue, type, colormap: colormapName = "jet", onSettingsClick }: ColorLegendProps) => {
+const ColorLegend = ({
+  computeName,
+  minValue,
+  maxValue,
+  type,
+  colormap: colormapName = "jet",
+  onSettingsClick,
+}: ColorLegendProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -34,7 +41,7 @@ const ColorLegend = ({ computeName, minValue, maxValue, type, colormap: colormap
 
     // Create gradient
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
-    
+
     colors.forEach((color, index) => {
       const position = index / (colors.length - 1);
       const r = Math.floor(color[0] * 255);
@@ -70,7 +77,9 @@ const ColorLegend = ({ computeName, minValue, maxValue, type, colormap: colormap
   return (
     <div className="color-legend">
       {onSettingsClick && (
-        <div style={{ position: "absolute", top: "8px", right: "8px", zIndex: 1 }}>
+        <div
+          style={{ position: "absolute", top: "8px", right: "8px", zIndex: 1 }}
+        >
           <SettingOutlined
             onClick={onSettingsClick}
             className="color-legend-settings-icon"
@@ -82,7 +91,9 @@ const ColorLegend = ({ computeName, minValue, maxValue, type, colormap: colormap
           />
         </div>
       )}
-      <div style={{ fontWeight: "bold", marginBottom: "8px", fontSize: "13px" }}>
+      <div
+        style={{ fontWeight: "bold", marginBottom: "8px", fontSize: "13px" }}
+      >
         {formatTitle()}
       </div>
       <canvas
@@ -94,11 +105,23 @@ const ColorLegend = ({ computeName, minValue, maxValue, type, colormap: colormap
           marginBottom: "8px",
         }}
       />
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: "4px",
+        }}
+      >
         <span style={{ opacity: 0.8 }}>Min:</span>
         <span style={{ fontWeight: "bold" }}>{formatValue(minValue)}</span>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: "4px",
+        }}
+      >
         <span style={{ opacity: 0.8 }}>Max:</span>
         <span style={{ fontWeight: "bold" }}>{formatValue(maxValue)}</span>
       </div>

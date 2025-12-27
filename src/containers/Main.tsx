@@ -25,7 +25,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
     (actions) => actions.app.setPreferredView,
   );
   const status = useStoreState((state) => state.app.status);
-  
+
   // Update console key when modal opens
   useEffect(() => {
     if (showConsole) {
@@ -46,11 +46,15 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
       {
         key: "view",
         label: "View",
-        children: isEmbedded && !hasStarted ? (
-          <LoadingSimulationScreen status={status} wasmReady={wasm != null} />
-        ) : (
-          <View visible={selectedMenu === "view"} isEmbeddedMode={isEmbedded} />
-        ),
+        children:
+          isEmbedded && !hasStarted ? (
+            <LoadingSimulationScreen status={status} wasmReady={wasm != null} />
+          ) : (
+            <View
+              visible={selectedMenu === "view"}
+              isEmbeddedMode={isEmbedded}
+            />
+          ),
       },
       {
         key: "console",
@@ -81,7 +85,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
 
     // Filter out Examples tab in embedded mode
     return isEmbedded
-      ? allTabs.filter(tab => tab.key !== "examples")
+      ? allTabs.filter((tab) => tab.key !== "examples")
       : allTabs;
   }, [isEmbedded, selectedMenu, hasStarted, status, wasm]);
 

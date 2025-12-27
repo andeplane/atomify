@@ -42,7 +42,9 @@ const LoadingSimulationScreen = ({
   status,
   wasmReady,
 }: LoadingSimulationScreenProps) => {
-  const displayTitle = status?.title || (wasmReady ? "Loading simulation..." : "Initializing simulation engine...");
+  const displayTitle =
+    status?.title ||
+    (wasmReady ? "Loading simulation..." : "Initializing simulation engine...");
   const displayText = status?.text || "";
   const progress = status?.progress ?? 0;
 
@@ -64,7 +66,9 @@ const LoadingSimulationScreen = ({
           />
         )}
         {!wasmReady && (
-          <StatusSubtext>Please wait while the simulation engine loads...</StatusSubtext>
+          <StatusSubtext>
+            Please wait while the simulation engine loads...
+          </StatusSubtext>
         )}
       </StatusText>
     </Container>

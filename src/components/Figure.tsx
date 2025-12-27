@@ -64,28 +64,32 @@ const Figure = ({
   // Only set syncDataPoints when a modifier is provided
   // Use ref to track previous modifier name to detect actual changes
   const prevModifierNameRef = useRef<string | undefined>(undefined);
-  
+
   useEffect(() => {
     if (modifier && modifierType && onToggleSyncDataPoints) {
       const modifierName = modifier.name;
       const prevModifierName = prevModifierNameRef.current;
-      
+
       // Only update if modifier name actually changed (not just object reference)
       if (prevModifierName !== modifierName) {
         // Cleanup previous modifier if name changed
         if (prevModifierName !== undefined) {
           onToggleSyncDataPoints(prevModifierName, modifierType, false);
         }
-        
+
         // Set up new modifier
         onToggleSyncDataPoints(modifierName, modifierType, true);
         prevModifierNameRef.current = modifierName;
       }
-      
+
       return () => {
         // Cleanup on unmount
         if (prevModifierNameRef.current !== undefined) {
-          onToggleSyncDataPoints(prevModifierNameRef.current, modifierType, false);
+          onToggleSyncDataPoints(
+            prevModifierNameRef.current,
+            modifierType,
+            false,
+          );
           prevModifierNameRef.current = undefined;
         }
       };
@@ -106,19 +110,30 @@ const Figure = ({
         height,
         legend: "always",
         // Dark theme styling
-        colors: ['#40a9ff', '#52c41a', '#f5222d', '#fa8c16', '#13c2c2', '#eb2f96', '#722ed1'],
-        legendFormatter: function(data) {
+        colors: [
+          "#40a9ff",
+          "#52c41a",
+          "#f5222d",
+          "#fa8c16",
+          "#13c2c2",
+          "#eb2f96",
+          "#722ed1",
+        ],
+        legendFormatter: function (data) {
           if (data.x == null) {
-            return '';
+            return "";
           }
           let html = '<div class="dygraph-custom-legend">';
-          data.series.forEach(function(series) {
+          data.series.forEach(function (series) {
             if (!series.isVisible) return;
             const color = series.color;
-            html += '<span class="dygraph-legend-dot" style="color: ' + color + ';">● </span>';
-            html += series.labelHTML + ': ' + series.yHTML + '<br/>';
+            html +=
+              '<span class="dygraph-legend-dot" style="color: ' +
+              color +
+              ';">● </span>';
+            html += series.labelHTML + ": " + series.yHTML + "<br/>";
           });
-          html += '</div>';
+          html += "</div>";
           return html;
         },
       });

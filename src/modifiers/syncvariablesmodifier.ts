@@ -56,7 +56,7 @@ class SyncVariablesModifier extends Modifier {
       variable.hasData1D = data1DNamesWrapper.size() > 0;
       const data1DNamesSize = data1DNamesWrapper.size();
       data1DNamesWrapper.delete(); // Delete WASM wrapper to prevent memory leak
-      
+
       if (data1DNamesSize > 0) {
         variable.clearPerSync = variable.lmpVariable.getClearPerSync();
         if (variable.data1D == null) {
@@ -82,7 +82,7 @@ class SyncVariablesModifier extends Modifier {
 
           // Get data1DVector once before the loop for better performance
           const data1DVector = variable.lmpVariable.getData1D();
-          
+
           for (let j = 0; j < data1DNamesSize; j++) {
             const lmpData = data1DVector.get(j);
 
@@ -107,11 +107,11 @@ class SyncVariablesModifier extends Modifier {
               }
               variable.data1D.data[k].push(yValues[k]);
             }
-            
+
             // Delete the Data1D copy to prevent memory leak
             lmpData.delete();
           }
-          
+
           // Delete the vector wrapper after the loop to prevent memory leak
           data1DVector.delete();
         }

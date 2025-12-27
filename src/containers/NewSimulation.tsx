@@ -77,7 +77,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
         if (currentFiles.some((f) => f.fileName === uploadFile.name)) {
           continue; // Already processed
         }
-        
+
         const originFile = uploadFile.originFileObj;
         if (!originFile) {
           continue; // Not ready yet
@@ -87,7 +87,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
           fileName: uploadFile.name,
           content: await originFile.text(),
         };
-        
+
         // Double-check before adding to prevent race conditions
         const filesBeforeAdd = window.files || [];
         if (!filesBeforeAdd.some((f) => f.fileName === uploadFile.name)) {
@@ -95,7 +95,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
           message.success(`${file.fileName} uploaded successfully.`);
         }
       }
-      
+
       setFiles(window.files || []);
     },
     [files, setFiles],

@@ -9,25 +9,39 @@ import type SimulationSummaryExpanded from "./SimulationSummaryExpanded";
 // Note: Using string paths for vi.mock as it's more reliable with JSX in mock factories
 // Type safety is maintained through ComponentProps<typeof Component> for prop types
 vi.mock("./SimulationSummary", () => ({
-  default: ({ 
-    isCollapsed, 
-    onShowMore, 
-    onExpand, 
-    onCollapse 
+  default: ({
+    isCollapsed,
+    onShowMore,
+    onExpand,
+    onCollapse,
   }: ComponentProps<typeof SimulationSummary>) => (
     <div data-testid="simulation-summary">
       {isCollapsed && <div data-testid="collapsed">Collapsed</div>}
       {onShowMore && <button data-testid="expand-button">Expand</button>}
-      {onExpand && <button data-testid="expand-handler" onClick={onExpand}>Expand Handler</button>}
-      {onCollapse && <button data-testid="collapse-handler" onClick={onCollapse}>Collapse Handler</button>}
+      {onExpand && (
+        <button data-testid="expand-handler" onClick={onExpand}>
+          Expand Handler
+        </button>
+      )}
+      {onCollapse && (
+        <button data-testid="collapse-handler" onClick={onCollapse}>
+          Collapse Handler
+        </button>
+      )}
     </div>
   ),
 }));
 
 vi.mock("./SimulationSummaryExpanded", () => ({
-  default: ({ onShowLess }: ComponentProps<typeof SimulationSummaryExpanded>) => (
+  default: ({
+    onShowLess,
+  }: ComponentProps<typeof SimulationSummaryExpanded>) => (
     <div data-testid="simulation-summary-expanded">
-      {onShowLess && <button data-testid="show-less-button" onClick={onShowLess}>Show Less</button>}
+      {onShowLess && (
+        <button data-testid="show-less-button" onClick={onShowLess}>
+          Show Less
+        </button>
+      )}
     </div>
   ),
 }));
@@ -52,25 +66,37 @@ describe("ResponsiveSimulationSummary", () => {
   describe("non-embedded mode", () => {
     it("should render SimulationSummary when showAnalyze is false", () => {
       // Arrange & Act
-      render(<ResponsiveSimulationSummary {...defaultProps} showAnalyze={false} />);
+      render(
+        <ResponsiveSimulationSummary {...defaultProps} showAnalyze={false} />,
+      );
 
       // Assert
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
-      expect(screen.queryByTestId("simulation-summary-expanded")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("simulation-summary-expanded"),
+      ).not.toBeInTheDocument();
     });
 
     it("should render SimulationSummaryExpanded when showAnalyze is true", () => {
       // Arrange & Act
-      render(<ResponsiveSimulationSummary {...defaultProps} showAnalyze={true} />);
+      render(
+        <ResponsiveSimulationSummary {...defaultProps} showAnalyze={true} />,
+      );
 
       // Assert
-      expect(screen.getByTestId("simulation-summary-expanded")).toBeInTheDocument();
-      expect(screen.queryByTestId("simulation-summary")).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId("simulation-summary-expanded"),
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByTestId("simulation-summary"),
+      ).not.toBeInTheDocument();
     });
 
     it("should pass onShowLess to SimulationSummaryExpanded when showAnalyze is true", () => {
       // Arrange & Act
-      render(<ResponsiveSimulationSummary {...defaultProps} showAnalyze={true} />);
+      render(
+        <ResponsiveSimulationSummary {...defaultProps} showAnalyze={true} />,
+      );
 
       // Assert
       expect(screen.getByTestId("show-less-button")).toBeInTheDocument();
@@ -79,7 +105,11 @@ describe("ResponsiveSimulationSummary", () => {
     it("should pass onShowMore to SimulationSummary only on desktop (not mobile)", () => {
       // Arrange & Act - Desktop
       const { rerender } = render(
-        <ResponsiveSimulationSummary {...defaultProps} isMobile={false} showAnalyze={false} />
+        <ResponsiveSimulationSummary
+          {...defaultProps}
+          isMobile={false}
+          showAnalyze={false}
+        />,
       );
 
       // Assert - Desktop should have Expand button
@@ -87,7 +117,11 @@ describe("ResponsiveSimulationSummary", () => {
 
       // Act - Mobile
       rerender(
-        <ResponsiveSimulationSummary {...defaultProps} isMobile={true} showAnalyze={false} />
+        <ResponsiveSimulationSummary
+          {...defaultProps}
+          isMobile={true}
+          showAnalyze={false}
+        />,
       );
 
       // Assert - Mobile should NOT have Expand button
@@ -103,7 +137,7 @@ describe("ResponsiveSimulationSummary", () => {
           {...defaultProps}
           isEmbeddedMode={true}
           showSimulationSummary={false}
-        />
+        />,
       );
 
       // Assert
@@ -117,12 +151,14 @@ describe("ResponsiveSimulationSummary", () => {
           {...defaultProps}
           isEmbeddedMode={true}
           showSimulationSummary={true}
-        />
+        />,
       );
 
       // Assert
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
-      expect(screen.queryByTestId("simulation-summary-expanded")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("simulation-summary-expanded"),
+      ).not.toBeInTheDocument();
     });
 
     it("should not show expanded view in embedded mode even when showAnalyze is true", () => {
@@ -133,12 +169,14 @@ describe("ResponsiveSimulationSummary", () => {
           isEmbeddedMode={true}
           showSimulationSummary={true}
           showAnalyze={true}
-        />
+        />,
       );
 
       // Assert - Embedded mode ignores showAnalyze
       expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
-      expect(screen.queryByTestId("simulation-summary-expanded")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("simulation-summary-expanded"),
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -146,7 +184,11 @@ describe("ResponsiveSimulationSummary", () => {
     it("should pass isCollapsed prop to SimulationSummary", () => {
       // Arrange & Act
       render(
-        <ResponsiveSimulationSummary {...defaultProps} isOverlayCollapsed={true} showAnalyze={false} />
+        <ResponsiveSimulationSummary
+          {...defaultProps}
+          isOverlayCollapsed={true}
+          showAnalyze={false}
+        />,
       );
 
       // Assert
@@ -165,7 +207,7 @@ describe("ResponsiveSimulationSummary", () => {
           onExpand={onExpand}
           onCollapse={onCollapse}
           showAnalyze={false}
-        />
+        />,
       );
 
       // Assert
