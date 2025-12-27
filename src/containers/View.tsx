@@ -260,12 +260,17 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
 
       // Check for WebXR support and show VR button if available
       if (navigator.xr) {
-        navigator.xr.isSessionSupported("immersive-vr").then((supported) => {
-          if (supported) {
-            const vrButton = newVisualizer.enableXR();
-            vrButton && domElement.current?.appendChild(vrButton);
-          }
-        });
+        navigator.xr
+          .isSessionSupported("immersive-vr")
+          .then((supported) => {
+            if (supported && domElement.current) {
+              const vrButton = newVisualizer.enableXR();
+              vrButton && domElement.current.appendChild(vrButton);
+            }
+          })
+          .catch((err) => {
+            console.warn("Failed to check for WebXR support:", err);
+          });
       }
     }
   }, [domElement, setVisualizer, visualizer, loading, renderSettings]);
