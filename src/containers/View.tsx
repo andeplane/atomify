@@ -258,13 +258,14 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       newVisualizer.ambientLight.intensity =
         renderSettings.ambientLightIntensity;
 
-      // Enable WebXR if ?webxr=true is in the URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const webxrEnabled = urlParams.get("webxr") === "true";
-
-      if (webxrEnabled) {
-        const vrButton = newVisualizer.enableXR();
-        vrButton && domElement.current?.appendChild(vrButton);
+      // Check for WebXR support and show VR button if available
+      if (navigator.xr) {
+        navigator.xr.isSessionSupported("immersive-vr").then((supported) => {
+          if (supported) {
+            const vrButton = newVisualizer.enableXR();
+            vrButton && domElement.current?.appendChild(vrButton);
+          }
+        });
       }
     }
   }, [domElement, setVisualizer, visualizer, loading, renderSettings]);
