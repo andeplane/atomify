@@ -462,6 +462,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         style={{
           backgroundColor: "rgba(0,0,0,0)",
           position: "fixed",
+          zIndex: 100,
         }}
       >
         <Col>
@@ -472,7 +473,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
                 showInfo={false}
                 style={{ marginTop: "-15px" }}
                 strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
-                size={8}
+                size={["100%", 8]}
                 percent={Math.round(
                   100 * (runTimesteps / (runTotalTimesteps + 1)),
                 )}
