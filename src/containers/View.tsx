@@ -46,25 +46,29 @@ const VisualizerWrapper = styled.div`
 `;
 
 const MOBILE_BREAKPOINT = 900;
-const SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY = 'simulationSummaryDrawerVisible';
+const SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY = "simulationSummaryDrawerVisible";
 
 const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showColorSettings, setShowColorSettings] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= MOBILE_BREAKPOINT);
+  const [isMobile, setIsMobile] = useState(
+    window.innerWidth <= MOBILE_BREAKPOINT,
+  );
   // State consistently represents the collapsed state.
   // Initial state is collapsed on mobile, expanded on desktop.
   const [isOverlayCollapsed, setIsOverlayCollapsed] = useState(isMobile);
   const [selectedAtoms, setSelectedAtoms] = useState<Set<number>>(new Set());
   const { embedConfig } = useEmbeddedMode();
-  
+
   // Initialize from localStorage, defaulting to false (show overlay, not expanded)
   // Embedded mode override is handled in useEffect below
   const [showAnalyze, setShowAnalyze] = useState(() => {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const stored = localStorage.getItem(SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY);
-      return stored !== null ? stored === 'true' : false;
+    if (typeof window !== "undefined" && window.localStorage) {
+      const stored = localStorage.getItem(
+        SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY,
+      );
+      return stored !== null ? stored === "true" : false;
     }
     return false;
   });
@@ -79,8 +83,8 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         setIsOverlayCollapsed(newIsMobile);
       }
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [isMobile]);
 
   // Handle embedded mode override for drawer visibility
@@ -93,8 +97,15 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
 
   // Persist drawer visibility to localStorage (only when not in embedded mode)
   useEffect(() => {
-    if (!isEmbeddedMode && typeof window !== 'undefined' && window.localStorage) {
-      localStorage.setItem(SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY, showAnalyze.toString());
+    if (
+      !isEmbeddedMode &&
+      typeof window !== "undefined" &&
+      window.localStorage
+    ) {
+      localStorage.setItem(
+        SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY,
+        showAnalyze.toString(),
+      );
     }
   }, [showAnalyze, isEmbeddedMode]);
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
@@ -123,9 +134,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const runTimesteps = useStoreState(
     (state) => state.simulationStatus.runTimesteps,
   );
-  const timesteps = useStoreState(
-    (state) => state.simulationStatus.timesteps,
-  );
+  const timesteps = useStoreState((state) => state.simulationStatus.timesteps);
   const simulationBox = useStoreState((state) => state.simulationStatus.box);
   const simulationOrigo = useStoreState(
     (state) => state.simulationStatus.origo,
@@ -137,14 +146,16 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
   const variables = useStoreState((state) => state.simulationStatus.variables);
   const boxGroupRef = useRef<THREE.Group | null>(null);
-  
+
   // Get color modifier for legend display
   const colorModifier = postTimestepModifiers.find(
     (modifier) => modifier.name === "Colors",
   ) as ColorModifier | undefined;
 
   // Determine the type of the computeName (compute, fix, or variable)
-  const getModifierType = (name: string | undefined): "compute" | "fix" | "variable" | undefined => {
+  const getModifierType = (
+    name: string | undefined,
+  ): "compute" | "fix" | "variable" | undefined => {
     if (!name) return undefined;
     if (computes[name]) return "compute";
     if (fixes[name]) return "fix";
@@ -162,17 +173,16 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   // Add Esc key handler to clear selection
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && selectedAtoms.size > 0) {
+      if (event.key === "Escape" && selectedAtoms.size > 0) {
         handleClearSelection();
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedAtoms, handleClearSelection]);
-
 
   const disposeBoxGroup = useCallback(() => {
     if (boxGroupRef.current && visualizer) {
@@ -198,10 +208,10 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         // onCameraChanged: (position: THREE.Vector3, target: THREE.Vector3) => {console.log(position, target)}
         onParticleClick: (event: ParticleClickEvent) => {
           const { particleIndex, shiftKey } = event;
-          
+
           setSelectedAtoms((prevSelection) => {
             const newSelection = new Set(prevSelection);
-            
+
             if (shiftKey) {
               // Shift+click: toggle selection
               if (newSelection.has(particleIndex)) {
@@ -212,27 +222,28 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
             } else {
               // Plain click: if the only selected atom is clicked again, deselect it.
               // Otherwise, select just this one.
-              const isDeselecting = newSelection.size === 1 && newSelection.has(particleIndex);
+              const isDeselecting =
+                newSelection.size === 1 && newSelection.has(particleIndex);
               newSelection.clear();
               if (!isDeselecting) {
                 newSelection.add(particleIndex);
               }
             }
-            
+
             // Update visualizer selection
             newVisualizer.clearSelection();
             newSelection.forEach((idx) => {
               newVisualizer.setSelected(idx, true);
             });
-            
+
             return newSelection;
           });
-        }
+        },
       });
       setVisualizer(newVisualizer);
       setLoading(false);
       newVisualizer.materials.particles.shininess = 50;
-      
+
       // Initialize post-processing with settings
       newVisualizer.initPostProcessing({
         ssao: {
@@ -241,10 +252,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
           intensity: renderSettings.ssaoIntensity,
         },
       });
-      
+
       // Apply lighting settings
       newVisualizer.pointLight.intensity = renderSettings.pointLightIntensity;
-      newVisualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
+      newVisualizer.ambientLight.intensity =
+        renderSettings.ambientLightIntensity;
 
       // Enable WebXR if ?webxr=true is in the URL
       const urlParams = new URLSearchParams(window.location.search);
@@ -333,7 +345,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
           },
         });
       }
-      
+
       // Update lighting
       visualizer.pointLight.intensity = renderSettings.pointLightIntensity;
       visualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
@@ -348,11 +360,15 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     if (visualizer) {
       // Apply camera controls setting
       visualizer.setControlsEnabled(embedConfig.enableCameraControls);
-      
+
       // Apply particle picking setting
       visualizer.setPickingEnabled(embedConfig.enableParticlePicking);
     }
-  }, [visualizer, embedConfig.enableCameraControls, embedConfig.enableParticlePicking]);
+  }, [
+    visualizer,
+    embedConfig.enableCameraControls,
+    embedConfig.enableParticlePicking,
+  ]);
 
   // Apply showSimulationBox setting from embed config
   useEffect(() => {
@@ -372,8 +388,15 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
 
     // If simulation box is available, use it to update camera planes
     // This takes precedence over system bounds from particles/bonds
-    if (simulationBox && simulationOrigo && visualizerHasCameraPlanes(visualizer)) {
-      const boundingBox = getSimulationBoxBounds(simulationBox, simulationOrigo);
+    if (
+      simulationBox &&
+      simulationOrigo &&
+      visualizerHasCameraPlanes(visualizer)
+    ) {
+      const boundingBox = getSimulationBoxBounds(
+        simulationBox,
+        simulationOrigo,
+      );
       visualizer.updateCameraPlanes(boundingBox);
     }
     // Note: Camera planes are also updated automatically when particles/bonds are added
@@ -397,7 +420,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     // Create and add box if enabled and data is available
     if (shouldShowBox && simulationBox && simulationOrigo) {
       const radius = calculateBoxRadius(simulationBox);
-      const boxGroup = createBoxGeometry(simulationBox, simulationOrigo, radius);
+      const boxGroup = createBoxGeometry(
+        simulationBox,
+        simulationOrigo,
+        radius,
+      );
       boxGroupRef.current = boxGroup;
       visualizer.scene.add(boxGroup);
     }
@@ -419,7 +446,8 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   }, [visualizer, disposeBoxGroup]);
 
   const title = simulation ? simulation.id : "No simulation";
-  const showNoSimulationModal = simulation == null && !hideNoSimulation && !isEmbeddedMode;
+  const showNoSimulationModal =
+    simulation == null && !hideNoSimulation && !isEmbeddedMode;
 
   return (
     <Layout style={{ height: "100vh" }}>
@@ -431,7 +459,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         }}
       >
         <Col>
-          <Row style={{ fontSize: '32px', fontWeight: 600 }}>{title}</Row>
+          <Row style={{ fontSize: "32px", fontWeight: 600 }}>{title}</Row>
           <Row>
             {running && (
               <Progress
@@ -458,7 +486,9 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
           {(!isEmbeddedMode || embedConfig.showSimulationSummary) && (
             <ResponsiveSimulationSummary
               isEmbeddedMode={isEmbeddedMode}
-              showSimulationSummary={isEmbeddedMode ? embedConfig.showSimulationSummary : true}
+              showSimulationSummary={
+                isEmbeddedMode ? embedConfig.showSimulationSummary : true
+              }
               isMobile={isMobile}
               isOverlayCollapsed={isOverlayCollapsed}
               showAnalyze={showAnalyze}

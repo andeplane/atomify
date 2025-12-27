@@ -3,7 +3,9 @@ import AnalyzeNotebook from "./AnalyzeNotebook";
 import { Simulation } from "../store/simulation";
 
 // Helper function to create mock simulation with defaults
-const createMockSimulation = (overrides: Partial<Simulation> = {}): Simulation => ({
+const createMockSimulation = (
+  overrides: Partial<Simulation> = {},
+): Simulation => ({
   id: "test-sim",
   inputScript: "",
   files: [],
@@ -72,7 +74,7 @@ describe("AnalyzeNotebook", () => {
     expect(notebook.cells).toHaveLength(4); // markdown + 3 default cells
     expect(notebook.cells[0].cell_type).toBe("markdown");
     expect(notebook.cells[0].source).toBe(
-      "# Analysis\nThis is a test analysis description"
+      "# Analysis\nThis is a test analysis description",
     );
   });
 
@@ -117,10 +119,14 @@ describe("AnalyzeNotebook", () => {
     expect(notebook.metadata.kernelspec?.name).toBe("python");
     expect(notebook.metadata.kernelspec?.display_name).toBe("Python (Pyodide)");
     // language is an extra field not in the official types but allowed via PartialJSONObject
-    expect((notebook.metadata.kernelspec as { language?: string })?.language).toBe("python");
+    expect(
+      (notebook.metadata.kernelspec as { language?: string })?.language,
+    ).toBe("python");
     expect(notebook.metadata.language_info?.name).toBe("python");
     // version is an extra field not in the official types but allowed via PartialJSONObject
-    expect((notebook.metadata.language_info as { version?: string })?.version).toBe("3.12");
+    expect(
+      (notebook.metadata.language_info as { version?: string })?.version,
+    ).toBe("3.12");
   });
 
   it("should handle special characters in simulation ID", () => {
@@ -155,4 +161,3 @@ describe("AnalyzeNotebook", () => {
     expect(notebook.cells[3].source).toBe("");
   });
 });
-

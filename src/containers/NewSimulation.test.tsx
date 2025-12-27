@@ -25,7 +25,9 @@ vi.mock("../hooks", () => ({
 }));
 
 // Store onChange handler for direct testing
-let capturedOnChange: ((info: UploadChangeParam<UploadFile>) => void) | undefined;
+let capturedOnChange:
+  | ((info: UploadChangeParam<UploadFile>) => void)
+  | undefined;
 
 // Mock antd components
 vi.mock("antd", () => {
@@ -102,10 +104,8 @@ vi.mock("antd", () => {
         }: {
           children: React.ReactNode;
           value: string;
-        }) => (
-          <option value={value}>{children}</option>
-        ),
-      }
+        }) => <option value={value}>{children}</option>,
+      },
     ),
     Input: ({
       onChange,
@@ -129,7 +129,11 @@ vi.mock("antd", () => {
       onClick?: () => void;
       disabled?: boolean;
     }) => (
-      <button data-testid={children === "OK" ? "ok-button" : "cancel-button"} onClick={onClick} disabled={disabled}>
+      <button
+        data-testid={children === "OK" ? "ok-button" : "cancel-button"}
+        onClick={onClick}
+        disabled={disabled}
+      >
         {children}
       </button>
     ),
@@ -144,7 +148,9 @@ vi.mock("antd", () => {
         <input
           type="checkbox"
           data-testid="start-immediately-checkbox"
-          onChange={(e) => onChange?.({ target: { checked: e.target.checked } })}
+          onChange={(e) =>
+            onChange?.({ target: { checked: e.target.checked } })
+          }
         />
         {children}
       </label>
@@ -175,16 +181,21 @@ describe("NewSimulation", () => {
     delete (window as Partial<Window>).files;
   });
 
-  const createMockFile = (name: string, content: string = "file content"): File => {
+  const createMockFile = (
+    name: string,
+    content: string = "file content",
+  ): File => {
     const file = new File([content], name, { type: "text/plain" });
     // Add text() method for async file reading
-    (file as Partial<File> & { text: () => Promise<string> }).text = vi.fn(() => Promise.resolve(content));
+    (file as Partial<File> & { text: () => Promise<string> }).text = vi.fn(() =>
+      Promise.resolve(content),
+    );
     return file as File & { text: () => Promise<string> };
   };
 
   const createMockUploadChangeParam = (
     files: File[],
-    status: "done" | "removed" = "done"
+    status: "done" | "removed" = "done",
   ): UploadChangeParam<UploadFile> => {
     const fileList = files.map((file, index) => ({
       uid: `${index}`,
@@ -201,12 +212,15 @@ describe("NewSimulation", () => {
 
   const triggerFileUpload = async (files: File[]) => {
     const { container } = render(<NewSimulation onClose={mockOnClose} />);
-    
+
     // Wait for component to render and capture onChange
-    await waitFor(() => {
-      expect(capturedOnChange).toBeDefined();
-    }, { timeout: 1000 });
-    
+    await waitFor(
+      () => {
+        expect(capturedOnChange).toBeDefined();
+      },
+      { timeout: 1000 },
+    );
+
     // Call onChange directly with mock data
     if (!capturedOnChange) {
       throw new Error("onChange handler not captured");
@@ -217,9 +231,12 @@ describe("NewSimulation", () => {
     });
 
     // Wait for state updates to complete
-    await waitFor(() => {
-      expect(window.files).toBeDefined();
-    }, { timeout: 1000 });
+    await waitFor(
+      () => {
+        expect(window.files).toBeDefined();
+      },
+      { timeout: 1000 },
+    );
 
     return { container };
   };
@@ -239,13 +256,16 @@ describe("NewSimulation", () => {
         await triggerFileUpload(files);
 
         // Assert
-        await waitFor(() => {
-          expect(window.files).toHaveLength(expectedCount);
-          fileNames.forEach((name) => {
-            expect(window.files?.some((f) => f.fileName === name)).toBe(true);
-          });
-        }, { timeout: 2000 });
-      }
+        await waitFor(
+          () => {
+            expect(window.files).toHaveLength(expectedCount);
+            fileNames.forEach((name) => {
+              expect(window.files?.some((f) => f.fileName === name)).toBe(true);
+            });
+          },
+          { timeout: 2000 },
+        );
+      },
     );
 
     it("should read file content correctly", async () => {
@@ -258,7 +278,9 @@ describe("NewSimulation", () => {
 
       // Assert
       await waitFor(() => {
-        const uploadedFile = window.files?.find((f) => f.fileName === "test.in");
+        const uploadedFile = window.files?.find(
+          (f) => f.fileName === "test.in",
+        );
         expect(uploadedFile?.content).toBe(content);
       });
     });
@@ -272,7 +294,7 @@ describe("NewSimulation", () => {
 
       // Act - simulate multiple onChange calls (like React StrictMode)
       const { container } = render(<NewSimulation onClose={mockOnClose} />);
-      
+
       await waitFor(() => {
         expect(capturedOnChange).toBeDefined();
       });
@@ -304,7 +326,7 @@ describe("NewSimulation", () => {
 
       // Act - simulate concurrent uploads
       const { container } = render(<NewSimulation onClose={mockOnClose} />);
-      
+
       await waitFor(() => {
         expect(capturedOnChange).toBeDefined();
       });
@@ -334,7 +356,10 @@ describe("NewSimulation", () => {
     it.each([
       { fileNames: ["data.txt", "run.in"], expectedSelection: "run.in" },
       { fileNames: ["run.in", "other.in"], expectedSelection: "run.in" },
-      { fileNames: ["first.in", "second.in", "data.txt"], expectedSelection: "first.in" },
+      {
+        fileNames: ["first.in", "second.in", "data.txt"],
+        expectedSelection: "first.in",
+      },
     ])(
       "should auto-select $expectedSelection when uploading $fileNames",
       async ({ fileNames, expectedSelection }) => {
@@ -346,25 +371,35 @@ describe("NewSimulation", () => {
 
         // Assert
         await waitFor(() => {
-          const select = container.querySelector('[data-testid="input-script-select"]') as HTMLSelectElement;
+          const select = container.querySelector(
+            '[data-testid="input-script-select"]',
+          ) as HTMLSelectElement;
           expect(select?.value).toBe(expectedSelection);
         });
-      }
+      },
     );
 
     it("should not auto-select when no .in files are present", async () => {
       // Arrange
-      const files = ["data.txt", "config.dat"].map((name) => createMockFile(name));
+      const files = ["data.txt", "config.dat"].map((name) =>
+        createMockFile(name),
+      );
 
       // Act
       const { container } = await triggerFileUpload(files);
 
       // Assert - select should exist but have no value selected (HTML select shows first option but value is empty)
       await waitFor(() => {
-        const select = container.querySelector('[data-testid="input-script-select"]') as HTMLSelectElement;
+        const select = container.querySelector(
+          '[data-testid="input-script-select"]',
+        ) as HTMLSelectElement;
         expect(select).toBeInTheDocument();
         // HTML select elements show the first option visually but value can be empty string or undefined
-        expect(select?.value === "" || select?.value === undefined || select?.selectedIndex === 0).toBe(true);
+        expect(
+          select?.value === "" ||
+            select?.value === undefined ||
+            select?.selectedIndex === 0,
+        ).toBe(true);
       });
     });
 
@@ -375,7 +410,7 @@ describe("NewSimulation", () => {
 
       // Act - render component ONCE
       const { container } = render(<NewSimulation onClose={mockOnClose} />);
-      
+
       await waitFor(() => {
         expect(capturedOnChange).toBeDefined();
       });
@@ -392,12 +427,16 @@ describe("NewSimulation", () => {
 
       // Wait for UI to update and select to appear
       await waitFor(() => {
-        const select = container.querySelector('[data-testid="input-script-select"]') as HTMLSelectElement;
+        const select = container.querySelector(
+          '[data-testid="input-script-select"]',
+        ) as HTMLSelectElement;
         expect(select).toBeInTheDocument();
       });
 
       // User manually selects different file
-      const select = container.querySelector('[data-testid="input-script-select"]') as HTMLSelectElement;
+      const select = container.querySelector(
+        '[data-testid="input-script-select"]',
+      ) as HTMLSelectElement;
       await act(async () => {
         await userEvent.selectOptions(select, "other.in");
       });
@@ -424,7 +463,7 @@ describe("NewSimulation", () => {
       const file1 = createMockFile("file1.in");
       const file2 = createMockFile("file2.in");
       const { container } = render(<NewSimulation onClose={mockOnClose} />);
-      
+
       await waitFor(() => {
         expect(capturedOnChange).toBeDefined();
       });
@@ -458,16 +497,53 @@ describe("NewSimulation", () => {
 
   describe("form validation", () => {
     it.each([
-      { name: "", files: ["test.in"], inputScript: "test.in", valid: false, description: "empty name" },
-      { name: "sim", files: [], inputScript: undefined, valid: false, description: "no files" },
-      { name: "sim", files: ["data.txt"], inputScript: undefined, valid: false, description: "no input script" },
-      { name: "sim", files: ["test.in"], inputScript: "test.in", valid: true, description: "all fields valid" },
+      {
+        name: "",
+        files: ["test.in"],
+        inputScript: "test.in",
+        valid: false,
+        description: "empty name",
+      },
+      {
+        name: "sim",
+        files: [],
+        inputScript: undefined,
+        valid: false,
+        description: "no files",
+      },
+      {
+        name: "sim",
+        files: ["data.txt"],
+        inputScript: undefined,
+        valid: false,
+        description: "no input script",
+      },
+      {
+        name: "sim",
+        files: ["test.in"],
+        inputScript: "test.in",
+        valid: true,
+        description: "all fields valid",
+      },
     ])(
       "OK button should be $valid for $description",
-      async ({ name, files: fileNames, inputScript, valid, skipAutoSelect }: { name: string; files: string[]; inputScript?: string; valid: boolean; description: string; skipAutoSelect?: boolean }) => {
+      async ({
+        name,
+        files: fileNames,
+        inputScript,
+        valid,
+        skipAutoSelect,
+      }: {
+        name: string;
+        files: string[];
+        inputScript?: string;
+        valid: boolean;
+        description: string;
+        skipAutoSelect?: boolean;
+      }) => {
         // Arrange
         const { container } = render(<NewSimulation onClose={mockOnClose} />);
-        
+
         await waitFor(() => {
           expect(capturedOnChange).toBeDefined();
         });
@@ -494,10 +570,14 @@ describe("NewSimulation", () => {
         // Set name if provided
         if (name) {
           await waitFor(() => {
-            const nameInput = container.querySelector('[data-testid="simulation-name-input"]');
+            const nameInput = container.querySelector(
+              '[data-testid="simulation-name-input"]',
+            );
             expect(nameInput).toBeInTheDocument();
           });
-          const nameInput = container.querySelector('[data-testid="simulation-name-input"]') as HTMLInputElement;
+          const nameInput = container.querySelector(
+            '[data-testid="simulation-name-input"]',
+          ) as HTMLInputElement;
           await act(async () => {
             await userEvent.type(nameInput, name);
           });
@@ -506,30 +586,41 @@ describe("NewSimulation", () => {
         // Set input script if provided
         if (inputScript) {
           await waitFor(() => {
-            const select = container.querySelector('[data-testid="input-script-select"]') as HTMLSelectElement;
+            const select = container.querySelector(
+              '[data-testid="input-script-select"]',
+            ) as HTMLSelectElement;
             expect(select).toBeInTheDocument();
           });
-          
-          const select = container.querySelector('[data-testid="input-script-select"]') as HTMLSelectElement;
+
+          const select = container.querySelector(
+            '[data-testid="input-script-select"]',
+          ) as HTMLSelectElement;
           await act(async () => {
             await userEvent.selectOptions(select, inputScript);
           });
         } else if (skipAutoSelect && fileNames.length > 0) {
           // For tests where we don't want auto-selection, wait a bit and then clear any auto-selection
           await waitFor(() => {
-            const select = container.querySelector('[data-testid="input-script-select"]') as HTMLSelectElement;
+            const select = container.querySelector(
+              '[data-testid="input-script-select"]',
+            ) as HTMLSelectElement;
             expect(select).toBeInTheDocument();
           });
           // Wait a bit to let auto-selection happen, then verify it didn't happen or clear it
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
         // Assert
-        await waitFor(() => {
-          const okButton = container.querySelector('[data-testid="ok-button"]') as HTMLButtonElement;
-          expect(okButton?.disabled).toBe(!valid);
-        }, { timeout: 2000 });
-      }
+        await waitFor(
+          () => {
+            const okButton = container.querySelector(
+              '[data-testid="ok-button"]',
+            ) as HTMLButtonElement;
+            expect(okButton?.disabled).toBe(!valid);
+          },
+          { timeout: 2000 },
+        );
+      },
     );
   });
 
@@ -539,18 +630,24 @@ describe("NewSimulation", () => {
       const files = ["test.in", "data.txt"].map((name) => createMockFile(name));
       const { container } = await triggerFileUpload(files);
 
-      const nameInput = container.querySelector('[data-testid="simulation-name-input"]') as HTMLInputElement;
+      const nameInput = container.querySelector(
+        '[data-testid="simulation-name-input"]',
+      ) as HTMLInputElement;
       await act(async () => {
         await userEvent.type(nameInput, "my-simulation");
       });
 
       await waitFor(() => {
-        const select = container.querySelector('[data-testid="input-script-select"]') as HTMLSelectElement;
+        const select = container.querySelector(
+          '[data-testid="input-script-select"]',
+        ) as HTMLSelectElement;
         expect(select).toBeInTheDocument();
       });
 
       // Act
-      const okButton = container.querySelector('[data-testid="ok-button"]') as HTMLButtonElement;
+      const okButton = container.querySelector(
+        '[data-testid="ok-button"]',
+      ) as HTMLButtonElement;
       await act(async () => {
         await userEvent.click(okButton);
       });
@@ -574,13 +671,17 @@ describe("NewSimulation", () => {
       const files = [createMockFile("test.in")];
       const { container } = await triggerFileUpload(files);
 
-      const nameInput = container.querySelector('[data-testid="simulation-name-input"]') as HTMLInputElement;
+      const nameInput = container.querySelector(
+        '[data-testid="simulation-name-input"]',
+      ) as HTMLInputElement;
       await act(async () => {
         await userEvent.type(nameInput, "my-simulation");
       });
 
       // Act
-      const okButton = container.querySelector('[data-testid="ok-button"]') as HTMLButtonElement;
+      const okButton = container.querySelector(
+        '[data-testid="ok-button"]',
+      ) as HTMLButtonElement;
       await act(async () => {
         await userEvent.click(okButton);
       });
@@ -596,18 +697,24 @@ describe("NewSimulation", () => {
       const files = [createMockFile("test.in")];
       const { container } = await triggerFileUpload(files);
 
-      const nameInput = container.querySelector('[data-testid="simulation-name-input"]') as HTMLInputElement;
+      const nameInput = container.querySelector(
+        '[data-testid="simulation-name-input"]',
+      ) as HTMLInputElement;
       await act(async () => {
         await userEvent.type(nameInput, "my-simulation");
       });
 
-      const checkbox = container.querySelector('[data-testid="start-immediately-checkbox"]') as HTMLInputElement;
+      const checkbox = container.querySelector(
+        '[data-testid="start-immediately-checkbox"]',
+      ) as HTMLInputElement;
       await act(async () => {
         await userEvent.click(checkbox);
       });
 
       // Act
-      const okButton = container.querySelector('[data-testid="ok-button"]') as HTMLButtonElement;
+      const okButton = container.querySelector(
+        '[data-testid="ok-button"]',
+      ) as HTMLButtonElement;
       await act(async () => {
         await userEvent.click(okButton);
       });
@@ -619,4 +726,3 @@ describe("NewSimulation", () => {
     });
   });
 });
-

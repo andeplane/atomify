@@ -80,7 +80,7 @@ class SyncFixesModifier extends Modifier {
 
           // Get data1DVector once before the loop for better performance
           const data1DVector = fix.lmpFix.getData1D();
-          
+
           for (let j = 0; j < data1DNamesSize; j++) {
             const lmpData = data1DVector.get(j);
 
@@ -105,11 +105,11 @@ class SyncFixesModifier extends Modifier {
               }
               fix.data1D.data[k].push(yValues[k]);
             }
-            
+
             // Delete the Data1D copy to prevent memory leak
             lmpData.delete();
           }
-          
+
           // Delete the vector wrapper after the loop to prevent memory leak
           data1DVector.delete();
         }

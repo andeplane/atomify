@@ -1,7 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import Figure from "./Figure";
-import { Compute, Fix, Variable, PlotData, LMPModifier, ModifierType } from "../types";
+import {
+  Compute,
+  Fix,
+  Variable,
+  PlotData,
+  LMPModifier,
+  ModifierType,
+} from "../types";
 
 // Mock useStoreState hook
 vi.mock("../hooks", () => ({
@@ -10,7 +17,9 @@ vi.mock("../hooks", () => ({
 
 // Mock Dygraph constructor
 vi.mock("dygraphs", () => {
-  const MockDygraph = vi.fn(function (this: { updateOptions: ReturnType<typeof vi.fn> }) {
+  const MockDygraph = vi.fn(function (this: {
+    updateOptions: ReturnType<typeof vi.fn>;
+  }) {
     this.updateOptions = vi.fn();
     return this;
   });
@@ -21,9 +30,20 @@ vi.mock("dygraphs", () => {
 
 // Mock antd Modal and Empty components
 vi.mock("antd", () => ({
-  Modal: ({ children, open, onCancel }: { children: React.ReactNode; open: boolean; onCancel: () => void }) => (
-    open ? <div data-testid="modal" onClick={onCancel}>{children}</div> : null
-  ),
+  Modal: ({
+    children,
+    open,
+    onCancel,
+  }: {
+    children: React.ReactNode;
+    open: boolean;
+    onCancel: () => void;
+  }) =>
+    open ? (
+      <div data-testid="modal" onClick={onCancel}>
+        {children}
+      </div>
+    ) : null,
   Empty: () => <div data-testid="empty">Empty</div>,
 }));
 
@@ -73,7 +93,10 @@ describe("Figure", () => {
       hasScalarData: true,
       scalarValue: 1.0,
       data1D: {
-        data: [[0, 1], [1, 2]],
+        data: [
+          [0, 1],
+          [1, 2],
+        ],
         labels: ["x", "y"],
       },
       xLabel: "Time",
@@ -95,7 +118,10 @@ describe("Figure", () => {
       hasScalarData: true,
       scalarValue: 1.0,
       data1D: {
-        data: [[0, 1], [1, 2]],
+        data: [
+          [0, 1],
+          [1, 2],
+        ],
         labels: ["x", "y"],
       },
       xLabel: "Time",
@@ -117,7 +143,10 @@ describe("Figure", () => {
       hasScalarData: true,
       scalarValue: 1.0,
       data1D: {
-        data: [[0, 1], [1, 2]],
+        data: [
+          [0, 1],
+          [1, 2],
+        ],
         labels: ["x", "y"],
       },
       xLabel: "Time",
@@ -134,7 +163,10 @@ describe("Figure", () => {
   const createMockPlotData = (overrides?: Partial<PlotData>): PlotData => ({
     name: "test-plot",
     data1D: {
-      data: [[0, 1], [1, 2]],
+      data: [
+        [0, 1],
+        [1, 2],
+      ],
       labels: ["x", "y"],
     },
     xLabel: "Time",
@@ -154,12 +186,16 @@ describe("Figure", () => {
           modifierType="compute"
           onToggleSyncDataPoints={mockOnToggleSyncDataPoints}
           onClose={mockOnClose}
-        />
+        />,
       );
 
       // Assert
       expect(mockOnToggleSyncDataPoints).toHaveBeenCalledTimes(1);
-      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith("my-compute", "compute", true);
+      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith(
+        "my-compute",
+        "compute",
+        true,
+      );
     });
 
     it("should call callback with true when fix modifier is mounted", () => {
@@ -173,12 +209,16 @@ describe("Figure", () => {
           modifierType="fix"
           onToggleSyncDataPoints={mockOnToggleSyncDataPoints}
           onClose={mockOnClose}
-        />
+        />,
       );
 
       // Assert
       expect(mockOnToggleSyncDataPoints).toHaveBeenCalledTimes(1);
-      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith("my-fix", "fix", true);
+      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith(
+        "my-fix",
+        "fix",
+        true,
+      );
     });
 
     it("should call callback with true when variable modifier is mounted", () => {
@@ -192,12 +232,16 @@ describe("Figure", () => {
           modifierType="variable"
           onToggleSyncDataPoints={mockOnToggleSyncDataPoints}
           onClose={mockOnClose}
-        />
+        />,
       );
 
       // Assert
       expect(mockOnToggleSyncDataPoints).toHaveBeenCalledTimes(1);
-      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith("my-variable", "variable", true);
+      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith(
+        "my-variable",
+        "variable",
+        true,
+      );
     });
 
     it("should call callback with false when component unmounts", () => {
@@ -211,12 +255,16 @@ describe("Figure", () => {
           modifierType="compute"
           onToggleSyncDataPoints={mockOnToggleSyncDataPoints}
           onClose={mockOnClose}
-        />
+        />,
       );
 
       // Verify initial call
       expect(mockOnToggleSyncDataPoints).toHaveBeenCalledTimes(1);
-      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith("unmount-test", "compute", true);
+      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith(
+        "unmount-test",
+        "compute",
+        true,
+      );
 
       // Unmount
       act(() => {
@@ -225,7 +273,11 @@ describe("Figure", () => {
 
       // Assert cleanup was called
       expect(mockOnToggleSyncDataPoints).toHaveBeenCalledTimes(2);
-      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith("unmount-test", "compute", false);
+      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith(
+        "unmount-test",
+        "compute",
+        false,
+      );
     });
 
     it("should not call callback when plotData is provided instead of modifier", () => {
@@ -233,12 +285,7 @@ describe("Figure", () => {
       const plotData = createMockPlotData();
 
       // Act
-      render(
-        <Figure
-          plotData={plotData}
-          onClose={mockOnClose}
-        />
-      );
+      render(<Figure plotData={plotData} onClose={mockOnClose} />);
 
       // Assert
       expect(mockOnToggleSyncDataPoints).not.toHaveBeenCalled();
@@ -254,7 +301,7 @@ describe("Figure", () => {
           modifier={modifier}
           modifierType="compute"
           onClose={mockOnClose}
-        />
+        />,
       );
 
       // Assert
@@ -273,12 +320,16 @@ describe("Figure", () => {
           modifierType="compute"
           onToggleSyncDataPoints={mockOnToggleSyncDataPoints}
           onClose={mockOnClose}
-        />
+        />,
       );
 
       // Assert initial call
       expect(mockOnToggleSyncDataPoints).toHaveBeenCalledTimes(1);
-      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith("compute-1", "compute", true);
+      expect(mockOnToggleSyncDataPoints).toHaveBeenCalledWith(
+        "compute-1",
+        "compute",
+        true,
+      );
 
       // Rerender with different modifier
       act(() => {
@@ -288,14 +339,24 @@ describe("Figure", () => {
             modifierType="compute"
             onToggleSyncDataPoints={mockOnToggleSyncDataPoints}
             onClose={mockOnClose}
-          />
+          />,
         );
       });
 
       // Assert: cleanup for old modifier, then call for new modifier
       expect(mockOnToggleSyncDataPoints).toHaveBeenCalledTimes(3);
-      expect(mockOnToggleSyncDataPoints).toHaveBeenNthCalledWith(2, "compute-1", "compute", false);
-      expect(mockOnToggleSyncDataPoints).toHaveBeenNthCalledWith(3, "compute-2", "compute", true);
+      expect(mockOnToggleSyncDataPoints).toHaveBeenNthCalledWith(
+        2,
+        "compute-1",
+        "compute",
+        false,
+      );
+      expect(mockOnToggleSyncDataPoints).toHaveBeenNthCalledWith(
+        3,
+        "compute-2",
+        "compute",
+        true,
+      );
     });
   });
 
@@ -325,4 +386,3 @@ describe("Figure", () => {
     });
   });
 });
-

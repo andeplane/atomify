@@ -10,11 +10,11 @@ interface SimulationSummaryProps {
   onCollapse?: () => void;
 }
 
-const SimulationSummary = ({ 
-  onShowMore, 
-  isCollapsed = false, 
+const SimulationSummary = ({
+  onShowMore,
+  isCollapsed = false,
   onExpand,
-  onCollapse
+  onCollapse,
 }: SimulationSummaryProps) => {
   const simulationSettings = useStoreState(
     (state) => state.settings.simulation,
@@ -67,9 +67,7 @@ const SimulationSummary = ({
       <div className="simulationsummary simulationsummary-collapsed">
         {/* No buttons when collapsed - just clickable text */}
         <button type="button" onClick={handleExpand}>
-          <div>
-            Show simulation summary
-          </div>
+          <div>Show simulation summary</div>
         </button>
       </div>
     );
@@ -79,13 +77,16 @@ const SimulationSummary = ({
     <div className="simulationsummary">
       {simulation && (
         <>
-          <div className="simulation-summary-minimize-button" style={{ display: 'flex', gap: '4px' }}>
+          <div
+            className="simulation-summary-minimize-button"
+            style={{ display: "flex", gap: "4px" }}
+          >
             {onCollapse && (
               <Button
                 type="text"
                 icon={<MinusOutlined />}
                 onClick={handleCollapse}
-                style={{ color: '#fff', padding: 0 }}
+                style={{ color: "#fff", padding: 0 }}
                 title="Collapse"
               />
             )}
@@ -94,7 +95,7 @@ const SimulationSummary = ({
                 type="text"
                 icon={<ExpandOutlined />}
                 onClick={handleShowMore}
-                style={{ color: '#fff', padding: 0 }}
+                style={{ color: "#fff", padding: 0 }}
                 title="Expand"
               />
             )}

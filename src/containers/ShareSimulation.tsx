@@ -31,33 +31,35 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
     setError(undefined);
     try {
       const encodedData = await encodeSimulation(simulation);
-      
+
       // Track with file details
-      const fileNames = simulation.files.map(f => f.fileName);
-      track("ShareSimulation.Generate", { 
+      const fileNames = simulation.files.map((f) => f.fileName);
+      track("ShareSimulation.Generate", {
         simulationId: simulation.id,
         embedMode,
         autoStart,
         fileNames,
         fileCount: simulation.files.length,
-        urlLength: encodedData.length  // Just the encoded data part
+        urlLength: encodedData.length, // Just the encoded data part
       });
-      
+
       // Get the base URL (without query parameters)
       const baseUrl = `${window.location.origin}${window.location.pathname}`;
-      const embedParam = embedMode ? '&embed=true' : '';
+      const embedParam = embedMode ? "&embed=true" : "";
       // When embedMode is true, autoStart is always true
       const effectiveAutoStart = embedMode || autoStart;
-      const autoStartParam = effectiveAutoStart ? '&autostart=true' : '';
+      const autoStartParam = effectiveAutoStart ? "&autostart=true" : "";
       const url = `${baseUrl}?data=${encodedData}${embedParam}${autoStartParam}`;
-      
+
       setShareUrl(url);
     } catch (err) {
       console.error("Error generating share URL:", err);
-      setError(`Failed to generate share URL: ${err instanceof Error ? err.message : String(err)}`);
-      track("ShareSimulation.Error", { 
+      setError(
+        `Failed to generate share URL: ${err instanceof Error ? err.message : String(err)}`,
+      );
+      track("ShareSimulation.Error", {
         simulationId: simulation.id,
-        error: err instanceof Error ? err.message : String(err)
+        error: err instanceof Error ? err.message : String(err),
       });
     } finally {
       setLoading(false);
@@ -127,9 +129,9 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
           checked={embedMode}
           onChange={(e) => setEmbedMode(e.target.checked)}
         >
-          <strong>Embedded mode:</strong> Share in full screen, embedded mode. Use this for presentations, 
-          embedding in websites, or sharing with users who just want to view 
-          the simulation.
+          <strong>Embedded mode:</strong> Share in full screen, embedded mode.
+          Use this for presentations, embedding in websites, or sharing with
+          users who just want to view the simulation.
         </Checkbox>
       </div>
 
@@ -167,7 +169,9 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
                 ? "This URL should work on GitHub Pages."
                 : "This URL may not work on GitHub Pages (has ~2KB limit). Consider reducing simulation size or number of files."
             }
-            type={shareUrl.length < GITHUB_PAGES_URL_LIMIT ? "success" : "warning"}
+            type={
+              shareUrl.length < GITHUB_PAGES_URL_LIMIT ? "success" : "warning"
+            }
             showIcon
           />
 
@@ -184,16 +188,10 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
       )}
 
       {!loading && !shareUrl && error && (
-        <Alert
-          message="Error"
-          description={error}
-          type="error"
-          showIcon
-        />
+        <Alert message="Error" description={error} type="error" showIcon />
       )}
     </Modal>
   );
 };
 
 export default ShareSimulation;
-

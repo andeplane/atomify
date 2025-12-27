@@ -18,7 +18,7 @@ const Console = ({ width, height }: ConsoleProps) => {
     selectOnLineNumbers: true,
     readOnly: true,
   };
-  
+
   useEffect(() => {
     const editor = editorRef.current;
     if (editor) {
@@ -29,7 +29,9 @@ const Console = ({ width, height }: ConsoleProps) => {
     }
   }, [lammpsOutput]);
 
-  const handleEditorDidMount = (editor: Monaco.editor.IStandaloneCodeEditor) => {
+  const handleEditorDidMount = (
+    editor: Monaco.editor.IStandaloneCodeEditor,
+  ) => {
     editorRef.current = editor;
   };
 

@@ -41,7 +41,9 @@ describe("isEmbeddedMode", () => {
 
   it("should return true when embeddedSimulationUrl is present with valid simulationIndex", () => {
     // Arrange
-    mockWindowLocation("?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=0");
+    mockWindowLocation(
+      "?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=0",
+    );
 
     // Act
     const result = isEmbeddedMode();
@@ -52,7 +54,9 @@ describe("isEmbeddedMode", () => {
 
   it("should return true when embeddedSimulationUrl is present with positive simulationIndex", () => {
     // Arrange
-    mockWindowLocation("?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=5");
+    mockWindowLocation(
+      "?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=5",
+    );
 
     // Act
     const result = isEmbeddedMode();
@@ -63,7 +67,9 @@ describe("isEmbeddedMode", () => {
 
   it("should return false when embeddedSimulationUrl is present but simulationIndex is negative", () => {
     // Arrange
-    mockWindowLocation("?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=-1");
+    mockWindowLocation(
+      "?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=-1",
+    );
 
     // Act
     const result = isEmbeddedMode();
@@ -130,7 +136,9 @@ describe("isEmbeddedMode", () => {
 
   it("should return true when both embeddedSimulationUrl and data params are present (prioritizes embeddedSimulationUrl)", () => {
     // Arrange
-    mockWindowLocation("?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=0&data=someData&embed=true");
+    mockWindowLocation(
+      "?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=0&data=someData&embed=true",
+    );
 
     // Act
     const result = isEmbeddedMode();
@@ -152,7 +160,9 @@ describe("isEmbeddedMode", () => {
 
   it("should handle complex URL with mixed params", () => {
     // Arrange
-    mockWindowLocation("?foo=bar&embeddedSimulationUrl=https://example.com/file.json&simulationIndex=2&baz=qux");
+    mockWindowLocation(
+      "?foo=bar&embeddedSimulationUrl=https://example.com/file.json&simulationIndex=2&baz=qux",
+    );
 
     // Act
     const result = isEmbeddedMode();
@@ -163,7 +173,9 @@ describe("isEmbeddedMode", () => {
 
   it("should accept URLSearchParams as parameter", () => {
     // Arrange
-    const params = new URLSearchParams("?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=0");
+    const params = new URLSearchParams(
+      "?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=0",
+    );
 
     // Act
     const result = isEmbeddedMode(params);
@@ -186,7 +198,9 @@ describe("isEmbeddedMode", () => {
 
   it("should handle invalid simulationIndex gracefully", () => {
     // Arrange
-    mockWindowLocation("?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=invalid");
+    mockWindowLocation(
+      "?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=invalid",
+    );
 
     // Act
     const result = isEmbeddedMode();
@@ -198,7 +212,9 @@ describe("isEmbeddedMode", () => {
 
   it("should handle empty string simulationIndex (defaults to 0)", () => {
     // Arrange
-    mockWindowLocation("?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=");
+    mockWindowLocation(
+      "?embeddedSimulationUrl=https://example.com/sim.json&simulationIndex=",
+    );
 
     // Act
     const result = isEmbeddedMode();
@@ -220,4 +236,3 @@ describe("isEmbeddedMode", () => {
     expect(result).toBe(false);
   });
 });
-

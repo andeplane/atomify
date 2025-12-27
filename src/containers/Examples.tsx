@@ -145,8 +145,8 @@ const Examples = () => {
   keywords.sort();
 
   const renderCard = (example: Example) => (
-    <div 
-      key={example.id} 
+    <div
+      key={example.id}
       className="modern-card"
       onClick={() => onPlay(example)}
     >
@@ -157,7 +157,7 @@ const Examples = () => {
           className="card-image"
         />
         <div className="card-overlay">
-          <button 
+          <button
             className="overlay-button"
             onClick={(e) => {
               e.stopPropagation();
@@ -167,7 +167,7 @@ const Examples = () => {
           >
             <CaretRightOutlined />
           </button>
-          <button 
+          <button
             className="overlay-button"
             onClick={(e) => {
               e.stopPropagation();
@@ -180,13 +180,18 @@ const Examples = () => {
         </div>
       </div>
       <div className="card-content">
-        <div className="card-title" title={example.title}>{example.title}</div>
-        <div className="card-description" title={example.description}>{example.description}</div>
+        <div className="card-title" title={example.title}>
+          {example.title}
+        </div>
+        <div className="card-description" title={example.description}>
+          {example.description}
+        </div>
         {example.author && (
           <div className="card-author">
-            By <a 
-              href={example.authorUrl} 
-              target="_blank" 
+            By{" "}
+            <a
+              href={example.authorUrl}
+              target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
             >
@@ -219,7 +224,10 @@ const Examples = () => {
 
   return (
     <>
-      <Header className="site-layout-background examples-header" style={{ fontSize: 25 }}>
+      <Header
+        className="site-layout-background examples-header"
+        style={{ fontSize: 25 }}
+      >
         {title}
       </Header>
       <div className="examples-container">
@@ -227,7 +235,10 @@ const Examples = () => {
           remarkPlugins={[remarkMath]}
           rehypePlugins={[
             rehypeKatex,
-            [rehypeExternalLinks, { target: "_blank", rel: ["nofollow", "noreferrer"] }],
+            [
+              rehypeExternalLinks,
+              { target: "_blank", rel: ["nofollow", "noreferrer"] },
+            ],
           ]}
         >
           {description}
@@ -245,9 +256,7 @@ const Examples = () => {
             <Option key={keyword}>{keyword}</Option>
           ))}
         </Select>
-        <div className="cards-grid">
-          {filteredExamples.map(renderCard)}
-        </div>
+        <div className="cards-grid">{filteredExamples.map(renderCard)}</div>
         {examples.length === 0 && <Skeleton active />}
       </div>
     </>

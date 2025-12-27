@@ -43,11 +43,7 @@ const ResponsiveSimulationSummary = ({
 
   // In non-embedded mode: show expanded overlay when showAnalyze is true (desktop only)
   if (showAnalyze && isDesktop) {
-    return (
-      <SimulationSummaryExpanded
-        onShowLess={onShowLess}
-      />
-    );
+    return <SimulationSummaryExpanded onShowLess={onShowLess} />;
   }
 
   // Show regular overlay
@@ -64,4 +60,3 @@ const ResponsiveSimulationSummary = ({
 };
 
 export default ResponsiveSimulationSummary;
-

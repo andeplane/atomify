@@ -62,7 +62,9 @@ const AnalyzeNotebook = (simulation: Simulation): INotebookContent => {
 
   const cell = notebook.cells[1];
   if (cell.cell_type === "code") {
-    const source = Array.isArray(cell.source) ? cell.source.join("") : cell.source;
+    const source = Array.isArray(cell.source)
+      ? cell.source.join("")
+      : cell.source;
     cell.source = source.replace("###SIMULATIONID###", simulation.id);
   }
   if (simulation.analysisDescription) {

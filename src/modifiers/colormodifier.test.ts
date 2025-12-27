@@ -119,7 +119,7 @@ describe("ColorModifier", () => {
           visualizer: mockVisualizer,
         } as unknown as ModifierInput["renderState"],
         computes: {
-          "c_test": mockCompute as unknown as ModifierInput["computes"][string],
+          c_test: mockCompute as unknown as ModifierInput["computes"][string],
         },
         wasm: mockWasm as unknown as ModifierInput["wasm"],
       };
@@ -136,7 +136,7 @@ describe("ColorModifier", () => {
       // Act
       colorModifier.runByProperty(
         input as ModifierInput,
-        output as ModifierOutput
+        output as ModifierOutput,
       );
 
       // Assert
@@ -164,7 +164,7 @@ describe("ColorModifier", () => {
           visualizer: mockVisualizer,
         } as unknown as ModifierInput["renderState"],
         computes: {
-          "c_test": mockCompute as unknown as ModifierInput["computes"][string],
+          c_test: mockCompute as unknown as ModifierInput["computes"][string],
         },
         wasm: {} as unknown as ModifierInput["wasm"],
       };
@@ -187,7 +187,7 @@ describe("ColorModifier", () => {
 
       colorModifier.runByProperty(
         input as ModifierInput,
-        output as ModifierOutput
+        output as ModifierOutput,
       );
 
       expect(colorModifier.globalMinValue).toBe(1.0);
@@ -203,7 +203,7 @@ describe("ColorModifier", () => {
       // Act
       colorModifier.runByProperty(
         input as ModifierInput,
-        output as ModifierOutput
+        output as ModifierOutput,
       );
 
       // Assert - should keep the extremes from both timesteps
@@ -237,7 +237,7 @@ describe("ColorModifier", () => {
           visualizer: mockVisualizer,
         } as unknown as ModifierInput["renderState"],
         computes: {
-          "c_test": mockCompute as unknown as ModifierInput["computes"][string],
+          c_test: mockCompute as unknown as ModifierInput["computes"][string],
         },
         wasm: mockWasm as unknown as ModifierInput["wasm"],
       };
@@ -257,7 +257,7 @@ describe("ColorModifier", () => {
       // Act
       colorModifier.runByProperty(
         input as ModifierInput,
-        output as ModifierOutput
+        output as ModifierOutput,
       );
 
       // Assert
@@ -292,7 +292,7 @@ describe("ColorModifier", () => {
           visualizer: mockVisualizer,
         } as unknown as ModifierInput["renderState"],
         computes: {
-          "c_test": mockCompute as unknown as ModifierInput["computes"][string],
+          c_test: mockCompute as unknown as ModifierInput["computes"][string],
         },
         wasm: mockWasm as unknown as ModifierInput["wasm"],
       };
@@ -311,7 +311,7 @@ describe("ColorModifier", () => {
       // Act
       colorModifier.runByProperty(
         input as ModifierInput,
-        output as ModifierOutput
+        output as ModifierOutput,
       );
 
       // Assert - should have called setColor for each particle

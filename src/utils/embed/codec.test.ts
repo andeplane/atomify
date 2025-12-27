@@ -13,10 +13,12 @@ beforeEach(() => {
 
   // Ensure they're available (they should be in jsdom, but just in case)
   if (!global.btoa) {
-    global.btoa = (str: string) => Buffer.from(str, "binary").toString("base64");
+    global.btoa = (str: string) =>
+      Buffer.from(str, "binary").toString("base64");
   }
   if (!global.atob) {
-    global.atob = (str: string) => Buffer.from(str, "base64").toString("binary");
+    global.atob = (str: string) =>
+      Buffer.from(str, "base64").toString("binary");
   }
 });
 
@@ -207,4 +209,3 @@ describe("base64 round-trip", () => {
     expect(decoded).toEqual(original);
   });
 });
-

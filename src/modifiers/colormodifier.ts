@@ -123,15 +123,15 @@ interface ColorModifierProps {
 class ColorModifier extends Modifier {
   public computeName?: string;
   private previousColoringMethod?: string;
-  
+
   // Min/max tracking over time
   public globalMinValue: number = Infinity;
   public globalMaxValue: number = -Infinity;
-  
+
   // Custom min/max values (if set, override computed values)
   public customMinValue?: number;
   public customMaxValue?: number;
-  
+
   // Flag to reset global min/max
   public resetMinMax: boolean = false;
 
@@ -142,16 +142,20 @@ class ColorModifier extends Modifier {
     super({ name, active });
     this.computeName = undefined;
   }
-  
+
   // Get the effective min/max values (custom or global)
   public getEffectiveMinValue(): number {
-    return this.customMinValue !== undefined ? this.customMinValue : this.globalMinValue;
+    return this.customMinValue !== undefined
+      ? this.customMinValue
+      : this.globalMinValue;
   }
-  
+
   public getEffectiveMaxValue(): number {
-    return this.customMaxValue !== undefined ? this.customMaxValue : this.globalMaxValue;
+    return this.customMaxValue !== undefined
+      ? this.customMaxValue
+      : this.globalMaxValue;
   }
-  
+
   // Reset global min/max values
   public resetGlobalMinMax(): void {
     this.globalMinValue = Infinity;
@@ -191,12 +195,12 @@ class ColorModifier extends Modifier {
       perAtomDataPtr,
       perAtomDataPtr + particles.count,
     ) as Float64Array;
-    
+
     // Reset global min/max if requested
     if (this.resetMinMax) {
       this.resetGlobalMinMax();
     }
-    
+
     // Calculate min/max for current timestep
     let currentMinValue = Infinity;
     let currentMaxValue = -Infinity;
@@ -205,25 +209,28 @@ class ColorModifier extends Modifier {
       currentMinValue = Math.min(currentMinValue, value);
       currentMaxValue = Math.max(currentMaxValue, value);
     }
-    
+
     // Update global min/max values
     this.globalMinValue = Math.min(this.globalMinValue, currentMinValue);
     this.globalMaxValue = Math.max(this.globalMaxValue, currentMaxValue);
-    
+
     // Use effective min/max for coloring
     const effectiveMinValue = this.getEffectiveMinValue();
     const effectiveMaxValue = this.getEffectiveMaxValue();
-    
+
     // Avoid division by zero
     const range = effectiveMaxValue - effectiveMinValue;
     const validRange = range > 0 ? range : 1;
-    
+
     perAtomArray.forEach((value, index) => {
       const realIndex = particles.indices[index];
-      
+
       // Clamp value to effective range
-      const clampedValue = Math.max(effectiveMinValue, Math.min(effectiveMaxValue, value));
-      
+      const clampedValue = Math.max(
+        effectiveMinValue,
+        Math.min(effectiveMaxValue, value),
+      );
+
       const colorIndex = Math.floor(
         ((clampedValue - effectiveMinValue) / validRange) * (colors.length - 1),
       );

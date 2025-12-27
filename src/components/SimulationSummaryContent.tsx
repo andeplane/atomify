@@ -69,11 +69,7 @@ const SimulationSummaryContent = () => {
     (actions) => actions.simulationStatus.setModifierSyncDataPoints,
   );
   const handleToggleSyncDataPoints = useCallback(
-    (
-      name: string,
-      type: "compute" | "fix" | "variable",
-      value: boolean,
-    ) => {
+    (name: string, type: "compute" | "fix" | "variable", value: boolean) => {
       setModifierSyncDataPointsAction({ name, type, value });
     },
     [setModifierSyncDataPointsAction],
@@ -89,7 +85,10 @@ const SimulationSummaryContent = () => {
   const setUIUpdateFrequency = (value: number | null) => {
     if (value && value > 0) {
       track("UIUpdateFrequency.Change", { frequency: value });
-      setSimulationSettings({ ...simulationSettings, uiUpdateFrequency: value });
+      setSimulationSettings({
+        ...simulationSettings,
+        uiUpdateFrequency: value,
+      });
     }
   };
 
@@ -440,7 +439,10 @@ const SimulationSummaryContent = () => {
         <SyncParticlesSettings onClose={() => setVisibleSettings(undefined)} />
       )}
       {visibleSettings === "Colors" && (
-        <ColorModifierSettings open={true} onClose={() => setVisibleSettings(undefined)} />
+        <ColorModifierSettings
+          open={true}
+          onClose={() => setVisibleSettings(undefined)}
+        />
       )}
       {visibleCompute && (
         <Figure
@@ -471,4 +473,3 @@ const SimulationSummaryContent = () => {
 };
 
 export default React.memo(SimulationSummaryContent);
-
