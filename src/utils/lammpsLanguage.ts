@@ -1374,16 +1374,6 @@ const lammpsTokensProvider: Monaco.languages.IMonarchLanguage = {
       [/[;,.]/, "delimiter"],
       [/"([^"\\]|\\.)*$/, "string.invalid"],
       [/"/, { token: "string.quote", bracket: "@open", next: "@string" }],
-      [/'[^\\']'/, "string"],
-      [/(')(@escapes)(')/, ["string", "string.escape", "string"]],
-      [/'/, "string.invalid"],
-    ],
-    comment: [
-      [/[^/*]+/, "comment"],
-      [/\/\*/, "comment", "@push"],
-      ["\\*/", "comment", "@pop"],
-      [/[/*]/, "comment"],
-      [/^#/, "comment"],
     ],
     string: [
       [/[^\\"]+/, "string"],
@@ -1393,8 +1383,7 @@ const lammpsTokensProvider: Monaco.languages.IMonarchLanguage = {
     ],
     whitespace: [
       [/[ \t\r\n]+/, "white"],
-      [/\/\*/, "comment", "@comment"],
-      [/\/\/.*$/, "comment"],
+      [/#.*$/, "comment"],
     ],
   },
 };
