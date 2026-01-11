@@ -24,6 +24,7 @@ export type LammpsWeb = {
 
   getPositionsPointer: () => number;
   getIdPointer: () => number;
+  getTagPointer: () => number;
   getTypePointer: () => number;
   getCellMatrixPointer: () => number;
   getOrigoPointer: () => number;
