@@ -7,6 +7,7 @@ export interface RenderSettings {
   ambientLightIntensity: number;
   pointLightIntensity: number;
   showSimulationBox: boolean;
+  showWalls: boolean;
   orthographic: boolean;
 }
 
@@ -54,6 +55,7 @@ const defaultRenderSettings: RenderSettings = {
   ambientLightIntensity: 0.05,
   pointLightIntensity: 20.0,
   showSimulationBox: true,
+  showWalls: true,
   orthographic: false,
 };
 

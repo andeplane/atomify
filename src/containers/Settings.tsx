@@ -126,6 +126,21 @@ const Settings = ({ open, onClose }: SettingsProps) => {
 
         <div style={{ marginTop: "8px" }}>
           <Checkbox
+            checked={renderSettings.showWalls}
+            onChange={(e) =>
+              handleSettingChange(
+                "showWalls",
+                e.target.checked,
+                "Settings.Render.ShowWalls",
+              )
+            }
+          >
+            Show walls
+          </Checkbox>
+        </div>
+
+        <div style={{ marginTop: "8px" }}>
+          <Checkbox
             checked={renderSettings.orthographic}
             onChange={(e) =>
               handleSettingChange(
