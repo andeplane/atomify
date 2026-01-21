@@ -1,0 +1,41 @@
+#/atom 1 2.0 #a1a1a1
+
+#/camera position -20 20 20
+#/camera target 0 0 0
+
+# This LAMMPS input script demonstrates wall collisions with 5 non-interacting particles
+# Particles bounce off LJ93 potential walls in 3D
+
+# main parameters
+units lj
+dimension 3
+atom_style atomic
+pair_style none  # No pair interactions - particles only interact with walls
+boundary f f f  # Fixed boundaries (non-periodic) for walls
+
+# create system and insert atoms
+# Smaller box for easier visualization
+region myreg block -10 10 -10 10 -10 10
+create_box 1 myreg
+region atomreg block -8 8 -8 8 -8 8  # Leave gap for wall cutoff
+create_atoms 1 random 5 341341 atomreg
+
+# atom settings
+mass 1 1
+
+# Add walls before setting velocities
+fix mywalls all wall/lj93 xlo EDGE 1.0 1.0 2.5 xhi EDGE 1.0 1.0 2.5 ylo EDGE 1.0 1.0 2.5 yhi EDGE 1.0 1.0 2.5 zlo EDGE 1.0 1.0 2.5 zhi EDGE 1.0 1.0 2.5
+
+# Set random initial velocities so particles bounce off walls
+velocity all create 2.0 341341 rot yes dist gaussian
+
+# dynamics
+fix mynve all nve
+timestep 0.005
+
+# outputs
+thermo 100
+thermo_style one
+
+# run
+run 10000
