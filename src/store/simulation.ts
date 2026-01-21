@@ -34,6 +34,8 @@ export interface Simulation {
   analysisScript?: string;
   start: boolean;
   vars?: Record<string, number>;
+  showSimulationBox?: boolean;
+  showWalls?: boolean;
 }
 
 export interface SimulationModel {
@@ -350,14 +352,28 @@ export const simulationModel: SimulationModel = {
       });
       time_event("Simulation.Stop");
 
-      const inputScriptFile = simulation.files.filter(
-        (file) => file.fileName === simulation.inputScript,
-      )[0];
-      if (inputScriptFile.content) {
-        actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
-      }
+    const inputScriptFile = simulation.files.filter(
+      (file) => file.fileName === simulation.inputScript,
+    )[0];
+    if (inputScriptFile.content) {
+      actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
+    }
 
-      // Inject URL variables if provided
+    // Apply embedded settings if provided
+    if (simulation.showSimulationBox !== undefined) {
+      allActions.settings.setRenderSettings({
+        ...getStoreState().settings.render,
+        showSimulationBox: simulation.showSimulationBox,
+      });
+    }
+    if (simulation.showWalls !== undefined) {
+      allActions.settings.setRenderSettings({
+        ...getStoreState().settings.render,
+        showWalls: simulation.showWalls,
+      });
+    }
+
+    // Inject URL variables if provided
       if (simulation.vars && Object.keys(simulation.vars).length > 0) {
         const varsScript =
           Object.entries(simulation.vars)
