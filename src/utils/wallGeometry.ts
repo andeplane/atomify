@@ -1,47 +1,11 @@
 import * as THREE from "three";
 import { Wall } from "../types";
-import { extractBasisVectors, getSimulationBoxBounds } from "./boxGeometry";
+import { extractBasisVectors, getSimulationBoxBounds, isTriclinicBox } from "./boxGeometry";
 
 // Constants for wall rendering
 const WALL_OPACITY = 0.04;
 const WALL_COLOR = 0xcccccc; // Light gray/white
 const MIN_THICKNESS_2D = 0.1; // Minimum thickness for 2D walls (along z-axis for visibility)
-
-/**
- * Detects if a simulation box is triclinic (non-orthogonal) by checking the cell matrix.
- * A triclinic box has non-zero off-diagonal elements in the matrix.
- * 
- * @param cellMatrix - THREE.Matrix3 representing the simulation box
- * @returns true if the box is triclinic, false if orthogonal
- */
-export function isTriclinicBox(cellMatrix: THREE.Matrix3): boolean {
-  const { a, b, c } = extractBasisVectors(cellMatrix);
-  
-  // For an orthogonal box:
-  // a = (ax, 0, 0)
-  // b = (0, by, 0) or (bx, by, 0) if 2D
-  // c = (0, 0, cz) or (cx, cy, cz) if 3D
-  // 
-  // Check if any off-diagonal elements are non-zero (within tolerance)
-  const tolerance = 1e-6;
-  
-  // Check if a has non-zero y or z components
-  if (Math.abs(a.y) > tolerance || Math.abs(a.z) > tolerance) {
-    return true;
-  }
-  
-  // Check if b has non-zero z component
-  if (Math.abs(b.z) > tolerance) {
-    return true;
-  }
-  
-  // Check if c has non-zero x or y components (for 3D)
-  if (Math.abs(c.x) > tolerance || Math.abs(c.y) > tolerance) {
-    return true;
-  }
-  
-  return false;
-}
 
 /**
  * Creates a mesh for a single wall in 3D or 2D.

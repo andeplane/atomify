@@ -199,3 +199,44 @@ export function getSimulationBoxBounds(
 
   return box;
 }
+
+/**
+ * Detects if a simulation box is triclinic (non-orthogonal) by checking the cell matrix.
+ * A triclinic box has non-zero off-diagonal elements in the matrix.
+ *
+ * @param cellMatrix - THREE.Matrix3 representing the simulation box
+ * @returns true if the box is triclinic, false if orthogonal
+ */
+export function isTriclinicBox(cellMatrix: THREE.Matrix3): boolean {
+  const { a, b, c } = extractBasisVectors(cellMatrix);
+
+  // Check if any off-diagonal elements are non-zero (within tolerance)
+  const tolerance = 1e-6;
+
+  // Check if a has non-zero y or z components
+  if (Math.abs(a.y) > tolerance || Math.abs(a.z) > tolerance) {
+    return true;
+  }
+
+  // Check if b has non-zero x or z components
+  if (Math.abs(b.x) > tolerance || Math.abs(b.z) > tolerance) {
+    return true;
+  }
+
+  // Check if c has non-zero x or y components
+  if (Math.abs(c.x) > tolerance || Math.abs(c.y) > tolerance) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Checks if the simulation box is orthogonal.
+ * 
+ * @param cellMatrix - THREE.Matrix3 representing the simulation box
+ * @returns true if the box is orthogonal, false otherwise
+ */
+export function isOrthogonalBox(cellMatrix: THREE.Matrix3): boolean {
+  return !isTriclinicBox(cellMatrix);
+}
