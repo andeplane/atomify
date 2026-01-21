@@ -3,7 +3,7 @@ import { Wall } from "../types";
 import { extractBasisVectors, getSimulationBoxBounds } from "./boxGeometry";
 
 // Constants for wall rendering
-const WALL_OPACITY = 0.1;
+const WALL_OPACITY = 0.04;
 const WALL_COLOR = 0xcccccc; // Light gray/white
 const MIN_THICKNESS_2D = 0.1; // Minimum thickness for 2D walls (along z-axis for visibility)
 
