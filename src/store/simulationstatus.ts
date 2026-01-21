@@ -1,5 +1,5 @@
 import { action, Action } from "easy-peasy";
-import { Compute, Fix, Variable } from "../types";
+import { Compute, Fix, Variable, Wall } from "../types";
 import * as THREE from "three";
 
 export interface SimulationStatusModel {
@@ -19,6 +19,8 @@ export interface SimulationStatusModel {
   computes: { [key: string]: Compute };
   fixes: { [key: string]: Fix };
   variables: { [key: string]: Variable };
+  dimension: number;
+  walls: Wall[];
   setTimesteps: Action<SimulationStatusModel, number>;
   setMemoryUsage: Action<SimulationStatusModel, number>;
   setHasSynchronized: Action<SimulationStatusModel, boolean>;
@@ -35,6 +37,8 @@ export interface SimulationStatusModel {
   setRunType: Action<SimulationStatusModel, string>;
   setBox: Action<SimulationStatusModel, THREE.Matrix3>;
   setOrigo: Action<SimulationStatusModel, THREE.Vector3>;
+  setDimension: Action<SimulationStatusModel, number>;
+  setWalls: Action<SimulationStatusModel, Wall[]>;
   setModifierSyncDataPoints: Action<
     SimulationStatusModel,
     { name: string; type: "compute" | "fix" | "variable"; value: boolean }
@@ -56,6 +60,8 @@ export const simulationStatusModel: SimulationStatusModel = {
   computes: {},
   fixes: {},
   variables: {},
+  dimension: 3,
+  walls: [],
   setComputes: action((state, value: { [key: string]: Compute }) => {
     state.computes = value;
   }),
@@ -104,6 +110,12 @@ export const simulationStatusModel: SimulationStatusModel = {
   setOrigo: action((state, value: THREE.Vector3) => {
     state.origo = value;
   }),
+  setDimension: action((state, value: number) => {
+    state.dimension = value;
+  }),
+  setWalls: action((state, value: Wall[]) => {
+    state.walls = value;
+  }),
   setModifierSyncDataPoints: action(
     (
       state,
@@ -149,5 +161,7 @@ export const simulationStatusModel: SimulationStatusModel = {
     state.variables = {};
     state.box = undefined;
     state.origo = undefined;
+    state.dimension = 3;
+    state.walls = [];
   }),
 };

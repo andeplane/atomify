@@ -1370,6 +1370,44 @@
                     "url": "reaxff/ZnOH2/param.qeq"
                 }
             ]
+        },
+        {
+            "id": "2d-lj-walls",
+            "title": "2D LJ particles with walls",
+            "description": "Lennard-Jones particles confined by LJ93 potential walls in 2D. Demonstrates wall rendering as thick slabs visible from the side view.",
+            "imageUrl": "walls/2d-lj-walls/2d-lj-walls.png",
+            "inputScript": "2d-lj-walls.in",
+            "keywords": [
+                "lennard jones",
+                "wall",
+                "lj93",
+                "2d"
+            ],
+            "files": [
+                {
+                    "fileName": "2d-lj-walls.in",
+                    "url": "walls/2d-lj-walls/2d-lj-walls.in"
+                }
+            ]
+        },
+        {
+            "id": "3d-lj-walls",
+            "title": "3D LJ particles with walls",
+            "description": "Lennard-Jones particles confined by LJ93 potential walls in 3D. Demonstrates transparent wall rendering in 3D mode.",
+            "imageUrl": "walls/3d-lj-walls/3d-lj-walls.png",
+            "inputScript": "3d-lj-walls.in",
+            "keywords": [
+                "lennard jones",
+                "wall",
+                "lj93",
+                "3d"
+            ],
+            "files": [
+                {
+                    "fileName": "3d-lj-walls.in",
+                    "url": "walls/3d-lj-walls/3d-lj-walls.in"
+                }
+            ]
         }
     ]
 }

@@ -17,6 +17,7 @@ import {
   calculateBoxRadius,
   getSimulationBoxBounds,
 } from "../utils/boxGeometry";
+import { createWallGroup } from "../utils/wallGeometry";
 
 // Type guard for Visualizer with updateCameraPlanes method
 interface VisualizerWithCameraPlanes extends Visualizer {
@@ -146,7 +147,10 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
   const variables = useStoreState((state) => state.simulationStatus.variables);
+  const dimension = useStoreState((state) => state.simulationStatus.dimension);
+  const walls = useStoreState((state) => state.simulationStatus.walls);
   const boxGroupRef = useRef<THREE.Group | null>(null);
+  const wallGroupRef = useRef<THREE.Group | null>(null);
 
   // Get color modifier for legend display
   const colorModifier = postTimestepModifiers.find(
@@ -186,7 +190,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   }, [selectedAtoms, handleClearSelection]);
 
   const disposeBoxGroup = useCallback(() => {
-    if (boxGroupRef.current && visualizer) {
+    if (boxGroupRef.current) {
       // Dispose of all cylinders in the group
       boxGroupRef.current.traverse((child) => {
         if (child instanceof THREE.Mesh) {
@@ -196,8 +200,30 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
           }
         }
       });
-      visualizer.scene.remove(boxGroupRef.current);
+
+      if (visualizer && visualizer.scene && boxGroupRef.current.parent === visualizer.scene) {
+        visualizer.scene.remove(boxGroupRef.current);
+      }
       boxGroupRef.current = null;
+    }
+  }, [visualizer]);
+
+  const disposeWallGroup = useCallback(() => {
+    if (wallGroupRef.current) {
+      // Dispose of all meshes in the group
+      wallGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose();
+          if (child.material instanceof THREE.Material) {
+            child.material.dispose();
+          }
+        }
+      });
+
+      if (visualizer && visualizer.scene && wallGroupRef.current.parent === visualizer.scene) {
+        visualizer.scene.remove(wallGroupRef.current);
+      }
+      wallGroupRef.current = null;
     }
   }, [visualizer]);
 
@@ -443,14 +469,51 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     disposeBoxGroup,
   ]);
 
+  // Handle wall visualization
+  useEffect(() => {
+    if (!visualizer) {
+      return;
+    }
+
+    const shouldShowWalls =
+      renderSettings.showWalls &&
+      walls.length > 0 &&
+      simulationBox !== undefined &&
+      simulationOrigo !== undefined;
+
+    // Remove existing walls if they exist
+    disposeWallGroup();
+
+    // Create and add walls if data is available
+    if (shouldShowWalls && simulationBox && simulationOrigo) {
+      const wallGroup = createWallGroup(
+        walls,
+        simulationBox,
+        simulationOrigo,
+        dimension,
+      );
+      wallGroupRef.current = wallGroup;
+      visualizer.scene.add(wallGroup);
+    }
+  }, [
+    visualizer,
+    walls,
+    simulationBox,
+    simulationOrigo,
+    dimension,
+    renderSettings.showWalls,
+    disposeWallGroup,
+  ]);
+
   useEffect(() => {
     return () => {
       disposeBoxGroup();
+      disposeWallGroup();
       if (visualizer) {
         visualizer.dispose();
       }
     };
-  }, [visualizer, disposeBoxGroup]);
+  }, [visualizer, disposeBoxGroup, disposeWallGroup]);
 
   const title = simulation ? simulation.id : "No simulation";
   const showNoSimulationModal =

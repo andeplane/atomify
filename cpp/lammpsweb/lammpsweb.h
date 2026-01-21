@@ -7,9 +7,11 @@
 #include "atomify_compute.h"
 #include "atomify_fix.h"
 #include "atomify_variable.h"
+#include "fix_wall.h"
 #include <iostream>
 #include <string>
 #include <map>
+#include <vector>
 
 #ifdef __EMSCRIPTEN__
   #include <emscripten.h>
@@ -17,6 +19,13 @@
   #include <emscripten/val.h>
   using namespace emscripten;
 #endif
+
+struct WallInfo {
+  int which;       // 0-5 (XLO, XHI, YLO, YHI, ZLO, ZHI)
+  int style;       // 0-3 (NONE, EDGE, CONSTANT, VARIABLE)
+  double position; // current wall position
+  double cutoff;   // interaction range
+};
 
 class LAMMPSWeb
 {
@@ -90,6 +99,9 @@ public:
   void syncFixes();
   void syncVariables();
 
+  int getDimension();
+  std::vector<WallInfo> getWalls();
+
   LAMMPS_NS::Fix* findFixByIdentifier(std::string identifier);
   LAMMPS_NS::Compute* findComputeByIdentifier(std::string identifier);
   int findFixIndex(std::string identifier);
@@ -145,7 +157,15 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .function("runCommand", &LAMMPSWeb::runCommand)
     
     .function("computeBonds", &LAMMPSWeb::computeBonds)
-    .function("computeParticles", &LAMMPSWeb::computeParticles);
+    .function("computeParticles", &LAMMPSWeb::computeParticles)
+    .function("getDimension", &LAMMPSWeb::getDimension)
+    .function("getWalls", &LAMMPSWeb::getWalls);
+  class_<WallInfo>("WallInfo")
+    .constructor<>()
+    .property("which", &WallInfo::which)
+    .property("style", &WallInfo::style)
+    .property("position", &WallInfo::position)
+    .property("cutoff", &WallInfo::cutoff);
   class_<Modify>("Modify")
     .function("getName", &Modify::getName)
     .function("getClearPerSync", &Modify::getClearPerSync)
@@ -179,6 +199,7 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
   register_vector<Fix>("vector<Fix>");
   register_vector<Compute>("vector<Compute>");
   register_vector<float>("vector<float>");
+  register_vector<WallInfo>("vector<WallInfo>");
 }
 #endif
 #endif

@@ -24,6 +24,7 @@
 #include "error.h"
 #include "neigh_list.h"
 #include "fix_atomify.h"
+#include "fix_wall.h"
 
 using namespace std;
 
@@ -673,4 +674,74 @@ void LAMMPSWeb::step() {
 
 void LAMMPSWeb::runCommand(std::string command) {
   lammps_commands_string((void *)m_lmp, command.c_str());
+}
+
+int LAMMPSWeb::getDimension() {
+  if (!m_lmp) {
+    return 3; // default to 3D
+  }
+  return m_lmp->domain->dimension;
+}
+
+std::vector<WallInfo> LAMMPSWeb::getWalls() {
+  std::vector<WallInfo> walls;
+  
+  if (!m_lmp) {
+    return walls;
+  }
+  
+  LAMMPS_NS::Domain *domain = m_lmp->domain;
+  domain->box_corners();
+  
+  // Loop through all fixes to find FixWall instances
+  for (int i = 0; i < m_lmp->modify->nfix; i++) {
+    LAMMPS_NS::Fix *lmpFix = m_lmp->modify->fix[i];
+    LAMMPS_NS::FixWall *fixWall = dynamic_cast<LAMMPS_NS::FixWall*>(lmpFix);
+    
+    if (!fixWall) {
+      continue;
+    }
+    
+    // Extract wall data from this FixWall instance
+    for (int m = 0; m < fixWall->nwall; m++) {
+      int which = fixWall->wallwhich[m];
+      int style = fixWall->xstyle[m];
+      
+      // Skip NONE and VARIABLE styles
+      // NONE=0, EDGE=1, CONSTANT=2, VARIABLE=3
+      if (style == 0 || style == 3) { // NONE or VARIABLE
+        continue;
+      }
+      
+      double position;
+      if (style == 1) { // EDGE style
+        int dim = which / 2;
+        int side = which % 2;
+        if (side == 0) {
+          position = domain->boxlo[dim];
+        } else {
+          position = domain->boxhi[dim];
+        }
+      } else if (style == 2) { // CONSTANT style
+        position = fixWall->coord0[m];
+      } else {
+        // Unknown style, skip
+        continue;
+      }
+      
+      // Get cutoff (it's protected, so we'll use 0 as default)
+      // For visualization, the exact cutoff isn't critical
+      double wallCutoff = 0.0;
+      
+      WallInfo wall;
+      wall.which = which;
+      wall.style = style;
+      wall.position = position;
+      wall.cutoff = wallCutoff;
+      
+      walls.push_back(wall);
+    }
+  }
+  
+  return walls;
 }

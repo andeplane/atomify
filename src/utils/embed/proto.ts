@@ -11,6 +11,8 @@ export interface SimulationData {
   inputScript: string;
   analysisScript?: string;
   files: { [key: string]: File };
+  showSimulationBox?: boolean;
+  showWalls?: boolean;
 }
 
 export interface SimulationData_FilesEntry {
@@ -25,7 +27,14 @@ export interface File {
 }
 
 function createBaseSimulationData(): SimulationData {
-  return { id: "", inputScript: "", analysisScript: undefined, files: {} };
+  return {
+    id: "",
+    inputScript: "",
+    analysisScript: undefined,
+    files: {},
+    showSimulationBox: undefined,
+    showWalls: undefined,
+  };
 }
 
 export const SimulationData = {
@@ -48,6 +57,12 @@ export const SimulationData = {
         writer.uint32(34).fork(),
       ).ldelim();
     });
+    if (message.showSimulationBox !== undefined) {
+      writer.uint32(40).bool(message.showSimulationBox);
+    }
+    if (message.showWalls !== undefined) {
+      writer.uint32(48).bool(message.showWalls);
+    }
     return writer;
   },
 
@@ -76,6 +91,12 @@ export const SimulationData = {
             message.files[entry4.key] = entry4.value;
           }
           break;
+        case 5:
+          message.showSimulationBox = reader.bool();
+          break;
+        case 6:
+          message.showWalls = reader.bool();
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -100,6 +121,10 @@ export const SimulationData = {
             {},
           )
         : {},
+      showSimulationBox: isSet(object.showSimulationBox)
+        ? Boolean(object.showSimulationBox)
+        : undefined,
+      showWalls: isSet(object.showWalls) ? Boolean(object.showWalls) : undefined,
     };
   },
 
@@ -116,6 +141,9 @@ export const SimulationData = {
         obj.files[k] = File.toJSON(v);
       });
     }
+    message.showSimulationBox !== undefined &&
+      (obj.showSimulationBox = message.showSimulationBox);
+    message.showWalls !== undefined && (obj.showWalls = message.showWalls);
     return obj;
   },
 
@@ -134,6 +162,8 @@ export const SimulationData = {
       }
       return acc;
     }, {});
+    message.showSimulationBox = object.showSimulationBox ?? undefined;
+    message.showWalls = object.showWalls ?? undefined;
     return message;
   },
 };

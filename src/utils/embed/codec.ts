@@ -85,6 +85,9 @@ export async function encodeSimulation(
     };
   }
 
+  simulationData.showSimulationBox = simulation.showSimulationBox;
+  simulationData.showWalls = simulation.showWalls;
+
   const encodedProto = SimulationData.encode(simulationData).finish();
 
   // NOTE: Both `u8aToBase64(encodedProto)` and `u8aToBase64(new Uint8Array(encodedProto))` causes an error: https://github.com/whitphx/stlite/issues/235
@@ -137,5 +140,7 @@ export function decodeSimulation(
     analysisScript: simulationData.analysisScript,
     files,
     start: autoStart,
+    showSimulationBox: simulationData.showSimulationBox,
+    showWalls: simulationData.showWalls,
   };
 }
