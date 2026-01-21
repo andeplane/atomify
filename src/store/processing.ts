@@ -5,7 +5,7 @@ import SyncBondsModifier from "../modifiers/syncbondsmodifier";
 import ColorModifier from "../modifiers/colormodifier";
 import SyncComputesModifier from "../modifiers/synccomputesmodifier";
 import { ModifierInput, ModifierOutput } from "../modifiers/types";
-import { LammpsWeb } from "../types";
+import { LammpsWeb, Wall } from "../types";
 import { AtomifyWasmModule } from "../wasm/types";
 import * as THREE from "three";
 import SyncFixesModifier from "../modifiers/syncfixesmodifier";
@@ -224,6 +224,20 @@ export const processingModel: ProcessingModel = {
           getStoreState().simulationStatus.origo,
         ),
       );
+      allActions.simulationStatus.setDimension(lammps.getDimension());
+      const wallsArray = lammps.getWalls();
+      const walls: Wall[] = [];
+      for (let i = 0; i < wallsArray.size(); i++) {
+        const wall = wallsArray.get(i);
+        walls.push({
+          which: wall.which,
+          style: wall.style,
+          position: wall.position,
+          cutoff: wall.cutoff,
+        });
+      }
+      wallsArray.delete();
+      allActions.simulationStatus.setWalls(walls);
       allActions.simulationStatus.setTimesteps(lammps.getTimesteps());
       allActions.simulationStatus.setNumAtoms(lammps.getNumAtoms());
       allActions.simulationStatus.setRunTimesteps(lammps.getRunTimesteps());

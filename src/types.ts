@@ -42,6 +42,8 @@ export type LammpsWeb = {
 
   computeBonds: () => number;
   computeParticles: () => number;
+  getDimension: () => number;
+  getWalls: () => CPPArray<Wall>;
 };
 
 export enum ModifierType {
@@ -146,6 +148,13 @@ export type Variable = {
   hasData1D: boolean;
   lmpVariable: LMPModifier;
 };
+
+export interface Wall {
+  which: number;    // 0-5 (XLO, XHI, YLO, YHI, ZLO, ZHI)
+  style: number;    // 0-3 (NONE, EDGE, CONSTANT, VARIABLE)
+  position: number; // current position on axis
+  cutoff: number;   // interaction range
+}
 
 export type LMPData1D = {
   getLabel: () => string;
