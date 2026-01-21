@@ -190,18 +190,18 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   }, [selectedAtoms, handleClearSelection]);
 
   const disposeBoxGroup = useCallback(() => {
-    if (boxGroupRef.current && visualizer && visualizer.scene) {
-      // Check if the group is still in the scene before removing
-      if (boxGroupRef.current.parent === visualizer.scene) {
-        // Dispose of all cylinders in the group
-        boxGroupRef.current.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.geometry.dispose();
-            if (child.material instanceof THREE.Material) {
-              child.material.dispose();
-            }
+    if (boxGroupRef.current) {
+      // Dispose of all cylinders in the group
+      boxGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose();
+          if (child.material instanceof THREE.Material) {
+            child.material.dispose();
           }
-        });
+        }
+      });
+
+      if (visualizer && visualizer.scene && boxGroupRef.current.parent === visualizer.scene) {
         visualizer.scene.remove(boxGroupRef.current);
       }
       boxGroupRef.current = null;
@@ -209,18 +209,18 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   }, [visualizer]);
 
   const disposeWallGroup = useCallback(() => {
-    if (wallGroupRef.current && visualizer && visualizer.scene) {
-      // Check if the group is still in the scene before removing
-      if (wallGroupRef.current.parent === visualizer.scene) {
-        // Dispose of all meshes in the group
-        wallGroupRef.current.traverse((child) => {
-          if (child instanceof THREE.Mesh) {
-            child.geometry.dispose();
-            if (child.material instanceof THREE.Material) {
-              child.material.dispose();
-            }
+    if (wallGroupRef.current) {
+      // Dispose of all meshes in the group
+      wallGroupRef.current.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry.dispose();
+          if (child.material instanceof THREE.Material) {
+            child.material.dispose();
           }
-        });
+        }
+      });
+
+      if (visualizer && visualizer.scene && wallGroupRef.current.parent === visualizer.scene) {
         visualizer.scene.remove(wallGroupRef.current);
       }
       wallGroupRef.current = null;
