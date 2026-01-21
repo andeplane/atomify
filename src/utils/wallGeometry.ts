@@ -207,6 +207,11 @@ export function createWallGroup(
 ): THREE.Group {
   const group = new THREE.Group();
 
+  // Skip wall rendering for 2D - the box boundary already provides visual feedback
+  if (dimension === 2) {
+    return group; // Return empty group
+  }
+
   // Skip wall rendering for triclinic boxes
   // fix wall uses axis-aligned planes which don't work correctly with triclinic boxes
   if (isTriclinicBox(cellMatrix)) {
