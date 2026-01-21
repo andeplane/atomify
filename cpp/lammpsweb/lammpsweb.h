@@ -74,6 +74,7 @@ public:
   long getBondsDistanceMapPointer();
   long getPositionsPointer();
   long getIdPointer();
+  long getTagPointer();
   long getTypePointer();
   long getBondsPosition1Pointer();
   long getBondsPosition2Pointer();
@@ -141,6 +142,7 @@ EMSCRIPTEN_BINDINGS(LAMMPSWeb)
     .function("getPositionsPointer", &LAMMPSWeb::getPositionsPointer)
     .function("getBondsDistanceMapPointer", &LAMMPSWeb::getBondsDistanceMapPointer)
     .function("getIdPointer", &LAMMPSWeb::getIdPointer)
+    .function("getTagPointer", &LAMMPSWeb::getTagPointer)
     .function("getTypePointer", &LAMMPSWeb::getTypePointer)
     .function("getCellMatrixPointer", &LAMMPSWeb::getCellMatrixPointer)
     .function("getOrigoPointer", &LAMMPSWeb::getOrigoPointer)
