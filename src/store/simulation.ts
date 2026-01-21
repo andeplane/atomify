@@ -361,13 +361,13 @@ export const simulationModel: SimulationModel = {
 
     // Apply embedded settings if provided
     if (simulation.showSimulationBox !== undefined) {
-      allActions.settings.setRenderSettings({
+      allActions.settings.setRender({
         ...getStoreState().settings.render,
         showSimulationBox: simulation.showSimulationBox,
       });
     }
     if (simulation.showWalls !== undefined) {
-      allActions.settings.setRenderSettings({
+      allActions.settings.setRender({
         ...getStoreState().settings.render,
         showWalls: simulation.showWalls,
       });
