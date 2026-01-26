@@ -17,7 +17,7 @@ dependencies = [
     "gcloud-aio-storage==9.6.1",
     "google-cloud-storage==3.7.0",
     "httpx==0.28.1",
-    "python-multipart==0.0.21",
+    "python-multipart==0.0.22",
 ]
 
 [project.optional-dependencies]
