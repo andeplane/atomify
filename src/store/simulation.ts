@@ -76,7 +76,7 @@ export const simulationModel: SimulationModel = {
     state.lammpsOutput = [];
   }),
   addLammpsOutput: action((state, output: string) => {
-    state.lammpsOutput = [...state.lammpsOutput, output];
+    state.lammpsOutput = [...state.lammpsOutput, output].slice(-2000);
   }),
   setShowConsole: action((state, showConsole: boolean) => {
     state.showConsole = showConsole;
