@@ -48,6 +48,8 @@
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "typecheck": "tsc --noEmit",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
@@ -64,6 +66,7 @@
     ]
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.3.8",
     "@jupyterlab/nbformat": "^4.5.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/emscripten": "^1.41.5",
