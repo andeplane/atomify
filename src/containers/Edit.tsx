@@ -16,8 +16,9 @@ const Edit = () => {
     (actions) => actions.simulation.updateFileContent,
   );
   const currentFile =
-    simulation?.files.find((file) => file.fileName === selectedFile?.fileName) ??
-    selectedFile;
+    simulation?.files.find(
+      (file) => selectedFile && file.fileName === selectedFile.fileName,
+    ) ?? selectedFile;
   const options = {
     selectOnLineNumbers: true,
   };
