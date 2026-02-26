@@ -1,8 +1,10 @@
-import { Modal, Empty } from "antd";
+import { Modal, Empty, Button } from "antd";
+import { DownloadOutlined } from "@ant-design/icons";
 import { Compute, Fix, Variable, PlotData } from "../types";
 import { useEffect, useState, useId, useMemo, useRef } from "react";
 import { useStoreState } from "../hooks";
 import Dygraph from "dygraphs";
+import { exportPlotDataToCsv } from "../utils/exportCsv";
 
 type FigureProps = {
   onClose: () => void;
@@ -147,8 +149,30 @@ const Figure = ({
     }
   }, [graph, plotConfig, timesteps]);
 
+  const handleExportCsv = () => {
+    if (plotConfig?.data1D) {
+      const filename = `${plotConfig.name.replace(/[\s/\\?%*:"|<>]/g, "-")}.csv`;
+      exportPlotDataToCsv(plotConfig.data1D, filename);
+    }
+  };
+
   return (
-    <Modal open width={width} footer={null} onCancel={onClose}>
+    <Modal 
+      open 
+      width={width} 
+      footer={null} 
+      onCancel={onClose}
+    >
+      {plotConfig?.data1D && (
+        <Button 
+          type="primary" 
+          icon={<DownloadOutlined />} 
+          onClick={handleExportCsv}
+          style={{ marginBottom: 16 }}
+        >
+          Export CSV
+        </Button>
+      )}
       <div id={graphId} />
       {!graph && <Empty />}
     </Modal>

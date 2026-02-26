@@ -1,14 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, act } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import Figure from "./Figure";
-import {
-  Compute,
-  Fix,
-  Variable,
-  PlotData,
-  LMPModifier,
-  ModifierType,
-} from "../types";
+import { Compute, Fix, Variable, PlotData, LMPModifier, ModifierType } from "../types";
+import { exportPlotDataToCsv } from "../utils/exportCsv";
 
 // Mock useStoreState hook
 vi.mock("../hooks", () => ({
@@ -28,23 +23,32 @@ vi.mock("dygraphs", () => {
   };
 });
 
-// Mock antd Modal and Empty components
+// Mock antd Modal, Empty, and Button components
 vi.mock("antd", () => ({
-  Modal: ({
-    children,
-    open,
-    onCancel,
-  }: {
-    children: React.ReactNode;
-    open: boolean;
-    onCancel: () => void;
-  }) =>
+  Modal: ({ children, open, onCancel }: { children: React.ReactNode; open: boolean; onCancel: () => void }) => (
     open ? (
       <div data-testid="modal" onClick={onCancel}>
         {children}
       </div>
-    ) : null,
+    ) : null
+  ),
   Empty: () => <div data-testid="empty">Empty</div>,
+  Button: ({ children, onClick, icon, type, style }: { children: React.ReactNode; onClick: () => void; icon?: React.ReactNode; type?: string; style?: React.CSSProperties }) => (
+    <button data-testid="button" onClick={onClick} data-type={type} style={style}>
+      {icon}
+      {children}
+    </button>
+  ),
+}));
+
+// Mock @ant-design/icons
+vi.mock("@ant-design/icons", () => ({
+  DownloadOutlined: () => <span data-testid="download-icon">Download</span>,
+}));
+
+// Mock exportCsv utility
+vi.mock("../utils/exportCsv", () => ({
+  exportPlotDataToCsv: vi.fn(),
 }));
 
 describe("Figure", () => {
@@ -383,6 +387,102 @@ describe("Figure", () => {
 
       // Assert
       expect(screen.getByTestId("empty")).toBeInTheDocument();
+    });
+  });
+
+  describe("CSV export", () => {
+    it("should render export button when data1D is available", () => {
+      // Arrange
+      const plotData = createMockPlotData();
+
+      // Act
+      render(<Figure plotData={plotData} onClose={mockOnClose} />);
+
+      // Assert
+      expect(screen.getByTestId("button")).toBeInTheDocument();
+      expect(screen.getByText("Export CSV")).toBeInTheDocument();
+    });
+
+    it("should not render export button when data1D is not available", () => {
+      // Arrange
+      const plotData = createMockPlotData({
+        data1D: undefined,
+      });
+
+      // Act
+      render(<Figure plotData={plotData} onClose={mockOnClose} />);
+
+      // Assert
+      expect(screen.queryByTestId("button")).not.toBeInTheDocument();
+    });
+
+    it("should call exportPlotDataToCsv when export button is clicked", async () => {
+      // Arrange
+      const plotData = createMockPlotData({
+        name: "test plot",
+        data1D: {
+          data: [[0, 1], [1, 2]],
+          labels: ["x", "y"],
+        },
+      });
+      const user = userEvent.setup();
+
+      // Act
+      render(<Figure plotData={plotData} onClose={mockOnClose} />);
+      const exportButton = screen.getByTestId("button");
+      await user.click(exportButton);
+
+      // Assert
+      expect(exportPlotDataToCsv).toHaveBeenCalledWith(
+        plotData.data1D,
+        "test-plot.csv",
+      );
+    });
+
+    it("should sanitize filename by replacing spaces with hyphens", async () => {
+      // Arrange
+      const plotData = createMockPlotData({
+        name: "my test plot with spaces",
+        data1D: {
+          data: [[0, 1]],
+          labels: ["x", "y"],
+        },
+      });
+      const user = userEvent.setup();
+
+      // Act
+      render(<Figure plotData={plotData} onClose={mockOnClose} />);
+      const exportButton = screen.getByTestId("button");
+      await user.click(exportButton);
+
+      // Assert
+      expect(exportPlotDataToCsv).toHaveBeenCalledWith(
+        plotData.data1D,
+        "my-test-plot-with-spaces.csv",
+      );
+    });
+
+    it("should sanitize filename by replacing invalid characters", async () => {
+      // Arrange
+      const plotData = createMockPlotData({
+        name: 'plot/with\\invalid:characters*?"|<>',
+        data1D: {
+          data: [[0, 1]],
+          labels: ["x", "y"],
+        },
+      });
+      const user = userEvent.setup();
+
+      // Act
+      render(<Figure plotData={plotData} onClose={mockOnClose} />);
+      const exportButton = screen.getByTestId("button");
+      await user.click(exportButton);
+
+      // Assert
+      expect(exportPlotDataToCsv).toHaveBeenCalledWith(
+        plotData.data1D,
+        "plot-with-invalid-characters------.csv",
+      );
     });
   });
 });
