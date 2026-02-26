@@ -9,7 +9,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from atomify_api.config import get_settings
 from atomify_api.db.database import init_db
 from atomify_api.routers.health import router as health_router
-from atomify_api.routers.test import router as test_router
 from atomify_api.storage.gcs import get_gcs_client
 
 
@@ -45,7 +44,6 @@ def create_app() -> FastAPI:
 
     # Include routers
     app.include_router(health_router)
-    app.include_router(test_router)
 
     return app
 

@@ -56,9 +56,6 @@ async def init_db() -> None:
 
     Note: In production, use Alembic migrations instead.
     """
-    # Import models to register them with SQLModel metadata
-    from atomify_api.routers.test import TestRecord  # noqa: F401
-
     engine = get_engine()
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
@@ -74,4 +71,3 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         except Exception:
             await session.rollback()
             raise
-

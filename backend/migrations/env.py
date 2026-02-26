@@ -11,10 +11,6 @@ from sqlmodel import SQLModel
 
 from atomify_api.config import get_settings
 
-# Import models to register them with SQLModel metadata
-# Note: Add model imports here as they are defined
-from atomify_api.routers.test import TestRecord  # noqa: F401
-
 # Alembic Config object
 config = context.config
 
@@ -84,4 +80,3 @@ if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-
