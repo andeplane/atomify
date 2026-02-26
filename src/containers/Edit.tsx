@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useStoreState } from "../hooks";
+import { useStoreActions, useStoreState } from "../hooks";
 import Editor, { loader } from "@monaco-editor/react";
 import type * as Monaco from "monaco-editor";
 import { registerLammpsLanguage } from "../utils/lammpsLanguage";
@@ -12,6 +12,13 @@ loader.init().then((monaco) => {
 const Edit = () => {
   const selectedFile = useStoreState((state) => state.app.selectedFile);
   const simulation = useStoreState((state) => state.simulation.simulation);
+  const updateFileContent = useStoreActions(
+    (actions) => actions.simulation.updateFileContent,
+  );
+  const currentFile =
+    simulation?.files.find(
+      (file) => selectedFile && file.fileName === selectedFile.fileName,
+    ) ?? selectedFile;
   const options = {
     selectOnLineNumbers: true,
   };
@@ -25,15 +32,10 @@ const Edit = () => {
 
   const onEditorChange = useCallback(
     (newValue: string | undefined) => {
-      if (!newValue) return;
-      const file = simulation?.files.find(
-        (file) => file.fileName === selectedFile?.fileName,
-      );
-      if (file) {
-        file.content = newValue;
-      }
+      if (newValue === undefined || !selectedFile?.fileName) return;
+      updateFileContent({ fileName: selectedFile.fileName, content: newValue });
     },
-    [selectedFile?.fileName, simulation?.files],
+    [selectedFile?.fileName, updateFileContent],
   );
 
   if (!selectedFile) {
@@ -45,7 +47,7 @@ const Edit = () => {
       height="100vh"
       language="lammps"
       theme="vs-dark"
-      value={selectedFile.content}
+      value={currentFile?.content}
       options={options}
       onChange={onEditorChange}
       onMount={handleEditorDidMount}
