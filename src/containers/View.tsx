@@ -409,17 +409,12 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       isEmbeddedMode &&
       renderSettings.showSimulationBox !== embedConfig.showSimulationBox
     ) {
-      setRenderSettings((prev) => ({
-        ...prev,
+      setRenderSettings({
+        ...renderSettings,
         showSimulationBox: embedConfig.showSimulationBox,
-      }));
+      });
     }
-  }, [
-    isEmbeddedMode,
-    embedConfig.showSimulationBox,
-    renderSettings.showSimulationBox,
-    setRenderSettings,
-  ]);
+  }, [isEmbeddedMode, embedConfig.showSimulationBox, renderSettings, setRenderSettings]);
 
   // Update camera planes based on simulation box bounds
   useEffect(() => {
