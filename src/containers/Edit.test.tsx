@@ -89,36 +89,7 @@ describe('Edit', () => {
 
   it('should render "No file selected" when no file is selected', () => {
     // Arrange
-    store = createStore({
-      app: {
-        selectedFile: undefined,
-        setSelectedFile: vi.fn(),
-        setStatus: vi.fn(),
-      },
-      simulation: {
-        running: false,
-        paused: false,
-        showConsole: false,
-        files: [],
-        lammpsOutput: [],
-        resetLammpsOutput: vi.fn(),
-        addLammpsOutput: vi.fn(),
-        setShowConsole: vi.fn(),
-        setPaused: vi.fn(),
-        setCameraPosition: vi.fn(),
-        setCameraTarget: vi.fn(),
-        setSimulation: vi.fn(),
-        setRunning: vi.fn(),
-        setFiles: vi.fn(),
-        setLammps: vi.fn(),
-        extractAndApplyAtomifyCommands: vi.fn(),
-        syncFilesWasm: vi.fn(),
-        syncFilesJupyterLite: vi.fn(),
-        run: vi.fn(),
-        newSimulation: vi.fn(),
-        reset: vi.fn(),
-      },
-    } as any);
+    store.getState().app.selectedFile = undefined;
 
     // Act
     render(
