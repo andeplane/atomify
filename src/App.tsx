@@ -1,3 +1,4 @@
+import { NOTEBOOK_DISABLED_TOOLTIP } from "./constants";
 import {
   BorderOuterOutlined,
   LineChartOutlined,
@@ -108,6 +109,7 @@ const App: React.FC = () => {
   const paused = useStoreState((state) => state.simulation.paused);
   const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
+  const isSimulationActive = running || paused;
 
   const run = useStoreActions((actions) => actions.simulation.run);
 
@@ -205,8 +207,8 @@ const App: React.FC = () => {
       <LineChartOutlined />,
       undefined,
       undefined,
-      running || paused,
-      running || paused ? "Can only analyze in Jupyter notebook after simulation has finished" : undefined,
+      isSimulationActive,
+      isSimulationActive ? NOTEBOOK_DISABLED_TOOLTIP : undefined,
     ),
     getItem(
       editMenuLabel,

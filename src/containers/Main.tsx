@@ -1,4 +1,5 @@
 import { Modal, Tabs, Progress, Button, Layout, Tooltip } from "antd";
+import { NOTEBOOK_DISABLED_TOOLTIP } from "../constants";
 import { useState, useEffect, useMemo } from "react";
 import View from "./View";
 import Notebook from "./Notebook";
@@ -21,6 +22,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
   const running = useStoreState((state) => state.simulation.running);
   const paused = useStoreState((state) => state.simulation.paused);
+  const isSimulationActive = running || paused;
 
   const setPreferredView = useStoreActions(
     (actions) => actions.app.setPreferredView,
@@ -105,11 +107,11 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
           footer={[
             <>
               <Tooltip
-                title={running || paused ? "Can only analyze in Jupyter notebook after simulation has finished" : ""}
+                title={isSimulationActive ? NOTEBOOK_DISABLED_TOOLTIP : ""}
               >
                 <Button
                   key="analyze"
-                  disabled={running || paused}
+                  disabled={isSimulationActive}
                   onClick={() => {
                     setShowConsole(false);
                     setPreferredView(undefined);
