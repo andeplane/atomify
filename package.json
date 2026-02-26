@@ -72,7 +72,7 @@
     "@types/styled-components": "^5.1.26",
     "@types/uuid": "^8.3.4",
     "@vitejs/plugin-basic-ssl": "^2.1.0",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^5.1.4",
     "@vitest/ui": "^4.0.14",
     "gh-pages": "^6.1.1",
     "jsdom": "^27.2.0",
