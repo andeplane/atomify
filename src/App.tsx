@@ -1,3 +1,4 @@
+import { NOTEBOOK_DISABLED_TOOLTIP } from "./constants";
 import {
   BorderOuterOutlined,
   LineChartOutlined,
@@ -73,6 +74,7 @@ function getItem(
   children?: MenuItem[],
   onClick?: () => void,
   disabled?: boolean,
+  title?: string,
 ): MenuItem {
   return {
     key,
@@ -81,6 +83,7 @@ function getItem(
     label,
     onClick,
     disabled,
+    title,
   } as MenuItem;
 }
 
@@ -106,6 +109,7 @@ const App: React.FC = () => {
   const paused = useStoreState((state) => state.simulation.paused);
   const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
+  const isSimulationActive = running || paused;
 
   const run = useStoreActions((actions) => actions.simulation.run);
 
@@ -197,7 +201,15 @@ const App: React.FC = () => {
   const items: MenuItem[] = [
     getItem("View", "view", <AlignLeftOutlined />),
     getItem("Console", "console", <BorderOuterOutlined />),
-    getItem("Notebook", "notebook", <LineChartOutlined />),
+    getItem(
+      "Notebook",
+      "notebook",
+      <LineChartOutlined />,
+      undefined,
+      undefined,
+      isSimulationActive,
+      isSimulationActive ? NOTEBOOK_DISABLED_TOOLTIP : undefined,
+    ),
     getItem(
       editMenuLabel,
       "edit",
