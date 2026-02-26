@@ -409,15 +409,15 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       isEmbeddedMode &&
       renderSettings.showSimulationBox !== embedConfig.showSimulationBox
     ) {
-      setRenderSettings({
-        ...renderSettings,
+      setRenderSettings((prev) => ({
+        ...prev,
         showSimulationBox: embedConfig.showSimulationBox,
-      });
+      }));
     }
   }, [
     isEmbeddedMode,
     embedConfig.showSimulationBox,
-    renderSettings,
+    renderSettings.showSimulationBox,
     setRenderSettings,
   ]);
 
