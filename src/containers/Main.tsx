@@ -1,4 +1,4 @@
-import { Modal, Tabs, Progress, Button, Layout } from "antd";
+import { Modal, Tabs, Progress, Layout } from "antd";
 import { useState, useEffect, useMemo } from "react";
 import View from "./View";
 import Notebook from "./Notebook";
@@ -7,31 +7,16 @@ import Console from "./Console";
 import Examples from "./Examples";
 import RunInCloud from "./RunInCloud";
 import LoadingSimulationScreen from "../components/LoadingSimulationScreen";
-import { useStoreActions, useStoreState } from "../hooks";
+import ConsoleModal from "../components/ConsoleModal";
+import { useStoreState } from "../hooks";
 const { Content } = Layout;
 
 const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
   const wasm = window.wasm; // TODO: This is an ugly hack because wasm object is so big that Redux debugger hangs.
-  const showConsole = useStoreState((state) => state.simulation.showConsole);
-  const [consoleKey, setConsoleKey] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
-  const setShowConsole = useStoreActions(
-    (actions) => actions.simulation.setShowConsole,
-  );
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
   const running = useStoreState((state) => state.simulation.running);
-
-  const setPreferredView = useStoreActions(
-    (actions) => actions.app.setPreferredView,
-  );
   const status = useStoreState((state) => state.app.status);
-
-  // Update console key when modal opens
-  useEffect(() => {
-    if (showConsole) {
-      setConsoleKey(Date.now());
-    }
-  }, [showConsole]);
 
   // Track when simulation has started
   useEffect(() => {
@@ -96,35 +81,7 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
         renderTabBar={() => <></>}
         items={tabs}
       />
-      {showConsole && (
-        <Modal
-          className="console-modal"
-          styles={{ body: { backgroundColor: "#1E1E1E" } }}
-          width={"80%"}
-          footer={[
-            <>
-              <Button
-                key="analyze"
-                onClick={() => {
-                  setShowConsole(false);
-                  setPreferredView(undefined);
-                  setPreferredView("notebook");
-                }}
-              >
-                Analyze in notebook
-              </Button>
-              <Button key="close" onClick={() => setShowConsole(false)}>
-                Close
-              </Button>
-            </>,
-          ]}
-          closable={false}
-          open
-          onCancel={() => setShowConsole(false)}
-        >
-          <Console key={consoleKey} width={"100%"} height={"70vh"} />
-        </Modal>
-      )}
+      <ConsoleModal />
       {!isEmbedded && (
         <Modal
           closable={false}
