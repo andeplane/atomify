@@ -403,15 +403,18 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     embedConfig.enableParticlePicking,
   ]);
 
-  // Apply showSimulationBox setting from embed config
+  // Apply showSimulationBox setting from embed config (only in embedded mode)
   useEffect(() => {
-    if (renderSettings.showSimulationBox !== embedConfig.showSimulationBox) {
+    if (
+      isEmbeddedMode &&
+      renderSettings.showSimulationBox !== embedConfig.showSimulationBox
+    ) {
       setRenderSettings({
         ...renderSettings,
         showSimulationBox: embedConfig.showSimulationBox,
       });
     }
-  }, [embedConfig.showSimulationBox, renderSettings, setRenderSettings]);
+  }, [isEmbeddedMode, embedConfig.showSimulationBox, renderSettings, setRenderSettings]);
 
   // Update camera planes based on simulation box bounds
   useEffect(() => {
