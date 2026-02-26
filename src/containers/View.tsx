@@ -317,7 +317,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     handleClearSelection();
   }, [simulation, handleClearSelection]);
 
-  const prevParticlesRef = useRef<Particles>();
+  const prevParticlesRef = useRef<Particles | undefined>(undefined);
   useEffect(() => {
     prevParticlesRef.current = particles;
   });
@@ -335,7 +335,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     }
   }, [cameraTarget, visualizer]);
 
-  const prevBondsRef = useRef<Bonds>();
+  const prevBondsRef = useRef<Bonds | undefined>(undefined);
   useEffect(() => {
     prevBondsRef.current = bonds;
   });
