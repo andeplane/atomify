@@ -54,6 +54,10 @@ export interface SimulationModel {
   setCameraPosition: Action<SimulationModel, THREE.Vector3 | undefined>;
   setCameraTarget: Action<SimulationModel, THREE.Vector3 | undefined>;
   setSimulation: Action<SimulationModel, Simulation>;
+  updateFileContent: Action<
+    SimulationModel,
+    { fileName: string; content: string }
+  >;
   setRunning: Action<SimulationModel, boolean>;
   setFiles: Action<SimulationModel, string[]>;
   setLammps: Action<SimulationModel, LammpsWeb>;
@@ -95,6 +99,18 @@ export const simulationModel: SimulationModel = {
   }),
   setSimulation: action((state, simulation: Simulation) => {
     state.simulation = simulation;
+  }),
+  updateFileContent: action((state, { fileName, content }) => {
+    if (!state.simulation) {
+      return;
+    }
+
+    state.simulation = {
+      ...state.simulation,
+      files: state.simulation.files.map((file) =>
+        file.fileName === fileName ? { ...file, content } : file,
+      ),
+    };
   }),
   setRunning: action((state, running: boolean) => {
     state.running = running;
