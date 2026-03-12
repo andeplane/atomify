@@ -581,6 +581,17 @@ long LAMMPSWeb::getIdPointer() {
   return reinterpret_cast<long>(ptr);
 }
 
+long LAMMPSWeb::getTagPointer() {
+  auto ptr = lammps_extract_atom((void *)m_lmp, "tag");
+  
+  // Tag may not exist for all atom styles, return 0 if not available
+  if (!ptr) {
+    return 0;
+  }
+
+  return reinterpret_cast<long>(ptr);
+}
+
 long LAMMPSWeb::getTypePointer() {
   auto ptr = lammps_extract_atom((void *)m_lmp, "type");
 
