@@ -20,7 +20,7 @@
     "easy-peasy": "^6.0.5",
     "katex": "^0.16.0",
     "localforage": "^1.10.0",
-    "mixpanel-browser": "^2.72.0",
+    "mixpanel-browser": "^2.75.0",
     "monaco-editor": "^0.55.1",
     "omovi": "^0.25.0",
     "protobufjs": "^7.5.4",
