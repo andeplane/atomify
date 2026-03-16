@@ -23,7 +23,7 @@
     "mixpanel-browser": "^2.75.0",
     "monaco-editor": "^0.55.1",
     "omovi": "^0.25.0",
-    "protobufjs": "^7.5.4",
+    "protobufjs": "^8.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-iframe": "^1.8.4",
