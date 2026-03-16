@@ -48,7 +48,12 @@ class SyncParticlesModifier extends Modifier {
 
     const positionsPtr = input.lammps.getPositionsPointer() / 4;
     const typePtr = input.lammps.getTypePointer() / 4;
-    const idPtr = input.lammps.getIdPointer() / 4;
+
+    // Try to use tag first (persistent particle identifier), fallback to id if not available
+    const tagPtr = input.lammps.getTagPointer();
+    const particleIdPtr =
+      tagPtr !== 0 ? tagPtr / 4 : input.lammps.getIdPointer() / 4;
+
     const positionsSubarray = input.wasm.HEAPF32.subarray(
       positionsPtr,
       positionsPtr + 3 * numParticles,
@@ -58,8 +63,8 @@ class SyncParticlesModifier extends Modifier {
       typePtr + numParticles,
     ) as Int32Array;
     const idSubarray = input.wasm.HEAP32.subarray(
-      idPtr,
-      idPtr + numParticles,
+      particleIdPtr,
+      particleIdPtr + numParticles,
     ) as Int32Array;
 
     newParticles.positions.set(positionsSubarray);
