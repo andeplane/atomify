@@ -270,9 +270,9 @@ export const processingModel: ProcessingModel = {
       const renderingModifiers =
         getStoreState().processing.postTimestepModifiers.filter(
           (modifier: Modifier) =>
-            modifier.name === "Particles" ||
-            modifier.name === "Bonds" ||
-            modifier.name === "Colors",
+            modifier instanceof SyncParticlesModifier ||
+            modifier instanceof SyncBondsModifier ||
+            modifier instanceof ColorModifier,
         ) as Modifier[];
 
       renderingModifiers.forEach((modifier: Modifier) =>

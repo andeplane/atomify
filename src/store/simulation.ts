@@ -490,9 +490,9 @@ export const simulationModel: SimulationModel = {
       // Reset potentially chosen per atom coloring
       const postTimestepModifiers =
         getStoreState().processing.postTimestepModifiers;
-      const colorModifier = postTimestepModifiers.filter(
-        (modifier: Modifier) => modifier.name === "Colors",
-      )[0] as ColorModifier;
+      const colorModifier = postTimestepModifiers.find(
+        (modifier: Modifier) => modifier instanceof ColorModifier,
+      ) as ColorModifier | undefined;
       if (colorModifier) {
         colorModifier.computeName = undefined;
       }

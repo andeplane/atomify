@@ -31,6 +31,7 @@ vi.mock("three", () => ({
   Material: class {},
   Box3: vi.fn(),
   Vector3: vi.fn(),
+  Color: class {},
 }));
 
 // Mock box/wall geometry utilities: avoids THREE.js geometry construction

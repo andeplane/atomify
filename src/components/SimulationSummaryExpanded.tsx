@@ -42,9 +42,9 @@ const SimulationSummaryExpanded = ({
   const postTimestepModifiers = useStoreState(
     (state) => state.processing.postTimestepModifiers,
   );
-  const colorModifier = postTimestepModifiers.filter(
-    (modifier) => modifier.name === "Colors",
-  )[0] as ColorModifier;
+  const colorModifier = postTimestepModifiers.find(
+    (modifier) => modifier instanceof ColorModifier,
+  ) as ColorModifier;
   const selectedModifiers = postTimestepModifiers
     .filter((m) => m.active)
     .map((m) => m.name);
