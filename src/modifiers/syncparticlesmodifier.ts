@@ -1,14 +1,9 @@
-import Modifier from "./modifier";
+import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 import { Particles } from "omovi";
 
-interface SyncParticlesModifierProps {
-  name: string;
-  active: boolean;
-}
-
 class SyncParticlesModifier extends Modifier {
-  constructor({ name, active }: SyncParticlesModifierProps) {
+  constructor({ name, active }: ModifierProps) {
     super({ name, active });
   }
 

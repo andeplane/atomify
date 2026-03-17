@@ -1,6 +1,6 @@
 import { ModifierInput, ModifierOutput } from "./types";
 
-interface ModifierProps {
+export interface ModifierProps {
   name: string;
   active: boolean;
 }
@@ -20,6 +20,10 @@ class Modifier {
     input: ModifierInput,
     output: ModifierOutput,
     everything: boolean = false,
-  ) => {};
+  ): void => {
+    throw new Error(
+      `${this.constructor.name}.run() is not implemented. Subclasses must override run().`,
+    );
+  };
 }
 export default Modifier;
