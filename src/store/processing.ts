@@ -7,6 +7,7 @@ import SyncComputesModifier from "../modifiers/synccomputesmodifier";
 import { ModifierInput, ModifierOutput } from "../modifiers/types";
 import { LammpsWeb, Wall } from "../types";
 import { AtomifyWasmModule } from "../wasm/types";
+import { getWasm } from "../wasm/wasmInstance";
 import * as THREE from "three";
 import SyncFixesModifier from "../modifiers/syncfixesmodifier";
 import SyncVariablesModifier from "../modifiers/syncvariablesmodifier";
@@ -91,7 +92,7 @@ const getModifierContext = (
   getStoreState: () => State<StoreModel>,
   getStoreActions: () => Actions<StoreModel>,
 ) => {
-  const wasm = window.wasm;
+  const wasm = getWasm();
   const lammps = getStoreState().simulation.lammps;
   if (!lammps) {
     throw new Error("Lammps instance is not initialized");

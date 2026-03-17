@@ -5,6 +5,7 @@ import { Simulation } from "../store/simulation";
 import { notification } from "antd";
 import React from "react";
 import { decodeSimulation } from "../utils/embed/codec";
+import { getWasmOrNull } from "../wasm/wasmInstance";
 
 interface Example {
   id: string;
@@ -126,7 +127,7 @@ const AutoStartSimulation: React.FC = () => {
     };
 
     const checkWasmAndStart = () => {
-      if (!window.wasm) {
+      if (!getWasmOrNull()) {
         setTimeout(checkWasmAndStart, 500);
         return;
       }

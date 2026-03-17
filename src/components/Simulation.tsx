@@ -5,9 +5,17 @@ import { LammpsWeb } from "../types";
 import { AtomifyWasmModule } from "../wasm/types";
 import { notification } from "antd";
 import { time_event, track } from "../utils/metrics";
+import {
+  getWasmOrNull,
+  setWasm,
+  getCancel,
+  setCancel,
+  getSyncFrequency,
+  setSyncFrequency,
+} from "../wasm/wasmInstance";
 
 const SimulationComponent = () => {
-  const wasm = window.wasm;
+  const wasm = getWasmOrNull();
   const lammps = useStoreState((state) => state.simulation.lammps);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const paused = useStoreState((state) => state.simulation.paused);
@@ -102,8 +110,7 @@ const SimulationComponent = () => {
 
   useEffect(() => {
     window.postStepCallback = () => {
-      if (paused && !window.cancel) {
-        // Gah this state hack is growing.
+      if (paused && !getCancel()) {
         return true;
       }
       if (lammps && wasm && simulation) {
@@ -120,11 +127,12 @@ const SimulationComponent = () => {
           runPostTimestep(false);
         }
 
-        if (window.syncFrequency !== undefined) {
-          lammps.setSyncFrequency(window.syncFrequency);
+        const freq = getSyncFrequency();
+        if (freq !== undefined) {
+          lammps.setSyncFrequency(freq);
         }
-        if (window.cancel) {
-          window.cancel = false;
+        if (getCancel()) {
+          setCancel(false);
           setPaused(false);
           lammps.cancel();
         }
@@ -144,7 +152,7 @@ const SimulationComponent = () => {
   ]);
 
   useEffect(() => {
-    if (!window.wasm) {
+    if (!getWasmOrNull()) {
       setStatus({
         title: "Downloading LAMMPS ...",
         text: "",
@@ -171,9 +179,8 @@ const SimulationComponent = () => {
           // setWasm(Module)
           const lammps = new Module.LAMMPSWeb();
           setLammps(lammps);
-          window.wasm = Module;
-          window.lammps = lammps;
-          window.syncFrequency = 1;
+          setWasm(Module);
+          setSyncFrequency(1);
           setStatus(undefined);
         });
       }, 100);
