@@ -26,6 +26,123 @@ localforage.config({
   description: "some description",
 });
 
+/**
+ * Builds a LAMMPS variable-injection script from a vars map, writes
+ * both the vars file and the wrapper file to the WASM filesystem,
+ * and returns the script filename that should be executed.
+ */
+export function prepareVarsScript(
+  simulation: Pick<Simulation, "id" | "inputScript" | "vars">,
+  inputScriptContent: string,
+  wasm: { FS: { writeFile(path: string, data: string): void } },
+): string {
+  if (!simulation.vars || Object.keys(simulation.vars).length === 0) {
+    return simulation.inputScript;
+  }
+
+  const varsScript =
+    Object.entries(simulation.vars)
+      .map(([name, value]) => `variable ${name} equal ${value}`)
+      .join("\n") + "\n\n";
+
+  const varsFileName = `_vars_${simulation.inputScript}`;
+  wasm.FS.writeFile(`/${simulation.id}/${varsFileName}`, varsScript);
+
+  const wrapperScript = varsScript + inputScriptContent;
+  const wrapperFileName = `_wrapper_${simulation.inputScript}`;
+  wasm.FS.writeFile(`/${simulation.id}/${wrapperFileName}`, wrapperScript);
+
+  return wrapperFileName;
+}
+
+/**
+ * Collects post-run metrics from LAMMPS and computes state.
+ */
+export function collectRunMetrics(
+  lammps: Pick<LammpsWeb, "getTimesteps" | "getNumAtoms">,
+  durationSeconds: number,
+  computeNames: string[],
+): {
+  timesteps: number;
+  timestepsPerSecond: string;
+  numAtoms: number;
+  computes: string[];
+} {
+  const timesteps = lammps.getTimesteps();
+  return {
+    timesteps,
+    timestepsPerSecond: (timesteps / durationSeconds).toFixed(3),
+    numAtoms: lammps.getNumAtoms(),
+    computes: computeNames,
+  };
+}
+
+export type StopReason = "canceled" | "failed" | "completed";
+
+export interface RunResultContext {
+  errorMessage: string | undefined;
+  simulationId: string;
+  metricsData: {
+    timesteps: number;
+    timestepsPerSecond: string;
+    numAtoms: number;
+    computes: string[];
+  };
+  actions: {
+    setRunning: (running: boolean) => void;
+    setShowConsole: (show: boolean) => void;
+  };
+  allActions: {
+    processing: { runPostTimestep: (value: boolean) => void };
+  };
+}
+
+/**
+ * Routes a run result to the appropriate canceled / failed / completed path,
+ * fires side-effects (notification, tracking), and returns the stop reason.
+ */
+export function handleRunResult(ctx: RunResultContext): StopReason {
+  const { errorMessage, simulationId, metricsData, actions, allActions } = ctx;
+
+  if (errorMessage) {
+    if (errorMessage.includes("Atomify::canceled")) {
+      allActions.processing.runPostTimestep(true);
+      actions.setRunning(false);
+      actions.setShowConsole(true);
+      track("Simulation.Stop", {
+        simulationId,
+        stopReason: "canceled",
+        ...metricsData,
+      });
+      return "canceled";
+    } else {
+      notification.error({
+        message: errorMessage,
+        duration: 5,
+      });
+      actions.setRunning(false);
+      actions.setShowConsole(true);
+      track("Simulation.Stop", {
+        simulationId,
+        stopReason: "failed",
+        errorMessage,
+        ...metricsData,
+      });
+      return "failed";
+    }
+  } else {
+    allActions.processing.runPostTimestep(true);
+    actions.setRunning(false);
+    actions.setShowConsole(true);
+    track("Simulation.Stop", {
+      simulationId,
+      stopReason: "completed",
+      ...metricsData,
+    });
+    return "completed";
+  }
+}
+
 export interface Simulation {
   id: string;
   files: SimulationFile[];
@@ -373,34 +490,17 @@ export const simulationModel: SimulationModel = {
       });
     }
 
-    // Inject URL variables if provided
-      if (simulation.vars && Object.keys(simulation.vars).length > 0) {
-        const varsScript =
-          Object.entries(simulation.vars)
-            .map(([name, value]) => `variable ${name} equal ${value}`)
-            .join("\n") + "\n\n";
-
-        const wasm = getWasm();
-        const varsFileName = `_vars_${simulation.inputScript}`;
-        wasm.FS.writeFile(`/${simulation.id}/${varsFileName}`, varsScript);
-
-        // Create a wrapper script that includes vars then the original script
-        const wrapperScript = varsScript + inputScriptFile.content;
-        const wrapperFileName = `_wrapper_${simulation.inputScript}`;
-        wasm.FS.writeFile(
-          `/${simulation.id}/${wrapperFileName}`,
-          wrapperScript,
-        );
-      }
+    // Inject URL variables and determine script to run
+      const wasm = getWasm();
+      const scriptToRun = prepareVarsScript(
+        simulation,
+        inputScriptFile.content ?? "",
+        wasm,
+      );
 
       let errorMessage: string | undefined = undefined;
       const startTime = performance.now();
       try {
-        // Use wrapper script if we have vars, otherwise use original
-        const scriptToRun =
-          simulation.vars && Object.keys(simulation.vars).length > 0
-            ? `_wrapper_${simulation.inputScript}`
-            : simulation.inputScript;
         await lammps.runFile(`/${simulation.id}/${scriptToRun}`);
       } catch (exception: unknown) {
         console.log("Got exception: ", exception);
@@ -417,52 +517,22 @@ export const simulationModel: SimulationModel = {
       }
 
       const computes = getStoreState().simulationStatus.computes;
-
       const endTime = performance.now();
-      const duration = (endTime - startTime) / 1000; // seconds
-      const metricsData = {
-        timesteps: lammps.getTimesteps(),
-        timestepsPerSecond: (lammps.getTimesteps() / duration).toFixed(3),
-        numAtoms: lammps.getNumAtoms(),
-        computes: Object.keys(computes),
-      };
+      const durationSeconds = (endTime - startTime) / 1000;
+      const metricsData = collectRunMetrics(
+        lammps,
+        durationSeconds,
+        Object.keys(computes),
+      );
       actions.setPaused(false);
 
-      if (errorMessage) {
-        if (errorMessage.includes("Atomify::canceled")) {
-          allActions.processing.runPostTimestep(true);
-          // Simulation got canceled.
-          actions.setRunning(false);
-          actions.setShowConsole(true);
-          track("Simulation.Stop", {
-            simulationId: simulation?.id,
-            stopReason: "canceled",
-            ...metricsData,
-          });
-        } else {
-          notification.error({
-            message: errorMessage,
-            duration: 5,
-          });
-          actions.setRunning(false);
-          actions.setShowConsole(true);
-          track("Simulation.Stop", {
-            simulationId: simulation?.id,
-            stopReason: "failed",
-            errorMessage,
-            ...metricsData,
-          });
-        }
-      } else {
-        allActions.processing.runPostTimestep(true);
-        actions.setRunning(false);
-        actions.setShowConsole(true);
-        track("Simulation.Stop", {
-          simulationId: simulation?.id,
-          stopReason: "completed",
-          ...metricsData,
-        });
-      }
+      handleRunResult({
+        errorMessage,
+        simulationId: simulation.id,
+        metricsData,
+        actions,
+        allActions,
+      });
       actions.syncFilesJupyterLite();
       allActions.simulationStatus.setLastCommand(undefined);
     },
