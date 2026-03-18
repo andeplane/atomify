@@ -28,8 +28,9 @@ const ColorModifierSettings = ({
     (actions) => actions.render.setParticleStylesUpdated,
   );
   const colorModifier = postTimestepModifiers.find(
-    (modifier) => modifier instanceof ColorModifier,
-  ) as ColorModifier;
+    (modifier): modifier is ColorModifier => modifier instanceof ColorModifier,
+  );
+  if (!colorModifier) return null;
   const perAtomComputes = Object.values(computes).filter(
     (compute) => compute.isPerAtom,
   );
