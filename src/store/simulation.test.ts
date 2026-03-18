@@ -11,19 +11,6 @@ vi.mock("localforage", () => ({
   },
 }));
 
-// Mock antd notification — simulation.ts imports it at module level
-vi.mock("antd", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("antd")>();
-  return {
-    ...actual,
-    notification: {
-      ...actual.notification,
-      error: vi.fn(),
-      warning: vi.fn(),
-    },
-  };
-});
-
 // Mock metrics — simulation.ts imports track/time_event at module level
 vi.mock("../utils/metrics", () => ({
   track: vi.fn(),
@@ -196,6 +183,36 @@ describe("simulation store — pure actions", () => {
     });
   });
 
+  describe("setLastError", () => {
+    it("sets lastError", () => {
+      store.getActions().setLastError("something broke");
+
+      expect(store.getState().lastError).toBe("something broke");
+    });
+
+    it("clears lastError when set to undefined", () => {
+      store.getActions().setLastError("err");
+      store.getActions().setLastError(undefined);
+
+      expect(store.getState().lastError).toBeUndefined();
+    });
+  });
+
+  describe("setLastWarning", () => {
+    it("sets lastWarning", () => {
+      store.getActions().setLastWarning("heads up");
+
+      expect(store.getState().lastWarning).toBe("heads up");
+    });
+
+    it("clears lastWarning when set to undefined", () => {
+      store.getActions().setLastWarning("warn");
+      store.getActions().setLastWarning(undefined);
+
+      expect(store.getState().lastWarning).toBeUndefined();
+    });
+  });
+
   describe("initial state", () => {
     it("starts with correct defaults", () => {
       const state = store.getState();
@@ -207,6 +224,8 @@ describe("simulation store — pure actions", () => {
       expect(state.lammpsOutput).toEqual([]);
       expect(state.simulation).toBeUndefined();
       expect(state.lammps).toBeUndefined();
+      expect(state.lastError).toBeUndefined();
+      expect(state.lastWarning).toBeUndefined();
     });
   });
 });

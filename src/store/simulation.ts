@@ -1,7 +1,6 @@
 import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
 import { StoreModel } from "./model";
 import { LammpsWeb } from "../types";
-import { notification } from "antd";
 import { AtomTypes, AtomType, hexToRgb } from "../utils/atomtypes";
 import AnalyzeNotebook from "../utils/AnalyzeNotebook";
 import { track, time_event, getEmbeddingParams } from "../utils/metrics";
@@ -91,6 +90,7 @@ export interface RunResultContext {
   actions: {
     setRunning: (running: boolean) => void;
     setShowConsole: (show: boolean) => void;
+    setLastError: (error: string | undefined) => void;
   };
   allActions: {
     processing: { runPostTimestep: (value: boolean) => void };
@@ -99,7 +99,7 @@ export interface RunResultContext {
 
 /**
  * Routes a run result to the appropriate canceled / failed / completed path,
- * fires side-effects (notification, tracking), and returns the stop reason.
+ * fires side-effects (error state, tracking), and returns the stop reason.
  */
 export function handleRunResult(ctx: RunResultContext): StopReason {
   const { errorMessage, simulationId, metricsData, actions, allActions } = ctx;
@@ -116,10 +116,7 @@ export function handleRunResult(ctx: RunResultContext): StopReason {
       });
       return "canceled";
     } else {
-      notification.error({
-        message: errorMessage,
-        duration: 5,
-      });
+      actions.setLastError(errorMessage);
       actions.setRunning(false);
       actions.setShowConsole(true);
       track("Simulation.Stop", {
@@ -180,6 +177,10 @@ export interface SimulationModel {
   run: Thunk<SimulationModel>;
   newSimulation: Thunk<SimulationModel, Simulation>;
   lammps?: LammpsWeb;
+  lastError?: string;
+  lastWarning?: string;
+  setLastError: Action<SimulationModel, string | undefined>;
+  setLastWarning: Action<SimulationModel, string | undefined>;
   reset: Action<SimulationModel, undefined>;
 }
 
@@ -265,9 +266,9 @@ export const simulationModel: SimulationModel = {
                 atomType: atomType,
               });
             } else {
-              notification.warning({
-                message: `Atom type '${parsedAtomType.atomName}' does not exist. Ignoring setting radius and color.`,
-              });
+              actions.setLastWarning(
+                `Atom type '${parsedAtomType.atomName}' does not exist. Ignoring setting radius and color.`,
+              );
             }
           }
           const atomSizeAndColor = parseAtomSizeAndColor(line);
@@ -346,7 +347,6 @@ export const simulationModel: SimulationModel = {
         files[fileName] = {
           content: wasm.FS.readFile(filePath, { encoding: "utf8" }),
           fileName,
-          url: "", // TODO: Deal with this hack
         };
       });
 
@@ -356,7 +356,8 @@ export const simulationModel: SimulationModel = {
         name: string,
         path: string,
         type: JupyterFileType,
-        content?: string | Object,
+        content?: string | object,
+        existingCreated?: string,
       ) => {
         let mimetype = "text/plain";
         let format = "text";
@@ -384,7 +385,7 @@ export const simulationModel: SimulationModel = {
           name,
           path,
           last_modified: now,
-          created: now, // TODO(keep created date if it exists)
+          created: existingCreated ?? now,
           format,
           mimetype: mimetype,
           content: content ? content : [],
@@ -394,8 +395,15 @@ export const simulationModel: SimulationModel = {
         };
       };
 
+      interface LocalForageEntry {
+        created?: string;
+        [key: string]: unknown;
+      }
+
       // Add an example analysis file
       const analyzeFileName = "analyze.ipynb";
+      const existingAnalyze =
+        await localforage.getItem<LocalForageEntry>(analyzeFileName);
       localforage.setItem(
         analyzeFileName,
         createLocalForageObject(
@@ -403,12 +411,21 @@ export const simulationModel: SimulationModel = {
           analyzeFileName,
           "notebook",
           AnalyzeNotebook(simulation),
+          existingAnalyze?.created,
         ),
       );
 
+      const existingDir =
+        await localforage.getItem<LocalForageEntry>(simulation.id);
       await localforage.setItem(
         simulation.id,
-        createLocalForageObject(simulation.id, simulation.id, "directory"),
+        createLocalForageObject(
+          simulation.id,
+          simulation.id,
+          "directory",
+          undefined,
+          existingDir?.created,
+        ),
       );
       for (const file of Object.values(files)) {
         let type: JupyterFileType = "file";
@@ -424,9 +441,17 @@ export const simulationModel: SimulationModel = {
             continue;
           }
         }
+        const existingFile =
+          await localforage.getItem<LocalForageEntry>(filePath);
         await localforage.setItem(
           filePath,
-          createLocalForageObject(file.fileName, filePath, type, content),
+          createLocalForageObject(
+            file.fileName,
+            filePath,
+            type,
+            content,
+            existingFile?.created,
+          ),
         );
       }
     },
@@ -601,9 +626,9 @@ export const simulationModel: SimulationModel = {
             const content = await response.text();
             file.content = content;
           } else {
-            notification.error({
-              message: `Could not download ${file.fileName}. URL is missing.`,
-            });
+            actions.setLastError(
+              `Could not download ${file.fileName}. URL is missing.`,
+            );
             return;
           }
         }
@@ -633,6 +658,12 @@ export const simulationModel: SimulationModel = {
       track("Simulation.New", { simulationId: simulation?.id });
     },
   ),
+  setLastError: action((state, error: string | undefined) => {
+    state.lastError = error;
+  }),
+  setLastWarning: action((state, warning: string | undefined) => {
+    state.lastWarning = warning;
+  }),
   reset: action((state) => {
     state.files = [];
     state.lammps = undefined;

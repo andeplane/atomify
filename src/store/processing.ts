@@ -13,9 +13,6 @@ import SyncFixesModifier from "../modifiers/syncfixesmodifier";
 import SyncVariablesModifier from "../modifiers/syncvariablesmodifier";
 import { StoreModel } from "./model";
 
-const cellMatrix = new THREE.Matrix3();
-const origo = new THREE.Vector3();
-
 const getSimulationBox = (
   lammps: LammpsWeb,
   wasm: AtomifyWasmModule,
