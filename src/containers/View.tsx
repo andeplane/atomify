@@ -29,7 +29,7 @@ function visualizerHasCameraPlanes(
 ): v is VisualizerWithCameraPlanes {
   return (
     "updateCameraPlanes" in v &&
-    typeof (v as VisualizerWithCameraPlanes).updateCameraPlanes === "function"
+    typeof v.updateCameraPlanes === "function"
   );
 }
 
