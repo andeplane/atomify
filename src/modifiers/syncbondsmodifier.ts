@@ -1,14 +1,9 @@
-import Modifier from "./modifier";
+import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 import { Bonds } from "omovi";
 
-interface SyncBondsModifierProps {
-  name: string;
-  active: boolean;
-}
-
 class SyncBondsModifier extends Modifier {
-  constructor({ name, active }: SyncBondsModifierProps) {
+  constructor({ name, active }: ModifierProps) {
     super({ name, active });
   }
 

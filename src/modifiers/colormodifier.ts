@@ -1,4 +1,4 @@
-import Modifier from "./modifier";
+import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 import colormap from "colormap";
 import { AtomType } from "../utils/atomtypes";
@@ -115,11 +115,6 @@ const defaultAtomTypes: AtomType[] = [
   },
 ];
 
-interface ColorModifierProps {
-  name: string;
-  active: boolean;
-}
-
 class ColorModifier extends Modifier {
   public computeName?: string;
   private previousColoringMethod?: string;
@@ -138,7 +133,7 @@ class ColorModifier extends Modifier {
   // Colormap selection
   public colormap: string = "jet";
 
-  constructor({ name, active }: ColorModifierProps) {
+  constructor({ name, active }: ModifierProps) {
     super({ name, active });
     this.computeName = undefined;
   }

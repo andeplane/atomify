@@ -1,13 +1,8 @@
-import Modifier from "./modifier";
+import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 
-interface SyncVariablesModifierProps {
-  name: string;
-  active: boolean;
-}
-
 class SyncVariablesModifier extends Modifier {
-  constructor({ name, active }: SyncVariablesModifierProps) {
+  constructor({ name, active }: ModifierProps) {
     super({ name, active });
   }
 
