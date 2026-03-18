@@ -8,10 +8,11 @@ import Examples from "./Examples";
 import RunInCloud from "./RunInCloud";
 import LoadingSimulationScreen from "../components/LoadingSimulationScreen";
 import { useStoreActions, useStoreState } from "../hooks";
+import { getWasmOrNull } from "../wasm/wasmInstance";
 const { Content } = Layout;
 
 const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
-  const wasm = window.wasm; // TODO: This is an ugly hack because wasm object is so big that Redux debugger hangs.
+  const wasm = getWasmOrNull();
   const showConsole = useStoreState((state) => state.simulation.showConsole);
   const [consoleKey, setConsoleKey] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);

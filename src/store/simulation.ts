@@ -17,6 +17,7 @@ import {
   parseBond,
   parseAtomSizeAndColor,
 } from "../utils/parsers";
+import { getWasm } from "../wasm/wasmInstance";
 
 localforage.config({
   driver: localforage.INDEXEDDB,
@@ -24,7 +25,6 @@ localforage.config({
   storeName: "files", // Should be alphanumeric, with underscores.
   description: "some description",
 });
-window.localforage = localforage;
 
 export interface Simulation {
   id: string;
@@ -116,7 +116,7 @@ export const simulationModel: SimulationModel = {
     ) => {
       const lines = inputScript.split("\n");
 
-      const wasm = window.wasm;
+      const wasm = getWasm();
       const lammps = getStoreState().simulation.lammps;
       if (!lammps) {
         return;
@@ -198,7 +198,7 @@ export const simulationModel: SimulationModel = {
         return;
       }
 
-      const wasm = window.wasm;
+      const wasm = getWasm();
       for (const file of simulation.files) {
         // Update all files if no fileName is specified
         if ((file.fileName === fileName || !fileName) && file.content) {
@@ -217,7 +217,7 @@ export const simulationModel: SimulationModel = {
       if (!simulation) {
         return;
       }
-      const wasm = window.wasm;
+      const wasm = getWasm();
       const fileNames: string[] = wasm.FS.readdir(`/${simulation.id}`);
       const files: { [key: string]: SimulationFile } = {};
       fileNames.forEach((fileName: string) => {
@@ -380,7 +380,7 @@ export const simulationModel: SimulationModel = {
             .map(([name, value]) => `variable ${name} equal ${value}`)
             .join("\n") + "\n\n";
 
-        const wasm = window.wasm;
+        const wasm = getWasm();
         const varsFileName = `_vars_${simulation.inputScript}`;
         wasm.FS.writeFile(`/${simulation.id}/${varsFileName}`, varsScript);
 
@@ -481,7 +481,6 @@ export const simulationModel: SimulationModel = {
     ) => {
       const allActions = getStoreActions() as Actions<StoreModel>;
 
-      window.simulation = simulation;
       allActions.simulationStatus.reset();
       actions.setShowConsole(false);
       actions.setSimulation(simulation);
@@ -499,7 +498,7 @@ export const simulationModel: SimulationModel = {
 
       (getStoreActions() as Actions<StoreModel>).render.resetParticleStyles();
 
-      const wasm = window.wasm;
+      const wasm = getWasm();
       const lammps = getStoreState().simulation.lammps;
       if (!lammps) {
         throw new Error("Lammps instance is not initialized");

@@ -19,6 +19,7 @@ import type { MenuProps } from "antd";
 import { Badge } from "antd";
 import { useStoreActions, useStoreState } from "./index";
 import { track } from "../utils/metrics";
+import { setCancel } from "../wasm/wasmInstance";
 
 type MenuItem = Required<MenuProps>["items"][number];
 
@@ -70,7 +71,7 @@ export function useMenuItems(callbacks: UseMenuItemsCallbacks): MenuItem[] {
       if (running) {
         // Need to unpause to reach cancel. TODO: improve this state
         setPaused(false);
-        window.cancel = true;
+        setCancel(true);
       } else {
         run();
         setPreferredView("view");
