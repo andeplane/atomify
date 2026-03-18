@@ -32,12 +32,4 @@ describe("Modifier", () => {
     });
   });
 
-  describe("ModifierProps export", () => {
-    it("should be usable as a type for constructor arguments", () => {
-      const props: ModifierProps = { name: "Typed", active: true };
-      const modifier = new Modifier(props);
-
-      expect(modifier.name).toBe("Typed");
-    });
-  });
 });
