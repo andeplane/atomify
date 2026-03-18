@@ -104,7 +104,7 @@ export type PlotData = {
   syncDataPoints?: boolean;
 };
 
-export type Compute = {
+export type ModifierData<K extends 'lmpCompute' | 'lmpFix' | 'lmpVariable'> = {
   name: string;
   type: ModifierType;
   isPerAtom: boolean;
@@ -116,38 +116,11 @@ export type Compute = {
   clearPerSync: boolean;
   syncDataPoints: boolean;
   hasData1D: boolean;
-  lmpCompute: LMPModifier;
-};
+} & Record<K, LMPModifier>;
 
-export type Fix = {
-  name: string;
-  type: ModifierType;
-  isPerAtom: boolean;
-  hasScalarData: boolean;
-  scalarValue: number;
-  data1D?: Data1D;
-  xLabel: string;
-  yLabel: string;
-  clearPerSync: boolean;
-  syncDataPoints: boolean;
-  hasData1D: boolean;
-  lmpFix: LMPModifier;
-};
-
-export type Variable = {
-  name: string;
-  type: ModifierType;
-  isPerAtom: boolean;
-  hasScalarData: boolean;
-  scalarValue: number;
-  data1D?: Data1D;
-  xLabel: string;
-  yLabel: string;
-  clearPerSync: boolean;
-  syncDataPoints: boolean;
-  hasData1D: boolean;
-  lmpVariable: LMPModifier;
-};
+export type Compute = ModifierData<'lmpCompute'>;
+export type Fix = ModifierData<'lmpFix'>;
+export type Variable = ModifierData<'lmpVariable'>;
 
 export interface Wall {
   which: number;    // 0-5 (XLO, XHI, YLO, YHI, ZLO, ZHI)
