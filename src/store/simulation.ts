@@ -295,12 +295,12 @@ export const simulationModel: SimulationModel = {
       );
       for (const file of Object.values(files)) {
         let type: JupyterFileType = "file";
-        let content: any = file.content;
+        let content: string | object | undefined = file.content;
         const filePath = `${simulation.id}/${file.fileName}`;
 
-        if (file.fileName.endsWith("ipynb")) {
+        if (file.fileName.endsWith("ipynb") && typeof content === "string") {
           type = "notebook";
-          content = JSON.parse(content);
+          content = JSON.parse(content) as object;
           const existingNotebook = await localforage.getItem(filePath);
           if (existingNotebook) {
             // We don't want to overwrite the content of the notebook
@@ -380,7 +380,7 @@ export const simulationModel: SimulationModel = {
             .map(([name, value]) => `variable ${name} equal ${value}`)
             .join("\n") + "\n\n";
 
-        const wasm = (window as any).wasm;
+        const wasm = window.wasm;
         const varsFileName = `_vars_${simulation.inputScript}`;
         wasm.FS.writeFile(`/${simulation.id}/${varsFileName}`, varsScript);
 
@@ -402,9 +402,13 @@ export const simulationModel: SimulationModel = {
             ? `_wrapper_${simulation.inputScript}`
             : simulation.inputScript;
         await lammps.runFile(`/${simulation.id}/${scriptToRun}`);
-      } catch (exception: any) {
+      } catch (exception: unknown) {
         console.log("Got exception: ", exception);
-        errorMessage = lammps.getExceptionMessage(exception);
+        if (typeof exception === "number") {
+          errorMessage = lammps.getExceptionMessage(exception);
+        } else {
+          errorMessage = String(exception);
+        }
         console.log("Got error running LAMMPS: ", errorMessage);
       }
 
