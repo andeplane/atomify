@@ -1,10 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, act, fireEvent } from "@testing-library/react";
+import type { ReactNode, CSSProperties } from "react";
+import type { State, Actions } from "easy-peasy";
 import View from "./View";
 import { useStoreState, useStoreActions } from "../hooks";
 import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 import type { EmbeddedModeResult } from "../hooks/useEmbeddedMode";
-import { Visualizer } from "omovi";
+import * as THREE from "three";
+import { Visualizer, type ParticleClickEvent } from "omovi";
+import type { StoreModel } from "../store/model";
+import type { Compute, Fix, Variable, Wall } from "../types";
+import type Modifier from "../modifiers/modifier";
 
 // Mock omovi: prevents WebGL/canvas errors in jsdom
 vi.mock("omovi", () => ({
@@ -52,9 +58,7 @@ vi.mock("../utils/metrics", () => ({
 
 // Mock child components: reduces render complexity and dependency surface
 vi.mock("../components/ResponsiveSimulationSummary", () => ({
-  default: (_props: any) => (
-    <div data-testid="responsive-simulation-summary" />
-  ),
+  default: () => <div data-testid="responsive-simulation-summary" />,
 }));
 
 vi.mock("../components/SelectedAtomsInfo", () => ({
@@ -75,21 +79,47 @@ vi.mock("../modifiers/ColorModifierSettings", () => ({
 
 // Mock antd: uses a simplified DOM structure; Layout.Header is a static property
 vi.mock("antd", () => {
-  const LayoutMock: any = ({ children, style }: any) => (
-    <div style={style}>{children}</div>
-  );
-  LayoutMock.Header = ({ children, className, style }: any) => (
+  const LayoutBase = ({
+    children,
+    style,
+  }: {
+    children?: ReactNode;
+    style?: CSSProperties;
+  }) => <div style={style}>{children}</div>;
+
+  const Header = ({
+    children,
+    className,
+    style,
+  }: {
+    children?: ReactNode;
+    className?: string;
+    style?: CSSProperties;
+  }) => (
     <div className={className} style={style}>
       {children}
     </div>
   );
 
+  const LayoutMock = Object.assign(LayoutBase, { Header });
+
   return {
     Layout: LayoutMock,
-    Row: ({ children }: any) => <div>{children}</div>,
-    Col: ({ children }: any) => <div>{children}</div>,
+    Row: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+    Col: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
     Progress: () => <div data-testid="progress" />,
-    Modal: ({ children, open, onCancel, title, footer }: any) =>
+    Modal: ({
+      children,
+      open,
+      title,
+      footer,
+    }: {
+      children?: ReactNode;
+      open?: boolean;
+      onCancel?: () => void;
+      title?: ReactNode;
+      footer?: ReactNode;
+    }) =>
       open ? (
         <div data-testid="no-simulation-modal">
           <div data-testid="modal-title">{title}</div>
@@ -97,7 +127,13 @@ vi.mock("antd", () => {
           <div data-testid="modal-footer">{footer}</div>
         </div>
       ) : null,
-    Button: ({ children, onClick }: any) => (
+    Button: ({
+      children,
+      onClick,
+    }: {
+      children?: ReactNode;
+      onClick?: () => void;
+    }) => (
       <button data-testid="modal-ok-button" onClick={onClick}>
         {children}
       </button>
@@ -114,13 +150,11 @@ describe("View", () => {
     mockState = createDefaultMockState();
     mockActions = createDefaultMockActions();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(useStoreState).mockImplementation((selector: any) =>
-      selector(mockState),
+    vi.mocked(useStoreState).mockImplementation(
+      (selector) => selector(mockState as unknown as State<StoreModel>),
     );
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    vi.mocked(useStoreActions).mockImplementation((selector: any) =>
-      selector(mockActions),
+    vi.mocked(useStoreActions).mockImplementation(
+      (selector) => selector(mockActions as unknown as Actions<StoreModel>),
     );
     vi.mocked(useEmbeddedMode).mockReturnValue(createDefaultEmbedModeResult());
   });
@@ -135,7 +169,7 @@ describe("View", () => {
   describe("P0: Auto-clear selection on simulation change", () => {
     it("should call clearSelection on initial mount", () => {
       // Arrange
-      const mockVisualizer = mockState.render.visualizer;
+      const mockVisualizer = mockState.render.visualizer!;
 
       // Act
       render(<View visible={true} />);
@@ -147,16 +181,15 @@ describe("View", () => {
     it("should call clearSelection again when simulation value changes", () => {
       // Arrange: start with no simulation
       mockState.simulation.simulation = null;
-      const mockVisualizer = mockState.render.visualizer;
+      const mockVisualizer = mockState.render.visualizer!;
       const { rerender } = render(<View visible={true} />);
 
       const callsAfterMount = mockVisualizer.clearSelection.mock.calls.length;
 
       // Act: change simulation to a new value
       mockState.simulation.simulation = { id: "sim1" };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.mocked(useStoreState).mockImplementation((selector: any) =>
-        selector(mockState),
+      vi.mocked(useStoreState).mockImplementation(
+        (selector) => selector(mockState as unknown as State<StoreModel>),
       );
       rerender(<View visible={true} />);
 
@@ -169,7 +202,7 @@ describe("View", () => {
     it("should call clearSelection when simulation changes from one to another", () => {
       // Arrange: start with sim1
       mockState.simulation.simulation = { id: "sim1" };
-      const mockVisualizer = mockState.render.visualizer;
+      const mockVisualizer = mockState.render.visualizer!;
       const { rerender } = render(<View visible={true} />);
 
       const callsAfterFirstRender =
@@ -177,9 +210,8 @@ describe("View", () => {
 
       // Act: switch to sim2
       mockState.simulation.simulation = { id: "sim2" };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      vi.mocked(useStoreState).mockImplementation((selector: any) =>
-        selector(mockState),
+      vi.mocked(useStoreState).mockImplementation(
+        (selector) => selector(mockState as unknown as State<StoreModel>),
       );
       rerender(<View visible={true} />);
 
@@ -196,7 +228,7 @@ describe("View", () => {
   describe("P1: Escape key behavior", () => {
     it("should NOT call clearSelection when Escape is pressed with no atoms selected", () => {
       // Arrange
-      const mockVisualizer = mockState.render.visualizer;
+      const mockVisualizer = mockState.render.visualizer!;
       render(<View visible={true} />);
 
       const callsAfterMount = mockVisualizer.clearSelection.mock.calls.length;
@@ -216,18 +248,20 @@ describe("View", () => {
       // Arrange: provide null visualizer so the component creates one,
       // capturing the onParticleClick callback to simulate a selection.
       let capturedOnParticleClick:
-        | ((event: { particleIndex: number; shiftKey: boolean }) => void)
+        | ((event: ParticleClickEvent) => void)
         | undefined;
       const mockVisualizerInstance = createMockVisualizerInstance();
 
       // Use a regular function (not arrow) so it can be called with `new`
       vi.mocked(Visualizer).mockImplementation(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        function (this: any, options?: any) {
+        function (
+          this: unknown,
+          options?: ConstructorParameters<typeof Visualizer>[0],
+        ) {
           capturedOnParticleClick = options?.onParticleClick;
           // Update mockState immediately to prevent infinite re-creation loop
           mockState.render.visualizer = mockVisualizerInstance;
-          return mockVisualizerInstance as any;
+          return mockVisualizerInstance as unknown as Visualizer;
         },
       );
 
@@ -240,7 +274,7 @@ describe("View", () => {
 
       // Simulate a particle click to add atom 5 to selectedAtoms
       act(() => {
-        capturedOnParticleClick!({ particleIndex: 5, shiftKey: false });
+        capturedOnParticleClick!({ particleIndex: 5, shiftKey: false, position: new THREE.Vector3(0, 0, 0) });
       });
 
       // Record calls before Escape (onParticleClick also calls clearSelection internally)
@@ -445,7 +479,7 @@ describe("View", () => {
   describe("P2: visualizer.idle toggled by visible prop", () => {
     it("should set visualizer.idle=false when visible=true", () => {
       // Arrange
-      const mockVisualizer = mockState.render.visualizer;
+      const mockVisualizer = mockState.render.visualizer!;
       mockVisualizer.idle = true;
 
       // Act
@@ -457,7 +491,7 @@ describe("View", () => {
 
     it("should set visualizer.idle=true when visible=false", () => {
       // Arrange
-      const mockVisualizer = mockState.render.visualizer;
+      const mockVisualizer = mockState.render.visualizer!;
       mockVisualizer.idle = false;
 
       // Act
@@ -469,7 +503,7 @@ describe("View", () => {
 
     it("should update visualizer.idle when visible prop changes", () => {
       // Arrange
-      const mockVisualizer = mockState.render.visualizer;
+      const mockVisualizer = mockState.render.visualizer!;
       const { rerender } = render(<View visible={true} />);
       expect(mockVisualizer.idle).toBe(false);
 
@@ -519,15 +553,17 @@ function createMockVisualizerInstance() {
 function createDefaultMockState() {
   return {
     simulation: {
-      cameraPosition: null as any,
-      cameraTarget: null as any,
+      cameraPosition: undefined,
+      cameraTarget: undefined,
       running: false,
-      simulation: null as any,
+      simulation: undefined as { id: string } | null | undefined,
     },
     render: {
-      particles: null as any,
-      bonds: null as any,
-      visualizer: createMockVisualizerInstance() as any,
+      particles: undefined as unknown,
+      bonds: undefined as unknown,
+      visualizer: createMockVisualizerInstance() as ReturnType<
+        typeof createMockVisualizerInstance
+      > | null,
     },
     settings: {
       render: {
@@ -542,19 +578,19 @@ function createDefaultMockState() {
       },
     },
     processing: {
-      postTimestepModifiers: [] as any[],
+      postTimestepModifiers: [] as Modifier[],
     },
     simulationStatus: {
       runTotalTimesteps: 0,
       runTimesteps: 0,
-      timesteps: [] as any[],
-      box: undefined as any,
-      origo: undefined as any,
-      computes: {} as Record<string, any>,
-      fixes: {} as Record<string, any>,
-      variables: {} as Record<string, any>,
+      timesteps: 0,
+      box: undefined,
+      origo: undefined,
+      computes: {} as Record<string, Compute>,
+      fixes: {} as Record<string, Fix>,
+      variables: {} as Record<string, Variable>,
       dimension: 3,
-      walls: [] as any[],
+      walls: [] as Wall[],
     },
   };
 }
@@ -564,7 +600,7 @@ function createDefaultMockActions() {
     render: {
       // Mirrors the real action: updates mockState so subsequent renders
       // see the newly created visualizer and don't re-trigger creation.
-      setVisualizer: vi.fn((v: any) => {
+      setVisualizer: vi.fn((v: ReturnType<typeof createMockVisualizerInstance>) => {
         mockState.render.visualizer = v;
       }),
     },
