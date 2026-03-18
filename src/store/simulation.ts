@@ -71,7 +71,7 @@ export function collectRunMetrics(
   const timesteps = lammps.getTimesteps();
   return {
     timesteps,
-    timestepsPerSecond: (timesteps / durationSeconds).toFixed(3),
+    timestepsPerSecond: durationSeconds > 0 ? (timesteps / durationSeconds).toFixed(3) : "0.000",
     numAtoms: lammps.getNumAtoms(),
     computes: computeNames,
   };

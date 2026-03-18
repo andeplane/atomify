@@ -140,7 +140,7 @@ describe("collectRunMetrics", () => {
     const result = collectRunMetrics(mockLammps, 0, []);
 
     expect(result.timesteps).toBe(100);
-    expect(result.timestepsPerSecond).toBe("Infinity");
+    expect(result.timestepsPerSecond).toBe("0.000");
     expect(result.computes).toEqual([]);
   });
 });
