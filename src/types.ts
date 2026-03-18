@@ -104,7 +104,7 @@ export type PlotData = {
   syncDataPoints?: boolean;
 };
 
-export type ModifierData<K extends string> = {
+export type ModifierData<K extends 'lmpCompute' | 'lmpFix' | 'lmpVariable'> = {
   name: string;
   type: ModifierType;
   isPerAtom: boolean;
