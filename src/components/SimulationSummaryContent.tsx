@@ -34,7 +34,7 @@ const SimulationSummaryContent = () => {
     (state) => state.processing.postTimestepModifiers,
   );
   const colorModifier = modifiers.find(
-    (modifier) => modifier.name === "Colors",
+    (modifier) => modifier instanceof ColorModifier,
   ) as ColorModifier | undefined;
   const selectedModifiers = modifiers
     .filter((m) => m.active)

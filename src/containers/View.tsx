@@ -154,7 +154,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
 
   // Get color modifier for legend display
   const colorModifier = postTimestepModifiers.find(
-    (modifier) => modifier.name === "Colors",
+    (modifier) => modifier instanceof ColorModifier,
   ) as ColorModifier | undefined;
 
   // Determine the type of the computeName (compute, fix, or variable)

@@ -42,9 +42,9 @@ const SimulationSummaryExpanded = ({
   const postTimestepModifiers = useStoreState(
     (state) => state.processing.postTimestepModifiers,
   );
-  const colorModifier = postTimestepModifiers.filter(
-    (modifier) => modifier.name === "Colors",
-  )[0] as ColorModifier;
+  const colorModifier = postTimestepModifiers.find(
+    (modifier): modifier is ColorModifier => modifier instanceof ColorModifier,
+  );
   const selectedModifiers = postTimestepModifiers
     .filter((m) => m.active)
     .map((m) => m.name);
@@ -116,10 +116,10 @@ const SimulationSummaryExpanded = ({
               style={{ padding: 0 }}
               type="link"
               onMouseEnter={() => {
-                colorModifier.computeName = value;
+                if (colorModifier) colorModifier.computeName = value;
               }}
               onMouseLeave={() => {
-                colorModifier.computeName = undefined;
+                if (colorModifier) colorModifier.computeName = undefined;
               }}
             >
               {value}
