@@ -12,11 +12,13 @@ import { track } from "./utils/metrics";
 import AutoStartSimulation from "./components/AutoStartSimulation";
 import AppModals from "./components/AppModals";
 import { useEmbeddedMode } from "./hooks/useEmbeddedMode";
+import { useSimulationNotifications } from "./hooks/useSimulationNotifications";
 import { useMenuItems } from "./hooks/useMenuItems";
 import { darkThemeConfig } from "./theme";
 const { Sider } = Layout;
 
 const App: React.FC = () => {
+  useSimulationNotifications();
   const [myRef, { width }] = useMeasure<HTMLDivElement>();
   const [collapsed, setCollapsed] = useState(false);
   const [showNewSimulation, setShowNewSimulation] = useState(false);

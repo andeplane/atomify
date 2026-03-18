@@ -17,18 +17,6 @@ vi.mock("localforage", () => ({
   },
 }));
 
-// Mock antd notification — needed because handleRunResult calls notification.error
-vi.mock("antd", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("antd")>();
-  return {
-    ...actual,
-    notification: {
-      ...actual.notification,
-      error: vi.fn(),
-    },
-  };
-});
-
 // Mock metrics — handleRunResult calls track()
 vi.mock("../utils/metrics", () => ({
   track: vi.fn(),
@@ -36,7 +24,6 @@ vi.mock("../utils/metrics", () => ({
   getEmbeddingParams: vi.fn(() => ({})),
 }));
 
-import { notification } from "antd";
 import { track } from "../utils/metrics";
 
 describe("prepareVarsScript", () => {
@@ -160,6 +147,7 @@ describe("handleRunResult", () => {
     mockActions = {
       setRunning: vi.fn(),
       setShowConsole: vi.fn(),
+      setLastError: vi.fn(),
     };
     mockAllActions = {
       processing: { runPostTimestep: vi.fn() },
@@ -203,7 +191,7 @@ describe("handleRunResult", () => {
     );
   });
 
-  it('returns "failed" and shows notification for other errors', () => {
+  it('returns "failed" and sets lastError for other errors', () => {
     const result = handleRunResult({
       errorMessage: "LAMMPS syntax error",
       simulationId: "sim-1",
@@ -213,10 +201,7 @@ describe("handleRunResult", () => {
     });
 
     expect(result).toBe("failed");
-    expect(notification.error).toHaveBeenCalledWith({
-      message: "LAMMPS syntax error",
-      duration: 5,
-    });
+    expect(mockActions.setLastError).toHaveBeenCalledWith("LAMMPS syntax error");
     expect(mockAllActions.processing.runPostTimestep).not.toHaveBeenCalled();
     expect(mockActions.setRunning).toHaveBeenCalledWith(false);
     expect(track).toHaveBeenCalledWith(

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { isEmbeddedMode } from "../utils/embeddedMode";
 import { EmbedConfig } from "../types";
 
@@ -78,28 +79,30 @@ function parseEmbedConfig(configString: string | null): EmbedConfig {
 }
 
 export function useEmbeddedMode(): EmbeddedModeResult {
-  const urlSearchParams = new URLSearchParams(window.location.search);
-  const embeddedSimulationUrl = urlSearchParams.get("embeddedSimulationUrl");
-  const simulationIndex = parseInt(
-    urlSearchParams.get("simulationIndex") || "0",
-    10,
-  );
-  const embeddedData = urlSearchParams.get("data");
-  const autoStartParam = urlSearchParams.get("autostart");
-  const autoStart = autoStartParam === "true";
-  const vars = parseVars(urlSearchParams.get("vars"));
-  const embedConfig = parseEmbedConfig(urlSearchParams.get("config"));
+  return useMemo(() => {
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const embeddedSimulationUrl = urlSearchParams.get("embeddedSimulationUrl");
+    const simulationIndex = parseInt(
+      urlSearchParams.get("simulationIndex") || "0",
+      10,
+    );
+    const embeddedData = urlSearchParams.get("data");
+    const autoStartParam = urlSearchParams.get("autostart");
+    const autoStart = autoStartParam === "true";
+    const vars = parseVars(urlSearchParams.get("vars"));
+    const embedConfig = parseEmbedConfig(urlSearchParams.get("config"));
 
-  // Use shared utility function to determine embedded mode
-  const embeddedMode = isEmbeddedMode(urlSearchParams);
+    // Use shared utility function to determine embedded mode
+    const embeddedMode = isEmbeddedMode(urlSearchParams);
 
-  return {
-    embeddedSimulationUrl,
-    simulationIndex,
-    embeddedData,
-    autoStart,
-    isEmbeddedMode: embeddedMode,
-    vars,
-    embedConfig,
-  };
+    return {
+      embeddedSimulationUrl,
+      simulationIndex,
+      embeddedData,
+      autoStart,
+      isEmbeddedMode: embeddedMode,
+      vars,
+      embedConfig,
+    };
+  }, []);
 }
