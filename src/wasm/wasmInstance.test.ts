@@ -18,7 +18,7 @@ describe("wasmInstance", () => {
   describe("wasm module", () => {
     it("setWasm + getWasm round-trips the module", () => {
       const mockModule: Partial<AtomifyWasmModule> = {
-        FS: {} as typeof FS,
+        FS: {} as AtomifyWasmModule["FS"],
       };
       setWasm(mockModule as AtomifyWasmModule);
       expect(getWasm()).toBe(mockModule);
@@ -26,7 +26,7 @@ describe("wasmInstance", () => {
 
     it("getWasmOrNull returns the module after setWasm", () => {
       const mockModule: Partial<AtomifyWasmModule> = {
-        FS: {} as typeof FS,
+        FS: {} as AtomifyWasmModule["FS"],
       };
       setWasm(mockModule as AtomifyWasmModule);
       expect(getWasmOrNull()).toBe(mockModule);

@@ -46,9 +46,6 @@ const SimulationComponent = () => {
 
   const onPrint = useCallback(
     (text: string) => {
-      // LAMMPS errors are only visible in the printed output; let the
-      // adapter capture them for getErrorMessage().
-      adapterRef.current?.noteOutput(text);
       if (
         text.includes("Atomify::canceled") ||
         text.includes("JS async step callback rejected")

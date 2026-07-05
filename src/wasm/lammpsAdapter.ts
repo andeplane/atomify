@@ -2,8 +2,10 @@ import type {
   LAMMPSWeb as NativeLammps,
   ParticleSnapshot,
   BondSnapshot,
+  ModifierCategory,
+  ModifierSnapshot,
 } from "lammps.js";
-import { LammpsWeb, LMPModifier, Wall } from "../types";
+import { LammpsWeb, LMPModifier, LMPData1D, ModifierType, Wall } from "../types";
 import { AtomifyWasmModule } from "./types";
 import { getCancel, setCancel, getPausedFlag } from "./wasmInstance";
 
@@ -13,51 +15,49 @@ import { getCancel, setCancel, getPausedFlag } from "./wasmInstance";
  * snapshots carry BufferView { ptr, length, ... } into the wasm heap, and the
  * pointer getters below hand those to the existing HEAPF32/HEAP32 subarray
  * readers in the modifiers.
- *
- * Where lammps.js has no equivalent yet, methods degrade gracefully and carry
- * a TODO(lammps.js-#…) marker referencing the tracking issue on
- * https://github.com/lammps/lammps.js.
  */
 
 export const SYNC_FIX_ID = "atomify_sync";
 const CANCEL_MESSAGE = "Atomify::canceled";
 const PAUSE_POLL_MS = 100;
 
-/** Marker returned while a lammps.js capability gap makes a value meaningless. */
-const emptyCppArray = <T>() => ({
-  get: (): T => {
-    throw new Error("empty array");
-  },
-  size: () => 0,
+/** Wrap a plain array in the CPPArray shape Atomify's embind-era code reads. */
+const cppArray = <T>(items: T[]) => ({
+  get: (index: number): T => items[index],
+  size: () => items.length,
   delete: () => {},
 });
 
-/**
- * Insert `fix <id> all js/async <every>` before the first run/minimize
- * command so the per-step callback fires. Mirrors the injection logic in
- * lammps.js client.ts.
- *
- * TODO(lammps.js-58): scripts whose first run/minimize
- * lives in an include'd file (or after a jump) get no callback and block the
- * UI for the whole run. Atomify's own build solved this with a patched
- * LAMMPS that allows installing the fix before the box exists.
- */
-export function injectSyncFix(script: string, every: number): string {
-  const lines = script.split("\n");
-  const runIndex = lines.findIndex((line) =>
-    /^\s*(run|minimize)(\s|$)/.test(line),
-  );
-  if (runIndex === -1) {
-    return script;
+const COMPUTE_TYPES: Record<string, ModifierType> = {
+  pressure: ModifierType.ComputePressure,
+  temp: ModifierType.ComputeTemp,
+  pe: ModifierType.ComputePE,
+  ke: ModifierType.ComputeKE,
+  rdf: ModifierType.ComputeRDF,
+  msd: ModifierType.ComputeMSD,
+  vacf: ModifierType.ComputeVACF,
+  com: ModifierType.ComputeCOM,
+  gyration: ModifierType.ComputeGyration,
+  "ke/atom": ModifierType.ComputeKEAtom,
+  "property/atom": ModifierType.ComputePropertyAtom,
+  "cluster/atom": ModifierType.ComputeClusterAtom,
+  "cna/atom": ModifierType.ComputeCNAAtom,
+};
+
+const FIX_TYPES: Record<string, ModifierType> = {
+  "ave/chunk": ModifierType.FixAveChunk,
+  "ave/histo": ModifierType.FixAveHisto,
+  "ave/time": ModifierType.FixAveTime,
+};
+
+function modifierType(category: ModifierCategory, style: string): ModifierType {
+  if (category === "compute") {
+    return COMPUTE_TYPES[style] ?? ModifierType.ComputeOther;
   }
-  const alreadyDefined = lines
-    .slice(0, runIndex)
-    .some((line) => /^\s*fix\s+\S+\s+\S+\s+js\/async(\s|$)/.test(line));
-  if (alreadyDefined) {
-    return script;
+  if (category === "fix") {
+    return FIX_TYPES[style] ?? ModifierType.FixOther;
   }
-  lines.splice(runIndex, 0, `fix ${SYNC_FIX_ID} all js/async ${every}`);
-  return lines.join("\n");
+  return ModifierType.VariableOther;
 }
 
 /** Resolve on the next macrotask without setTimeout's nested 4ms clamp. */
@@ -79,6 +79,66 @@ const yieldToEventLoop = (() => {
     });
 })();
 
+/**
+ * Presents one lammps.js modifier (compute/fix/variable) through Atomify's
+ * LMPModifier interface. Data is fetched lazily from the native side; the
+ * embind-era delete() methods are no-ops since everything here is plain JS.
+ */
+class ModifierAdapter implements LMPModifier {
+  private snapshot: ModifierSnapshot | null = null;
+
+  constructor(
+    private readonly native: NativeLammps,
+    private readonly category: ModifierCategory,
+    private readonly name: string,
+    private info: {
+      style: string;
+      isPerAtom: boolean;
+      hasScalar: boolean;
+      clearPerSync: boolean;
+      xLabel: string;
+      yLabel: string;
+    },
+  ) {}
+
+  getName = () => this.name;
+  getType = () => modifierType(this.category, this.info.style);
+  getIsPerAtom = () => this.snapshot?.isPerAtom ?? this.info.isPerAtom;
+  hasScalarData = () => this.snapshot?.hasScalar ?? this.info.hasScalar;
+  getClearPerSync = () => this.snapshot?.clearPerSync ?? this.info.clearPerSync;
+  getScalarValue = () => this.snapshot?.scalar ?? 0;
+  getXLabel = () => this.snapshot?.xLabel ?? this.info.xLabel;
+  getYLabel = () => this.snapshot?.yLabel ?? this.info.yLabel;
+
+  // The native syncModifier both invokes the underlying compute (respecting
+  // LAMMPS' invocation rules) and refreshes scalar/series data, so execute()
+  // has nothing separate to do.
+  execute = () => true;
+
+  sync = () => {
+    this.snapshot = this.native.syncModifier(this.category, this.name);
+  };
+
+  getData1DNames = () =>
+    cppArray((this.snapshot?.series ?? []).map((series) => series.name));
+
+  getData1D = () =>
+    cppArray<LMPData1D>(
+      (this.snapshot?.series ?? []).map((series) => ({
+        getLabel: () => series.label,
+        getXValuesPointer: () => series.x.ptr,
+        getYValuesPointer: () => series.y.ptr,
+        getNumPoints: () => series.x.length,
+        delete: () => {},
+      })),
+    );
+
+  getPerAtomData = () =>
+    this.native.getModifierPerAtom(this.category, this.name).ptr;
+
+  delete = () => {};
+}
+
 export class LammpsAdapter implements LammpsWeb {
   private readonly module: AtomifyWasmModule;
   private readonly native: NativeLammps;
@@ -89,25 +149,11 @@ export class LammpsAdapter implements LammpsWeb {
   private cancelRequested = false;
   private lastError = "";
   private stepListener?: () => void;
-  // TODO(lammps.js-53): neighborlist-based bonds with per-type-pair
-  // distances are not supported by lammps.js; distances are collected here so
-  // they can be forwarded once the API exists.
-  private bondDistances = new Map<string, number>();
 
   constructor(module: AtomifyWasmModule, native: NativeLammps) {
     this.module = module;
     this.native = native;
     this.installStepCallback();
-  }
-
-  /** Feed LAMMPS console output back in; errors are only visible there. */
-  // TODO(lammps.js-56): lammps.js swallows LAMMPS errors inside
-  // lammps_commands_string/lammps_file (LAMMPS_EXCEPTIONS). Until it exposes
-  // the stored last error, recover it from the printed "ERROR: ..." lines.
-  noteOutput(text: string) {
-    if (text.startsWith("ERROR") && !this.lastError) {
-      this.lastError = text;
-    }
   }
 
   private installStepCallback() {
@@ -207,18 +253,22 @@ export class LammpsAdapter implements LammpsWeb {
     this.lastError = "";
     this.cancelRequested = false;
 
-    const content = this.module.FS.readFile(path, { encoding: "utf8" });
-    const injected = injectSyncFix(content, this.syncFrequency);
-    let target = path;
-    if (injected !== content) {
-      // Outside the simulation directory so it never shows up as a user file.
-      target = "/.atomify_run.in";
-      this.module.FS.writeFile(target, injected);
+    // Installed globally (works before the box exists), so every run in
+    // every include'd file fires the step callback — no script injection.
+    this.native.installAsyncFix(SYNC_FIX_ID, this.syncFrequency);
+
+    try {
+      // Under ASYNCIFY the embind call returns a promise when it suspends.
+      await Promise.resolve(
+        this.native.runFile(path) as unknown as Promise<void> | undefined,
+      );
+    } catch (error) {
+      // Cancellation surfaces as the fix js/async abort error; keep the
+      // canceled marker the store logic looks for in that case.
+      if (this.lastError !== CANCEL_MESSAGE) {
+        this.lastError = error instanceof Error ? error.message : String(error);
+      }
     }
-    // Under ASYNCIFY the embind call returns a promise when it suspends.
-    await Promise.resolve(
-      this.native.runFile(target) as unknown as Promise<void> | undefined,
-    );
   }
 
   setSyncFrequency(every: number) {
@@ -245,14 +295,15 @@ export class LammpsAdapter implements LammpsWeb {
   }
 
   getErrorMessage(): string {
-    return this.lastError;
+    return this.lastError || this.native.getLastErrorMessage();
   }
 
   getExceptionMessage(_address: number): string {
-    // TODO(lammps.js-56): the old wasm exposed the C++
-    // exception message behind the thrown pointer. lammps.js has no
-    // equivalent, so exceptions thrown as numbers stay opaque.
-    return this.lastError || "Unknown LAMMPS error";
+    return this.getErrorMessage() || "Unknown LAMMPS error";
+  }
+
+  getLastCommand(): string {
+    return this.native.getLastInputLine();
   }
 
   // --- Particles ---
@@ -274,13 +325,9 @@ export class LammpsAdapter implements LammpsWeb {
     return this.particleSnapshot?.ids.ptr ?? 0;
   }
 
-  // --- Bonds ---
+  // --- Bonds (topology + distance-derived from the neighborlist) ---
 
   computeBonds(): number {
-    // TODO(lammps.js-53): only bond-topology bonds; the old wasm
-    // also derived bonds from the neighborlist using the distance map.
-    // TODO(lammps.js-54): wrapped bond endpoints are not
-    // minimum-imaged, so bonds crossing a periodic boundary span the box.
     this.bondSnapshot = this.native.syncBondsWrapped();
     return this.bondSnapshot.count;
   }
@@ -294,16 +341,15 @@ export class LammpsAdapter implements LammpsWeb {
   }
 
   setBondDistance(type1: number, type2: number, distance: number) {
-    // TODO(lammps.js-53): forward to lammps.js once supported.
-    this.bondDistances.set(`${type1}-${type2}`, distance);
+    this.native.setBondDistance(type1, type2, distance);
   }
 
   clearBondDistances() {
-    this.bondDistances.clear();
+    this.native.clearBondDistances();
   }
 
-  setBuildNeighborlist(_buildNeighborlist: boolean) {
-    // TODO(lammps.js-53): no neighborlist access in lammps.js.
+  setBuildNeighborlist(buildNeighborlist: boolean) {
+    this.native.setBuildNeighborlist(buildNeighborlist);
   }
 
   // --- Simulation box (float32 views, unlike the old wasm's float64) ---
@@ -317,88 +363,97 @@ export class LammpsAdapter implements LammpsWeb {
   }
 
   getDimension(): number {
-    // TODO(lammps.js-57): lammps.js does not expose
-    // domain->dimension; 2D simulations render as 3D.
-    return 3;
+    return this.native.syncSimulationBox().dimension;
   }
 
   getWalls() {
-    // TODO(lammps.js-57): no FixWall introspection in lammps.js, so wall
-    // geometry is never rendered.
-    return emptyCppArray<Wall>();
+    return cppArray<Wall>(this.native.getWalls());
   }
 
   // --- Run status / metrics ---
 
   getWhichFlag(): number {
-    // TODO(lammps.js-55): whichflag (1 = dynamics, 2 = minimize) is
-    // not exposed; minimization is indistinguishable from dynamics.
-    return this.native.getIsRunning() ? 1 : 0;
+    return this.native.getRunMode();
   }
 
   getRunTimesteps(): number {
-    // TODO(lammps.js-55): run progress is not exposed.
-    return 0;
+    return this.native.getRunStepsDone();
   }
 
   getRunTotalTimesteps(): number {
-    // TODO(lammps.js-55): run progress is not exposed.
-    return 0;
+    return this.native.getRunStepsTotal();
   }
 
   getTimestepsPerSecond(): number {
-    // TODO(lammps.js-55): thermo "spcpu" is not exposed.
-    return 0;
+    return this.native.getThermo("spcpu");
   }
 
   getCPURemain(): number {
-    // TODO(lammps.js-55): thermo "cpuremain" is not exposed.
-    return 0;
+    return this.native.getThermo("cpuremain");
   }
 
   getMemoryUsage(): number {
-    // TODO(lammps.js-55): memory usage is not exposed.
-    return 0;
-  }
-
-  getLastCommand(): string {
-    // TODO(lammps.js-56): input->line is not exposed.
-    return "";
+    return this.native.getMemoryUsage();
   }
 
   // --- Computes / fixes / variables ---
-  // TODO(lammps.js-51): lammps.js only exposes global compute
-  // scalars (getComputeScalar). Enumeration, classification, per-atom data
-  // and 1D plot series (compute rdf/msd/vacf, fix ave/time & friends,
-  // variables) all need an introspection API before these panels can work.
 
-  syncComputes() {}
+  syncComputes() {
+    this.native.syncModifiers();
+  }
 
-  syncFixes() {}
+  syncFixes() {
+    // syncComputes already refreshed the shared registry this cycle.
+  }
 
-  syncVariables() {}
+  syncVariables() {
+    // syncComputes already refreshed the shared registry this cycle.
+  }
+
+  private modifierNames(category: ModifierCategory) {
+    return cppArray(
+      this.native
+        .listModifiers()
+        .filter((info) => info.category === category)
+        .map((info) => info.name),
+    );
+  }
+
+  private makeModifier(category: ModifierCategory, name: string): LMPModifier {
+    const info = this.native
+      .listModifiers()
+      .find((entry) => entry.category === category && entry.name === name);
+    return new ModifierAdapter(this.native, category, name, {
+      style: info?.style ?? "",
+      isPerAtom: info?.isPerAtom ?? false,
+      hasScalar: info?.hasScalar ?? false,
+      clearPerSync: info?.clearPerSync ?? false,
+      xLabel: info?.xLabel ?? "Time",
+      yLabel: info?.yLabel ?? "Value",
+    });
+  }
 
   getComputeNames() {
-    return emptyCppArray<string>();
+    return this.modifierNames("compute");
   }
 
   getFixNames() {
-    return emptyCppArray<string>();
+    return this.modifierNames("fix");
   }
 
   getVariableNames() {
-    return emptyCppArray<string>();
+    return this.modifierNames("variable");
   }
 
   getCompute(name: string): LMPModifier {
-    throw new Error(`Compute introspection not supported yet (${name})`);
+    return this.makeModifier("compute", name);
   }
 
   getFix(name: string): LMPModifier {
-    throw new Error(`Fix introspection not supported yet (${name})`);
+    return this.makeModifier("fix", name);
   }
 
   getVariable(name: string): LMPModifier {
-    throw new Error(`Variable introspection not supported yet (${name})`);
+    return this.makeModifier("variable", name);
   }
 }
