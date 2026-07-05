@@ -234,18 +234,10 @@ export const simulationModel: SimulationModel = {
     ) => {
       const lines = inputScript.split("\n");
 
-      const wasm = getWasm();
       const lammps = getStoreState().simulation.lammps;
       if (!lammps) {
         return;
       }
-
-      // Reset all settings for dynamic bonds
-      const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
-      const bondsDistanceMapSubarray = wasm.HEAPF32.subarray(
-        bondsDistanceMapPointer,
-        bondsDistanceMapPointer + 10000,
-      ) as Float32Array;
 
       lines.forEach((line) => {
         line = line.trim();
@@ -286,11 +278,7 @@ export const simulationModel: SimulationModel = {
           }
           const bond = parseBond(line);
           if (bond) {
-            // we map the 2D coordinate into 1D
-            bondsDistanceMapSubarray[100 * bond.atomType1 + bond.atomType2] =
-              bond.distance;
-            bondsDistanceMapSubarray[100 * bond.atomType2 + bond.atomType1] =
-              bond.distance;
+            lammps.setBondDistance(bond.atomType1, bond.atomType2, bond.distance);
             lammps.setBuildNeighborlist(true);
           }
           const cameraPosition = parseCameraPosition(line);
@@ -611,12 +599,7 @@ export const simulationModel: SimulationModel = {
       }
 
       // Reset all settings for dynamic bonds
-      const bondsDistanceMapPointer = lammps.getBondsDistanceMapPointer() / 4;
-      const bondsDistanceMapSubarray = wasm.HEAPF32.subarray(
-        bondsDistanceMapPointer,
-        bondsDistanceMapPointer + 10000,
-      ) as Float32Array;
-      bondsDistanceMapSubarray.fill(0);
+      lammps.clearBondDistances();
       lammps.setBuildNeighborlist(false);
 
       let counter = 0;

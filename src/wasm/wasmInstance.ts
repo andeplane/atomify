@@ -40,6 +40,20 @@ export function setCancel(value: boolean): void {
   cancelFlag = value;
 }
 
+// --- Paused flag ---
+// Mirrors the store's paused state so the adapter's pause-wait loop can read
+// it without touching React/easy-peasy state from inside the step callback.
+
+let pausedFlag = false;
+
+export function getPausedFlag(): boolean {
+  return pausedFlag;
+}
+
+export function setPausedFlag(value: boolean): void {
+  pausedFlag = value;
+}
+
 // --- Sync frequency ---
 // Written by settings store action, read by WASM postStepCallback
 

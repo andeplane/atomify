@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
-import createModule from "../wasm/lammps.mjs";
-import { LammpsWeb } from "../types";
+import createModule from "lammps.js";
+import { LammpsAdapter } from "../wasm/lammpsAdapter";
 import { AtomifyWasmModule } from "../wasm/types";
 import { notification } from "antd";
 import { time_event, track } from "../utils/metrics";
 import {
   getWasmOrNull,
   setWasm,
-  getCancel,
-  setCancel,
   getSyncFrequency,
   setSyncFrequency,
+  setPausedFlag,
 } from "../wasm/wasmInstance";
 
 const SimulationComponent = () => {
@@ -43,11 +42,18 @@ const SimulationComponent = () => {
     (actions) => actions.simulationStatus.setHasSynchronized,
   );
   const renderCycleCounter = useRef(0);
+  const adapterRef = useRef<LammpsAdapter>(undefined);
 
   const onPrint = useCallback(
     (text: string) => {
-      if (text.includes("Atomify::canceled")) {
-        // Ignore this one
+      // LAMMPS errors are only visible in the printed output; let the
+      // adapter capture them for getErrorMessage().
+      adapterRef.current?.noteOutput(text);
+      if (
+        text.includes("Atomify::canceled") ||
+        text.includes("JS async step callback rejected")
+      ) {
+        // Stop-button aborts, not real errors
         return;
       }
       addLammpsOutput(text);
@@ -110,10 +116,19 @@ const SimulationComponent = () => {
     simulationSettings,
   ]);
 
+  // Mirror the store's paused state into the flag the adapter's pause-wait
+  // loop reads between timesteps.
   useEffect(() => {
-    window.postStepCallback = () => {
-      if (paused && !getCancel()) {
-        return true;
+    setPausedFlag(paused);
+  }, [paused]);
+
+  useEffect(() => {
+    // Runs synchronously once per synced timestep, while the wasm module is
+    // safe to touch (see LammpsAdapter.setStepListener). Pause and cancel are
+    // handled by the adapter itself via the wasmInstance flags.
+    adapterRef.current?.setStepListener(() => {
+      if (paused) {
+        return;
       }
       if (lammps && wasm && simulation) {
         setHasSynchronized(true);
@@ -133,14 +148,8 @@ const SimulationComponent = () => {
         if (freq !== undefined) {
           lammps.setSyncFrequency(freq);
         }
-        if (getCancel()) {
-          setCancel(false);
-          setPaused(false);
-          lammps.cancel();
-        }
       }
-      return false;
-    };
+    });
   }, [
     wasm,
     lammps,
@@ -148,7 +157,6 @@ const SimulationComponent = () => {
     paused,
     runPostTimestep,
     runPostTimestepRendering,
-    setPaused,
     setHasSynchronized,
     simulationSettings,
   ]);
@@ -162,15 +170,10 @@ const SimulationComponent = () => {
       });
       setTimeout(() => {
         time_event("WASM.Load");
+        const printLine = (...args: unknown[]) => onPrint(args.join(" "));
         createModule({
-          print: onPrint,
-          printErr: onPrint,
-          locateFile: (path: string) => {
-            if (path.endsWith(".wasm")) {
-              return import.meta.env.BASE_URL + path;
-            }
-            return path;
-          },
+          print: printLine,
+          printErr: printLine,
         }).then((Module) => {
           track("WASM.Load");
           setStatus({
@@ -178,9 +181,14 @@ const SimulationComponent = () => {
             text: "",
             progress: 0.6,
           });
-          const lammps = new Module.LAMMPSWeb();
+          const wasmModule = Module as AtomifyWasmModule;
+          const lammps = new LammpsAdapter(
+            wasmModule,
+            new wasmModule.LAMMPSWeb(),
+          );
+          adapterRef.current = lammps;
           setLammps(lammps);
-          setWasm(Module);
+          setWasm(wasmModule);
           setSyncFrequency(1);
           setStatus(undefined);
         });
