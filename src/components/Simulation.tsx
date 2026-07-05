@@ -57,7 +57,7 @@ const SimulationComponent = () => {
   );
 
   useEffect(() => {
-    window.onkeydown = (ev) => {
+    const onKeyDown = (ev: KeyboardEvent) => {
       if (selectedMenu !== "view") {
         return;
       }
@@ -97,6 +97,8 @@ const SimulationComponent = () => {
         });
       }
     };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, [
     lammps,
     running,
@@ -176,7 +178,6 @@ const SimulationComponent = () => {
             text: "",
             progress: 0.6,
           });
-          // setWasm(Module)
           const lammps = new Module.LAMMPSWeb();
           setLammps(lammps);
           setWasm(Module);
