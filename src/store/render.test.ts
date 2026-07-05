@@ -40,8 +40,6 @@ describe("render store", () => {
 
       store.getActions().addParticleStyle({ index: 0, atomType });
 
-      // NOTE: addParticleStyle spreads the array into an object via { ...state.particleStyles },
-      // so the result is an object with numeric keys, not a true array.
       const styles = store.getState().particleStyles;
       expect(styles[0]).toEqual(atomType);
     });
@@ -81,14 +79,12 @@ describe("render store", () => {
       expect(store.getState().particleStyles[0]).toEqual(atomB);
     });
 
-    it("spreads AtomType[] into an object (type confusion)", () => {
-      // This documents the existing bug: { ...array } produces an object, not an array.
+    it("keeps particleStyles a true array", () => {
       const atomType = createMockAtomType();
       store.getActions().addParticleStyle({ index: 0, atomType });
 
       const styles = store.getState().particleStyles;
-      // After the spread, Array.isArray returns false because it's now a plain object
-      expect(Array.isArray(styles)).toBe(false);
+      expect(Array.isArray(styles)).toBe(true);
     });
   });
 

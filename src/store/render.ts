@@ -32,7 +32,7 @@ export const renderModel: RenderModel = {
   bondRadius: 1,
   particleRadius: 1,
   addParticleStyle: action((state, value: ParticleStyle) => {
-    const particleStyles = { ...state.particleStyles };
+    const particleStyles = [...state.particleStyles];
     particleStyles[value.index] = value.atomType;
     state.particleStyles = particleStyles;
     state.particleStylesUpdated = true;
