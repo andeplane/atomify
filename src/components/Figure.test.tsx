@@ -19,8 +19,10 @@ vi.mock("../hooks", () => ({
 vi.mock("dygraphs", () => {
   const MockDygraph = vi.fn(function (this: {
     updateOptions: ReturnType<typeof vi.fn>;
+    destroy: ReturnType<typeof vi.fn>;
   }) {
     this.updateOptions = vi.fn();
+    this.destroy = vi.fn();
     return this;
   });
   return {

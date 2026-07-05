@@ -1,5 +1,5 @@
 import { useStoreState, useStoreActions } from "../hooks";
-import { SettingOutlined } from "@ant-design/icons";
+import { SettingOutlined, MinusOutlined } from "@ant-design/icons";
 import { Table, Row, Col, Button, Slider, Checkbox } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import type { TableRowSelection } from "antd/es/table/interface";
@@ -19,7 +19,23 @@ interface SimulationSummaryType {
   value: string | number;
 }
 
-const SimulationSummaryContent = () => {
+interface SimulationSummaryContentProps {
+  /** Render the expanded-view chrome (wrapper class, minimize button slot). */
+  expanded?: boolean;
+  onShowLess?: () => void;
+}
+
+const SimulationSummaryContent = ({
+  expanded = false,
+  onShowLess,
+}: SimulationSummaryContentProps = {}) => {
+  const handleShowLess = () => {
+    if (onShowLess) {
+      track("SimulationSummary.ShowLess");
+      onShowLess();
+    }
+  };
+
   const [visibleSettings, setVisibleSettings] = useState<string | undefined>();
   const [visibleCompute, setVisibleCompute] = useState<Compute | undefined>();
   const [visibleFix, setVisibleFix] = useState<Fix | undefined>();
@@ -380,58 +396,78 @@ const SimulationSummaryContent = () => {
     renderSettings.showSimulationBox,
   ]);
 
+  const tables = (
+    <>
+      <Table
+        title={() => <b>Modifiers</b>}
+        size="small"
+        showHeader={false}
+        columns={modiferColumns}
+        rowSelection={{ ...rowSelection, selectedRowKeys: selectedModifiers }}
+        dataSource={modifiers}
+        pagination={{ hideOnSinglePage: true }}
+      />
+      {simulation && (
+        <>
+          <Table
+            title={() => <b>Summary</b>}
+            size="small"
+            showHeader={false}
+            columns={simulationSummaryColumns}
+            dataSource={simulationStatusData}
+            pagination={{ hideOnSinglePage: true }}
+          />
+          <Table
+            title={() => <b>Computes</b>}
+            size="small"
+            rowKey="name"
+            showHeader={false}
+            columns={computeColumns}
+            dataSource={Object.values(computes)}
+            pagination={{ hideOnSinglePage: true }}
+          />
+          <Table
+            title={() => <b>Variables</b>}
+            size="small"
+            rowKey="name"
+            showHeader={false}
+            columns={variableColumns}
+            dataSource={Object.values(variables)}
+            pagination={{ hideOnSinglePage: true }}
+          />
+          <Table
+            title={() => <b>Fixes</b>}
+            size="small"
+            rowKey="name"
+            showHeader={false}
+            columns={fixColumns}
+            dataSource={Object.values(fixes)}
+            pagination={{ hideOnSinglePage: true }}
+          />
+        </>
+      )}
+    </>
+  );
+
   return (
     <>
-      <div className="liquid-glass-container">
-        <Table
-          title={() => <b>Modifiers</b>}
-          size="small"
-          showHeader={false}
-          columns={modiferColumns}
-          rowSelection={{ ...rowSelection, selectedRowKeys: selectedModifiers }}
-          dataSource={modifiers}
-          pagination={{ hideOnSinglePage: true }}
-        />
-        {simulation && (
-          <>
-            <Table
-              title={() => <b>Summary</b>}
-              size="small"
-              showHeader={false}
-              columns={simulationSummaryColumns}
-              dataSource={simulationStatusData}
-              pagination={{ hideOnSinglePage: true }}
-            />
-            <Table
-              title={() => <b>Computes</b>}
-              size="small"
-              rowKey="name"
-              showHeader={false}
-              columns={computeColumns}
-              dataSource={Object.values(computes)}
-              pagination={{ hideOnSinglePage: true }}
-            />
-            <Table
-              title={() => <b>Variables</b>}
-              size="small"
-              rowKey="name"
-              showHeader={false}
-              columns={variableColumns}
-              dataSource={Object.values(variables)}
-              pagination={{ hideOnSinglePage: true }}
-            />
-            <Table
-              title={() => <b>Fixes</b>}
-              size="small"
-              rowKey="name"
-              showHeader={false}
-              columns={fixColumns}
-              dataSource={Object.values(fixes)}
-              pagination={{ hideOnSinglePage: true }}
-            />
-          </>
-        )}
-      </div>
+      {expanded ? (
+        <div className="simulationsummary simulationsummary-expanded">
+          {onShowLess && (
+            <div className="simulation-summary-minimize-button">
+              <Button
+                type="text"
+                icon={<MinusOutlined />}
+                onClick={handleShowLess}
+                style={{ color: "#fff", padding: 0 }}
+              />
+            </div>
+          )}
+          <div className="simulation-summary-expanded-content">{tables}</div>
+        </div>
+      ) : (
+        <div className="liquid-glass-container">{tables}</div>
+      )}
       {visibleSettings === "Bonds" && (
         <SyncBondsSettings onClose={() => setVisibleSettings(undefined)} />
       )}

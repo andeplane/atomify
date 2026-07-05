@@ -126,9 +126,15 @@ const AutoStartSimulation: React.FC = () => {
       }
     };
 
+    let cancelled = false;
+    let timerId: ReturnType<typeof setTimeout> | undefined;
+
     const checkWasmAndStart = () => {
+      if (cancelled) {
+        return;
+      }
       if (!getWasmOrNull()) {
-        setTimeout(checkWasmAndStart, 500);
+        timerId = setTimeout(checkWasmAndStart, 500);
         return;
       }
 
@@ -138,6 +144,13 @@ const AutoStartSimulation: React.FC = () => {
     };
 
     checkWasmAndStart();
+
+    return () => {
+      cancelled = true;
+      if (timerId !== undefined) {
+        clearTimeout(timerId);
+      }
+    };
   }, [
     simulation?.id,
     running,

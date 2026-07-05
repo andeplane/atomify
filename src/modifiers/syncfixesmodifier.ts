@@ -1,5 +1,6 @@
 import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
+import { createModifierEntry, syncModifierEntry } from "./syncModifierData";
 
 class SyncFixesModifier extends Modifier {
   constructor({ name, active }: ModifierProps) {
@@ -22,93 +23,10 @@ class SyncFixesModifier extends Modifier {
       const name = fixNames.get(i);
       let fix = input.fixes[name];
       if (fix == null) {
-        const lmpFix = input.lammps.getFix(name);
-
-        // Need to create a new one
-        fix = {
-          name: lmpFix.getName(),
-          type: lmpFix.getType(),
-          isPerAtom: lmpFix.getIsPerAtom(),
-          xLabel: lmpFix.getXLabel(),
-          yLabel: lmpFix.getYLabel(),
-          hasScalarData: lmpFix.hasScalarData(),
-          clearPerSync: lmpFix.getClearPerSync(),
-          scalarValue: 0,
-          syncDataPoints: false,
-          hasData1D: false,
-          lmpFix,
-        };
+        fix = createModifierEntry(input.lammps.getFix(name), "lmpFix");
       }
-      fix.lmpFix.sync();
-      fix.xLabel = fix.lmpFix.getXLabel();
-      fix.yLabel = fix.lmpFix.getYLabel();
-      fix.scalarValue = fix.lmpFix.getScalarValue();
 
-      // Get data1DNamesWrapper and extract size, then delete immediately
-      const data1DNamesWrapper = fix.lmpFix.getData1DNames();
-      fix.hasData1D = data1DNamesWrapper.size() > 0;
-      const data1DNamesSize = data1DNamesWrapper.size();
-      data1DNamesWrapper.delete(); // Delete WASM wrapper to prevent memory leak
-
-      if (data1DNamesSize > 0) {
-        fix.clearPerSync = fix.lmpFix.getClearPerSync();
-        if (fix.data1D == null) {
-          fix.data1D = {
-            data: [],
-            labels: [],
-          };
-        }
-
-        if ((everything || fix.syncDataPoints) && fix.data1D) {
-          // Data points is only for plotting figures
-          if (fix.clearPerSync) {
-            // For histograms (compute rdf etc) we don't have time as x axis, so we clear every time
-            fix.data1D.data = [];
-          }
-
-          const lengthBeforeWeStart = fix.data1D.data.length; // Used to avoid coping all data every time
-
-          if (fix.data1D.labels.length === 0) {
-            // First label is never visible
-            fix.data1D.labels.push("x");
-          }
-
-          // Get data1DVector once before the loop for better performance
-          const data1DVector = fix.lmpFix.getData1D();
-
-          for (let j = 0; j < data1DNamesSize; j++) {
-            const lmpData = data1DVector.get(j);
-
-            if (fix.data1D.labels.length - 1 === j) {
-              // Add missing labels
-              fix.data1D.labels.push(lmpData.getLabel());
-            }
-
-            const xValuesPointer = lmpData.getXValuesPointer() / 4;
-            const yValuesPointer = lmpData.getYValuesPointer() / 4;
-            const xValues = input.wasm.HEAPF32.subarray(
-              xValuesPointer,
-              xValuesPointer + lmpData.getNumPoints(),
-            ) as Float32Array;
-            const yValues = input.wasm.HEAPF32.subarray(
-              yValuesPointer,
-              yValuesPointer + lmpData.getNumPoints(),
-            ) as Float32Array;
-            for (let k = lengthBeforeWeStart; k < xValues.length; k++) {
-              if (j === 0) {
-                fix.data1D.data.push([xValues[k]]);
-              }
-              fix.data1D.data[k].push(yValues[k]);
-            }
-
-            // Delete the Data1D copy to prevent memory leak
-            lmpData.delete();
-          }
-
-          // Delete the vector wrapper after the loop to prevent memory leak
-          data1DVector.delete();
-        }
-      }
+      syncModifierEntry(fix, "lmpFix", input.wasm, everything);
       output.fixes[name] = fix;
     }
   };

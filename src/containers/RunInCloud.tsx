@@ -15,9 +15,9 @@ const RunInCloud = () => {
   const [api, contextHolder] = notification.useNotification();
 
   const [wouldUse, setWouldUse] = useState(false);
-  const [numCpu, setNumCPU] = useState<string | undefined>("nocpu");
-  const [gpuType, setGPUType] = useState<string | undefined>("nogpu");
-  const [numGpu, setNumGPU] = useState<string | undefined>();
+  const [numCpu, setNumCPU] = useState<string | undefined>("n/a");
+  const [gpuType, setGPUType] = useState<string | undefined>("n/a");
+  const [numGpu, setNumGPU] = useState<string | undefined>("1");
   const [budget, setBudget] = useState<string | undefined>();
   const [email, setEmail] = useState<string | undefined>();
   const [comments, setComments] = useState<string | undefined>();
@@ -35,7 +35,7 @@ const RunInCloud = () => {
     api.open({
       message: "Thank you",
       description:
-        "We appreaciate the feedback. Please reach out on email or GitHub if you have specific needs.",
+        "We appreciate the feedback. Please reach out on email or GitHub if you have specific needs.",
     });
   }, [api, wouldUse, numCpu, gpuType, numGpu, budget, email, comments]);
 
@@ -55,7 +55,7 @@ const RunInCloud = () => {
         want to gather more information about the interest.
         <br />
         <br />
-        We would appreaciate if you could fill in this form. It would be of
+        We would appreciate if you could fill in this form. It would be of
         great help to decide on whether or not this is a good idea, and how to
         do it right.
         <br />
@@ -72,7 +72,7 @@ const RunInCloud = () => {
             </Checkbox>
           </Form.Item>
           How many CPU cores would you want?
-          <Form.Item name="cpu" valuePropName="checked">
+          <Form.Item name="cpu">
             <Select
               disabled={!wouldUse}
               onChange={(value) => {
@@ -88,7 +88,7 @@ const RunInCloud = () => {
             </Select>
           </Form.Item>
           What kind of GPU would you want?
-          <Form.Item name="gpu" valuePropName="checked">
+          <Form.Item name="gpu">
             <Select
               disabled={!wouldUse}
               onChange={(value) => {
@@ -111,10 +111,10 @@ const RunInCloud = () => {
               </Select.Option>
             </Select>
           </Form.Item>
-          {gpuType !== "nogpu" && (
+          {gpuType !== "n/a" && (
             <>
               How many such GPUs would you want?
-              <Form.Item name="gpu" valuePropName="checked">
+              <Form.Item name="numGpu">
                 <Select
                   onChange={(value) => {
                     setNumGPU(value);
@@ -131,7 +131,7 @@ const RunInCloud = () => {
             </>
           )}
           What would be your yearly budget (in USD)?
-          <Form.Item name="gpu" valuePropName="checked">
+          <Form.Item name="budget">
             <Input
               placeholder="$"
               disabled={!wouldUse}
@@ -139,7 +139,7 @@ const RunInCloud = () => {
             />
           </Form.Item>
           Email (if you want updates)
-          <Form.Item name="gpu" valuePropName="checked">
+          <Form.Item name="email">
             <Input
               placeholder="user@domain.com"
               disabled={!wouldUse}
@@ -147,7 +147,7 @@ const RunInCloud = () => {
             />
           </Form.Item>
           Additional comments
-          <Form.Item name="gpu" valuePropName="checked">
+          <Form.Item name="comments">
             <Input
               placeholder="This is great!"
               disabled={!wouldUse}

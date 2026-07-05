@@ -1,5 +1,5 @@
 import { InboxOutlined } from "@ant-design/icons";
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { useStoreActions } from "../hooks";
 import {
   message,
@@ -146,7 +146,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
       open
       title="Create new simulation"
       footer={[
-        <>
+        <Fragment key="footer">
           <Checkbox onChange={(e) => setStartImmediately(e.target.checked)}>
             Start simulation immediately
           </Checkbox>
@@ -169,7 +169,7 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
               OK
             </Button>
           </Tooltip>
-        </>,
+        </Fragment>,
       ]}
       onCancel={onClose}
     >
@@ -208,7 +208,9 @@ const NewSimulation = ({ onClose }: NewSimulationProps) => {
             onChange={(value) => setInputScript(value)}
           >
             {files.map((file) => (
-              <Option value={file.fileName}>{file.fileName}</Option>
+              <Option key={file.fileName} value={file.fileName}>
+                {file.fileName}
+              </Option>
             ))}
           </Select>
         </>

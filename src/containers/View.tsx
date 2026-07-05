@@ -604,7 +604,9 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
           open
           onCancel={() => setHideNoSimulation(true)}
           footer={[
-            <Button onClick={() => setHideNoSimulation(true)}>OK</Button>,
+            <Button key="ok" onClick={() => setHideNoSimulation(true)}>
+              OK
+            </Button>,
           ]}
           title="No simulation"
         >

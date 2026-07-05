@@ -404,7 +404,7 @@ export const simulationModel: SimulationModel = {
       const analyzeFileName = "analyze.ipynb";
       const existingAnalyze =
         await localforage.getItem<LocalForageEntry>(analyzeFileName);
-      localforage.setItem(
+      await localforage.setItem(
         analyzeFileName,
         createLocalForageObject(
           analyzeFileName,
@@ -494,28 +494,35 @@ export const simulationModel: SimulationModel = {
       });
       time_event("Simulation.Stop");
 
-    const inputScriptFile = simulation.files.filter(
-      (file) => file.fileName === simulation.inputScript,
-    )[0];
-    if (inputScriptFile.content) {
-      actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
-    }
+      const inputScriptFile = simulation.files.find(
+        (file) => file.fileName === simulation.inputScript,
+      );
+      if (!inputScriptFile) {
+        actions.setLastError(
+          `Input script ${simulation.inputScript} was not found among the simulation files.`,
+        );
+        actions.setRunning(false);
+        return;
+      }
+      if (inputScriptFile.content) {
+        actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
+      }
 
-    // Apply embedded settings if provided
-    if (simulation.showSimulationBox !== undefined) {
-      allActions.settings.setRender({
-        ...getStoreState().settings.render,
-        showSimulationBox: simulation.showSimulationBox,
-      });
-    }
-    if (simulation.showWalls !== undefined) {
-      allActions.settings.setRender({
-        ...getStoreState().settings.render,
-        showWalls: simulation.showWalls,
-      });
-    }
+      // Apply embedded settings if provided
+      if (simulation.showSimulationBox !== undefined) {
+        allActions.settings.setRender({
+          ...getStoreState().settings.render,
+          showSimulationBox: simulation.showSimulationBox,
+        });
+      }
+      if (simulation.showWalls !== undefined) {
+        allActions.settings.setRender({
+          ...getStoreState().settings.render,
+          showWalls: simulation.showWalls,
+        });
+      }
 
-    // Inject URL variables and determine script to run
+      // Inject URL variables and determine script to run
       const wasm = getWasm();
       const scriptToRun = prepareVarsScript(
         simulation,
@@ -623,6 +630,12 @@ export const simulationModel: SimulationModel = {
         if (!file.content) {
           if (file.url) {
             const response = await fetch(file.url);
+            if (!response.ok) {
+              actions.setLastError(
+                `Could not download ${file.fileName} (HTTP ${response.status}).`,
+              );
+              return;
+            }
             const content = await response.text();
             file.content = content;
           } else {
@@ -650,10 +663,12 @@ export const simulationModel: SimulationModel = {
       if (simulation.start) {
         actions.run();
       } else {
-        const inputScriptFile = simulation.files.filter(
+        const inputScriptFile = simulation.files.find(
           (file) => file.fileName === simulation.inputScript,
-        )[0];
-        allActions.app.setSelectedFile(inputScriptFile);
+        );
+        if (inputScriptFile) {
+          allActions.app.setSelectedFile(inputScriptFile);
+        }
       }
       track("Simulation.New", { simulationId: simulation?.id });
     },

@@ -9,7 +9,6 @@ vi.mock(import("../utils/embeddedMode"), () => ({
 }));
 
 import { vi } from "vitest";
-import { isEmbeddedMode } from "../utils/embeddedMode";
 
 describe("app store", () => {
   let store: Store<AppModel>;
@@ -20,24 +19,31 @@ describe("app store", () => {
 
   describe("getInitialSelectedMenu", () => {
     afterEach(() => {
-      vi.restoreAllMocks();
+      vi.doUnmock("../utils/embeddedMode");
+      vi.resetModules();
     });
 
-    it("should default to 'examples' when not in embedded mode", () => {
-      vi.mocked(isEmbeddedMode).mockReturnValue(false);
-      const freshStore = createStore(appModel);
+    // These re-import "./app" (via vi.resetModules + vi.doMock) so the
+    // module's real top-level getInitialSelectedMenu() runs against the
+    // mock, rather than recomputing selectedMenu inline in the test.
+    it("should default to 'examples' when not in embedded mode", async () => {
+      vi.resetModules();
+      vi.doMock("../utils/embeddedMode", () => ({
+        isEmbeddedMode: vi.fn(() => false),
+      }));
+      const { appModel: freshAppModel } = await import("./app");
+      const freshStore = createStore(freshAppModel);
 
       expect(freshStore.getState().selectedMenu).toBe("examples");
     });
 
-    it("should default to 'view' when in embedded mode", () => {
-      vi.mocked(isEmbeddedMode).mockReturnValue(true);
-      // Re-evaluate the model to pick up the new mock
-      const embeddedAppModel: AppModel = {
-        ...appModel,
-        selectedMenu: isEmbeddedMode() ? "view" : "examples",
-      };
-      const freshStore = createStore(embeddedAppModel);
+    it("should default to 'view' when in embedded mode", async () => {
+      vi.resetModules();
+      vi.doMock("../utils/embeddedMode", () => ({
+        isEmbeddedMode: vi.fn(() => true),
+      }));
+      const { appModel: freshAppModel } = await import("./app");
+      const freshStore = createStore(freshAppModel);
 
       expect(freshStore.getState().selectedMenu).toBe("view");
     });

@@ -59,7 +59,7 @@ export function useMenuItems(callbacks: UseMenuItemsCallbacks): MenuItem[] {
   );
   const run = useStoreActions((actions) => actions.simulation.run);
 
-  const editMenuLabel = "Edit " + (simulation ? simulation?.id : "");
+  const editMenuLabel = "Edit " + (simulation?.id ?? "");
   const runStopButtonTitle = running ? "Stop" : "Run";
 
   const runStopButton = getItem(

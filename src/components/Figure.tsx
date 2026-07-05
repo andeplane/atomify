@@ -142,6 +142,15 @@ const Figure = ({
   }, [plotConfig, graph, height, width, graphId]);
 
   useEffect(() => {
+    if (!graph) {
+      return;
+    }
+    return () => {
+      graph.destroy();
+    };
+  }, [graph]);
+
+  useEffect(() => {
     if (graph && plotConfig?.data1D) {
       graph.updateOptions({ file: plotConfig.data1D.data });
     }
