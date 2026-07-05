@@ -18,6 +18,7 @@ import React from "react";
 import type { MenuProps } from "antd";
 import { Badge } from "antd";
 import { useStoreActions, useStoreState } from "./index";
+import { NOTEBOOK_DISABLED_TOOLTIP } from "../constants";
 import { track } from "../utils/metrics";
 import { setCancel } from "../wasm/wasmInstance";
 
@@ -30,6 +31,7 @@ function getItem(
   children?: MenuItem[],
   onClick?: () => void,
   disabled?: boolean,
+  title?: string,
 ): MenuItem {
   return {
     key,
@@ -38,6 +40,7 @@ function getItem(
     label,
     onClick,
     disabled,
+    title,
   } as MenuItem;
 }
 
@@ -52,6 +55,7 @@ export function useMenuItems(callbacks: UseMenuItemsCallbacks): MenuItem[] {
   const simulation = useStoreState((state) => state.simulation.simulation);
   const selectedFile = useStoreState((state) => state.app.selectedFile);
   const paused = useStoreState((state) => state.simulation.paused);
+  const isSimulationActive = running || paused;
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
   const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
   const setPreferredView = useStoreActions(
@@ -138,7 +142,15 @@ export function useMenuItems(callbacks: UseMenuItemsCallbacks): MenuItem[] {
   return [
     getItem("View", "view", <AlignLeftOutlined />),
     getItem("Console", "console", <BorderOuterOutlined />),
-    getItem("Notebook", "notebook", <LineChartOutlined />),
+    getItem(
+      "Notebook",
+      "notebook",
+      <LineChartOutlined />,
+      undefined,
+      undefined,
+      isSimulationActive,
+      isSimulationActive ? NOTEBOOK_DISABLED_TOOLTIP : undefined,
+    ),
     getItem(
       editMenuLabel,
       "edit",
