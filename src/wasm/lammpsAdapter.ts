@@ -37,7 +37,7 @@ const emptyCppArray = <T>() => ({
  * command so the per-step callback fires. Mirrors the injection logic in
  * lammps.js client.ts.
  *
- * TODO(lammps.js-#global-callback-fix): scripts whose first run/minimize
+ * TODO(lammps.js-58): scripts whose first run/minimize
  * lives in an include'd file (or after a jump) get no callback and block the
  * UI for the whole run. Atomify's own build solved this with a patched
  * LAMMPS that allows installing the fix before the box exists.
@@ -89,7 +89,7 @@ export class LammpsAdapter implements LammpsWeb {
   private cancelRequested = false;
   private lastError = "";
   private stepListener?: () => void;
-  // TODO(lammps.js-#dynamic-bonds): neighborlist-based bonds with per-type-pair
+  // TODO(lammps.js-53): neighborlist-based bonds with per-type-pair
   // distances are not supported by lammps.js; distances are collected here so
   // they can be forwarded once the API exists.
   private bondDistances = new Map<string, number>();
@@ -101,7 +101,7 @@ export class LammpsAdapter implements LammpsWeb {
   }
 
   /** Feed LAMMPS console output back in; errors are only visible there. */
-  // TODO(lammps.js-#error-reporting): lammps.js swallows LAMMPS errors inside
+  // TODO(lammps.js-56): lammps.js swallows LAMMPS errors inside
   // lammps_commands_string/lammps_file (LAMMPS_EXCEPTIONS). Until it exposes
   // the stored last error, recover it from the printed "ERROR: ..." lines.
   noteOutput(text: string) {
@@ -249,7 +249,7 @@ export class LammpsAdapter implements LammpsWeb {
   }
 
   getExceptionMessage(_address: number): string {
-    // TODO(lammps.js-#error-reporting): the old wasm exposed the C++
+    // TODO(lammps.js-56): the old wasm exposed the C++
     // exception message behind the thrown pointer. lammps.js has no
     // equivalent, so exceptions thrown as numbers stay opaque.
     return this.lastError || "Unknown LAMMPS error";
@@ -277,9 +277,9 @@ export class LammpsAdapter implements LammpsWeb {
   // --- Bonds ---
 
   computeBonds(): number {
-    // TODO(lammps.js-#dynamic-bonds): only bond-topology bonds; the old wasm
+    // TODO(lammps.js-53): only bond-topology bonds; the old wasm
     // also derived bonds from the neighborlist using the distance map.
-    // TODO(lammps.js-#bonds-minimum-image): wrapped bond endpoints are not
+    // TODO(lammps.js-54): wrapped bond endpoints are not
     // minimum-imaged, so bonds crossing a periodic boundary span the box.
     this.bondSnapshot = this.native.syncBondsWrapped();
     return this.bondSnapshot.count;
@@ -294,7 +294,7 @@ export class LammpsAdapter implements LammpsWeb {
   }
 
   setBondDistance(type1: number, type2: number, distance: number) {
-    // TODO(lammps.js-#dynamic-bonds): forward to lammps.js once supported.
+    // TODO(lammps.js-53): forward to lammps.js once supported.
     this.bondDistances.set(`${type1}-${type2}`, distance);
   }
 
@@ -303,7 +303,7 @@ export class LammpsAdapter implements LammpsWeb {
   }
 
   setBuildNeighborlist(_buildNeighborlist: boolean) {
-    // TODO(lammps.js-#dynamic-bonds): no neighborlist access in lammps.js.
+    // TODO(lammps.js-53): no neighborlist access in lammps.js.
   }
 
   // --- Simulation box (float32 views, unlike the old wasm's float64) ---
@@ -317,13 +317,13 @@ export class LammpsAdapter implements LammpsWeb {
   }
 
   getDimension(): number {
-    // TODO(lammps.js-#box-dimension): lammps.js does not expose
+    // TODO(lammps.js-57): lammps.js does not expose
     // domain->dimension; 2D simulations render as 3D.
     return 3;
   }
 
   getWalls() {
-    // TODO(lammps.js-#walls): no FixWall introspection in lammps.js, so wall
+    // TODO(lammps.js-57): no FixWall introspection in lammps.js, so wall
     // geometry is never rendered.
     return emptyCppArray<Wall>();
   }
@@ -331,43 +331,43 @@ export class LammpsAdapter implements LammpsWeb {
   // --- Run status / metrics ---
 
   getWhichFlag(): number {
-    // TODO(lammps.js-#run-status): whichflag (1 = dynamics, 2 = minimize) is
+    // TODO(lammps.js-55): whichflag (1 = dynamics, 2 = minimize) is
     // not exposed; minimization is indistinguishable from dynamics.
     return this.native.getIsRunning() ? 1 : 0;
   }
 
   getRunTimesteps(): number {
-    // TODO(lammps.js-#run-status): run progress is not exposed.
+    // TODO(lammps.js-55): run progress is not exposed.
     return 0;
   }
 
   getRunTotalTimesteps(): number {
-    // TODO(lammps.js-#run-status): run progress is not exposed.
+    // TODO(lammps.js-55): run progress is not exposed.
     return 0;
   }
 
   getTimestepsPerSecond(): number {
-    // TODO(lammps.js-#run-status): thermo "spcpu" is not exposed.
+    // TODO(lammps.js-55): thermo "spcpu" is not exposed.
     return 0;
   }
 
   getCPURemain(): number {
-    // TODO(lammps.js-#run-status): thermo "cpuremain" is not exposed.
+    // TODO(lammps.js-55): thermo "cpuremain" is not exposed.
     return 0;
   }
 
   getMemoryUsage(): number {
-    // TODO(lammps.js-#run-status): memory usage is not exposed.
+    // TODO(lammps.js-55): memory usage is not exposed.
     return 0;
   }
 
   getLastCommand(): string {
-    // TODO(lammps.js-#error-reporting): input->line is not exposed.
+    // TODO(lammps.js-56): input->line is not exposed.
     return "";
   }
 
   // --- Computes / fixes / variables ---
-  // TODO(lammps.js-#introspection): lammps.js only exposes global compute
+  // TODO(lammps.js-51): lammps.js only exposes global compute
   // scalars (getComputeScalar). Enumeration, classification, per-atom data
   // and 1D plot series (compute rdf/msd/vacf, fix ave/time & friends,
   // variables) all need an introspection API before these panels can work.
