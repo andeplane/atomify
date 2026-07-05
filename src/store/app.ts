@@ -20,7 +20,7 @@ export interface AppModel {
   selectedFile?: SimulationFile;
   setSelectedMenu: Action<AppModel, string>;
   setPreferredView: Action<AppModel, string | undefined>;
-  setSelectedFile: Action<AppModel, SimulationFile>;
+  setSelectedFile: Action<AppModel, SimulationFile | undefined>;
   setStatus: Action<AppModel, Status | undefined>;
 }
 

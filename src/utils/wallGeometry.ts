@@ -28,7 +28,6 @@ export function createWallMesh(
   // Determine which axis this wall is on
   // XLO=0, XHI=1, YLO=2, YHI=3, ZLO=4, ZHI=5
   const wallDim = Math.floor(wall.which / 2);
-  const wallSide = wall.which % 2; // 0 = lo, 1 = hi
 
   // Get box extents from bounds
   const xSize = boxBounds.max.x - boxBounds.min.x;

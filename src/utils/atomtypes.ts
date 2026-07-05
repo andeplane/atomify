@@ -2,7 +2,7 @@ import * as THREE from "three";
 
 // It is INSANE that this is here. But quick and dirty baby
 export const hexToRgb = (hex: string) => {
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   if (!result) {
     throw new Error(`Invalid hex color string: ${hex}`);
   }
