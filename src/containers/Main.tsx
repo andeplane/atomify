@@ -103,21 +103,18 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
           styles={{ body: { backgroundColor: "#1E1E1E" } }}
           width={"80%"}
           footer={[
-            <>
-              <Button
-                key="analyze"
-                onClick={() => {
-                  setShowConsole(false);
-                  setPreferredView(undefined);
-                  setPreferredView("notebook");
-                }}
-              >
-                Analyze in notebook
-              </Button>
-              <Button key="close" onClick={() => setShowConsole(false)}>
-                Close
-              </Button>
-            </>,
+            <Button
+              key="analyze"
+              onClick={() => {
+                setShowConsole(false);
+                setPreferredView("notebook");
+              }}
+            >
+              Analyze in notebook
+            </Button>,
+            <Button key="close" onClick={() => setShowConsole(false)}>
+              Close
+            </Button>,
           ]}
           closable={false}
           open
