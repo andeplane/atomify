@@ -30,24 +30,24 @@ const ColorModifierSettings = ({
   const colorModifier = postTimestepModifiers.find(
     (modifier): modifier is ColorModifier => modifier instanceof ColorModifier,
   );
-  if (!colorModifier) return null;
   const perAtomComputes = Object.values(computes).filter(
     (compute) => compute.isPerAtom,
   );
 
   const [useCustomRange, setUseCustomRange] = useState(
-    colorModifier.customMinValue !== undefined ||
-      colorModifier.customMaxValue !== undefined,
+    colorModifier?.customMinValue !== undefined ||
+      colorModifier?.customMaxValue !== undefined,
   );
   const [customMin, setCustomMin] = useState<number | null>(
-    colorModifier.customMinValue ?? null,
+    colorModifier?.customMinValue ?? null,
   );
   const [customMax, setCustomMax] = useState<number | null>(
-    colorModifier.customMaxValue ?? null,
+    colorModifier?.customMaxValue ?? null,
   );
 
   const onChange = useCallback(
     (value: string) => {
+      if (!colorModifier) return;
       if (value !== "type") {
         track("Settings.Render.ColorBy", {
           value: "Compute",
@@ -65,6 +65,7 @@ const ColorModifierSettings = ({
 
   const handleCustomRangeToggle = useCallback(
     (checked: boolean) => {
+      if (!colorModifier) return;
       setUseCustomRange(checked);
       if (!checked) {
         colorModifier.customMinValue = undefined;
@@ -88,6 +89,7 @@ const ColorModifierSettings = ({
 
   const handleMinChange = useCallback(
     (value: number | null) => {
+      if (!colorModifier) return;
       setCustomMin(value);
       if (value !== null && useCustomRange) {
         colorModifier.customMinValue = value;
@@ -98,6 +100,7 @@ const ColorModifierSettings = ({
 
   const handleMaxChange = useCallback(
     (value: number | null) => {
+      if (!colorModifier) return;
       setCustomMax(value);
       if (value !== null && useCustomRange) {
         colorModifier.customMaxValue = value;
@@ -107,6 +110,7 @@ const ColorModifierSettings = ({
   );
 
   const handleResetRange = useCallback(() => {
+    if (!colorModifier) return;
     colorModifier.resetMinMax = true;
     setCustomMin(null);
     setCustomMax(null);
@@ -114,6 +118,17 @@ const ColorModifierSettings = ({
     colorModifier.customMaxValue = undefined;
     setUseCustomRange(false);
   }, [colorModifier]);
+
+  const handleColormapChange = useCallback(
+    (value: string) => {
+      if (!colorModifier) return;
+      colorModifier.colormap = value;
+      track("Settings.Render.Colormap", { colormap: value });
+    },
+    [colorModifier],
+  );
+
+  if (!colorModifier) return null;
 
   const defaultValue = colorModifier.computeName
     ? colorModifier.computeName
@@ -137,14 +152,6 @@ const ColorModifierSettings = ({
     "seismic",
     "rdbu",
   ];
-
-  const handleColormapChange = useCallback(
-    (value: string) => {
-      colorModifier.colormap = value;
-      track("Settings.Render.Colormap", { colormap: value });
-    },
-    [colorModifier],
-  );
 
   return (
     <Modal
