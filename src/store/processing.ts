@@ -245,13 +245,14 @@ export const processingModel: ProcessingModel = {
       allActions.simulationStatus.setLastCommand(lammps.getLastCommand());
       allActions.simulationStatus.setMemoryUsage(lammps.getMemoryUsage());
 
+      // LAMMPS whichflag: 0 = idle, 1 = dynamics, 2 = minimization
       const whichFlag = lammps.getWhichFlag();
       allActions.simulationStatus.setRunType(
-        whichFlag === 1 ? "Dynamics" : "Minimization",
+        whichFlag === 1 ? "Dynamics" : whichFlag === 2 ? "Minimization" : "",
       );
 
       if (whichFlag !== 0) {
-        // We are not allowed to ask for these values unless whichFlag is 0
+        // These values are only valid while a run is active (whichFlag != 0)
         allActions.simulationStatus.setTimestepsPerSecond(
           lammps.getTimestepsPerSecond(),
         );
