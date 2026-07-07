@@ -11,6 +11,9 @@
  * main thread renders them.
  */
 
+import type { ModifierCategory, WallInfo } from "lammps.js";
+import type { ModifierType } from "../types";
+
 /** Commands sent from the main thread to the worker. */
 export type WorkerCommand =
   | { type: "load" }
@@ -21,11 +24,43 @@ export type WorkerCommand =
   | { type: "start" }
   | { type: "runFile"; requestId: number; path: string }
   | { type: "cancel" }
+  // Pause/resume the run. The worker owns the LammpsAdapter whose between-step
+  // wait loop reads the (worker-local) paused flag, so pausing must be sent as
+  // a command — setting the main thread's flag alone does nothing.
+  | { type: "pause"; paused: boolean }
   | { type: "setSyncFrequency"; every: number }
   | { type: "setBuildNeighborlist"; build: boolean }
   | { type: "setBondDistance"; type1: number; type2: number; distance: number }
   | { type: "clearBondDistances" }
+  // Which per-atom compute (if any) the main thread is coloring by. The worker
+  // streams that compute's per-atom values each step so color-by-compute works;
+  // null streams none (the common case), avoiding needless per-atom invocation.
+  | { type: "setPerAtomModifier"; category: ModifierCategory; name: string | null }
   | { type: "runCommand"; command: string };
+
+/** One compute/fix/variable's streamed snapshot (scalar + 1D series). */
+export interface WorkerModifierData {
+  name: string;
+  category: ModifierCategory;
+  /** Atomify's UI classification, derived from category + LAMMPS style. */
+  type: ModifierType;
+  style: string;
+  isPerAtom: boolean;
+  hasScalar: boolean;
+  clearPerSync: boolean;
+  xLabel: string;
+  yLabel: string;
+  scalar: number;
+  series: { name: string; label: string; x: number[]; y: number[] }[];
+}
+
+/** Per-atom float64 values for the active coloring compute. */
+export interface WorkerPerAtomData {
+  category: ModifierCategory;
+  name: string;
+  /** count float64 values, one per atom (ordered like the particle snapshot). */
+  values: ArrayBuffer;
+}
 
 /**
  * A single synced timestep streamed from the worker. All arrays are freshly
@@ -42,6 +77,12 @@ export interface WorkerStepData {
   types: ArrayBuffer;
   /** count int32 atom ids. */
   ids: ArrayBuffer;
+  /** Number of rendered bonds this step (0 when none). */
+  bondCount: number;
+  /** 3 * bondCount float32 xyz of each bond's first endpoint. */
+  bondFirst: ArrayBuffer;
+  /** 3 * bondCount float32 xyz of each bond's second endpoint. */
+  bondSecond: ArrayBuffer;
   /** 9 float32 row-major cell matrix. */
   boxMatrix: ArrayBuffer;
   /** 3 float32 box origin. */
@@ -50,6 +91,18 @@ export interface WorkerStepData {
   runMode: number;
   runStepsDone: number;
   runStepsTotal: number;
+  /** Snapshot of every tracked compute/fix/variable this step. */
+  modifiers: WorkerModifierData[];
+  /** Per-atom values for the active coloring compute, or null. */
+  perAtom: WorkerPerAtomData | null;
+  /** LAMMPS memory usage estimate in bytes. */
+  memoryUsage: number;
+  /** Timesteps/second (thermo "spcpu"). */
+  timestepsPerSecond: number;
+  /** Estimated CPU seconds remaining (thermo "cpuremain"). */
+  cpuRemain: number;
+  /** Renderable wall fixes (EDGE/CONSTANT). */
+  walls: WallInfo[];
 }
 
 /** Events sent from the worker to the main thread. */

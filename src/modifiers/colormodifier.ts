@@ -118,6 +118,9 @@ const defaultAtomTypes: AtomType[] = [
 class ColorModifier extends Modifier {
   public computeName?: string;
   private previousColoringMethod?: string;
+  // Last per-atom compute we asked the backend to stream; only re-request on
+  // change so we don't spam the worker each render cycle.
+  private lastRequestedCompute: string | null | undefined = undefined;
 
   // Min/max tracking over time
   public globalMinValue: number = Infinity;
@@ -279,6 +282,13 @@ class ColorModifier extends Modifier {
   };
 
   run = (input: ModifierInput, output: ModifierOutput) => {
+    // Ask the backend to stream (or stop streaming) per-atom values for the
+    // selected compute. No-op on backends that read per-atom data directly.
+    const target = this.computeName ?? null;
+    if (target !== this.lastRequestedCompute) {
+      this.lastRequestedCompute = target;
+      input.lammps?.setPerAtomModifier?.("compute", target);
+    }
     if (this.computeName) {
       this.runByProperty(input, output);
     } else {

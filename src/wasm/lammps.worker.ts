@@ -12,12 +12,15 @@
  * them with omovi.
  */
 import { LammpsAdapter } from "./lammpsAdapter";
+import { setPausedFlag } from "./wasmInstance";
 import type { AtomifyWasmModule } from "./types";
 import type { WorkerCommand, WorkerEvent } from "./workerMessages";
 import type {
   LAMMPSWeb as NativeLammps,
   ParticleSnapshot,
+  BondSnapshot,
   BoxSnapshot,
+  ModifierCategory,
 } from "lammps.js";
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
@@ -25,10 +28,29 @@ const ctx = self as unknown as DedicatedWorkerGlobalScope;
 let module: AtomifyWasmModule | undefined;
 let native: NativeLammps | undefined;
 let adapter: LammpsAdapter | undefined;
+// True once a run has been started in this worker. Kokkos is initialized once
+// at load; every subsequent run must `clear` LAMMPS to a fresh state first.
+let hasStartedARun = false;
+// Which per-atom compute (if any) the main thread is coloring by. Its per-atom
+// values are streamed each step; null streams none.
+let perAtomTarget: { category: ModifierCategory; name: string } | null = null;
 
 function post(event: WorkerEvent, transfer?: Transferable[]) {
   ctx.postMessage(event, transfer ?? []);
 }
+
+// Stopping a run via native.stop() ends the run cleanly (LAMMPS prints its
+// summary and the adapter resolves runFile), but this build's ASYNCIFY unwind
+// then rejects an internal promise with "function signature mismatch". That
+// rejection is benign — swallow it so it doesn't surface as an uncaught error.
+ctx.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => {
+  const reason = e.reason;
+  const message =
+    reason instanceof Error ? reason.message : String(reason ?? "");
+  if (message.includes("function signature mismatch")) {
+    e.preventDefault();
+  }
+});
 
 /** mkdir -p: create every missing parent, ignoring "already exists". */
 function mkdirp(path: string) {
@@ -69,6 +91,20 @@ function streamStep() {
   const idBase = particles.ids.ptr / 4;
   const ids = new Int32Array(module.HEAP32.subarray(idBase, idBase + count));
 
+  // Bonds: topology + neighborlist-distance derived. Built per synced step by
+  // fix js/async (needs setBuildNeighborlist / setBondDistance), so this must
+  // run here in the safe step window. count is 0 for non-molecular sims.
+  const bonds: BondSnapshot = native.syncBondsWrapped();
+  const bondCount = bonds.count;
+  const firstBase = bonds.first.ptr / 4;
+  const bondFirst = new Float32Array(
+    module.HEAPF32.subarray(firstBase, firstBase + 3 * bondCount),
+  );
+  const secondBase = bonds.second.ptr / 4;
+  const bondSecond = new Float32Array(
+    module.HEAPF32.subarray(secondBase, secondBase + 3 * bondCount),
+  );
+
   const box: BoxSnapshot = native.syncSimulationBox();
   const matrixBase = box.matrix.ptr / 4;
   const boxMatrix = new Float32Array(
@@ -79,6 +115,23 @@ function streamStep() {
     module.HEAPF32.subarray(originBase, originBase + 3),
   );
 
+  // Computes / fixes / variables (+ per-atom coloring data). Also runs inside
+  // this safe step window, since it invokes computes and reads the heap.
+  const { modifiers, perAtom } = adapter
+    ? adapter.snapshotModifiers(perAtomTarget)
+    : { modifiers: [], perAtom: null };
+
+  const transfer: Transferable[] = [
+    positions.buffer,
+    types.buffer,
+    ids.buffer,
+    bondFirst.buffer,
+    bondSecond.buffer,
+    boxMatrix.buffer,
+    origin.buffer,
+  ];
+  if (perAtom) transfer.push(perAtom.values);
+
   post(
     {
       type: "step",
@@ -87,14 +140,23 @@ function streamStep() {
       positions: positions.buffer,
       types: types.buffer,
       ids: ids.buffer,
+      bondCount,
+      bondFirst: bondFirst.buffer,
+      bondSecond: bondSecond.buffer,
       boxMatrix: boxMatrix.buffer,
       origin: origin.buffer,
       dimension: box.dimension,
       runMode: native.getRunMode(),
       runStepsDone: native.getRunStepsDone(),
       runStepsTotal: native.getRunStepsTotal(),
+      modifiers,
+      perAtom,
+      memoryUsage: native.getMemoryUsage(),
+      timestepsPerSecond: native.getThermo("spcpu"),
+      cpuRemain: native.getThermo("cpuremain"),
+      walls: native.getWalls(),
     },
-    [positions.buffer, types.buffer, ids.buffer, boxMatrix.buffer, origin.buffer],
+    transfer,
   );
 }
 
@@ -164,8 +226,13 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
         }
         break;
       case "start":
-        // Kokkos is already running and runFile() clears its own cancel state,
-        // so a run-start just needs the step listener installed (idempotent).
+        // Kokkos is already running. The first run starts from the freshly
+        // loaded module; every later run must reset LAMMPS state with `clear`
+        // so a new script doesn't collide with the previous run's box/atoms.
+        if (hasStartedARun) {
+          adapter?.reset();
+        }
+        hasStartedARun = true;
         adapter?.setStepListener(streamStep);
         break;
       case "runFile":
@@ -187,6 +254,10 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
       case "cancel":
         adapter?.cancel();
         break;
+      case "pause":
+        // The adapter's between-step wait loop reads this worker-local flag.
+        setPausedFlag(cmd.paused);
+        break;
       case "setSyncFrequency":
         adapter?.setSyncFrequency(cmd.every);
         break;
@@ -198,6 +269,11 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
         break;
       case "clearBondDistances":
         adapter?.clearBondDistances();
+        break;
+      case "setPerAtomModifier":
+        perAtomTarget = cmd.name
+          ? { category: cmd.category, name: cmd.name }
+          : null;
         break;
       case "runCommand":
         adapter?.runCommand(cmd.command);

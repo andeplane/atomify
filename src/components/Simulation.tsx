@@ -118,9 +118,12 @@ const SimulationComponent = () => {
   ]);
 
   // Mirror the store's paused state into the flag the adapter's pause-wait
-  // loop reads between timesteps.
+  // loop reads between timesteps. The adapter lives in the worker, so the flag
+  // must be forwarded there via the proxy; the main-thread flag is kept in sync
+  // too for any code that reads it locally.
   useEffect(() => {
     setPausedFlag(paused);
+    proxyRef.current?.setPaused(paused);
   }, [paused]);
 
   useEffect(() => {

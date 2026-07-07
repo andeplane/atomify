@@ -1,11 +1,22 @@
-import { LammpsWeb, LMPModifier, Wall } from "../types";
+import { LammpsWeb, LMPModifier, LMPData1D, ModifierType, Wall } from "../types";
+import type { ModifierCategory } from "lammps.js";
 import { AtomifyWasmModule } from "./types";
 import { getCancel, setCancel } from "./wasmInstance";
 import type {
   WorkerCommand,
   WorkerEvent,
   WorkerStepData,
+  WorkerModifierData,
 } from "./workerMessages";
+
+/** Byte offsets of one streamed series' x/y arrays in the bridge heap. */
+interface SeriesPointers {
+  name: string;
+  label: string;
+  xPtr: number;
+  yPtr: number;
+  numPoints: number;
+}
 
 /**
  * Main-thread facade over the LAMMPS Web Worker.
@@ -42,17 +53,34 @@ export class LammpsWorkerProxy implements LammpsWeb {
 
   // --- Bridge heap: plain ArrayBuffers the modifiers read via pointer math ---
   private capacity = 0;
+  private bondCapacity = 0;
   private heapBuffer = new ArrayBuffer(0);
   private heapF32 = new Float32Array(0);
   private heap32 = new Int32Array(0);
+  private seriesCapacity = 0;
   private posPtr = 0;
   private typePtr = 0;
   private idPtr = 0;
   private boxPtr = 0;
   private origPtr = 0;
+  private bondFirstPtr = 0;
+  private bondSecondPtr = 0;
+  private seriesBasePtr = 0;
+
+  // Per-atom float64 data for the active coloring compute lives in its own
+  // buffer (the module bridge's HEAPF64); colormodifier reads it via ptr/8.
+  private heapF64Buffer = new ArrayBuffer(0);
+  private heapF64 = new Float64Array(0);
+  private perAtomCount = 0;
+
+  // Latest streamed compute/fix/variable snapshots + where each modifier's
+  // series data landed in the bridge heap this step.
+  private cModifiers: WorkerModifierData[] = [];
+  private seriesPointers = new Map<string, SeriesPointers[]>();
 
   // --- Cached state, refreshed from worker step / runFinished events ---
   private cCount = 0;
+  private cBondCount = 0;
   private cStep = 0;
   private cDimension = 3;
   private cRunMode = 0;
@@ -60,6 +88,10 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private cRunStepsTotal = 0;
   private cRunning = false;
   private cError = "";
+  private cMemoryUsage = 0;
+  private cTimestepsPerSecond = 0;
+  private cCPURemain = 0;
+  private cWalls: Wall[] = [];
   private syncFrequency = 1;
 
   private nextRequestId = 1;
@@ -79,7 +111,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
     );
     this.worker.onmessage = (ev: MessageEvent<WorkerEvent>) =>
       this.handleEvent(ev.data);
-    this.allocate(4096);
+    this.allocate(4096, 4096, 4096);
     this.moduleBridge = this.buildModuleBridge();
   }
 
@@ -130,12 +162,27 @@ export class LammpsWorkerProxy implements LammpsWeb {
 
   // --- Bridge heap management -------------------------------------------
 
-  private allocate(capacity: number) {
+  private allocate(
+    capacity: number,
+    bondCapacity: number,
+    seriesCapacity: number,
+  ) {
     this.capacity = capacity;
+    this.bondCapacity = bondCapacity;
+    this.seriesCapacity = seriesCapacity;
     const posBytes = 3 * capacity * 4;
     const typeBytes = capacity * 4;
     const idBytes = capacity * 4;
-    const total = posBytes + typeBytes + idBytes + 9 * 4 + 3 * 4;
+    const bondBytes = 3 * bondCapacity * 4;
+    const seriesBytes = seriesCapacity * 4;
+    const total =
+      posBytes +
+      typeBytes +
+      idBytes +
+      9 * 4 +
+      3 * 4 +
+      2 * bondBytes +
+      seriesBytes;
     this.heapBuffer = new ArrayBuffer(total);
     this.heapF32 = new Float32Array(this.heapBuffer);
     this.heap32 = new Int32Array(this.heapBuffer);
@@ -144,24 +191,110 @@ export class LammpsWorkerProxy implements LammpsWeb {
     this.idPtr = posBytes + typeBytes;
     this.boxPtr = posBytes + typeBytes + idBytes;
     this.origPtr = this.boxPtr + 9 * 4;
+    this.bondFirstPtr = this.origPtr + 3 * 4;
+    this.bondSecondPtr = this.bondFirstPtr + bondBytes;
+    this.seriesBasePtr = this.bondSecondPtr + bondBytes;
   }
 
   private ingestStep(step: WorkerStepData) {
-    if (step.count > this.capacity) {
-      this.allocate(Math.max(step.count, 2 * this.capacity));
+    // Total float32 slots needed for all modifiers' series (x + y each).
+    let seriesFloats = 0;
+    for (const modifier of step.modifiers) {
+      for (const series of modifier.series) {
+        seriesFloats += series.x.length + series.y.length;
+      }
+    }
+    if (
+      step.count > this.capacity ||
+      step.bondCount > this.bondCapacity ||
+      seriesFloats > this.seriesCapacity
+    ) {
+      // Grow with headroom (double) so steadily growing counts/series (e.g.
+      // deposit examples, accumulating plots) don't reallocate every step.
+      const newCapacity =
+        step.count > this.capacity
+          ? Math.max(step.count, 2 * this.capacity)
+          : this.capacity;
+      const newBondCapacity =
+        step.bondCount > this.bondCapacity
+          ? Math.max(step.bondCount, 2 * this.bondCapacity)
+          : this.bondCapacity;
+      const newSeriesCapacity =
+        seriesFloats > this.seriesCapacity
+          ? Math.max(seriesFloats, 2 * this.seriesCapacity)
+          : this.seriesCapacity;
+      this.allocate(newCapacity, newBondCapacity, newSeriesCapacity);
     }
     this.heapF32.set(new Float32Array(step.positions), this.posPtr / 4);
     this.heap32.set(new Int32Array(step.types), this.typePtr / 4);
     this.heap32.set(new Int32Array(step.ids), this.idPtr / 4);
     this.heapF32.set(new Float32Array(step.boxMatrix), this.boxPtr / 4);
     this.heapF32.set(new Float32Array(step.origin), this.origPtr / 4);
+    if (step.bondCount > 0) {
+      this.heapF32.set(new Float32Array(step.bondFirst), this.bondFirstPtr / 4);
+      this.heapF32.set(
+        new Float32Array(step.bondSecond),
+        this.bondSecondPtr / 4,
+      );
+    }
+    this.ingestModifiers(step);
 
     this.cCount = step.count;
+    this.cBondCount = step.bondCount;
     this.cStep = step.step;
     this.cDimension = step.dimension;
     this.cRunMode = step.runMode;
     this.cRunStepsDone = step.runStepsDone;
     this.cRunStepsTotal = step.runStepsTotal;
+    this.cMemoryUsage = step.memoryUsage;
+    this.cTimestepsPerSecond = step.timestepsPerSecond;
+    this.cCPURemain = step.cpuRemain;
+    this.cWalls = step.walls;
+  }
+
+  /**
+   * Lay each streamed modifier's 1D series into the bridge heap's series
+   * region (so syncModifierEntry can read them through HEAPF32 pointers) and
+   * copy the active coloring compute's per-atom values into the HEAPF64
+   * bridge. Runs inside ingestStep, after any reallocation.
+   */
+  private ingestModifiers(step: WorkerStepData) {
+    this.cModifiers = step.modifiers;
+    this.seriesPointers.clear();
+    let offset = this.seriesBasePtr / 4; // float index into heapF32
+
+    for (const modifier of step.modifiers) {
+      const pointers: SeriesPointers[] = [];
+      for (const series of modifier.series) {
+        const xPtr = offset * 4;
+        this.heapF32.set(series.x, offset);
+        offset += series.x.length;
+        const yPtr = offset * 4;
+        this.heapF32.set(series.y, offset);
+        offset += series.y.length;
+        pointers.push({
+          name: series.name,
+          label: series.label,
+          xPtr,
+          yPtr,
+          numPoints: series.x.length,
+        });
+      }
+      this.seriesPointers.set(`${modifier.category}:${modifier.name}`, pointers);
+    }
+
+    // Per-atom float64 values for the active coloring compute.
+    if (step.perAtom) {
+      const values = new Float64Array(step.perAtom.values);
+      if (values.length > this.heapF64.length) {
+        this.heapF64Buffer = new ArrayBuffer(values.length * 8);
+        this.heapF64 = new Float64Array(this.heapF64Buffer);
+      }
+      this.heapF64.set(values);
+      this.perAtomCount = values.length;
+    } else {
+      this.perAtomCount = 0;
+    }
   }
 
   private buildModuleBridge(): AtomifyWasmModule {
@@ -235,7 +368,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
       get HEAP32() {
         return proxy.heap32;
       },
-      HEAPF64: new Float64Array(0),
+      get HEAPF64() {
+        return proxy.heapF64;
+      },
       HEAP64: new BigInt64Array(0),
       FS: fs,
       LAMMPSWeb: class {
@@ -307,6 +442,15 @@ export class LammpsWorkerProxy implements LammpsWeb {
     this.send({ type: "cancel" });
   }
 
+  /**
+   * Forward the paused state to the worker, whose LammpsAdapter owns the
+   * between-step wait loop. Setting the main thread's paused flag alone has no
+   * effect because the adapter runs in the worker with its own flag.
+   */
+  setPaused(paused: boolean) {
+    this.send({ type: "pause", paused });
+  }
+
   step() {
     // Stepping is driven by runFile inside the worker; unused here.
   }
@@ -361,13 +505,13 @@ export class LammpsWorkerProxy implements LammpsWeb {
     return this.cRunStepsTotal;
   }
   getTimestepsPerSecond() {
-    return 0;
+    return this.cTimestepsPerSecond;
   }
   getCPURemain() {
-    return 0;
+    return this.cCPURemain;
   }
   getMemoryUsage() {
-    return 0;
+    return this.cMemoryUsage;
   }
 
   // --- LammpsWeb: particles (via the bridge heap) -----------------------
@@ -394,19 +538,19 @@ export class LammpsWorkerProxy implements LammpsWeb {
     return this.cDimension;
   }
   getWalls() {
-    return cppArray<Wall>([]);
+    return cppArray<Wall>(this.cWalls);
   }
 
-  // --- LammpsWeb: bonds (slice 1: not streamed yet) ---------------------
+  // --- LammpsWeb: bonds (streamed from the worker each step) ------------
 
   computeBonds() {
-    return 0;
+    return this.cBondCount;
   }
   getBondsPosition1Pointer() {
-    return 0;
+    return this.bondFirstPtr;
   }
   getBondsPosition2Pointer() {
-    return 0;
+    return this.bondSecondPtr;
   }
   setBondDistance(type1: number, type2: number, distance: number) {
     this.send({ type: "setBondDistance", type1, type2, distance });
@@ -418,28 +562,94 @@ export class LammpsWorkerProxy implements LammpsWeb {
     this.send({ type: "setBuildNeighborlist", build });
   }
 
-  // --- LammpsWeb: computes / fixes / variables (later slice) ------------
+  // --- LammpsWeb: computes / fixes / variables (streamed snapshots) ------
 
+  // Data is already streamed each step, so the sync* calls are no-ops.
   syncComputes() {}
   syncFixes() {}
   syncVariables() {}
+
+  private modifierNames(category: ModifierCategory) {
+    return cppArray(
+      this.cModifiers
+        .filter((modifier) => modifier.category === category)
+        .map((modifier) => modifier.name),
+    );
+  }
+
   getComputeNames() {
-    return cppArray<string>([]);
+    return this.modifierNames("compute");
   }
   getFixNames() {
-    return cppArray<string>([]);
+    return this.modifierNames("fix");
   }
   getVariableNames() {
-    return cppArray<string>([]);
+    return this.modifierNames("variable");
   }
-  getCompute(): LMPModifier {
-    throw new Error("Computes are not streamed yet (later slice)");
+
+  /** Latest streamed snapshot for a modifier (read live so persisted
+   *  LMPModifier objects always reflect the current step). */
+  private modifierData(
+    category: ModifierCategory,
+    name: string,
+  ): WorkerModifierData | undefined {
+    return this.cModifiers.find(
+      (modifier) => modifier.category === category && modifier.name === name,
+    );
   }
-  getFix(): LMPModifier {
-    throw new Error("Fixes are not streamed yet (later slice)");
+
+  /**
+   * Build an LMPModifier-shaped view backed by the streamed snapshot. It reads
+   * the proxy's live data by category+name every call, so the same object can
+   * be cached across cycles by the store and still reflect the latest step.
+   */
+  private makeModifier(category: ModifierCategory, name: string): LMPModifier {
+    const proxy = this;
+    const data = () => proxy.modifierData(category, name);
+    const series = () => proxy.seriesPointers.get(`${category}:${name}`) ?? [];
+    return {
+      getName: () => name,
+      getType: () => data()?.type ?? ModifierType.ComputeOther,
+      getIsPerAtom: () => data()?.isPerAtom ?? false,
+      hasScalarData: () => data()?.hasScalar ?? false,
+      getClearPerSync: () => data()?.clearPerSync ?? false,
+      getScalarValue: () => data()?.scalar ?? 0,
+      getXLabel: () => data()?.xLabel ?? "Time",
+      getYLabel: () => data()?.yLabel ?? "Value",
+      // Data is refreshed by the streamed step, so execute/sync are no-ops.
+      execute: () => true,
+      sync: () => {},
+      getData1DNames: () => cppArray(series().map((s) => s.name)),
+      getData1D: () =>
+        cppArray<LMPData1D>(
+          series().map((s) => ({
+            getLabel: () => s.label,
+            getXValuesPointer: () => s.xPtr,
+            getYValuesPointer: () => s.yPtr,
+            getNumPoints: () => s.numPoints,
+            delete: () => {},
+          })),
+        ),
+      // Per-atom values for the active coloring compute are streamed into the
+      // HEAPF64 bridge starting at offset 0 (see ingestModifiers).
+      getPerAtomData: () => 0,
+      delete: () => {},
+    };
   }
-  getVariable(): LMPModifier {
-    throw new Error("Variables are not streamed yet (later slice)");
+
+  getCompute(name: string): LMPModifier {
+    return this.makeModifier("compute", name);
+  }
+  getFix(name: string): LMPModifier {
+    return this.makeModifier("fix", name);
+  }
+  getVariable(name: string): LMPModifier {
+    return this.makeModifier("variable", name);
+  }
+
+  /** Tell the worker which per-atom compute to stream values for (coloring). */
+  setPerAtomModifier(category: ModifierCategory, name: string | null) {
+    this.send({ type: "setPerAtomModifier", category, name });
   }
 }
 
