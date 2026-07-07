@@ -171,7 +171,21 @@ const SimulationComponent = () => {
       setTimeout(async () => {
         time_event("WASM.Load");
         const printLine = (...args: unknown[]) => onPrint(args.join(" "));
-        const { default: createModule } = await import("lammps.js/wasm-atomify");
+        // Load the atomify module as an untransformed asset (?url gives its
+        // URL; @vite-ignore stops Vite analyzing the runtime import). This is
+        // essential for the KOKKOS/pthreads build: if Vite bundles it, it
+        // splits the emscripten pthread worker into a separate ~48 MB chunk
+        // that each pthread re-fetches (failing with ERR_CACHE_WRITE_FAILURE).
+        // Loaded verbatim, emscripten spawns its pthread workers from an
+        // in-memory blob instead — no giant per-worker fetch.
+        const moduleUrl: string = (
+          (await import("lammps.js/wasm-atomify?url")) as { default: string }
+        ).default;
+        const createModule = (
+          (await import(/* @vite-ignore */ moduleUrl)) as {
+            default: typeof import("lammps.js/wasm-atomify").default;
+          }
+        ).default;
         createModule({
           print: printLine,
           printErr: printLine,
