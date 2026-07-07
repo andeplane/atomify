@@ -1,17 +1,21 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
-import createModule from "../wasm/lammps.mjs";
-import { LammpsWeb } from "../types";
+// The atomify wasm build (full LAMMPS package set: MANYBODY, REAXFF, KSPACE,
+// GRANULAR, VORONOI, COLVARS, ...) is imported dynamically below, so the
+// ~20 MB embedded module is a lazy chunk: it loads only when a simulation
+// starts, not on initial page render, and unit tests that don't drive a
+// simulation never parse it. Resolved by the bundler via lammps.js's
+// "./wasm-atomify" export; see src/wasm/lammps-atomify.d.ts for the types.
+import { LammpsAdapter } from "../wasm/lammpsAdapter";
 import { AtomifyWasmModule } from "../wasm/types";
 import { notification } from "antd";
 import { time_event, track } from "../utils/metrics";
 import {
   getWasmOrNull,
   setWasm,
-  getCancel,
-  setCancel,
   getSyncFrequency,
   setSyncFrequency,
+  setPausedFlag,
 } from "../wasm/wasmInstance";
 
 const SimulationComponent = () => {
@@ -43,11 +47,15 @@ const SimulationComponent = () => {
     (actions) => actions.simulationStatus.setHasSynchronized,
   );
   const renderCycleCounter = useRef(0);
+  const adapterRef = useRef<LammpsAdapter>(undefined);
 
   const onPrint = useCallback(
     (text: string) => {
-      if (text.includes("Atomify::canceled")) {
-        // Ignore this one
+      if (
+        text.includes("Atomify::canceled") ||
+        text.includes("JS async step callback rejected")
+      ) {
+        // Stop-button aborts, not real errors
         return;
       }
       addLammpsOutput(text);
@@ -110,11 +118,19 @@ const SimulationComponent = () => {
     simulationSettings,
   ]);
 
+  // Mirror the store's paused state into the flag the adapter's pause-wait
+  // loop reads between timesteps.
   useEffect(() => {
-    window.postStepCallback = () => {
-      if (paused && !getCancel()) {
-        return true;
-      }
+    setPausedFlag(paused);
+  }, [paused]);
+
+  useEffect(() => {
+    // Runs synchronously once per synced timestep, while the wasm module is
+    // safe to touch (see LammpsAdapter.setStepListener). Pause and cancel are
+    // handled by the adapter itself via the wasmInstance flags; rendering
+    // still runs here on the pausing step so the display matches the state
+    // the simulation actually pauses at.
+    adapterRef.current?.setStepListener(() => {
       if (lammps && wasm && simulation) {
         setHasSynchronized(true);
 
@@ -133,22 +149,14 @@ const SimulationComponent = () => {
         if (freq !== undefined) {
           lammps.setSyncFrequency(freq);
         }
-        if (getCancel()) {
-          setCancel(false);
-          setPaused(false);
-          lammps.cancel();
-        }
       }
-      return false;
-    };
+    });
   }, [
     wasm,
     lammps,
     simulation,
-    paused,
     runPostTimestep,
     runPostTimestepRendering,
-    setPaused,
     setHasSynchronized,
     simulationSettings,
   ]);
@@ -160,17 +168,13 @@ const SimulationComponent = () => {
         text: "",
         progress: 0.3,
       });
-      setTimeout(() => {
+      setTimeout(async () => {
         time_event("WASM.Load");
+        const printLine = (...args: unknown[]) => onPrint(args.join(" "));
+        const { default: createModule } = await import("lammps.js/wasm-atomify");
         createModule({
-          print: onPrint,
-          printErr: onPrint,
-          locateFile: (path: string) => {
-            if (path.endsWith(".wasm")) {
-              return import.meta.env.BASE_URL + path;
-            }
-            return path;
-          },
+          print: printLine,
+          printErr: printLine,
         }).then((Module) => {
           track("WASM.Load");
           setStatus({
@@ -178,9 +182,14 @@ const SimulationComponent = () => {
             text: "",
             progress: 0.6,
           });
-          const lammps = new Module.LAMMPSWeb();
+          const wasmModule = Module as AtomifyWasmModule;
+          const lammps = new LammpsAdapter(
+            wasmModule,
+            new wasmModule.LAMMPSWeb(),
+          );
+          adapterRef.current = lammps;
           setLammps(lammps);
-          setWasm(Module);
+          setWasm(wasmModule);
           setSyncFrequency(1);
           setStatus(undefined);
         });

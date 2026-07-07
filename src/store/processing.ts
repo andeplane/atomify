@@ -18,11 +18,12 @@ const getSimulationBox = (
   wasm: AtomifyWasmModule,
   currentBox?: THREE.Matrix3,
 ) => {
-  const cellMatrixPointer = lammps.getCellMatrixPointer() / 8;
-  const cellMatrixSubArray = wasm.HEAPF64.subarray(
+  // lammps.js exposes the box as float32 (the old wasm used float64)
+  const cellMatrixPointer = lammps.getCellMatrixPointer() / 4;
+  const cellMatrixSubArray = wasm.HEAPF32.subarray(
     cellMatrixPointer,
     cellMatrixPointer + 9,
-  ) as Float64Array;
+  ) as Float32Array;
 
   // Check if values changed
   if (currentBox) {
@@ -59,11 +60,12 @@ const getSimulationOrigo = (
   wasm: AtomifyWasmModule,
   currentOrigo?: THREE.Vector3,
 ) => {
-  const origoPointer = lammps.getOrigoPointer() / 8;
-  const origoPointerSubArray = wasm.HEAPF64.subarray(
+  // lammps.js exposes the box origin as float32 (the old wasm used float64)
+  const origoPointer = lammps.getOrigoPointer() / 4;
+  const origoPointerSubArray = wasm.HEAPF32.subarray(
     origoPointer,
     origoPointer + 3,
-  ) as Float64Array;
+  ) as Float32Array;
 
   // Check if values changed
   if (currentOrigo) {

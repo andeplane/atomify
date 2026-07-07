@@ -1,12 +1,4 @@
-import { LammpsWeb } from "../types";
+import type { LammpsModule } from "lammps.js";
 
-/**
- * Extended Emscripten module interface for Atomify's LAMMPS WASM module.
- * Adds filesystem access and LAMMPS class to the standard EmscriptenModule.
- */
-export interface AtomifyWasmModule extends EmscriptenModule {
-  FS: typeof FS;
-  LAMMPSWeb: new () => LammpsWeb;
-}
-
-
+/** The Emscripten module produced by lammps.js. */
+export type AtomifyWasmModule = LammpsModule;

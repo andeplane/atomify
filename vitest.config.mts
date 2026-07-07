@@ -5,6 +5,12 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: "./src/setupTests.ts",
+    // A few tests do heavy synchronous work (e.g. thousands of store
+    // dispatches) that can exceed the 5s default under parallel-fork
+    // contention on a loaded/2-core CI runner — surfacing as flaky timeouts
+    // even though they pass in isolation. Real failures are assertion errors,
+    // which are immediate; give slow-under-load tests comfortable headroom.
+    testTimeout: 20000,
     environmentOptions: {
       jsdom: {
         resources: "usable",

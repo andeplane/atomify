@@ -10,6 +10,11 @@ export default defineConfig({
     ...(process.env.HTTPS === "true" ? [basicSsl()] : []),
   ],
   base: "/atomify/",
+  optimizeDeps: {
+    // The lammps.js wasm module (~11 MB, embedded wasm) breaks esbuild
+    // pre-bundling; serve it as-is instead.
+    exclude: ["lammps.js"],
+  },
   build: {
     outDir: "dist",
   },

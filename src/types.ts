@@ -2,6 +2,10 @@ export type LammpsWeb = {
   getNumAtoms: () => number;
   setSyncFrequency: (every: number) => void;
   setBuildNeighborlist: (buildNeighborlist: boolean) => void;
+  /** Register a per-type-pair max bond distance for dynamic bond rendering. */
+  setBondDistance: (type1: number, type2: number, distance: number) => void;
+  /** Clear all registered dynamic-bond distances. */
+  clearBondDistances: () => void;
   getIsRunning: () => boolean;
   getErrorMessage: () => string;
   getLastCommand: () => string;
@@ -29,16 +33,15 @@ export type LammpsWeb = {
   getOrigoPointer: () => number;
   getBondsPosition1Pointer: () => number;
   getBondsPosition2Pointer: () => number;
-  getBondsDistanceMapPointer: () => number;
   getExceptionMessage: (address: number) => string;
 
   step: () => void;
   stop: () => boolean;
   start: () => boolean;
   cancel: () => void;
-  setPaused: (paused: boolean) => void;
   runCommand: (command: string) => void;
-  runFile: (path: string) => void;
+  /** Never rejects; run failures are surfaced through getErrorMessage. */
+  runFile: (path: string) => Promise<void>;
 
   computeBonds: () => number;
   computeParticles: () => number;
