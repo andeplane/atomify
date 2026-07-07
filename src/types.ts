@@ -39,8 +39,8 @@ export type LammpsWeb = {
   stop: () => boolean;
   start: () => boolean;
   cancel: () => void;
-  setPaused: (paused: boolean) => void;
   runCommand: (command: string) => void;
+  /** Never rejects; run failures are surfaced through getErrorMessage. */
   runFile: (path: string) => Promise<void>;
 
   computeBonds: () => number;

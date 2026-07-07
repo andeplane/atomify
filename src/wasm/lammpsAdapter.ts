@@ -3,6 +3,7 @@ import type {
   ParticleSnapshot,
   BondSnapshot,
   ModifierCategory,
+  ModifierInfo,
   ModifierSnapshot,
 } from "lammps.js";
 import { LammpsWeb, LMPModifier, LMPData1D, ModifierType, Wall } from "../types";
@@ -145,6 +146,9 @@ export class LammpsAdapter implements LammpsWeb {
 
   private particleSnapshot?: ParticleSnapshot;
   private bondSnapshot?: BondSnapshot;
+  // Refreshed once per sync cycle in syncComputes; modifierNames/makeModifier
+  // read it instead of crossing the wasm boundary per call.
+  private modifierInfos: ModifierInfo[] | null = null;
   private syncFrequency = 1;
   private cancelRequested = false;
   private lastError = "";
@@ -241,17 +245,22 @@ export class LammpsAdapter implements LammpsWeb {
     this.cancelRequested = true;
   }
 
-  setPaused(_paused: boolean) {
-    // Pausing is handled by the pause flag in wasmInstance (see onStep).
-  }
-
   runCommand(command: string) {
     this.native.runCommand(command);
   }
 
+  /**
+   * Never rejects: run failures (including cancellation) are stored and
+   * surfaced through getErrorMessage, which the run thunk checks after
+   * awaiting — rethrowing here would lose the Atomify::canceled marker that
+   * routes stop-button aborts away from the error path.
+   */
   async runFile(path: string): Promise<void> {
     this.lastError = "";
     this.cancelRequested = false;
+    // A stop press that landed after the previous run's last synced step
+    // leaves the global cancel flag set; don't let it abort this run.
+    setCancel(false);
 
     // Installed globally (works before the box exists), so every run in
     // every include'd file fires the step callback — no script injection.
@@ -400,6 +409,7 @@ export class LammpsAdapter implements LammpsWeb {
 
   syncComputes() {
     this.native.syncModifiers();
+    this.modifierInfos = this.native.listModifiers();
   }
 
   syncFixes() {
@@ -410,19 +420,25 @@ export class LammpsAdapter implements LammpsWeb {
     // syncComputes already refreshed the shared registry this cycle.
   }
 
+  private listModifiers(): ModifierInfo[] {
+    if (!this.modifierInfos) {
+      this.modifierInfos = this.native.listModifiers();
+    }
+    return this.modifierInfos;
+  }
+
   private modifierNames(category: ModifierCategory) {
     return cppArray(
-      this.native
-        .listModifiers()
+      this.listModifiers()
         .filter((info) => info.category === category)
         .map((info) => info.name),
     );
   }
 
   private makeModifier(category: ModifierCategory, name: string): LMPModifier {
-    const info = this.native
-      .listModifiers()
-      .find((entry) => entry.category === category && entry.name === name);
+    const info = this.listModifiers().find(
+      (entry) => entry.category === category && entry.name === name,
+    );
     return new ModifierAdapter(this.native, category, name, {
       style: info?.style ?? "",
       isPerAtom: info?.isPerAtom ?? false,

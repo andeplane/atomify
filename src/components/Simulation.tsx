@@ -127,11 +127,10 @@ const SimulationComponent = () => {
   useEffect(() => {
     // Runs synchronously once per synced timestep, while the wasm module is
     // safe to touch (see LammpsAdapter.setStepListener). Pause and cancel are
-    // handled by the adapter itself via the wasmInstance flags.
+    // handled by the adapter itself via the wasmInstance flags; rendering
+    // still runs here on the pausing step so the display matches the state
+    // the simulation actually pauses at.
     adapterRef.current?.setStepListener(() => {
-      if (paused) {
-        return;
-      }
       if (lammps && wasm && simulation) {
         setHasSynchronized(true);
 
@@ -156,7 +155,6 @@ const SimulationComponent = () => {
     wasm,
     lammps,
     simulation,
-    paused,
     runPostTimestep,
     runPostTimestepRendering,
     setHasSynchronized,
