@@ -228,7 +228,15 @@ export class LammpsAdapter implements LammpsWeb {
   start(): boolean {
     this.lastError = "";
     this.cancelRequested = false;
-    this.native.start();
+    // The atomify wasm build is a KOKKOS/pthreads build: start the Kokkos
+    // runtime with a thread per hardware core (capped at 8, the module's
+    // PTHREAD_POOL_SIZE) and apply the `kk` accelerator suffix, so styles
+    // with a /kk variant run multithreaded and the rest fall back to serial.
+    const threads = Math.min(
+      Math.max(1, navigator.hardwareConcurrency || 4),
+      8,
+    );
+    this.native.startWithArgs(["-k", "on", "t", String(threads), "-sf", "kk"]);
     return true;
   }
 
