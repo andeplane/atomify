@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
-import createModule from "lammps.js";
+// The atomify wasm build (full LAMMPS package set: MANYBODY, REAXFF, KSPACE,
+// GRANULAR, VORONOI, COLVARS, ...) is imported dynamically below, so the
+// ~20 MB embedded module is a lazy chunk: it loads only when a simulation
+// starts, not on initial page render, and unit tests that don't drive a
+// simulation never parse it. Resolved by the bundler via lammps.js's
+// "./wasm-atomify" export; see src/wasm/lammps-atomify.d.ts for the types.
 import { LammpsAdapter } from "../wasm/lammpsAdapter";
 import { AtomifyWasmModule } from "../wasm/types";
 import { notification } from "antd";
@@ -165,9 +170,10 @@ const SimulationComponent = () => {
         text: "",
         progress: 0.3,
       });
-      setTimeout(() => {
+      setTimeout(async () => {
         time_event("WASM.Load");
         const printLine = (...args: unknown[]) => onPrint(args.join(" "));
+        const { default: createModule } = await import("lammps.js/wasm-atomify");
         createModule({
           print: printLine,
           printErr: printLine,

@@ -20,6 +20,15 @@ Object.defineProperty(window, "matchMedia", {
   }),
 });
 
+// Unit tests never run real LAMMPS. Stub the (large, embedded) atomify wasm
+// module so mounting the app / Simulation component doesn't decode ~20 MB into
+// jsdom — that starved parallel CPU-bound tests into 5s timeouts. createModule
+// returns a promise that never resolves, so the app simply stays in its
+// "Downloading LAMMPS ..." state, which is all a render smoke test needs.
+vi.mock("lammps.js/wasm-atomify", () => ({
+  default: () => new Promise(() => {}),
+}));
+
 // Mock Monaco Editor loader to prevent it from trying to load in test environment
 vi.mock("@monaco-editor/react", () => ({
   default: vi.fn(() => null),
