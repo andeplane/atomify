@@ -9,6 +9,7 @@ import type {
 import { LammpsWeb, LMPModifier, LMPData1D, ModifierType, Wall } from "../types";
 import { AtomifyWasmModule } from "./types";
 import { getCancel, setCancel, getPausedFlag } from "./wasmInstance";
+import type { WorkerModifierData, WorkerPerAtomData } from "./workerMessages";
 
 /**
  * Adapts the lammps.js native LAMMPSWeb API to the LammpsWeb interface the
@@ -150,9 +151,23 @@ export class LammpsAdapter implements LammpsWeb {
   // read it instead of crossing the wasm boundary per call.
   private modifierInfos: ModifierInfo[] | null = null;
   private syncFrequency = 1;
+  // KOKKOS threads for the constant startup args: one per core, capped at the
+  // module's PTHREAD_POOL_SIZE (8).
+  private readonly kokkosThreads = Math.min(
+    Math.max(
+      1,
+      (typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 4,
+    ),
+    8,
+  );
   private cancelRequested = false;
   private lastError = "";
   private stepListener?: () => void;
+  // Single-shot resolver for the active runFile promise. Cancellation resolves
+  // it directly (see requestGracefulStop) because native.stop()'s asyncify
+  // unwind can leave native.runFile()'s own promise permanently unsettled.
+  private runFinishResolve: (() => void) | null = null;
+  private runFinished = true;
 
   constructor(module: AtomifyWasmModule, native: NativeLammps) {
     this.module = module;
@@ -194,9 +209,16 @@ export class LammpsAdapter implements LammpsWeb {
   /**
    * Runs once per synced timestep (from fix js/async): first the synchronous
    * step listener (rendering + UI sync), then a promise that yields to the
-   * event loop, waits while paused, and rejects on cancel — a rejected
-   * promise makes fix js/async raise a LAMMPS error, aborting the run.
-   * The wait loop must not touch the wasm module (see setStepListener).
+   * event loop and waits while paused.
+   *
+   * Stopping does NOT reject the promise. Rejecting makes fix js/async raise a
+   * LAMMPS error, and on the atomify KOKKOS build the error-reporting glue
+   * (lammpsweb_throw_error -> UTF8ToString) crashes on a BigInt pointer,
+   * corrupting the asyncify state machine so the run never settles and no
+   * further simulation can start. Instead, cancellation issues LAMMPS'
+   * `timer timeout 0` here in the safe (non-suspended) window, which ends the
+   * active run cleanly at the next timestep with no thrown error. The wait
+   * loop itself must never touch the wasm module (see setStepListener).
    */
   private onStep(): Promise<void> {
     try {
@@ -205,13 +227,23 @@ export class LammpsAdapter implements LammpsWeb {
       // A rendering/UI failure should not abort the simulation.
       console.error("Step listener failed:", error);
     }
-    return new Promise<void>((resolve, reject) => {
+
+    // Safe synchronous window: if a stop was requested, gracefully halt the
+    // active run here rather than rejecting later (which would throw in wasm).
+    if (this.cancelRequested || getCancel()) {
+      setCancel(false);
+      this.cancelRequested = false;
+      this.lastError = CANCEL_MESSAGE;
+      this.requestGracefulStop();
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve) => {
       const wait = () => {
+        // A stop pressed while paused: unblock so the next (safe, synchronous)
+        // step can issue the graceful stop; leave the cancel flag set for it.
         if (this.cancelRequested || getCancel()) {
-          setCancel(false);
-          this.cancelRequested = false;
-          this.lastError = CANCEL_MESSAGE;
-          reject(new Error(CANCEL_MESSAGE));
+          resolve();
           return;
         }
         if (getPausedFlag()) {
@@ -225,10 +257,57 @@ export class LammpsAdapter implements LammpsWeb {
     });
   }
 
+  /**
+   * Ask LAMMPS to end the currently running command. native.stop() sets the
+   * run's early-termination flag, so the run loop breaks out at the next
+   * timestep and LAMMPS returns normally (unlike rejecting the fix js/async
+   * promise, which throws and crashes this build's error glue). Safe to call
+   * only from the synchronous step window.
+   *
+   * On this ASYNCIFY build, native.stop()'s unwind surfaces a "function
+   * signature mismatch" that leaves native.runFile()'s promise permanently
+   * unsettled — but the wasm run itself has finished (LAMMPS prints its run
+   * summary). So after a short grace period we resolve the runFile promise
+   * ourselves, letting the next run start; finishRun() is idempotent, so a
+   * late settle of the original promise is harmless.
+   */
+  private requestGracefulStop() {
+    try {
+      this.native.stop();
+    } catch (error) {
+      console.error("Failed to request graceful stop:", error);
+    }
+    setTimeout(() => this.finishRun(), 300);
+  }
+
+  /** Resolve the active runFile promise exactly once. */
+  private finishRun() {
+    if (this.runFinished) return;
+    this.runFinished = true;
+    const resolve = this.runFinishResolve;
+    this.runFinishResolve = null;
+    resolve?.();
+  }
+
   start(): boolean {
     this.lastError = "";
     this.cancelRequested = false;
-    this.native.start();
+    // Startup args are CONSTANT for the module's whole life: Kokkos::initialize
+    // is one-shot per wasm module, so the mode can never change between runs
+    // (changing it deadlocks/crashes the next run). With `-sf kk` always on,
+    // per-simulation acceleration is decided by the SCRIPT instead: opted-in
+    // scripts (a `suffix kk` line) run fully accelerated as-is, and all other
+    // scripts are preprocessed with `suffix off` + a kk-wrapped atom_style so
+    // their styles run serially (measured: same speed as a true serial build).
+    // See src/utils/kokkos.ts.
+    this.native.startWithArgs([
+      "-k",
+      "on",
+      "t",
+      String(this.kokkosThreads),
+      "-sf",
+      "kk",
+    ]);
     return true;
   }
 
@@ -245,6 +324,34 @@ export class LammpsAdapter implements LammpsWeb {
     this.cancelRequested = true;
   }
 
+  /**
+   * Reset LAMMPS to a pristine state between runs without re-initializing the
+   * process-wide Kokkos runtime. The LAMMPS `clear` command destroys and
+   * recreates the internal LAMMPS object (deleting all atoms, computes, fixes
+   * and the simulation box) while preserving the mode start() chose (KOKKOS
+   * `-k on -sf kk`, or serial), so the next run is fresh in the same mode.
+   * Kokkos::initialize is only called once (in start()); calling it twice
+   * would crash, which is why we reset via `clear` rather than re-running
+   * startWithArgs.
+   */
+  reset() {
+    // Re-open LAMMPS from scratch via startWithArgs (the same call start()
+    // makes). This recreates the LAMMPS instance with the same Kokkos/suffix
+    // command-line args — Kokkos::initialize is guarded, so the thread pool is
+    // reused, not re-initialized — and, crucially, clears native.stop()'s
+    // latched stop flag so the next run actually advances. (LAMMPS `clear`
+    // does not reset that wrapper-level flag, leaving the next run to
+    // terminate immediately at step 0.) The async step callback lives on the
+    // persistent wrapper and survives, so it must NOT be re-registered here —
+    // doing so traps the next run with a "function signature mismatch".
+    this.start();
+    this.particleSnapshot = undefined;
+    this.bondSnapshot = undefined;
+    this.modifierInfos = null;
+    this.lastError = "";
+    this.cancelRequested = false;
+  }
+
   runCommand(command: string) {
     this.native.runCommand(command);
   }
@@ -255,9 +362,10 @@ export class LammpsAdapter implements LammpsWeb {
    * awaiting — rethrowing here would lose the Atomify::canceled marker that
    * routes stop-button aborts away from the error path.
    */
-  async runFile(path: string): Promise<void> {
+  runFile(path: string): Promise<void> {
     this.lastError = "";
     this.cancelRequested = false;
+    this.runFinished = false;
     // A stop press that landed after the previous run's last synced step
     // leaves the global cancel flag set; don't let it abort this run.
     setCancel(false);
@@ -266,18 +374,26 @@ export class LammpsAdapter implements LammpsWeb {
     // every include'd file fires the step callback — no script injection.
     this.native.installAsyncFix(SYNC_FIX_ID, this.syncFrequency);
 
-    try {
+    return new Promise<void>((resolve) => {
+      this.runFinishResolve = resolve;
       // Under ASYNCIFY the embind call returns a promise when it suspends.
-      await Promise.resolve(
+      // A normal completion resolves here; a cancellation is resolved early
+      // by requestGracefulStop (the promise below may never settle then).
+      Promise.resolve(
         this.native.runFile(path) as unknown as Promise<void> | undefined,
+      ).then(
+        () => this.finishRun(),
+        (error) => {
+          // Cancellation surfaces as the fix js/async abort error; keep the
+          // canceled marker the store logic looks for in that case.
+          if (this.lastError !== CANCEL_MESSAGE) {
+            this.lastError =
+              error instanceof Error ? error.message : String(error);
+          }
+          this.finishRun();
+        },
       );
-    } catch (error) {
-      // Cancellation surfaces as the fix js/async abort error; keep the
-      // canceled marker the store logic looks for in that case.
-      if (this.lastError !== CANCEL_MESSAGE) {
-        this.lastError = error instanceof Error ? error.message : String(error);
-      }
-    }
+    });
   }
 
   setSyncFrequency(every: number) {
@@ -459,6 +575,75 @@ export class LammpsAdapter implements LammpsWeb {
 
   getVariableNames() {
     return this.modifierNames("variable");
+  }
+
+  /**
+   * Snapshot every tracked compute/fix/variable — invoking each and copying
+   * its scalar and 1D series out of the wasm heap — plus, when a per-atom
+   * coloring target is set, that compute's per-atom float64 values. Used by
+   * the worker to stream analysis + coloring data to the main thread, where
+   * the proxy replays it through lightweight LMPModifier-shaped objects.
+   * Must run in the synchronous step window (touches the heap).
+   */
+  snapshotModifiers(
+    perAtomTarget: { category: ModifierCategory; name: string } | null,
+  ): { modifiers: WorkerModifierData[]; perAtom: WorkerPerAtomData | null } {
+    this.native.syncModifiers();
+    const infos = this.native.listModifiers();
+    this.modifierInfos = infos;
+
+    const modifiers: WorkerModifierData[] = infos.map((info) => {
+      const snap = this.native.syncModifier(info.category, info.name);
+      const series = (snap?.series ?? []).map((s) => {
+        const xBase = s.x.ptr / 4;
+        const yBase = s.y.ptr / 4;
+        return {
+          name: s.name,
+          label: s.label,
+          x: Array.from(this.module.HEAPF32.subarray(xBase, xBase + s.x.length)),
+          y: Array.from(this.module.HEAPF32.subarray(yBase, yBase + s.y.length)),
+        };
+      });
+      return {
+        name: info.name,
+        category: info.category,
+        type: modifierType(info.category, info.style),
+        style: info.style,
+        isPerAtom: snap?.isPerAtom ?? info.isPerAtom,
+        hasScalar: snap?.hasScalar ?? info.hasScalar,
+        clearPerSync: snap?.clearPerSync ?? info.clearPerSync,
+        xLabel: snap?.xLabel ?? info.xLabel,
+        yLabel: snap?.yLabel ?? info.yLabel,
+        scalar: snap?.scalar ?? 0,
+        series,
+      };
+    });
+
+    let perAtom: WorkerPerAtomData | null = null;
+    if (perAtomTarget) {
+      const info = infos.find(
+        (i) =>
+          i.category === perAtomTarget.category &&
+          i.name === perAtomTarget.name,
+      );
+      if (info?.isPerAtom) {
+        const view = this.native.getModifierPerAtom(
+          perAtomTarget.category,
+          perAtomTarget.name,
+        );
+        const base = view.ptr / 8;
+        const values = new Float64Array(
+          this.module.HEAPF64.subarray(base, base + view.length),
+        );
+        perAtom = {
+          category: perAtomTarget.category,
+          name: perAtomTarget.name,
+          values: values.buffer,
+        };
+      }
+    }
+
+    return { modifiers, perAtom };
   }
 
   getCompute(name: string): LMPModifier {

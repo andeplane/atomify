@@ -1,3 +1,6 @@
+# Large system: run with KOKKOS multithreading (Atomify detects this line)
+suffix kk
+
 # 2d LJ crack simulation
 #/camera position 55 40 115
 #/camera target 55 40 0

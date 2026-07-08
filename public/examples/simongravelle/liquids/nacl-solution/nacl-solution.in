@@ -1,3 +1,6 @@
+# Large system: run with KOKKOS multithreading (Atomify detects this line)
+suffix kk
+
 #/atom 1 oxygen
 #/atom 2 hydrogen
 #/atom 3 sodium

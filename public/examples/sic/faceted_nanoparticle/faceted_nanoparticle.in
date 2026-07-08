@@ -1,3 +1,6 @@
+# Large system: run with KOKKOS multithreading (Atomify detects this line)
+suffix kk
+
 #/atom 1 silicon
 #/atom 2 carbon
 #/bond 1 2 2.9
