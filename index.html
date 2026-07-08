@@ -8,6 +8,20 @@
   <meta name="theme-color" content="#000000" />
   <link rel="manifest" href="/manifest.json" />
   <title>Atomify LAMMPS - a real time simulator in the browser</title>
+
+  <!--
+    Cross-origin isolation for SharedArrayBuffer, which the atomify
+    (KOKKOS/pthreads) wasm build requires. GitHub Pages can't set COOP/COEP
+    response headers, so this service-worker shim injects them on the client
+    (the page reloads once on first visit). COEP credentialless keeps
+    cross-origin subresources (imported example files, etc.) working without
+    requiring CORP headers. In dev, vite sets the same headers directly.
+    Must load before the app module.
+  -->
+  <script>
+    window.coi = { coepCredentialless: () => true };
+  </script>
+  <script src="/atomify/coi-serviceworker.min.js"></script>
 </head>
 
 <body>
