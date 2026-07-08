@@ -24,15 +24,6 @@ export type LammpsWeb = {
   syncComputes: () => void;
   syncFixes: () => void;
   syncVariables: () => void;
-  /**
-   * Select the per-atom compute whose values are streamed for color-by-compute.
-   * Only implemented by the worker proxy (the main-thread adapter reads per-atom
-   * data directly, so it has nothing to do); optional for other implementations.
-   */
-  setPerAtomModifier?: (
-    category: "compute" | "fix" | "variable",
-    name: string | null,
-  ) => void;
   getMemoryUsage: () => number;
 
   getPositionsPointer: () => number;
