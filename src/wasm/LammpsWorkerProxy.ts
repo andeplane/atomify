@@ -393,11 +393,17 @@ export class LammpsWorkerProxy implements LammpsWeb {
   /** Load the module in the worker and start Kokkos. Idempotent. */
   load(): Promise<void> {
     if (!this.readyPromise) {
-      this.readyPromise = new Promise<void>((resolve) => {
+      this.readyPromise = new Promise<void>((resolve, reject) => {
         const onMessage = (ev: MessageEvent<WorkerEvent>) => {
           if (ev.data.type === "ready") {
             this.worker.removeEventListener("message", onMessage);
             resolve();
+          } else if (ev.data.type === "error") {
+            // A failure during load() posts `error` instead of `ready`; reject
+            // so the caller can show it, rather than hanging forever at
+            // "Downloading LAMMPS…".
+            this.worker.removeEventListener("message", onMessage);
+            reject(new Error(ev.data.message));
           }
         };
         this.worker.addEventListener("message", onMessage);

@@ -184,19 +184,35 @@ const SimulationComponent = () => {
     // heap instead of a real main-thread module.
     const proxy = new LammpsWorkerProxy();
     proxy.onPrint(onPrint);
+    // Surface worker/LAMMPS errors in the console panel rather than only the
+    // devtools console.
+    proxy.onError((message) => onPrint(message));
     proxyRef.current = proxy;
-    proxy.load().then(() => {
-      track("WASM.Load");
-      setStatus({
-        title: "Downloading LAMMPS ...",
-        text: "",
-        progress: 0.6,
+    proxy
+      .load()
+      .then(() => {
+        track("WASM.Load");
+        setStatus({
+          title: "Downloading LAMMPS ...",
+          text: "",
+          progress: 0.6,
+        });
+        setWasm(proxy.getModule());
+        setLammps(proxy);
+        setSyncFrequency(1);
+        setStatus(undefined);
+      })
+      .catch((error: unknown) => {
+        // The module failed to load — don't leave the UI stuck on the
+        // "Downloading LAMMPS …" spinner with no explanation.
+        const message = error instanceof Error ? error.message : String(error);
+        onPrint(`Failed to load LAMMPS: ${message}`);
+        setStatus(undefined);
+        notification.error({
+          message: "Failed to load LAMMPS",
+          description: message,
+        });
       });
-      setWasm(proxy.getModule());
-      setLammps(proxy);
-      setSyncFrequency(1);
-      setStatus(undefined);
-    });
   }, [onPrint, setLammps, setStatus]);
   return <></>;
 };

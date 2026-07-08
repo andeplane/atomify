@@ -235,22 +235,31 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
         hasStartedARun = true;
         adapter?.setStepListener(streamStep);
         break;
-      case "runFile":
-        if (adapter) {
-          await adapter.runFile(cmd.path);
+      case "runFile": {
+        // Always answer with runFinished (even on throw) so the proxy's
+        // runFile promise — and the store's `await lammps.runFile` — can never
+        // strand if something on the run path unexpectedly rejects.
+        const { requestId } = cmd;
+        try {
+          if (adapter) {
+            await adapter.runFile(cmd.path);
+          }
+        } catch (error) {
           post({
-            type: "runFinished",
-            requestId: cmd.requestId,
-            error: adapter.getErrorMessage(),
+            type: "error",
+            message: error instanceof Error ? error.message : String(error),
           });
-        } else {
+        } finally {
           post({
             type: "runFinished",
-            requestId: cmd.requestId,
-            error: "LAMMPS module not loaded",
+            requestId,
+            error: adapter
+              ? adapter.getErrorMessage()
+              : "LAMMPS module not loaded",
           });
         }
         break;
+      }
       case "cancel":
         adapter?.cancel();
         break;
