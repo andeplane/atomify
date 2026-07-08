@@ -390,11 +390,8 @@ export class LammpsWorkerProxy implements LammpsWeb {
     return this.moduleBridge;
   }
 
-  /**
-   * Load the module in the worker and start LAMMPS. Idempotent. `kokkos=false`
-   * starts serially (no Kokkos runtime) for A/B performance comparison.
-   */
-  load(kokkos = true): Promise<void> {
+  /** Load the module in the worker and start LAMMPS. Idempotent. */
+  load(): Promise<void> {
     if (!this.readyPromise) {
       this.readyPromise = new Promise<void>((resolve, reject) => {
         const onMessage = (ev: MessageEvent<WorkerEvent>) => {
@@ -410,7 +407,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
           }
         };
         this.worker.addEventListener("message", onMessage);
-        this.send({ type: "load", kokkos });
+        this.send({ type: "load" });
       });
     }
     return this.readyPromise;
@@ -479,7 +476,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
   }
 
   setSyncFrequency(every: number) {
-    if (every <= 0) return;
+    if (every <= 0 || every === this.syncFrequency) return;
     this.syncFrequency = every;
     this.send({ type: "setSyncFrequency", every });
   }

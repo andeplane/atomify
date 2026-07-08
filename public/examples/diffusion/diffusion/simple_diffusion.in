@@ -1,3 +1,6 @@
+# Large system: run with KOKKOS multithreading (Atomify detects this line)
+suffix kk
+
 # Atomify commands start with #/
 
 # Move camera to a nice position

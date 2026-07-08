@@ -1,3 +1,6 @@
+# Large system: run with KOKKOS multithreading (Atomify detects this line)
+suffix kk
+
 # Tell Atomify where initial camera position should be
 #/camera position 30 50 90
 #/camera target 30 30 30

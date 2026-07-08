@@ -182,10 +182,6 @@ const SimulationComponent = () => {
     // interface; the store and modifier/render pipeline keep reading data
     // through the usual heap-pointer path, now backed by the streamed bridge
     // heap instead of a real main-thread module.
-    // ?kokkos=false starts LAMMPS serially (no Kokkos runtime) so a run can be
-    // compared against the multithreaded default; any other value enables it.
-    const kokkosEnabled =
-      new URLSearchParams(window.location.search).get("kokkos") !== "false";
     const proxy = new LammpsWorkerProxy();
     proxy.onPrint(onPrint);
     // Surface worker/LAMMPS errors in the console panel rather than only the
@@ -193,7 +189,7 @@ const SimulationComponent = () => {
     proxy.onError((message) => onPrint(message));
     proxyRef.current = proxy;
     proxy
-      .load(kokkosEnabled)
+      .load()
       .then(() => {
         track("WASM.Load");
         setStatus({

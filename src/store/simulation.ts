@@ -4,6 +4,10 @@ import { LammpsWeb } from "../types";
 import { AtomTypes, AtomType, hexToRgb } from "../utils/atomtypes";
 import AnalyzeNotebook from "../utils/AnalyzeNotebook";
 import { track, time_event, getEmbeddingParams } from "../utils/metrics";
+import {
+  scriptOptsIntoKokkos,
+  prepareScriptForSerialStyles,
+} from "../utils/kokkos";
 import * as THREE from "three";
 import localforage from "localforage";
 import ColorModifier from "../modifiers/colormodifier";
@@ -305,10 +309,23 @@ export const simulationModel: SimulationModel = {
       }
 
       const wasm = getWasm();
+      // KOKKOS is opt-in per simulation (a `suffix kk` line in the input
+      // script). Non-opted simulations get their command files preprocessed at
+      // write time so their styles run serially under the always-on `-sf kk`
+      // module; the store/editor keep the original text. See utils/kokkos.ts.
+      const inputContent =
+        simulation.files.find((f) => f.fileName === simulation.inputScript)
+          ?.content ?? "";
+      const kokkosOptIn = scriptOptsIntoKokkos(inputContent);
       for (const file of simulation.files) {
         // Update all files if no fileName is specified
         if ((file.fileName === fileName || !fileName) && file.content) {
-          wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, file.content);
+          const content = kokkosOptIn
+            ? file.content
+            : prepareScriptForSerialStyles(file.content, {
+                isMainScript: file.fileName === simulation.inputScript,
+              });
+          wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, content);
         }
       }
     },
@@ -510,13 +527,15 @@ export const simulationModel: SimulationModel = {
         });
       }
 
-      // Inject URL variables and determine script to run
+      // Inject URL variables and determine script to run. Must feed
+      // prepareVarsScript the same (possibly serial-preprocessed) content that
+      // syncFilesWasm wrote, so the vars-wrapper path matches the direct path.
       const wasm = getWasm();
-      const scriptToRun = prepareVarsScript(
-        simulation,
-        inputScriptFile.content ?? "",
-        wasm,
-      );
+      const rawContent = inputScriptFile.content ?? "";
+      const runContent = scriptOptsIntoKokkos(rawContent)
+        ? rawContent
+        : prepareScriptForSerialStyles(rawContent, { isMainScript: true });
+      const scriptToRun = prepareVarsScript(simulation, runContent, wasm);
 
       let errorMessage: string | undefined = undefined;
       const startTime = performance.now();

@@ -39,6 +39,35 @@ function post(event: WorkerEvent, transfer?: Transferable[]) {
   ctx.postMessage(event, transfer ?? []);
 }
 
+// Commands that call into compiled wasm must NOT run while a run is active:
+// between step callbacks the module is asyncify-suspended (emscripten_sleep),
+// and re-entering a suspended module corrupts the asyncify state — the run's
+// final rewind is then lost, runFile never settles, and the app wedges after
+// the run completes (reproduced deterministically with setAsyncStepFrequency
+// landing between steps). Defer such commands to the next safe step window
+// (streamStep runs inside the step callback) or to run end.
+let runActive = false;
+const deferredNativeCalls: Array<() => void> = [];
+function callNativeSafely(fn: () => void) {
+  if (runActive) {
+    deferredNativeCalls.push(fn);
+  } else {
+    fn();
+  }
+}
+function flushDeferredNativeCalls() {
+  while (deferredNativeCalls.length) {
+    try {
+      deferredNativeCalls.shift()!();
+    } catch (error) {
+      post({
+        type: "error",
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+}
+
 // Stopping a run via native.stop() ends the run cleanly (LAMMPS prints its
 // summary and the adapter resolves runFile), but this build's ASYNCIFY unwind
 // then rejects an internal promise with "function signature mismatch". That
@@ -77,6 +106,9 @@ function mkdirp(path: string) {
  */
 function streamStep() {
   if (!module || !native) return;
+  // Safe window: the wasm is not suspended here. Apply any commands that
+  // arrived (deferred) while it was.
+  flushDeferredNativeCalls();
   const particles: ParticleSnapshot = native.syncParticlesWrapped();
   const count = particles.count;
 
@@ -160,7 +192,7 @@ function streamStep() {
   );
 }
 
-async function load(kokkos: boolean) {
+async function load() {
   if (module) {
     post({ type: "ready" });
     return;
@@ -195,17 +227,9 @@ async function load(kokkos: boolean) {
   })) as AtomifyWasmModule;
   native = new module.LAMMPSWeb();
   adapter = new LammpsAdapter(module, native);
-  // Choose serial vs KOKKOS before the first start() (Kokkos::initialize
-  // happens there and is one-shot). ?kokkos=false runs fully serial so you can
-  // A/B the same simulation against the multithreaded default.
-  if (!kokkos) {
-    adapter.setKokkos(null);
-    printLine("Atomify: KOKKOS disabled (serial) via ?kokkos=false");
-  } else {
-    printLine("Atomify: KOKKOS enabled (multithreaded)");
-  }
-  // Start the runtime once, here in the worker where the pthread handshake
-  // can block.
+  // Start the Kokkos runtime once, here in the worker where the pthread
+  // handshake can block. Startup args are constant for the module's life;
+  // per-simulation acceleration is decided by the script (see utils/kokkos.ts).
   adapter.start();
   adapter.setStepListener(streamStep);
   post({ type: "ready" });
@@ -216,7 +240,7 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
   try {
     switch (cmd.type) {
       case "load":
-        await load(cmd.kokkos);
+        await load();
         break;
       case "writeFile":
         if (module) {
@@ -249,6 +273,7 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
         // runFile promise — and the store's `await lammps.runFile` — can never
         // strand if something on the run path unexpectedly rejects.
         const { requestId } = cmd;
+        runActive = true;
         try {
           if (adapter) {
             await adapter.runFile(cmd.path);
@@ -259,6 +284,10 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
             message: error instanceof Error ? error.message : String(error),
           });
         } finally {
+          runActive = false;
+          // Run is over (wasm no longer suspended): apply commands that
+          // arrived after the last step callback.
+          flushDeferredNativeCalls();
           post({
             type: "runFinished",
             requestId,
@@ -277,16 +306,18 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
         setPausedFlag(cmd.paused);
         break;
       case "setSyncFrequency":
-        adapter?.setSyncFrequency(cmd.every);
+        callNativeSafely(() => adapter?.setSyncFrequency(cmd.every));
         break;
       case "setBuildNeighborlist":
-        adapter?.setBuildNeighborlist(cmd.build);
+        callNativeSafely(() => adapter?.setBuildNeighborlist(cmd.build));
         break;
       case "setBondDistance":
-        adapter?.setBondDistance(cmd.type1, cmd.type2, cmd.distance);
+        callNativeSafely(() =>
+          adapter?.setBondDistance(cmd.type1, cmd.type2, cmd.distance),
+        );
         break;
       case "clearBondDistances":
-        adapter?.clearBondDistances();
+        callNativeSafely(() => adapter?.clearBondDistances());
         break;
       case "setPerAtomModifier":
         perAtomTarget = cmd.name
@@ -294,7 +325,7 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
           : null;
         break;
       case "runCommand":
-        adapter?.runCommand(cmd.command);
+        callNativeSafely(() => adapter?.runCommand(cmd.command));
         break;
     }
   } catch (error) {

@@ -1,3 +1,6 @@
+# Large system: run with KOKKOS multithreading (Atomify detects this line)
+suffix kk
+
 #/atom 1 2.0 #a1a1a1
 #/atom 2 4.0 #6EBFC0
 
