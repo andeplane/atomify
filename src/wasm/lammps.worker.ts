@@ -160,7 +160,7 @@ function streamStep() {
   );
 }
 
-async function load() {
+async function load(kokkos: boolean) {
   if (module) {
     post({ type: "ready" });
     return;
@@ -195,8 +195,17 @@ async function load() {
   })) as AtomifyWasmModule;
   native = new module.LAMMPSWeb();
   adapter = new LammpsAdapter(module, native);
-  // Start the Kokkos runtime (thread pool + kk suffix) once, here in the
-  // worker where the pthread handshake can block.
+  // Choose serial vs KOKKOS before the first start() (Kokkos::initialize
+  // happens there and is one-shot). ?kokkos=false runs fully serial so you can
+  // A/B the same simulation against the multithreaded default.
+  if (!kokkos) {
+    adapter.setKokkos(null);
+    printLine("Atomify: KOKKOS disabled (serial) via ?kokkos=false");
+  } else {
+    printLine("Atomify: KOKKOS enabled (multithreaded)");
+  }
+  // Start the runtime once, here in the worker where the pthread handshake
+  // can block.
   adapter.start();
   adapter.setStepListener(streamStep);
   post({ type: "ready" });
@@ -207,7 +216,7 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
   try {
     switch (cmd.type) {
       case "load":
-        await load();
+        await load(cmd.kokkos);
         break;
       case "writeFile":
         if (module) {

@@ -16,7 +16,8 @@ import type { ModifierType } from "../types";
 
 /** Commands sent from the main thread to the worker. */
 export type WorkerCommand =
-  | { type: "load" }
+  // kokkos=false starts LAMMPS serially (no Kokkos runtime) for A/B testing.
+  | { type: "load"; kokkos: boolean }
   | { type: "writeFile"; path: string; content: string | Uint8Array }
   | { type: "mkdir"; path: string }
   | { type: "chdir"; path: string }

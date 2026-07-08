@@ -151,6 +151,16 @@ export class LammpsAdapter implements LammpsWeb {
   // read it instead of crossing the wasm boundary per call.
   private modifierInfos: ModifierInfo[] | null = null;
   private syncFrequency = 1;
+  // KOKKOS threads applied by start()/reset(); null runs serial (no `-k on`
+  // / `-sf kk`), which powers the ?kokkos=false A/B comparison. Defaults to
+  // one thread per core, capped at the module's PTHREAD_POOL_SIZE (8).
+  private kokkosThreads: number | null = Math.min(
+    Math.max(
+      1,
+      (typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 4,
+    ),
+    8,
+  );
   private cancelRequested = false;
   private lastError = "";
   private stepListener?: () => void;
@@ -280,18 +290,41 @@ export class LammpsAdapter implements LammpsWeb {
     resolve?.();
   }
 
+  /**
+   * Choose the KOKKOS mode for subsequent start()/reset() calls. `threads`
+   * null runs fully serial (no Kokkos runtime, styles use their default
+   * implementations); a number enables `-k on t <threads> -sf kk`. Must be set
+   * before the first start(), since Kokkos::initialize happens there.
+   */
+  setKokkos(threads: number | null) {
+    this.kokkosThreads = threads;
+  }
+
+  /** Whether the running instance was started with the Kokkos runtime. */
+  isKokkosEnabled() {
+    return this.kokkosThreads !== null;
+  }
+
   start(): boolean {
     this.lastError = "";
     this.cancelRequested = false;
-    // The atomify wasm build is a KOKKOS/pthreads build: start the Kokkos
-    // runtime with a thread per hardware core (capped at 8, the module's
-    // PTHREAD_POOL_SIZE) and apply the `kk` accelerator suffix, so styles
-    // with a /kk variant run multithreaded and the rest fall back to serial.
-    const threads = Math.min(
-      Math.max(1, navigator.hardwareConcurrency || 4),
-      8,
-    );
-    this.native.startWithArgs(["-k", "on", "t", String(threads), "-sf", "kk"]);
+    if (this.kokkosThreads === null) {
+      // Serial: no Kokkos runtime; every style uses its default (non-kk)
+      // implementation. Used by ?kokkos=false to compare against the pool.
+      this.native.start();
+    } else {
+      // KOKKOS/pthreads: start the runtime with one thread per core (capped at
+      // the module's PTHREAD_POOL_SIZE of 8) and the `kk` accelerator suffix,
+      // so styles with a /kk variant run multithreaded and the rest fall back.
+      this.native.startWithArgs([
+        "-k",
+        "on",
+        "t",
+        String(this.kokkosThreads),
+        "-sf",
+        "kk",
+      ]);
+    }
     return true;
   }
 
@@ -312,11 +345,11 @@ export class LammpsAdapter implements LammpsWeb {
    * Reset LAMMPS to a pristine state between runs without re-initializing the
    * process-wide Kokkos runtime. The LAMMPS `clear` command destroys and
    * recreates the internal LAMMPS object (deleting all atoms, computes, fixes
-   * and the simulation box) while preserving the command-line settings from
-   * start() — including `-k on` and the `-sf kk` accelerator suffix — so the
-   * next run is fresh but still multithreaded. Kokkos::initialize is only
-   * called once (in start()); calling it twice would crash, which is why we
-   * reset via `clear` rather than re-running startWithArgs.
+   * and the simulation box) while preserving the mode start() chose (KOKKOS
+   * `-k on -sf kk`, or serial), so the next run is fresh in the same mode.
+   * Kokkos::initialize is only called once (in start()); calling it twice
+   * would crash, which is why we reset via `clear` rather than re-running
+   * startWithArgs.
    */
   reset() {
     // Re-open LAMMPS from scratch via startWithArgs (the same call start()
