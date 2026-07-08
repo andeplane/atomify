@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
-// The atomify wasm build (full LAMMPS package set: MANYBODY, REAXFF, KSPACE,
-// GRANULAR, VORONOI, COLVARS, ...) is imported dynamically below, so the
-// ~20 MB embedded module is a lazy chunk: it loads only when a simulation
-// starts, not on initial page render, and unit tests that don't drive a
-// simulation never parse it. Resolved by the bundler via lammps.js's
-// "./wasm-atomify" export; see src/wasm/lammps-atomify.d.ts for the types.
-import { LammpsAdapter } from "../wasm/lammpsAdapter";
-import { AtomifyWasmModule } from "../wasm/types";
+// The atomify wasm build is a multithreaded KOKKOS/pthreads module that must
+// run inside a Web Worker (it cannot initialize on the main thread). It is
+// owned by LammpsWorkerProxy, which spawns the worker (lammps.worker.ts) and
+// bridges its streamed particle/box data back into the store's usual
+// heap-pointer path. See src/wasm/LammpsWorkerProxy.ts.
+import { LammpsWorkerProxy } from "../wasm/LammpsWorkerProxy";
 import { notification } from "antd";
 import { time_event, track } from "../utils/metrics";
 import {
@@ -47,7 +45,8 @@ const SimulationComponent = () => {
     (actions) => actions.simulationStatus.setHasSynchronized,
   );
   const renderCycleCounter = useRef(0);
-  const adapterRef = useRef<LammpsAdapter>(undefined);
+  const proxyRef = useRef<LammpsWorkerProxy>(undefined);
+  const loadStartedRef = useRef(false);
 
   const onPrint = useCallback(
     (text: string) => {
@@ -119,9 +118,12 @@ const SimulationComponent = () => {
   ]);
 
   // Mirror the store's paused state into the flag the adapter's pause-wait
-  // loop reads between timesteps.
+  // loop reads between timesteps. The adapter lives in the worker, so the flag
+  // must be forwarded there via the proxy; the main-thread flag is kept in sync
+  // too for any code that reads it locally.
   useEffect(() => {
     setPausedFlag(paused);
+    proxyRef.current?.setPaused(paused);
   }, [paused]);
 
   useEffect(() => {
@@ -130,7 +132,7 @@ const SimulationComponent = () => {
     // handled by the adapter itself via the wasmInstance flags; rendering
     // still runs here on the pausing step so the display matches the state
     // the simulation actually pauses at.
-    adapterRef.current?.setStepListener(() => {
+    proxyRef.current?.setStepListener(() => {
       if (lammps && wasm && simulation) {
         setHasSynchronized(true);
 
@@ -162,39 +164,59 @@ const SimulationComponent = () => {
   ]);
 
   useEffect(() => {
-    if (!getWasmOrNull()) {
-      setStatus({
-        title: "Downloading LAMMPS ...",
-        text: "",
-        progress: 0.3,
-      });
-      setTimeout(async () => {
-        time_event("WASM.Load");
-        const printLine = (...args: unknown[]) => onPrint(args.join(" "));
-        const { default: createModule } = await import("lammps.js/wasm-atomify");
-        createModule({
-          print: printLine,
-          printErr: printLine,
-        }).then((Module) => {
-          track("WASM.Load");
-          setStatus({
-            title: "Downloading LAMMPS ...",
-            text: "",
-            progress: 0.6,
-          });
-          const wasmModule = Module as AtomifyWasmModule;
-          const lammps = new LammpsAdapter(
-            wasmModule,
-            new wasmModule.LAMMPSWeb(),
-          );
-          adapterRef.current = lammps;
-          setLammps(lammps);
-          setWasm(wasmModule);
-          setSyncFrequency(1);
-          setStatus(undefined);
-        });
-      }, 100);
+    if (getWasmOrNull() || loadStartedRef.current) {
+      return;
     }
+    loadStartedRef.current = true;
+    setStatus({
+      title: "Downloading LAMMPS ...",
+      text: "",
+      progress: 0.3,
+    });
+    time_event("WASM.Load");
+    // The atomify wasm build is a multithreaded KOKKOS/pthreads + ASYNCIFY
+    // module. A pthreads module cannot initialize on the browser main thread
+    // (its thread-pool handshake blocks on Atomics.wait, forbidden off a
+    // Worker), so it runs inside a Web Worker. The proxy owns that worker and
+    // exposes a wasm-module-shaped bridge (getModule) plus the LammpsWeb
+    // interface; the store and modifier/render pipeline keep reading data
+    // through the usual heap-pointer path, now backed by the streamed bridge
+    // heap instead of a real main-thread module.
+    // ?kokkos=false starts LAMMPS serially (no Kokkos runtime) so a run can be
+    // compared against the multithreaded default; any other value enables it.
+    const kokkosEnabled =
+      new URLSearchParams(window.location.search).get("kokkos") !== "false";
+    const proxy = new LammpsWorkerProxy();
+    proxy.onPrint(onPrint);
+    // Surface worker/LAMMPS errors in the console panel rather than only the
+    // devtools console.
+    proxy.onError((message) => onPrint(message));
+    proxyRef.current = proxy;
+    proxy
+      .load(kokkosEnabled)
+      .then(() => {
+        track("WASM.Load");
+        setStatus({
+          title: "Downloading LAMMPS ...",
+          text: "",
+          progress: 0.6,
+        });
+        setWasm(proxy.getModule());
+        setLammps(proxy);
+        setSyncFrequency(1);
+        setStatus(undefined);
+      })
+      .catch((error: unknown) => {
+        // The module failed to load — don't leave the UI stuck on the
+        // "Downloading LAMMPS …" spinner with no explanation.
+        const message = error instanceof Error ? error.message : String(error);
+        onPrint(`Failed to load LAMMPS: ${message}`);
+        setStatus(undefined);
+        notification.error({
+          message: "Failed to load LAMMPS",
+          description: message,
+        });
+      });
   }, [onPrint, setLammps, setStatus]);
   return <></>;
 };
