@@ -48,6 +48,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
     "typecheck": "tsc --noEmit",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
@@ -66,6 +68,7 @@
   },
   "devDependencies": {
     "@jupyterlab/nbformat": "^4.5.0",
+    "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/emscripten": "^1.41.5",
     "@types/node": "^20.19.25",
