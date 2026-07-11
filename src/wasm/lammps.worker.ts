@@ -372,11 +372,29 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
         callNativeSafely(() => adapter?.runCommand(cmd.command));
         break;
       case "snapshotWorkdir": {
-        const { files, skipped } = snapshotWorkdir(cmd.dir, cmd.maxBytes);
-        post(
-          { type: "workdirSnapshot", requestId: cmd.requestId, files, skipped },
-          files.map((file) => file.bytes),
-        );
+        // Always reply — a throw mid-walk (huge dump allocation, bad FS
+        // entry) must not strand the proxy's pending promise, or the run
+        // pipeline waits forever and no further runs can start.
+        try {
+          const { files, skipped } = snapshotWorkdir(cmd.dir, cmd.maxBytes);
+          post(
+            { type: "workdirSnapshot", requestId: cmd.requestId, files, skipped },
+            files.map((file) => file.bytes),
+          );
+        } catch (error) {
+          post({
+            type: "workdirSnapshot",
+            requestId: cmd.requestId,
+            files: [],
+            skipped: [],
+          });
+          post({
+            type: "error",
+            message: `snapshotWorkdir failed: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          });
+        }
         break;
       }
     }

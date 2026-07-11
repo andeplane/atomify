@@ -31,6 +31,7 @@ import {
   writeRunMeta,
 } from "../storage";
 import { projectAnalysisNotebook } from "../utils/AnalyzeNotebook";
+import { getWasm } from "../wasm/wasmInstance";
 import { track } from "../utils/metrics";
 
 export interface StoreInjections {
@@ -116,6 +117,9 @@ interface PendingSave {
   path: string;
   content: string;
   timer: ReturnType<typeof setTimeout>;
+  /** Set once the debounce fires; the entry stays until this settles so
+   *  flushPendingSaves can await writes already in flight (ADR-001 §8). */
+  inflight?: Promise<void>;
 }
 const pendingSaves = new Map<string, PendingSave>();
 
@@ -597,11 +601,18 @@ export const projectsModel: ProjectsModel = {
         path,
         content,
         timer: setTimeout(() => {
-          pendingSaves.delete(key);
-          storageFor(injections, save.quick)
+          // The entry stays in the map (with inflight set) until the write
+          // settles — deleting first would let a pre-snapshot flush miss an
+          // in-flight write and record stale content (review finding).
+          save.inflight = storageFor(injections, save.quick)
             .write(save.dirName, save.path, save.content)
             .then(() => actions.setSaveState({ path, state: "saved" }))
-            .catch(() => actions.setSaveState({ path, state: "error" }));
+            .catch(() => actions.setSaveState({ path, state: "error" }))
+            .finally(() => {
+              if (pendingSaves.get(key) === save) {
+                pendingSaves.delete(key);
+              }
+            });
         }, 500),
       };
       pendingSaves.set(key, save);
@@ -613,6 +624,11 @@ export const projectsModel: ProjectsModel = {
     pendingSaves.clear();
     for (const save of saves) {
       clearTimeout(save.timer);
+      if (save.inflight) {
+        // Debounce already fired; the write is in flight — settle it.
+        await save.inflight;
+        continue;
+      }
       try {
         await storageFor(injections, save.quick).write(
           save.dirName,
@@ -800,6 +816,15 @@ export const projectsModel: ProjectsModel = {
       return;
     }
     actions.shiftRunQueue();
+    // Claim the executor slot SYNCHRONOUSLY (no await since the guard above):
+    // a concurrent executeNextRun (double-click Run, queue advance racing a
+    // new startRuns) must see activeRun set, or two engines' worth of state
+    // fight over one wasm instance and one run-NNN id.
+    actions.setActiveRun({
+      dirName: request.dirName,
+      runId: "pending",
+      quick: request.quick,
+    });
 
     const storage = storageFor(injections, request.quick);
     const storeActions = getStoreActions() as Actions<StoreModel>;
@@ -807,6 +832,7 @@ export const projectsModel: ProjectsModel = {
     if (!lammps) {
       actions.setNotice("The simulation engine is still loading.");
       actions.setRunQueue([]);
+      actions.setActiveRun(undefined);
       return;
     }
 
@@ -848,6 +874,7 @@ export const projectsModel: ProjectsModel = {
       `${RUNS_DIR}/${runId}`,
     );
     const files = [];
+    const binaryFiles: { fileName: string; bytes: Uint8Array }[] = [];
     for (const entry of snapshotEntries) {
       if (entry.type === "directory") {
         continue;
@@ -857,13 +884,15 @@ export const projectsModel: ProjectsModel = {
         continue;
       }
       const content = await storage.read(request.dirName, entry.path);
-      files.push({
-        fileName: relative,
-        content:
-          typeof content === "string"
-            ? content
-            : new TextDecoder().decode(content),
-      });
+      if (typeof content === "string") {
+        files.push({ fileName: relative, content });
+      } else {
+        // Binary inputs (restart files, .npy…) must reach the engine FS
+        // byte-exact — TextDecoder would mangle them into U+FFFD soup.
+        // They bypass the Simulation object (whose files are editor-facing
+        // text) and are written to the run's wasm dir directly below.
+        binaryFiles.push({ fileName: relative, bytes: content });
+      }
     }
     const simulation: Simulation = {
       id: `${request.dirName}/${RUNS_DIR}/${runId}`,
@@ -908,11 +937,21 @@ export const projectsModel: ProjectsModel = {
     }, MID_RUN_COPY_INTERVAL_MS);
     try {
       await storeActions.simulation.newSimulation(simulation);
+      for (const file of binaryFiles) {
+        getWasm().FS.writeFile(`/${simulation.id}/${file.fileName}`, file.bytes);
+      }
       const result = (await storeActions.simulation.run()) as
         | { stopReason: string; errorMessage?: string }
         | undefined;
-      stopReason = result?.stopReason ?? "completed";
-      errorMessage = result?.errorMessage;
+      // run() returns undefined on its guard paths (engine busy, input
+      // script missing from the snapshot) — the run never executed.
+      stopReason = result?.stopReason ?? "failed";
+      errorMessage =
+        result?.errorMessage ??
+        (result
+          ? undefined
+          : ((getStoreState() as State<StoreModel>).simulation.lastError ??
+            "The engine did not start this run."));
     } catch (error) {
       errorMessage = error instanceof Error ? error.message : String(error);
     } finally {

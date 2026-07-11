@@ -23,10 +23,14 @@ const root = createRoot(container);
 // Wait for the persisted settings slice to rehydrate before mounting: easy-peasy
 // replays persisted state asynchronously, silently reverting any dispatch made
 // before it settles (e.g. setLammps from the engine bootstrap).
-void store.persist.resolveRehydration().then(() => {
+const mount = () =>
   root.render(
     <StoreProvider store={store}>
       <App />
     </StoreProvider>,
   );
+void store.persist.resolveRehydration().then(mount, (error) => {
+  // Corrupt persisted settings must degrade to defaults, never a blank page.
+  console.error("Settings rehydration failed; using defaults:", error);
+  mount();
 });

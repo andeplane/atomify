@@ -453,9 +453,12 @@ describe("projects store integration", () => {
       const dirName = activeDirName(store);
 
       const runPromise = store.getActions().projects.startRuns([runRequest()]);
+      // activeRun is claimed synchronously at queue pickup (re-entrancy
+      // guard); the engine call happens later — wait for it before we plan
+      // to resolve it, and assert the delete block while it is in flight.
       await waitForCondition(
-        () => store.getState().projects.activeRun !== undefined,
-        "activeRun to be set",
+        () => engine.runFilePaths.length > 0,
+        "the engine runFile call",
       );
 
       await store.getActions().projects.deleteProject(dirName);

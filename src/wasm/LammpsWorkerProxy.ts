@@ -516,7 +516,18 @@ export class LammpsWorkerProxy implements LammpsWeb {
   snapshotWorkdir(dir: string, maxBytes?: number): Promise<WorkdirSnapshot> {
     const requestId = this.nextRequestId++;
     return new Promise<WorkdirSnapshot>((resolve) => {
-      this.pendingSnapshots.set(requestId, resolve);
+      // Belt-and-braces against a dead/wedged worker: resolve empty after
+      // 60s rather than stranding the run pipeline on this await forever.
+      const timeout = setTimeout(() => {
+        if (this.pendingSnapshots.delete(requestId)) {
+          console.error("snapshotWorkdir timed out; returning empty snapshot");
+          resolve({ files: [], skipped: [] });
+        }
+      }, 60_000);
+      this.pendingSnapshots.set(requestId, (snapshot) => {
+        clearTimeout(timeout);
+        resolve(snapshot);
+      });
       this.send({ type: "snapshotWorkdir", requestId, dir, maxBytes });
     });
   }

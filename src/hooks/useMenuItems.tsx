@@ -1,6 +1,5 @@
 import {
   BorderOuterOutlined,
-  LineChartOutlined,
   EditOutlined,
   InsertRowAboveOutlined,
   FileOutlined,
@@ -18,7 +17,6 @@ import React from "react";
 import type { MenuProps } from "antd";
 import { Badge } from "antd";
 import { useStoreActions, useStoreState } from "./index";
-import { NOTEBOOK_DISABLED_TOOLTIP } from "../constants";
 import { track } from "../utils/metrics";
 import { setCancel } from "../wasm/wasmInstance";
 
@@ -142,15 +140,6 @@ export function useMenuItems(callbacks: UseMenuItemsCallbacks): MenuItem[] {
   return [
     getItem("View", "view", <AlignLeftOutlined />),
     getItem("Console", "console", <BorderOuterOutlined />),
-    getItem(
-      "Notebook",
-      "notebook",
-      <LineChartOutlined />,
-      undefined,
-      undefined,
-      isSimulationActive,
-      isSimulationActive ? NOTEBOOK_DISABLED_TOOLTIP : undefined,
-    ),
     getItem(
       editMenuLabel,
       "edit",

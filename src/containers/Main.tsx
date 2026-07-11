@@ -1,8 +1,6 @@
-import { Modal, Tabs, Progress, Button, Layout, Tooltip } from "antd";
-import { NOTEBOOK_DISABLED_TOOLTIP } from "../constants";
+import { Modal, Tabs, Progress, Button, Layout } from "antd";
 import { useState, useEffect, useMemo } from "react";
 import View from "./View";
-import Notebook from "./Notebook";
 import Edit from "./Edit";
 import Console from "./Console";
 import Examples from "./Examples";
@@ -22,12 +20,6 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
   );
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
   const running = useStoreState((state) => state.simulation.running);
-  const paused = useStoreState((state) => state.simulation.paused);
-  const isSimulationActive = running || paused;
-
-  const setPreferredView = useStoreActions(
-    (actions) => actions.app.setPreferredView,
-  );
   const status = useStoreState((state) => state.app.status);
 
   // Update console key when modal opens
@@ -65,11 +57,9 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
         label: "Console",
         children: <Console />,
       },
-      {
-        key: "notebook",
-        label: "Notebook",
-        children: <Notebook />,
-      },
+      // The legacy shell (embeds and shared ?data= links) no longer writes
+      // into JupyterLite storage (that moved to project runs, ADR-002 §1),
+      // so it has no Notebook pane — an empty JupyterLite would be worse.
       {
         key: "editfile",
         label: "Edit",
@@ -106,21 +96,6 @@ const Main = ({ isEmbedded }: { isEmbedded: boolean }) => {
           styles={{ body: { backgroundColor: "#1E1E1E" } }}
           width={"80%"}
           footer={[
-            <Tooltip
-              key="analyze-tooltip"
-              title={isSimulationActive ? NOTEBOOK_DISABLED_TOOLTIP : ""}
-            >
-              <Button
-                key="analyze"
-                disabled={isSimulationActive}
-                onClick={() => {
-                  setShowConsole(false);
-                  setPreferredView("notebook");
-                }}
-              >
-                Analyze in notebook
-              </Button>
-            </Tooltip>,
             <Button key="close" onClick={() => setShowConsole(false)}>
               Close
             </Button>,

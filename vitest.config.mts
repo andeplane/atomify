@@ -13,7 +13,13 @@ export default defineConfig({
     testTimeout: 20000,
     // Stale git worktrees under .claude/ carry their own src/ + node_modules;
     // without this exclude their tests (and broken deps) pollute every run.
-    exclude: ["**/node_modules/**", "**/dist/**", "**/.claude/**"],
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/.claude/**",
+      // Playwright specs (run via `npm run e2e`), not vitest tests.
+      "e2e/**",
+    ],
     environmentOptions: {
       jsdom: {
         resources: "usable",

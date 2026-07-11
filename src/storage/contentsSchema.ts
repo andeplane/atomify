@@ -140,21 +140,32 @@ export function buildFileRecord(
   }
 
   let stored: string | object = content;
-  if (kind.format === "json") {
-    // Notebooks/.json are stored parsed (matching BrowserStorageDrive).
-    stored = JSON.parse(content) as object;
+  let { type, format, mimetype } = kind;
+  if (format === "json") {
+    try {
+      // Notebooks/.json are stored parsed (matching BrowserStorageDrive).
+      stored = JSON.parse(content) as object;
+    } catch {
+      // Mid-edit autosaves and truncated outputs are not valid JSON yet.
+      // Store as text — losing the user's bytes would be worse than a
+      // temporarily unparseable record (it heals on the next valid save).
+      stored = content;
+      type = "file";
+      format = "text";
+      mimetype = "text/plain";
+    }
   }
   return {
     name,
     path,
     last_modified: now,
     created: existingCreated ?? now,
-    format: kind.format,
-    mimetype: kind.mimetype,
+    format,
+    mimetype,
     content: stored,
     size: content.length,
     writable: true,
-    type: kind.type,
+    type,
   };
 }
 
