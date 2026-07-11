@@ -38,7 +38,10 @@ import "./tokens.css";
 const RUN_NOTICE = /^Run #\S+ (completed|failed|canceled|interrupted)\.$/;
 
 const Shell = () => {
-  useSimulationNotifications();
+  // Hook-based notifications: antd v5's static notification API does not
+  // render under React 19, so every shell toast goes through this instance.
+  const [notify, notificationHolder] = notification.useNotification();
+  useSimulationNotifications(notify);
   const store = useStore();
   const theme = useStoreState((state) => state.settings.theme);
   const screen = useStoreState((state) => state.projects.screen);
@@ -179,10 +182,10 @@ const Shell = () => {
       return;
     }
     if (!RUN_NOTICE.test(notice)) {
-      notification.info({ message: notice });
+      notify.info({ message: notice });
     }
     setNotice(undefined);
-  }, [notice, setNotice]);
+  }, [notice, setNotice, notify]);
 
   // --- Rich run-finished toast (ADR-003 §4.3) ------------------------------------
   const previousRunRef = useRef(activeRun);
@@ -206,17 +209,21 @@ const Shell = () => {
       currentActive?.meta.dirName === dirName
         ? currentActive.runs.find((run) => run.runId === runId)
         : undefined;
-    const status = finished?.meta?.status ?? "finished";
+    // The runs list refresh may not have landed yet when activeRun clears;
+    // a still-"running" status here is just stale.
+    const rawStatus = finished?.meta?.status;
+    const status =
+      !rawStatus || rawStatus === "running" ? "finished" : rawStatus;
     const key = `run-finished-${runId}`;
     const goTo = (tab: "runs" | "notebook") => {
-      notification.destroy(key);
+      notify.destroy(key);
       void openProject({ dirName, quick, tab }).then(() => {
         if (tab === "runs") {
           setScreen({ name: "project", dirName, tab: "runs", runId });
         }
       });
     };
-    notification.info({
+    notify.info({
       key,
       message: `Run #${runNumber(runId)} ${status}`,
       btn: (
@@ -232,7 +239,7 @@ const Shell = () => {
         </span>
       ),
     });
-  }, [activeRun, openProject, setScreen, store]);
+  }, [activeRun, openProject, setScreen, store, notify]);
 
   // --- Particle streaming gate --------------------------------------------------
   // The processing pipeline only pushes particles into the render model when
@@ -299,19 +306,19 @@ const Shell = () => {
         inputScript: example.inputScript,
         source: { type: "example", exampleId: example.id },
       }).catch((error: unknown) => {
-        notification.error({
+        notify.error({
           message: "Could not start the quick run",
           description: error instanceof Error ? error.message : String(error),
         });
       });
     },
-    [createProject],
+    [createProject, notify],
   );
 
   const openShare = useCallback(async () => {
     const current = store.getState().projects.active;
     if (!current || !current.meta.inputScript) {
-      notification.info({
+      notify.info({
         message: "Set an input script before sharing the project.",
       });
       return;
@@ -336,10 +343,11 @@ const Shell = () => {
       inputScript: current.meta.inputScript,
       start: true,
     });
-  }, [store, readFile]);
+  }, [store, readFile, notify]);
 
   const ui = useMemo<ShellUI>(
     () => ({
+      notify,
       openNewProject: (exampleId) => setNewProject({ open: true, exampleId }),
       openSettings: (tab) => setSettingsTab(tab ?? "general"),
       openDeleteProject: (dirName) => setDeleteTarget(dirName),
@@ -362,6 +370,7 @@ const Shell = () => {
       examples,
     }),
     [
+      notify,
       quickRunExample,
       runProject,
       launch,
@@ -375,6 +384,7 @@ const Shell = () => {
   return (
     <ConfigProvider theme={shellThemeConfig(theme)}>
       <ShellUIContext.Provider value={ui}>
+        {notificationHolder}
         <Simulation />
         <div
           className="atomify-shell"

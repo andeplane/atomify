@@ -6,7 +6,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { notification } from "antd";
 import { useStoreActions } from "../../hooks";
 import type { Example } from "../../hooks/useExamples";
 import { slugify, classifyPath } from "../../storage";
@@ -173,7 +172,7 @@ const NewProjectModal = ({
       if (source === "example") {
         const example = chosenExample ?? examples[0];
         if (!example) {
-          notification.error({ message: "Pick an example first." });
+          ui.notify.error({ message: "Pick an example first." });
           setCreating(false);
           return;
         }
@@ -224,7 +223,7 @@ const NewProjectModal = ({
       }
       onClose();
     } catch (error) {
-      notification.error({
+      ui.notify.error({
         message: "Could not create the project",
         description: error instanceof Error ? error.message : String(error),
       });

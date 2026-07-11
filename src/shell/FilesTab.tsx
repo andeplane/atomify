@@ -7,7 +7,6 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { CSSProperties, DragEvent } from "react";
-import { notification } from "antd";
 import { useStoreActions, useStoreState } from "../hooks";
 import { isScriptFile } from "../store/projects";
 import type { FileStat } from "../storage";
@@ -163,7 +162,7 @@ const FilesTab = () => {
   const download = async (path: string) => {
     const content = await readFileRaw({ path });
     if (content === null) {
-      notification.error({ message: `Could not read ${path}.` });
+      ui.notify.error({ message: `Could not read ${path}.` });
       return;
     }
     const bytes =
@@ -191,7 +190,7 @@ const FilesTab = () => {
             : await file.text();
         await writeFile({ path: file.name, content });
       } catch (error) {
-        notification.error({
+        ui.notify.error({
           message: `Could not upload ${file.name}`,
           description: error instanceof Error ? error.message : String(error),
         });

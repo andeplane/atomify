@@ -4,11 +4,17 @@
  */
 
 import { createContext, useContext } from "react";
+import type { NotificationInstance } from "antd/es/notification/interface";
 import type { Example, ExamplesData } from "../hooks/useExamples";
 
 export type SettingsTab = "general" | "rendering" | "storage";
 
 export interface ShellUI {
+  /**
+   * Hook-based antd notification instance. antd v5's STATIC notification
+   * functions don't render under React 19 — always toast through this.
+   */
+  notify: NotificationInstance;
   openNewProject: (exampleId?: string) => void;
   openSettings: (tab?: SettingsTab) => void;
   openDeleteProject: (dirName: string) => void;
