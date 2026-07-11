@@ -11,9 +11,7 @@ import { track, getEmbeddingParams } from "./utils/metrics";
 // index.html's ?sw-reset escape hatch is unregistering the service workers
 // and reloads without the flag when done; don't boot the app (and kick off
 // wasm downloads) in the meantime.
-const swResetting = new URLSearchParams(window.location.search).has(
-  "sw-reset",
-);
+const swResetting = new URLSearchParams(window.location.search).has("sw-reset");
 
 if (!swResetting) {
   mixpanel.init("b5022dd7fe5b3cd0396d84284ae647e6", { debug: false });

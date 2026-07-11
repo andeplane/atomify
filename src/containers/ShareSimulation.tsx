@@ -110,9 +110,9 @@ const ShareSimulation: React.FC<ShareSimulationProps> = ({
         <p>
           Copy the embed link below. It opens the simulation full screen in
           embedded mode and starts it automatically — use it in presentations,
-          iframes on other websites, or with viewers who just want to watch
-          the simulation. The entire simulation (including all files) is
-          encoded in the URL, so no external hosting is required.
+          iframes on other websites, or with viewers who just want to watch the
+          simulation. The entire simulation (including all files) is encoded in
+          the URL, so no external hosting is required.
         </p>
       </div>
 

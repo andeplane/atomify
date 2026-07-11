@@ -179,7 +179,12 @@ const NewRunModal = ({
   });
 
   return (
-    <ModalShell open={open} onClose={onClose} title="New run" testId="new-run-modal">
+    <ModalShell
+      open={open}
+      onClose={onClose}
+      title="New run"
+      testId="new-run-modal"
+    >
       <div style={{ padding: "18px 24px 24px" }}>
         {choosing ? (
           <>
@@ -198,7 +203,14 @@ const NewRunModal = ({
                 marginBottom: 16,
               }}
             >
-              <span style={{ color: "var(--accent)", flexShrink: 0, marginTop: 2, display: "flex" }}>
+              <span
+                style={{
+                  color: "var(--accent)",
+                  flexShrink: 0,
+                  marginTop: 2,
+                  display: "flex",
+                }}
+              >
                 <InfoIcon />
               </span>
               {scripts.length === 0
@@ -224,7 +236,9 @@ const NewRunModal = ({
                     cursor: "pointer",
                     marginBottom: 8,
                     border: `1.5px solid ${selected ? "var(--accent)" : "var(--border)"}`,
-                    background: selected ? "var(--accent-soft)" : "var(--surface-2)",
+                    background: selected
+                      ? "var(--accent-soft)"
+                      : "var(--surface-2)",
                   }}
                 >
                   <span
@@ -253,13 +267,26 @@ const NewRunModal = ({
                   >
                     {script.path}
                   </span>
-                  <span style={{ fontSize: 12, color: "var(--text-3)", flexShrink: 0 }}>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: "var(--text-3)",
+                      flexShrink: 0,
+                    }}
+                  >
                     {formatBytes(script.size)}
                   </span>
                 </div>
               );
             })}
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 12 }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 10,
+                marginTop: 12,
+              }}
+            >
               {scripts.length === 0 && (
                 <PrimaryButton data-testid="go-to-files" onClick={onGoToFiles}>
                   Go to Files
@@ -293,7 +320,13 @@ const NewRunModal = ({
                 marginBottom: 20,
               }}
             >
-              <span style={{ color: "var(--accent)", flexShrink: 0, display: "flex" }}>
+              <span
+                style={{
+                  color: "var(--accent)",
+                  flexShrink: 0,
+                  display: "flex",
+                }}
+              >
                 <ScriptIcon size={16} />
               </span>
               <span
@@ -357,17 +390,31 @@ const NewRunModal = ({
               </span>{" "}
               set to a plain number in the input script appears here (derived
               expressions recompute automatically). Overrides are passed as{" "}
-              <span style={{ fontFamily: MONO, color: "var(--text-2)" }}>-var</span>{" "}
+              <span style={{ fontFamily: MONO, color: "var(--text-2)" }}>
+                -var
+              </span>{" "}
               flags — the script itself never changes.
             </div>
 
             {loadingScript && (
-              <div style={{ padding: "10px 0", fontSize: 12.5, color: "var(--text-3)" }}>
+              <div
+                style={{
+                  padding: "10px 0",
+                  fontSize: 12.5,
+                  color: "var(--text-3)",
+                }}
+              >
                 Reading script…
               </div>
             )}
             {!loadingScript && variables.length === 0 && (
-              <div style={{ padding: "10px 0", fontSize: 12.5, color: "var(--text-3)" }}>
+              <div
+                style={{
+                  padding: "10px 0",
+                  fontSize: 12.5,
+                  color: "var(--text-3)",
+                }}
+              >
                 No overridable variables found — the run uses the script as-is.
               </div>
             )}
@@ -400,7 +447,13 @@ const NewRunModal = ({
                     >
                       {variable.name}
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 2 }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "var(--text-3)",
+                        marginTop: 2,
+                      }}
+                    >
                       {variable.label ? `${variable.label} — ` : ""}line{" "}
                       {variable.line}
                     </div>
@@ -419,7 +472,9 @@ const NewRunModal = ({
                         value={draft.value}
                         data-testid={`var-value-${variable.name}`}
                         onChange={(event) =>
-                          updateDraft(variable.name, { value: event.target.value })
+                          updateDraft(variable.name, {
+                            value: event.target.value,
+                          })
                         }
                         style={numberInputStyle(76)}
                       />
@@ -429,29 +484,41 @@ const NewRunModal = ({
                           value={draft.from}
                           data-testid={`var-from-${variable.name}`}
                           onChange={(event) =>
-                            updateDraft(variable.name, { from: event.target.value })
+                            updateDraft(variable.name, {
+                              from: event.target.value,
+                            })
                           }
                           style={numberInputStyle(62)}
                         />
-                        <span style={{ color: "var(--text-3)", fontSize: 12 }}>to</span>
+                        <span style={{ color: "var(--text-3)", fontSize: 12 }}>
+                          to
+                        </span>
                         <input
                           value={draft.to}
                           data-testid={`var-to-${variable.name}`}
                           onChange={(event) =>
-                            updateDraft(variable.name, { to: event.target.value })
+                            updateDraft(variable.name, {
+                              to: event.target.value,
+                            })
                           }
                           style={numberInputStyle(62)}
                         />
-                        <span style={{ color: "var(--text-3)", fontSize: 12 }}>in</span>
+                        <span style={{ color: "var(--text-3)", fontSize: 12 }}>
+                          in
+                        </span>
                         <input
                           value={draft.steps}
                           data-testid={`var-steps-${variable.name}`}
                           onChange={(event) =>
-                            updateDraft(variable.name, { steps: event.target.value })
+                            updateDraft(variable.name, {
+                              steps: event.target.value,
+                            })
                           }
                           style={numberInputStyle(46)}
                         />
-                        <span style={{ color: "var(--text-3)", fontSize: 12 }}>runs</span>
+                        <span style={{ color: "var(--text-3)", fontSize: 12 }}>
+                          runs
+                        </span>
                       </>
                     )}
                   </div>
@@ -493,10 +560,22 @@ const NewRunModal = ({
             >
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
+                  <div
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: "var(--text)",
+                    }}
+                  >
                     Multithreading
                   </div>
-                  <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 2 }}>
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      color: "var(--text-3)",
+                      marginTop: 2,
+                    }}
+                  >
                     Runs LAMMPS with KOKKOS acceleration (×{threads} threads)
                   </div>
                 </div>
