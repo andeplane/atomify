@@ -97,7 +97,12 @@ const SourceCard = ({
     </span>
     <span>
       <span
-        style={{ display: "block", fontSize: 13, fontWeight: 700, color: "var(--text)" }}
+        style={{
+          display: "block",
+          fontSize: 13,
+          fontWeight: 700,
+          color: "var(--text)",
+        }}
       >
         {title}
       </span>
@@ -184,7 +189,10 @@ const NewProjectModal = ({
     try {
       let files: NewProjectFile[] = [];
       let inputScript: string | undefined;
-      let sourceMeta: { type: "blank" | "upload" | "example"; exampleId?: string } = {
+      let sourceMeta: {
+        type: "blank" | "upload" | "example";
+        exampleId?: string;
+      } = {
         type: "blank",
       };
       let binaries: File[] = [];
@@ -361,8 +369,8 @@ const NewProjectModal = ({
               marginBottom: 18,
             }}
           >
-            Starts empty. Add files from the Files tab — once scripts exist,
-            the Run button asks which one is the input script.
+            Starts empty. Add files from the Files tab — once scripts exist, the
+            Run button asks which one is the input script.
           </div>
         )}
 
@@ -495,12 +503,20 @@ const NewProjectModal = ({
                 cursor: "pointer",
               }}
             >
-              <div style={{ fontSize: 13.5, fontWeight: 600, color: "var(--text)" }}>
+              <div
+                style={{
+                  fontSize: 13.5,
+                  fontWeight: 600,
+                  color: "var(--text)",
+                }}
+              >
                 {uploads.length === 0
                   ? "Drop files here, or click to browse"
                   : `${uploads.length} ${uploads.length === 1 ? "file" : "files"} selected`}
               </div>
-              <div style={{ fontSize: 12, color: "var(--text-2)", marginTop: 5 }}>
+              <div
+                style={{ fontSize: 12, color: "var(--text-2)", marginTop: 5 }}
+              >
                 {uploads.length === 0
                   ? "Input scripts, data files, notebooks"
                   : uploads.map((file) => file.name).join(", ")}
@@ -576,7 +592,9 @@ const NewProjectModal = ({
               }}
             />
           ))}
-          <span style={{ fontSize: 11.5, color: "var(--text-3)", marginLeft: 4 }}>
+          <span
+            style={{ fontSize: 11.5, color: "var(--text-3)", marginLeft: 4 }}
+          >
             identity dot in the library
           </span>
         </div>

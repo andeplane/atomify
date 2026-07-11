@@ -33,13 +33,7 @@ const groupLabelStyle = {
   color: "var(--text-3)",
 };
 
-const EntryRow = ({
-  entry,
-  onOpen,
-}: {
-  entry: Entry;
-  onOpen?: () => void;
-}) => {
+const EntryRow = ({ entry, onOpen }: { entry: Entry; onOpen?: () => void }) => {
   const clickable = onOpen !== undefined;
   return (
     <div
@@ -56,7 +50,9 @@ const EntryRow = ({
       }}
     >
       {clickable && (
-        <span style={{ color: "var(--accent)", display: "flex", flexShrink: 0 }}>
+        <span
+          style={{ color: "var(--accent)", display: "flex", flexShrink: 0 }}
+        >
           <ChartIcon size={13} />
         </span>
       )}
@@ -116,16 +112,15 @@ const RunAnalysis = () => {
   };
   // Resolve the open entry from the live map each render: the sync modifiers
   // mutate entries in place and republish the maps every synced timestep.
-  const selectedEntry = selected ? maps[selected.type][selected.name] : undefined;
+  const selectedEntry = selected
+    ? maps[selected.type][selected.name]
+    : undefined;
   const empty = GROUPS.every(
     (group) => Object.keys(maps[group.type]).length === 0,
   );
 
   // Keep the graph readable inside the 880px modal on any window size.
-  const figureWidth = Math.max(
-    320,
-    Math.min(window.innerWidth - 160, 800),
-  );
+  const figureWidth = Math.max(320, Math.min(window.innerWidth - 160, 800));
   const figureHeight = Math.round(figureWidth * 0.62);
 
   return (
@@ -167,7 +162,8 @@ const RunAnalysis = () => {
                   entry={entry}
                   onOpen={
                     entry.hasData1D
-                      ? () => setSelected({ type: group.type, name: entry.name })
+                      ? () =>
+                          setSelected({ type: group.type, name: entry.name })
                       : undefined
                   }
                 />

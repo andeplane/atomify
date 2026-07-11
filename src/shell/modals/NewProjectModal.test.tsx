@@ -76,9 +76,9 @@ describe("NewProjectModal example picker", () => {
       ).toBeInTheDocument();
     }
     // First keyword renders as the category chip.
-    expect(
-      screen.getByTestId("np-example-card-crack"),
-    ).toHaveTextContent("fracture");
+    expect(screen.getByTestId("np-example-card-crack")).toHaveTextContent(
+      "fracture",
+    );
   });
 
   it("filters by title, description and keywords", async () => {

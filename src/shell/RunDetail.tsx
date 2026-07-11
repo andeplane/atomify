@@ -109,8 +109,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
       setOutputs(
         files.filter(
           (file) =>
-            file.type !== "directory" &&
-            !file.path.includes("/.atomify"),
+            file.type !== "directory" && !file.path.includes("/.atomify"),
         ),
       );
     })().catch(() => {});
@@ -136,8 +135,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
             setOutputs(
               files.filter(
                 (file) =>
-                  file.type !== "directory" &&
-                  !file.path.includes("/.atomify"),
+                  file.type !== "directory" && !file.path.includes("/.atomify"),
               ),
             );
           }
@@ -171,7 +169,10 @@ const RunDetail = ({ runId }: { runId: string }) => {
           v: `${runTimesteps.toLocaleString()} / ${runTotalTimesteps.toLocaleString()}`,
         },
         { k: "Remaining", v: formatDuration(remainingTime) },
-        { k: "Steps / second", v: Math.round(timestepsPerSecond).toLocaleString() },
+        {
+          k: "Steps / second",
+          v: Math.round(timestepsPerSecond).toLocaleString(),
+        },
         { k: "Memory", v: formatBytes(memoryUsage) },
       ];
     }
@@ -210,8 +211,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
           .join(", ")
       : null;
 
-  const backToRuns = () =>
-    setScreen({ name: "project", dirName, tab: "runs" });
+  const backToRuns = () => setScreen({ name: "project", dirName, tab: "runs" });
 
   return (
     <div
@@ -273,7 +273,9 @@ const RunDetail = ({ runId }: { runId: string }) => {
           >
             Run #{runNumber(runId)}
           </span>
-          <StatusPill status={live ? "running" : (meta?.status ?? "external")} />
+          <StatusPill
+            status={live ? "running" : (meta?.status ?? "external")}
+          />
           {paramsLabel && (
             <Chip accent mono style={{ fontSize: 11.5 }}>
               {paramsLabel}
@@ -417,7 +419,14 @@ const RunDetail = ({ runId }: { runId: string }) => {
             </div>
           )}
           {/* Script overlay */}
-          <div style={{ position: "absolute", top: 18, left: 22, pointerEvents: "none" }}>
+          <div
+            style={{
+              position: "absolute",
+              top: 18,
+              left: 22,
+              pointerEvents: "none",
+            }}
+          >
             <div
               style={{
                 fontFamily: MONO,
@@ -716,8 +725,16 @@ const RunDetail = ({ runId }: { runId: string }) => {
           }}
         >
           {outputs.length === 0 && (
-            <div style={{ padding: "7px 8px", fontSize: 12, color: "var(--text-3)" }}>
-              {live ? "outputs appear as the run writes them" : "no output files"}
+            <div
+              style={{
+                padding: "7px 8px",
+                fontSize: 12,
+                color: "var(--text-3)",
+              }}
+            >
+              {live
+                ? "outputs appear as the run writes them"
+                : "no output files"}
             </div>
           )}
           {outputs.map((file) => {
