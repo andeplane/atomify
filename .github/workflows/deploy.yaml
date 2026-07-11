@@ -12,22 +12,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install JupyterLite dependencies
-        run: |
-          python -m pip install -r jupyterlite/requirements.txt
-      - name: Build JupyterLite site
-        run: |
-          jupyter lite build --contents jupyterlite/content --output-dir public/jupyter
       - name: Use Node.js 20.x
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
+      # npm install must come before the JupyterLite build: `make jupyter`
+      # copies node_modules/lammps.js/dist into public/jupyter/lammps.
       - name: Install Packages
         run: npm install
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build JupyterLite site
+        run: make jupyter
       - name: Run Typecheck
         run: npm run typecheck
       - name: Run Tests
