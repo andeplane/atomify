@@ -18,6 +18,9 @@ jobs:
           node-version: "20.x"
       # npm install must come before the JupyterLite build: `make jupyter`
       # copies node_modules/lammps.js/dist into public/jupyter/lammps.
+      # (make jupyter also applies the COOP/COEP service-worker patch via
+      # scripts/jupyter_coi_patch.py, superseding main's standalone
+      # patch-jupyterlite-sw.mjs step.)
       - name: Install Packages
         run: npm install
       - name: Set up Python
