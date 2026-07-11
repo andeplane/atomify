@@ -5,7 +5,7 @@
  */
 
 import { test, expect } from "@playwright/test";
-import { createBlankProject, gotoApp } from "./helpers";
+import { createBlankProject, createFile, gotoApp } from "./helpers";
 
 test("create, persist, rename, duplicate and delete a project", async ({
   page,
@@ -77,5 +77,53 @@ test("create, persist, rename, duplicate and delete a project", async ({
     await expect(page.getByTestId("shell-root")).toBeVisible();
     await expect(page.getByTestId("sidebar-project-melt-study")).toBeVisible();
     await expect(sidebarProjects).toHaveCount(1);
+  });
+});
+
+test("export a project as a zip and import it back", async ({
+  page,
+}, testInfo) => {
+  await test.step("create a project with a source file", async () => {
+    await gotoApp(page);
+    await createBlankProject(page, "Zip trip", "zip-trip");
+    await createFile(page, "in.melt");
+  });
+
+  const zipPath = testInfo.outputPath("zip-trip.zip");
+  await test.step("download via the project menu", async () => {
+    await page.getByTestId("project-menu-toggle").click();
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByTestId("project-menu-download").click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe("zip-trip.zip");
+    await download.saveAs(zipPath);
+  });
+
+  await test.step("import the zip through the New Project modal", async () => {
+    await page.getByTestId("sidebar-new-project").click();
+    await expect(page.getByTestId("new-project-modal")).toBeVisible();
+    await page.getByTestId("project-name-input").fill("Zip trip imported");
+    await page.getByTestId("source-upload").click();
+    await page
+      .getByTestId("upload-dropzone")
+      .locator('input[type="file"]')
+      .setInputFiles(zipPath);
+    await expect(page.getByTestId("np-import-zip")).toBeVisible();
+    await page.getByTestId("create-project").click();
+  });
+
+  await test.step("the imported project has the exported tree", async () => {
+    await expect(page.getByTestId("project-title")).toHaveText(
+      "Zip trip imported",
+    );
+    await expect(page.getByTestId("project-dirname")).not.toHaveText(
+      "zip-trip/",
+    );
+    await expect(page.getByTestId("file-row-in.melt")).toBeVisible();
+    await expect(page.getByTestId("file-row-analysis.ipynb")).toBeVisible();
+    // The zip's single script becomes the imported project's input script.
+    await expect(page.getByTestId("file-row-in.melt")).toContainText(
+      "Input script",
+    );
   });
 });

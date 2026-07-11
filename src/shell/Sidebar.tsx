@@ -7,6 +7,8 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
+import type { ThemeName } from "../store/settings";
+import { track } from "../utils/metrics";
 import { useShellUI } from "./ShellContext";
 import {
   AtomLogo,
@@ -65,6 +67,10 @@ const Sidebar = () => {
   const status = useStoreState((state) => state.app.status);
   const setTheme = useStoreActions((actions) => actions.settings.setTheme);
   const setScreen = useStoreActions((actions) => actions.projects.setScreen);
+  const changeTheme = (next: ThemeName) => {
+    track("Theme.Change", { theme: next });
+    setTheme(next);
+  };
   const openProject = useStoreActions(
     (actions) => actions.projects.openProject,
   );
@@ -299,7 +305,7 @@ const Sidebar = () => {
           }}
         >
           <button
-            onClick={() => setTheme("dark")}
+            onClick={() => changeTheme("dark")}
             title="Dark"
             data-testid="theme-dark"
             style={themeButtonStyle("dark")}
@@ -307,7 +313,7 @@ const Sidebar = () => {
             <MoonIcon />
           </button>
           <button
-            onClick={() => setTheme("light")}
+            onClick={() => changeTheme("light")}
             title="Light"
             data-testid="theme-light"
             style={themeButtonStyle("light")}

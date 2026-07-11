@@ -16,7 +16,13 @@ import EditorScreen from "./EditorScreen";
 import RunsTab from "./RunsTab";
 import RunDetail from "./RunDetail";
 import NotebookTab from "./NotebookTab";
-import { ChevronDownIcon, DotsIcon, InfoIcon, PlayIcon, ShareIcon } from "./icons";
+import {
+  ChevronDownIcon,
+  DotsIcon,
+  InfoIcon,
+  PlayIcon,
+  ShareIcon,
+} from "./icons";
 import {
   GhostButton,
   MenuDivider,
@@ -26,7 +32,11 @@ import {
   RunningPill,
 } from "./ui";
 
-const ProjectWorkspace = ({ screen }: { screen: Screen & { name: "project" } }) => {
+const ProjectWorkspace = ({
+  screen,
+}: {
+  screen: Screen & { name: "project" };
+}) => {
   const active = useStoreState((state) => state.projects.active);
   const activeRun = useStoreState((state) => state.projects.activeRun);
   const setScreen = useStoreActions((actions) => actions.projects.setScreen);
@@ -36,6 +46,9 @@ const ProjectWorkspace = ({ screen }: { screen: Screen & { name: "project" } }) 
   const duplicateProject = useStoreActions(
     (actions) => actions.projects.duplicateProject,
   );
+  const exportProject = useStoreActions(
+    (actions) => actions.projects.exportProject,
+  );
   const saveQuickAsProject = useStoreActions(
     (actions) => actions.projects.saveQuickAsProject,
   );
@@ -43,6 +56,29 @@ const ProjectWorkspace = ({ screen }: { screen: Screen & { name: "project" } }) 
 
   const [runMenuOpen, setRunMenuOpen] = useState(false);
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
+
+  const downloadProject = async (includeRuns: boolean) => {
+    try {
+      const result = await exportProject({ includeRuns });
+      if (!result) {
+        return;
+      }
+      const blob = new Blob([result.bytes.buffer as ArrayBuffer], {
+        type: "application/zip",
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = result.fileName;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      ui.notify.error({
+        message: "Could not export the project",
+        description: error instanceof Error ? error.message : String(error),
+      });
+    }
+  };
 
   if (!active || active.meta.dirName !== screen.dirName) {
     return (
@@ -143,7 +179,9 @@ const ProjectWorkspace = ({ screen }: { screen: Screen & { name: "project" } }) 
               color: "var(--text)",
             }}
           >
-            <span style={{ color: "var(--accent)", display: "flex", flexShrink: 0 }}>
+            <span
+              style={{ color: "var(--accent)", display: "flex", flexShrink: 0 }}
+            >
               <InfoIcon />
             </span>
             <span style={{ flex: 1 }}>
@@ -241,7 +279,10 @@ const ProjectWorkspace = ({ screen }: { screen: Screen & { name: "project" } }) 
           </div>
           <div style={{ display: "flex", gap: 9, flexShrink: 0 }}>
             {!active.quick && (
-              <GhostButton data-testid="share-button" onClick={() => ui.openShare()}>
+              <GhostButton
+                data-testid="share-button"
+                onClick={() => ui.openShare()}
+              >
                 <ShareIcon />
                 Share
               </GhostButton>
@@ -371,6 +412,25 @@ const ProjectWorkspace = ({ screen }: { screen: Screen & { name: "project" } }) 
                     onClick={() => {
                       setProjectMenuOpen(false);
                       void duplicateProject();
+                    }}
+                  />
+                  <MenuDivider />
+                  <MenuItem
+                    label="Download project"
+                    hint="zip of the working tree + notebook"
+                    testId="project-menu-download"
+                    onClick={() => {
+                      setProjectMenuOpen(false);
+                      void downloadProject(false);
+                    }}
+                  />
+                  <MenuItem
+                    label="Download with runs"
+                    hint="includes the runs/ history"
+                    testId="project-menu-download-runs"
+                    onClick={() => {
+                      setProjectMenuOpen(false);
+                      void downloadProject(true);
                     }}
                   />
                   <MenuDivider />

@@ -11,6 +11,7 @@ import { useStoreActions, useStoreState } from "../hooks";
 import { isScriptFile } from "../store/projects";
 import type { FileStat } from "../storage";
 import { classifyPath } from "../storage";
+import { track } from "../utils/metrics";
 import { useShellUI } from "./ShellContext";
 import { formatBytes, relativeTime } from "./format";
 import {
@@ -181,6 +182,7 @@ const FilesTab = () => {
   };
 
   const uploadFiles = async (files: FileList | File[]) => {
+    track("File.Upload", { count: files.length });
     for (const file of Array.from(files)) {
       try {
         const format = classifyPath(file.name).format;
@@ -502,6 +504,7 @@ const FilesTab = () => {
         onCancel={() => setNewFileOpen(false)}
         onConfirm={(name) => {
           setNewFileOpen(false);
+          track("File.Create", {});
           void writeFile({ path: name, content: "" });
         }}
       />

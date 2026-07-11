@@ -51,7 +51,8 @@ afterEach(() => {
 describe("projects store integration", () => {
   describe("createProject", () => {
     it("creates a blank project: project.json persisted, analysis notebook generated, listed in library", async () => {
-      const { store, libraryStorage } = await createTestStore(createFakeEngine());
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
 
       const meta = await store
         .getActions()
@@ -68,7 +69,10 @@ describe("projects store integration", () => {
       expect(persisted.inputScript).toBeUndefined();
 
       // starter notebook generated (template mentions the project)
-      const notebook = await libraryStorage.read(meta.dirName, "analysis.ipynb");
+      const notebook = await libraryStorage.read(
+        meta.dirName,
+        "analysis.ipynb",
+      );
       expect(typeof notebook).toBe("string");
       expect(notebook as string).toContain("Blank");
 
@@ -82,7 +86,8 @@ describe("projects store integration", () => {
     });
 
     it("does not overwrite a curated notebook with the template", async () => {
-      const { store, libraryStorage } = await createTestStore(createFakeEngine());
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
       const curated = JSON.stringify({
         cells: [],
         metadata: { curated: true },
@@ -100,7 +105,8 @@ describe("projects store integration", () => {
     });
 
     it("auto-sets inputScript when exactly one script file is provided", async () => {
-      const { store, libraryStorage } = await createTestStore(createFakeEngine());
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
 
       const meta = await store.getActions().projects.createProject({
         displayName: "One Script",
@@ -120,7 +126,8 @@ describe("projects store integration", () => {
     });
 
     it("leaves inputScript undefined when two script files are provided", async () => {
-      const { store, libraryStorage } = await createTestStore(createFakeEngine());
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
 
       const meta = await store.getActions().projects.createProject({
         displayName: "Two Scripts",
@@ -166,7 +173,10 @@ describe("projects store integration", () => {
         await libraryStorage.read(dirName, `${RUNS_DIR}/run-001/data.spce`),
       ).toBe("some data");
       expect(
-        await libraryStorage.stat(dirName, `${RUNS_DIR}/run-001/analysis.ipynb`),
+        await libraryStorage.stat(
+          dirName,
+          `${RUNS_DIR}/run-001/analysis.ipynb`,
+        ),
       ).toBeNull();
       expect(
         await libraryStorage.stat(
@@ -196,9 +206,9 @@ describe("projects store integration", () => {
       // The materialized Simulation id is the run directory: the engine got
       // a script path inside <dirName>/runs/run-001.
       expect(engine.runFilePaths).toHaveLength(1);
-      expect(engine.runFilePaths[0].startsWith(`/${dirName}/${RUNS_DIR}/run-001/`)).toBe(
-        true,
-      );
+      expect(
+        engine.runFilePaths[0].startsWith(`/${dirName}/${RUNS_DIR}/run-001/`),
+      ).toBe(true);
 
       // Store state settled: activeRun cleared, runs list refreshed.
       expect(store.getState().projects.activeRun).toBeUndefined();
@@ -356,7 +366,8 @@ describe("projects store integration", () => {
 
   describe("debounced saves", () => {
     it("saveFileDebounced does not persist immediately; flushPendingSaves persists", async () => {
-      const { store, libraryStorage } = await createTestStore(createFakeEngine());
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
       await store.getActions().projects.createProject({
         displayName: "Editing",
         files: [{ fileName: "in.lmp", content: SCRIPT }],
@@ -379,7 +390,8 @@ describe("projects store integration", () => {
     });
 
     it("the debounced save lands on its own after 500ms", async () => {
-      const { store, libraryStorage } = await createTestStore(createFakeEngine());
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
       await store.getActions().projects.createProject({
         displayName: "Debounce Timer",
         files: [{ fileName: "in.lmp", content: SCRIPT }],
@@ -471,7 +483,11 @@ describe("projects store integration", () => {
           `${RUNS_DIR}/run-001/log.lammps`,
         ),
       ).toBe(FAKE_LOG);
-      const runMeta = await readRunMeta(libraryStorage, saved.dirName, "run-001");
+      const runMeta = await readRunMeta(
+        libraryStorage,
+        saved.dirName,
+        "run-001",
+      );
       expect(runMeta?.status).toBe("completed");
 
       // Fresh identity: the library project.json carries the new dirName,
@@ -487,6 +503,100 @@ describe("projects store integration", () => {
       expect(store.getState().projects.active?.meta.dirName).toBe(
         saved.dirName,
       );
+    });
+  });
+
+  describe("project zip export/import", () => {
+    /** Recursive file listing (paths only), sorted, for tree comparison. */
+    async function treeOf(
+      storage: ProjectStorage,
+      dirName: string,
+      subdir?: string,
+    ): Promise<string[]> {
+      const paths: string[] = [];
+      for (const entry of await storage.list(dirName, subdir)) {
+        if (entry.type === "directory") {
+          paths.push(...(await treeOf(storage, dirName, entry.path)));
+        } else {
+          paths.push(entry.path);
+        }
+      }
+      return paths.sort();
+    }
+
+    it("round-trips a project (incl. a binary file and run history)", async () => {
+      const engine = createFakeEngine();
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Zip Trip",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const dirName = activeDirName(store);
+      const binary = new Uint8Array([0, 1, 2, 128, 254, 255]);
+      await store
+        .getActions()
+        .projects.writeFile({ path: "weights.npy", content: binary });
+      await store.getActions().projects.startRuns([runRequest()]);
+
+      const exported = await store
+        .getActions()
+        .projects.exportProject({ includeRuns: true });
+      expect(exported).not.toBeNull();
+      expect(exported!.fileName).toBe(`${dirName}.zip`);
+
+      const imported = await store.getActions().projects.importProject({
+        zip: exported!.bytes,
+        displayName: "Zip Trip Copy", // the modal's name field wins
+      });
+      expect(imported.dirName).not.toBe(dirName);
+      expect(imported.displayName).toBe("Zip Trip Copy");
+      expect(imported.inputScript).toBe("in.lmp");
+
+      // Identical trees (both have a regenerated .atomify/project.json).
+      expect(await treeOf(libraryStorage, imported.dirName)).toEqual(
+        await treeOf(libraryStorage, dirName),
+      );
+      expect(await libraryStorage.read(imported.dirName, "in.lmp")).toBe(
+        SCRIPT,
+      );
+      // Binary file survives byte-exact.
+      const importedBinary = await libraryStorage.read(
+        imported.dirName,
+        "weights.npy",
+      );
+      expect(importedBinary).toBeInstanceOf(Uint8Array);
+      expect([...(importedBinary as Uint8Array)]).toEqual([...binary]);
+      // Run history came along, metadata intact.
+      const runMeta = await readRunMeta(
+        libraryStorage,
+        imported.dirName,
+        "run-001",
+      );
+      expect(runMeta?.status).toBe("completed");
+    });
+
+    it("export without runs; import falls back to the zip's project.json name", async () => {
+      const engine = createFakeEngine();
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "No Runs Export",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      await store.getActions().projects.startRuns([runRequest()]);
+
+      const exported = await store
+        .getActions()
+        .projects.exportProject({ includeRuns: false });
+      const imported = await store
+        .getActions()
+        .projects.importProject({ zip: exported!.bytes });
+
+      expect(imported.displayName).toBe("No Runs Export");
+      expect(imported.inputScript).toBe("in.lmp");
+      const tree = await treeOf(libraryStorage, imported.dirName);
+      expect(tree.some((path) => path.startsWith(`${RUNS_DIR}/`))).toBe(false);
+      expect(tree).toContain("in.lmp");
+      expect(tree).toContain("analysis.ipynb");
     });
   });
 
@@ -531,7 +641,8 @@ describe("projects store integration", () => {
 
   describe("run reconciliation on openProject", () => {
     it("marks unowned app-origin running runs interrupted; fresh notebook runs survive", async () => {
-      const { store, libraryStorage } = await createTestStore(createFakeEngine());
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
       await store.getActions().projects.createProject({
         displayName: "Zombies",
         files: [{ fileName: "in.lmp", content: SCRIPT }],
@@ -624,7 +735,8 @@ describe("projects store integration", () => {
 
   describe("removeFile", () => {
     it("clears meta.inputScript when the designated input script is removed", async () => {
-      const { store, libraryStorage } = await createTestStore(createFakeEngine());
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
       const meta = await store.getActions().projects.createProject({
         displayName: "Remove Input",
         files: [{ fileName: "in.lmp", content: SCRIPT }],

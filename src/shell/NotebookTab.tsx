@@ -5,14 +5,20 @@
  * projects (scratch storage is invisible to Jupyter).
  */
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useStoreState } from "../hooks";
 import { notebookUrlFor } from "../containers/Notebook";
+import { track } from "../utils/metrics";
 import { ExternalIcon } from "./icons";
 import { GhostButton, MONO } from "./ui";
 
 const NotebookTab = () => {
   const active = useStoreState((state) => state.projects.active);
+
+  // UI-only event (the store never learns the tab was opened).
+  useEffect(() => {
+    track("Notebook.Open", {});
+  }, []);
 
   const url = useMemo(() => {
     if (!active) {
@@ -48,7 +54,9 @@ const NotebookTab = () => {
           background: "var(--bg-2)",
         }}
       >
-        <span style={{ fontSize: 12.5, color: "var(--text-2)", lineHeight: 1.5 }}>
+        <span
+          style={{ fontSize: 12.5, color: "var(--text-2)", lineHeight: 1.5 }}
+        >
           JupyterLite runs fully in your browser and mounts this project's
           filesystem — outputs in{" "}
           <span style={{ fontFamily: MONO, color: "var(--text)" }}>runs/</span>{" "}

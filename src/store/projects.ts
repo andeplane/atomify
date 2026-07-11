@@ -11,6 +11,7 @@
  */
 
 import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
+import { unzipSync, zipSync } from "fflate";
 import { StoreModel } from "./model";
 import type { Simulation } from "./simulation";
 import type {
@@ -92,6 +93,11 @@ export interface RunRequest {
   useKokkos: boolean;
   threads: number;
   sweepId?: string;
+  /**
+   * How the run was launched, for metrics only ("sweep" is derived from
+   * sweepId). Defaults to "button".
+   */
+  origin?: "button" | "file";
 }
 
 export type SaveState = "saving" | "saved" | "error";
@@ -171,6 +177,31 @@ export interface ProjectsModel {
   duplicateProject: Thunk<ProjectsModel, void, StoreInjections, StoreModel>;
   deleteProject: Thunk<ProjectsModel, string, StoreInjections, StoreModel>;
   saveQuickAsProject: Thunk<ProjectsModel, void, StoreInjections, StoreModel>;
+  /**
+   * Zip the active project's tree for download: working tree + analysis
+   * notebook + .atomify/project.json, plus runs/ when includeRuns.
+   */
+  exportProject: Thunk<
+    ProjectsModel,
+    { includeRuns: boolean },
+    StoreInjections,
+    StoreModel,
+    Promise<{ fileName: string; bytes: Uint8Array } | null>
+  >;
+  /**
+   * Create a project from a zip (New Project modal upload path). A
+   * .atomify/project.json inside the zip provides displayName/inputScript/
+   * color defaults; the explicit displayName/color arguments (the modal's
+   * fields) win. Binary-safe: entries are written through the same
+   * bytes→content classification the run-output copies use.
+   */
+  importProject: Thunk<
+    ProjectsModel,
+    { zip: Uint8Array; displayName?: string; color?: string; quick?: boolean },
+    StoreInjections,
+    StoreModel,
+    Promise<ProjectMeta>
+  >;
 
   readFile: Thunk<
     ProjectsModel,
@@ -232,7 +263,7 @@ export interface ProjectsModel {
 
   startRuns: Thunk<
     ProjectsModel,
-    Omit<RunRequest, "dirName" | "quick" | "sweepId">[] ,
+    Omit<RunRequest, "dirName" | "quick" | "sweepId">[],
     StoreInjections,
     StoreModel
   >;
@@ -364,7 +395,9 @@ export const projectsModel: ProjectsModel = {
         return;
       }
       const owned = new Set(
-        helpers.getState().activeRun ? [helpers.getState().activeRun!.runId] : [],
+        helpers.getState().activeRun
+          ? [helpers.getState().activeRun!.runId]
+          : [],
       );
       const interrupted = await reconcileRuns(storage, dirName, owned);
       if (interrupted.length > 0) {
@@ -384,6 +417,8 @@ export const projectsModel: ProjectsModel = {
         dirName,
         tab: tab ?? (hasRuns ? "runs" : "files"),
       });
+      // No dirName in metrics — it is user content (PII policy).
+      track("Project.Open", { quick, runCount: runs.length });
     },
   ),
 
@@ -425,7 +460,8 @@ export const projectsModel: ProjectsModel = {
 
     const scripts = files.filter((f) => isScriptFile(f.fileName));
     const inputScript =
-      payload.inputScript ?? (scripts.length === 1 ? scripts[0].fileName : undefined);
+      payload.inputScript ??
+      (scripts.length === 1 ? scripts[0].fileName : undefined);
 
     const meta = await storage.createProject({
       displayName: payload.displayName,
@@ -465,17 +501,20 @@ export const projectsModel: ProjectsModel = {
     return meta;
   }),
 
-  renameProject: thunk(async (actions, displayName, { getState, injections }) => {
-    const active = getState().active;
-    if (!active) {
-      return;
-    }
-    const storage = storageFor(injections, active.quick);
-    const meta = await storage.updateProjectMeta(active.meta.dirName, {
-      displayName,
-    });
-    actions.patchActiveMeta(meta);
-  }),
+  renameProject: thunk(
+    async (actions, displayName, { getState, injections }) => {
+      const active = getState().active;
+      if (!active) {
+        return;
+      }
+      const storage = storageFor(injections, active.quick);
+      const meta = await storage.updateProjectMeta(active.meta.dirName, {
+        displayName,
+      });
+      actions.patchActiveMeta(meta);
+      track("Project.Rename", {});
+    },
+  ),
 
   duplicateProject: thunk(async (actions, _, { getState, injections }) => {
     const active = getState().active;
@@ -507,6 +546,7 @@ export const projectsModel: ProjectsModel = {
         await storage.read(source.dirName, entry.path),
       );
     }
+    track("Project.Duplicate", {});
     await actions.refreshActive();
   }),
 
@@ -517,6 +557,7 @@ export const projectsModel: ProjectsModel = {
       return;
     }
     await injections.libraryStorage.deleteProject(dirName);
+    track("Project.Delete", {});
     const projects = await injections.libraryStorage.listProjects();
     actions.setProjects(projects);
     if (getState().active?.meta.dirName === dirName) {
@@ -565,6 +606,122 @@ export const projectsModel: ProjectsModel = {
     track("Project.SavedFromQuickRun", {});
     await actions.openProject({ dirName: meta.dirName });
   }),
+
+  exportProject: thunk(
+    async (_actions, { includeRuns }, { getState, injections }) => {
+      const active = getState().active;
+      if (!active) {
+        return null;
+      }
+      const storage = storageFor(injections, active.quick);
+      const dirName = active.meta.dirName;
+      const entries: Record<string, Uint8Array> = {};
+      const walk = async (subdir?: string): Promise<void> => {
+        for (const entry of await storage.list(dirName, subdir)) {
+          if (entry.type === "directory") {
+            // entry.path is the full project-relative path, so RUNS_DIR only
+            // matches the top-level runs/ directory.
+            if (!includeRuns && entry.path === RUNS_DIR) {
+              continue;
+            }
+            await walk(entry.path);
+          } else {
+            const content = await storage.read(dirName, entry.path);
+            entries[entry.path] =
+              typeof content === "string"
+                ? new TextEncoder().encode(content)
+                : content;
+          }
+        }
+      };
+      await walk();
+      track("Project.Export", {
+        includeRuns,
+        fileCount: Object.keys(entries).length,
+      });
+      return { fileName: `${dirName}.zip`, bytes: zipSync(entries) };
+    },
+  ),
+
+  importProject: thunk(
+    async (actions, { zip, displayName, color, quick = false }, helpers) => {
+      const unzipped = unzipSync(zip);
+      let files = new Map<string, Uint8Array>();
+      for (const [path, bytes] of Object.entries(unzipped)) {
+        if (!path || path.endsWith("/") || path.includes("__MACOSX/")) {
+          continue; // directory records and archiver junk
+        }
+        files.set(path, bytes);
+      }
+      if (files.size === 0) {
+        throw new Error("The zip contains no files.");
+      }
+      // Zips made by zipping a folder nest everything under one root
+      // directory; strip it so the layout matches an exported project.
+      const paths = [...files.keys()];
+      if (paths.every((path) => path.includes("/"))) {
+        const root = paths[0].slice(0, paths[0].indexOf("/") + 1);
+        if (paths.every((path) => path.startsWith(root))) {
+          files = new Map(
+            [...files].map(([path, bytes]) => [path.slice(root.length), bytes]),
+          );
+        }
+      }
+      // Metadata defaults from an exported project's .atomify/project.json;
+      // the caller's (modal's) explicit fields win.
+      let zipMeta: Partial<ProjectMeta> = {};
+      const metaBytes = files.get(".atomify/project.json");
+      if (metaBytes) {
+        try {
+          zipMeta = JSON.parse(
+            new TextDecoder().decode(metaBytes),
+          ) as Partial<ProjectMeta>;
+        } catch {
+          // Not an Atomify export; import the files as-is.
+        }
+      }
+      // Project-level .atomify/ is regenerated with a fresh identity; run
+      // directories keep their .atomify/run.json records.
+      const payloadPaths = [...files.keys()].filter(
+        (path) => !path.startsWith(".atomify/"),
+      );
+      const workingScripts = payloadPaths.filter(
+        (path) => !path.startsWith(`${RUNS_DIR}/`) && isScriptFile(path),
+      );
+      const inputScript =
+        zipMeta.inputScript && payloadPaths.includes(zipMeta.inputScript)
+          ? zipMeta.inputScript
+          : workingScripts.length === 1
+            ? workingScripts[0]
+            : undefined;
+
+      const meta = await actions.createProject({
+        displayName:
+          displayName?.trim() ||
+          zipMeta.displayName?.trim() ||
+          "Imported project",
+        color: color ?? zipMeta.color,
+        source: { type: "upload" },
+        inputScript,
+        files: [],
+        quick,
+      });
+      const storage = storageFor(helpers.injections, quick);
+      for (const path of payloadPaths) {
+        await storage.write(
+          meta.dirName,
+          path,
+          bytesToWriteContent(path, files.get(path)!),
+        );
+      }
+      track("Project.Import", {
+        fileCount: payloadPaths.length,
+        hasRuns: payloadPaths.some((path) => path.startsWith(`${RUNS_DIR}/`)),
+      });
+      await actions.refreshActive();
+      return meta;
+    },
+  ),
 
   readFile: thunk(async (actions, path, { getState, injections }) => {
     const active = getState().active;
@@ -643,28 +800,34 @@ export const projectsModel: ProjectsModel = {
     }
   }),
 
-  writeFile: thunk(async (actions, { path, content }, { getState, injections }) => {
-    const active = getState().active;
-    if (!active) {
-      return;
-    }
-    await storageFor(injections, active.quick).write(
-      active.meta.dirName,
-      path,
-      content,
-    );
-    if (typeof content === "string") {
-      actions.setFileContent({ path, content });
-    }
-    await actions.refreshActive();
-  }),
+  writeFile: thunk(
+    async (actions, { path, content }, { getState, injections }) => {
+      const active = getState().active;
+      if (!active) {
+        return;
+      }
+      await storageFor(injections, active.quick).write(
+        active.meta.dirName,
+        path,
+        content,
+      );
+      if (typeof content === "string") {
+        actions.setFileContent({ path, content });
+      }
+      await actions.refreshActive();
+    },
+  ),
 
   removeFile: thunk(async (actions, path, { getState, injections }) => {
     const active = getState().active;
     if (!active) {
       return;
     }
-    await storageFor(injections, active.quick).remove(active.meta.dirName, path);
+    await storageFor(injections, active.quick).remove(
+      active.meta.dirName,
+      path,
+    );
+    track("File.Delete", {});
     if (active.meta.inputScript === path) {
       const meta = await storageFor(injections, active.quick).updateProjectMeta(
         active.meta.dirName,
@@ -682,6 +845,7 @@ export const projectsModel: ProjectsModel = {
     }
     const storage = storageFor(injections, active.quick);
     await storage.rename(active.meta.dirName, from, to);
+    track("File.Rename", {});
     if (active.meta.inputScript === from) {
       const meta = await storage.updateProjectMeta(active.meta.dirName, {
         inputScript: to,
@@ -701,6 +865,7 @@ export const projectsModel: ProjectsModel = {
       { inputScript: path },
     );
     actions.patchActiveMeta(meta);
+    track("InputScript.Set", {});
   }),
 
   readFileRaw: thunk(
@@ -750,7 +915,9 @@ export const projectsModel: ProjectsModel = {
       let bytes = 0;
       let runs = 0;
       const walk = async (subdir?: string): Promise<void> => {
-        const entries = await storage.list(meta.dirName, subdir).catch(() => []);
+        const entries = await storage
+          .list(meta.dirName, subdir)
+          .catch(() => []);
         for (const entry of entries) {
           if (entry.type === "directory") {
             await walk(entry.path);
@@ -760,7 +927,9 @@ export const projectsModel: ProjectsModel = {
         }
       };
       await walk();
-      const runDirs = await storage.list(meta.dirName, RUNS_DIR).catch(() => []);
+      const runDirs = await storage
+        .list(meta.dirName, RUNS_DIR)
+        .catch(() => []);
       runs = runDirs.filter((entry) => entry.type === "directory").length;
       sizes[meta.dirName] = { bytes, runs };
     }
@@ -776,6 +945,21 @@ export const projectsModel: ProjectsModel = {
       requests.length > 1
         ? `sweep-${Math.random().toString(36).slice(2, 8)}`
         : undefined;
+    if (sweepId) {
+      // varCount = variables actually swept (taking >1 distinct value).
+      const values = new Map<string, Set<number>>();
+      for (const request of requests) {
+        for (const [name, value] of Object.entries(request.vars)) {
+          const set = values.get(name) ?? new Set<number>();
+          set.add(value);
+          values.set(name, set);
+        }
+      }
+      track("Sweep.Create", {
+        varCount: [...values.values()].filter((set) => set.size > 1).length,
+        runCount: requests.length,
+      });
+    }
     const queue: RunRequest[] = requests.map((request) => ({
       ...request,
       dirName: active.meta.dirName,
@@ -854,6 +1038,11 @@ export const projectsModel: ProjectsModel = {
       origin: request.sweepId ? "sweep" : "app",
     };
     await writeRunMeta(storage, request.dirName, runMeta);
+    track("Run.Start", {
+      origin: request.sweepId ? "sweep" : (request.origin ?? "button"),
+      kokkos: request.useKokkos,
+      hasVars: Object.keys(request.vars).length > 0,
+    });
     actions.setActiveRun({
       dirName: request.dirName,
       runId,
@@ -956,7 +1145,10 @@ export const projectsModel: ProjectsModel = {
     try {
       await storeActions.simulation.newSimulation(simulation);
       for (const file of binaryFiles) {
-        getWasm().FS.writeFile(`/${simulation.id}/${file.fileName}`, file.bytes);
+        getWasm().FS.writeFile(
+          `/${simulation.id}/${file.fileName}`,
+          file.bytes,
+        );
       }
       const result = (await storeActions.simulation.run()) as
         | { stopReason: string; errorMessage?: string }
@@ -1015,6 +1207,11 @@ export const projectsModel: ProjectsModel = {
       },
     };
     await writeRunMeta(storage, request.dirName, runMeta);
+    track("Run.Finish", {
+      status: runMeta.status,
+      wallSeconds: runMeta.stats?.wallSeconds,
+      timesteps: runMeta.stats?.timesteps,
+    });
     const frame = await captureViewport();
     if (frame) {
       try {

@@ -129,6 +129,9 @@ const NewProjectModal = ({
   const createProject = useStoreActions(
     (actions) => actions.projects.createProject,
   );
+  const importProject = useStoreActions(
+    (actions) => actions.projects.importProject,
+  );
   const writeFile = useStoreActions((actions) => actions.projects.writeFile);
   const ui = useShellUI();
   const examples = ui.examples.examples;
@@ -187,6 +190,25 @@ const NewProjectModal = ({
     }
     setCreating(true);
     try {
+      // A single .zip upload is an import: unpack it as a whole project
+      // (an exported project's .atomify/project.json supplies defaults;
+      // the name field above wins).
+      const zipUpload =
+        source === "upload" &&
+        uploads.length === 1 &&
+        uploads[0].name.toLowerCase().endsWith(".zip")
+          ? uploads[0]
+          : null;
+      if (zipUpload) {
+        await importProject({
+          zip: new Uint8Array(await zipUpload.arrayBuffer()),
+          displayName: name.trim() || undefined,
+          color,
+        });
+        onClose();
+        return;
+      }
+
       let files: NewProjectFile[] = [];
       let inputScript: string | undefined;
       let sourceMeta: {
@@ -487,10 +509,10 @@ const NewProjectModal = ({
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => {
                 event.preventDefault();
-                setUploads((previous) => [
-                  ...previous,
-                  ...Array.from(event.dataTransfer.files),
-                ]);
+                // Same eager capture as onChange below: dataTransfer is
+                // neutered once the handler returns.
+                const dropped = Array.from(event.dataTransfer.files);
+                setUploads((previous) => [...previous, ...dropped]);
               }}
               data-testid="upload-dropzone"
               style={{
@@ -528,27 +550,50 @@ const NewProjectModal = ({
                 style={{ display: "none" }}
                 onChange={(event) => {
                   if (event.target.files) {
-                    setUploads((previous) => [
-                      ...previous,
-                      ...Array.from(event.target.files ?? []),
-                    ]);
+                    // Capture the FileList NOW: the functional updater runs
+                    // after this handler returns, by which time the
+                    // `value = ""` reset below has already emptied
+                    // event.target.files (real bug caught by the zip-import
+                    // e2e test).
+                    const picked = Array.from(event.target.files);
+                    setUploads((previous) => [...previous, ...picked]);
                     event.target.value = "";
                   }
                 }}
               />
             </div>
-            <div
-              style={{
-                fontSize: 11.5,
-                color: "var(--text-3)",
-                lineHeight: 1.5,
-                marginBottom: 18,
-              }}
-            >
-              If exactly one <span style={{ fontFamily: MONO }}>.in</span>{" "}
-              script is included it becomes the input script automatically;
-              otherwise you'll pick one on first run.
-            </div>
+            {uploads.length === 1 &&
+            uploads[0].name.toLowerCase().endsWith(".zip") ? (
+              <div
+                data-testid="np-import-zip"
+                style={{
+                  fontSize: 11.5,
+                  color: "var(--text-3)",
+                  lineHeight: 1.5,
+                  marginBottom: 18,
+                }}
+              >
+                The zip is unpacked as a whole project. An exported project's{" "}
+                <span style={{ fontFamily: MONO }}>.atomify/project.json</span>{" "}
+                supplies name, color and input-script defaults — the name field
+                above wins.
+              </div>
+            ) : (
+              <div
+                style={{
+                  fontSize: 11.5,
+                  color: "var(--text-3)",
+                  lineHeight: 1.5,
+                  marginBottom: 18,
+                }}
+              >
+                If exactly one <span style={{ fontFamily: MONO }}>.in</span>{" "}
+                script is included it becomes the input script automatically;
+                otherwise you'll pick one on first run. A single{" "}
+                <span style={{ fontFamily: MONO }}>.zip</span> is imported as a
+                whole project.
+              </div>
+            )}
           </>
         )}
 

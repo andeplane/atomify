@@ -15,6 +15,7 @@ import ShareSimulation from "../containers/ShareSimulation";
 import type { Simulation as SimulationType } from "../store/simulation";
 import { isScriptFile } from "../store/projects";
 import { scriptOptsIntoKokkos } from "../utils/kokkos";
+import { track } from "../utils/metrics";
 import { setCancel } from "../wasm/wasmInstance";
 import { shellThemeConfig } from "../theme";
 import { parseDeepLink, screenToSearch } from "./deepLink";
@@ -88,8 +89,9 @@ const Shell = () => {
   const [runModal, setRunModal] = useState<{ choosingInput: boolean } | null>(
     null,
   );
-  const [shareSimulation, setShareSimulation] =
-    useState<SimulationType | null>(null);
+  const [shareSimulation, setShareSimulation] = useState<SimulationType | null>(
+    null,
+  );
   const [linkResolved, setLinkResolved] = useState(false);
 
   // --- Theme -> document root -------------------------------------------------
@@ -140,7 +142,10 @@ const Shell = () => {
     }
     const search = screenToSearch(screen, window.location.search);
     const next = `${window.location.pathname}${search}${window.location.hash}`;
-    if (next !== `${window.location.pathname}${window.location.search}${window.location.hash}`) {
+    if (
+      next !==
+      `${window.location.pathname}${window.location.search}${window.location.hash}`
+    ) {
       window.history.replaceState(null, "", next);
     }
   }, [screen, linkResolved]);
@@ -257,7 +262,11 @@ const Shell = () => {
 
   // --- Run launcher ----------------------------------------------------------------
   const launch = useCallback(
-    async (inputScript: string, vars: Record<string, number>) => {
+    async (
+      inputScript: string,
+      vars: Record<string, number>,
+      origin: "button" | "file" = "button",
+    ) => {
       let useKokkos = false;
       try {
         useKokkos = scriptOptsIntoKokkos(await readFile(inputScript));
@@ -265,7 +274,7 @@ const Shell = () => {
         // unreadable script: let the engine report the real error
       }
       await startRuns([
-        { inputScript, vars, useKokkos, threads: defaultThreadCount() },
+        { inputScript, vars, useKokkos, threads: defaultThreadCount(), origin },
       ]);
     },
     [readFile, startRuns],
@@ -298,6 +307,7 @@ const Shell = () => {
 
   const quickRunExample = useCallback(
     (example: Example) => {
+      track("QuickRun.Start", { exampleId: example.id });
       void createProject({
         displayName: `Quick run — ${example.title}`,
         quick: true,
@@ -356,10 +366,12 @@ const Shell = () => {
         setRunModal({ choosingInput: options?.choosingInput ?? false }),
       openShare: () => void openShare(),
       quickRunExample,
-      useExampleAsProject: (example) =>
-        setNewProject({ open: true, exampleId: example.id }),
+      useExampleAsProject: (example) => {
+        track("Example.UseAsProject", { exampleId: example.id });
+        setNewProject({ open: true, exampleId: example.id });
+      },
       runProject,
-      runFile: (path) => launch(path, {}),
+      runFile: (path) => launch(path, {}, "file"),
       runAgain: (inputScript, vars) => launch(inputScript, vars),
       stopRun: () => {
         // Same path as the legacy Stop menu item: unpause, then cancel.

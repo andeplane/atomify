@@ -20,11 +20,20 @@ interface SettingsModalProps {
   onClose: () => void;
 }
 
-const SettingsModal = ({ open, tab, onTabChange, onClose }: SettingsModalProps) => {
+const SettingsModal = ({
+  open,
+  tab,
+  onTabChange,
+  onClose,
+}: SettingsModalProps) => {
   const theme = useStoreState((state) => state.settings.theme);
   const renderSettings = useStoreState((state) => state.settings.render);
   const projects = useStoreState((state) => state.projects.projects);
   const setTheme = useStoreActions((actions) => actions.settings.setTheme);
+  const changeTheme = (next: typeof theme) => {
+    track("Theme.Change", { theme: next });
+    setTheme(next);
+  };
   const setRenderSettings = useStoreActions(
     (actions) => actions.settings.setRender,
   );
@@ -121,9 +130,7 @@ const SettingsModal = ({ open, tab, onTabChange, onClose }: SettingsModalProps) 
     return (
       <label
         key={key}
-        onClick={() =>
-          setRenderSettings({ ...renderSettings, [key]: !on })
-        }
+        onClick={() => setRenderSettings({ ...renderSettings, [key]: !on })}
         data-testid={`render-${key}`}
         style={{
           display: "flex",
@@ -219,7 +226,7 @@ const SettingsModal = ({ open, tab, onTabChange, onClose }: SettingsModalProps) 
               }}
             >
               <div
-                onClick={() => setTheme("dark")}
+                onClick={() => changeTheme("dark")}
                 style={themeCardStyle("dark")}
                 data-testid="theme-card-dark"
               >
@@ -233,12 +240,18 @@ const SettingsModal = ({ open, tab, onTabChange, onClose }: SettingsModalProps) 
                     display: "block",
                   }}
                 />
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text)" }}>
+                <span
+                  style={{
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    color: "var(--text)",
+                  }}
+                >
                   Dark
                 </span>
               </div>
               <div
-                onClick={() => setTheme("light")}
+                onClick={() => changeTheme("light")}
                 style={themeCardStyle("light")}
                 data-testid="theme-card-light"
               >
@@ -252,7 +265,13 @@ const SettingsModal = ({ open, tab, onTabChange, onClose }: SettingsModalProps) 
                     display: "block",
                   }}
                 />
-                <span style={{ fontSize: 12.5, fontWeight: 600, color: "var(--text)" }}>
+                <span
+                  style={{
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    color: "var(--text)",
+                  }}
+                >
                   Light
                 </span>
               </div>
@@ -288,7 +307,9 @@ const SettingsModal = ({ open, tab, onTabChange, onClose }: SettingsModalProps) 
               {checkboxRow("showWalls", "Show walls")}
               {checkboxRow("orthographic", "Orthographic camera")}
             </div>
-            <div style={{ paddingTop: 14, borderTop: "1px solid var(--border)" }}>
+            <div
+              style={{ paddingTop: 14, borderTop: "1px solid var(--border)" }}
+            >
               <div
                 style={{
                   display: "flex",
@@ -361,7 +382,9 @@ const SettingsModal = ({ open, tab, onTabChange, onClose }: SettingsModalProps) 
                 marginBottom: 8,
               }}
             >
-              <span style={{ color: "var(--text-2)" }}>Browser storage used</span>
+              <span style={{ color: "var(--text-2)" }}>
+                Browser storage used
+              </span>
               <span
                 style={{ color: "var(--text)", fontWeight: 600 }}
                 data-testid="storage-used"
@@ -402,10 +425,22 @@ const SettingsModal = ({ open, tab, onTabChange, onClose }: SettingsModalProps) 
               }}
             >
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)" }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "var(--text)",
+                  }}
+                >
                   Protect from eviction
                 </div>
-                <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 2 }}>
+                <div
+                  style={{
+                    fontSize: 11.5,
+                    color: "var(--text-3)",
+                    marginTop: 2,
+                  }}
+                >
                   Asks the browser to never clear this site's storage
                 </div>
               </div>
@@ -430,7 +465,13 @@ const SettingsModal = ({ open, tab, onTabChange, onClose }: SettingsModalProps) 
             </div>
             <div style={{ display: "flex", flexDirection: "column" }}>
               {projects.length === 0 && (
-                <div style={{ fontSize: 12.5, color: "var(--text-3)", padding: "8px 0" }}>
+                <div
+                  style={{
+                    fontSize: 12.5,
+                    color: "var(--text-3)",
+                    padding: "8px 0",
+                  }}
+                >
                   No projects yet.
                 </div>
               )}
