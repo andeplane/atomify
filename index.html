@@ -22,6 +22,29 @@
     window.coi = { coepCredentialless: () => true };
   </script>
   <script src="coi-serviceworker.min.js"></script>
+
+  <!--
+    JupyterLite (the Notebook tab iframe) registers its own service worker
+    under jupyter/, which must inject the same COEP header for the iframe to
+    be embeddable in this cross-origin-isolated page (patched in at build
+    time by scripts/patch-jupyterlite-sw.mjs). Nudge that registration to
+    update on every visit so an already-registered stale copy picks up the
+    patched version before the iframe loads, instead of one visit later.
+  -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then((regs) =>
+        regs.forEach((reg) => {
+          if (
+            reg.active &&
+            reg.active.scriptURL.includes("/jupyter/service-worker")
+          ) {
+            reg.update();
+          }
+        }),
+      );
+    }
+  </script>
 </head>
 
 <body>
