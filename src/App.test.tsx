@@ -39,4 +39,18 @@ describe("App", () => {
     expect(screen.getByTestId("embedded-app")).toBeInTheDocument();
     expect(screen.queryByTestId("new-shell")).not.toBeInTheDocument();
   });
+
+  it("routes legacy non-embed share links (?data=) to the new shell", () => {
+    // Legacy plain share links are no longer supported (Share only produces
+    // embed links now); without embed=true the projects shell always renders.
+    vi.mocked(isEmbeddedMode).mockReturnValue(false);
+    window.history.replaceState(null, "", "/?data=abc123&autostart=true");
+
+    render(<App />);
+
+    expect(screen.getByTestId("new-shell")).toBeInTheDocument();
+    expect(screen.queryByTestId("embedded-app")).not.toBeInTheDocument();
+
+    window.history.replaceState(null, "", "/");
+  });
 });
