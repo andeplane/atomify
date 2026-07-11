@@ -33,6 +33,18 @@ export type LammpsWeb = {
     category: "compute" | "fix" | "variable",
     name: string | null,
   ) => void;
+  /**
+   * Read the files under a wasm-FS directory (the run-outputs data path,
+   * ADR-001 §5). Only implemented by the worker proxy; safe mid-run because
+   * MEMFS reads never re-enter the suspended module.
+   */
+  snapshotWorkdir?: (
+    dir: string,
+    maxBytes?: number,
+  ) => Promise<{
+    files: { path: string; bytes: Uint8Array }[];
+    skipped: { path: string; size: number }[];
+  }>;
   getMemoryUsage: () => number;
 
   getPositionsPointer: () => number;

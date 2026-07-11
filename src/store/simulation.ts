@@ -2,14 +2,12 @@ import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
 import { StoreModel } from "./model";
 import { LammpsWeb } from "../types";
 import { AtomTypes, AtomType, hexToRgb } from "../utils/atomtypes";
-import AnalyzeNotebook from "../utils/AnalyzeNotebook";
 import { track, time_event, getEmbeddingParams } from "../utils/metrics";
 import {
   scriptOptsIntoKokkos,
   prepareScriptForSerialStyles,
 } from "../utils/kokkos";
 import * as THREE from "three";
-import localforage from "localforage";
 import ColorModifier from "../modifiers/colormodifier";
 import Modifier from "../modifiers/modifier";
 import { SimulationFile } from "./app";
@@ -21,13 +19,6 @@ import {
   parseAtomSizeAndColor,
 } from "../utils/parsers";
 import { getWasm } from "../wasm/wasmInstance";
-
-localforage.config({
-  driver: localforage.INDEXEDDB,
-  name: "JupyterLite Storage",
-  storeName: "files", // Should be alphanumeric, with underscores.
-  description: "some description",
-});
 
 /**
  * Builds a LAMMPS variable-injection script from a vars map, writes
@@ -177,8 +168,15 @@ export interface SimulationModel {
   setLammps: Action<SimulationModel, LammpsWeb>;
   extractAndApplyAtomifyCommands: Thunk<SimulationModel, string>;
   syncFilesWasm: Thunk<SimulationModel, string | undefined>;
-  syncFilesJupyterLite: Thunk<SimulationModel, undefined>;
-  run: Thunk<SimulationModel>;
+  run: Thunk<
+    SimulationModel,
+    undefined | void,
+    unknown,
+    StoreModel,
+    Promise<
+      { stopReason: StopReason; errorMessage: string | undefined } | undefined
+    >
+  >;
   newSimulation: Thunk<SimulationModel, Simulation>;
   lammps?: LammpsWeb;
   lastError?: string;
@@ -330,137 +328,6 @@ export const simulationModel: SimulationModel = {
       }
     },
   ),
-  syncFilesJupyterLite: thunk(
-    async (
-      actions,
-      dummy: undefined,
-      { getStoreState }: { getStoreState: () => State<StoreModel> },
-    ) => {
-      const simulation = getStoreState().simulation.simulation;
-      if (!simulation) {
-        return;
-      }
-      const wasm = getWasm();
-      const fileNames: string[] = wasm.FS.readdir(`/${simulation.id}`);
-      const files: { [key: string]: SimulationFile } = {};
-      fileNames.forEach((fileName: string) => {
-        if ([".", ".."].includes(fileName)) {
-          return;
-        }
-
-        const filePath = `/${simulation.id}/${fileName}`;
-        files[fileName] = {
-          content: wasm.FS.readFile(filePath, { encoding: "utf8" }),
-          fileName,
-        };
-      });
-
-      type JupyterFileType = "directory" | "file" | "notebook";
-
-      const createLocalForageObject = (
-        name: string,
-        path: string,
-        type: JupyterFileType,
-        content?: string | object,
-        existingCreated?: string,
-      ) => {
-        let mimetype = "text/plain";
-        let format = "text";
-        let size = 0;
-        const now = new Date().toISOString();
-
-        if (
-          type === "directory" ||
-          type === "notebook" ||
-          typeof content === "object"
-        ) {
-          mimetype = "application/json";
-          format = "json";
-        }
-
-        if (content) {
-          if (typeof content === "string") {
-            size = content.length;
-          } else {
-            size = JSON.stringify(content).length;
-          }
-        }
-
-        return {
-          name,
-          path,
-          last_modified: now,
-          created: existingCreated ?? now,
-          format,
-          mimetype: mimetype,
-          content: content ? content : [],
-          size,
-          writable: true,
-          type,
-        };
-      };
-
-      interface LocalForageEntry {
-        created?: string;
-        [key: string]: unknown;
-      }
-
-      // Add an example analysis file
-      const analyzeFileName = "analyze.ipynb";
-      const existingAnalyze =
-        await localforage.getItem<LocalForageEntry>(analyzeFileName);
-      await localforage.setItem(
-        analyzeFileName,
-        createLocalForageObject(
-          analyzeFileName,
-          analyzeFileName,
-          "notebook",
-          AnalyzeNotebook(simulation),
-          existingAnalyze?.created,
-        ),
-      );
-
-      const existingDir =
-        await localforage.getItem<LocalForageEntry>(simulation.id);
-      await localforage.setItem(
-        simulation.id,
-        createLocalForageObject(
-          simulation.id,
-          simulation.id,
-          "directory",
-          undefined,
-          existingDir?.created,
-        ),
-      );
-      for (const file of Object.values(files)) {
-        let type: JupyterFileType = "file";
-        let content: string | object | undefined = file.content;
-        const filePath = `${simulation.id}/${file.fileName}`;
-
-        if (file.fileName.endsWith("ipynb") && typeof content === "string") {
-          type = "notebook";
-          content = JSON.parse(content) as object;
-          const existingNotebook = await localforage.getItem(filePath);
-          if (existingNotebook) {
-            // We don't want to overwrite the content of the notebook
-            continue;
-          }
-        }
-        const existingFile =
-          await localforage.getItem<LocalForageEntry>(filePath);
-        await localforage.setItem(
-          filePath,
-          createLocalForageObject(
-            file.fileName,
-            filePath,
-            type,
-            content,
-            existingFile?.created,
-          ),
-        );
-      }
-    },
-  ),
   run: thunk(
     async (
       actions,
@@ -565,15 +432,17 @@ export const simulationModel: SimulationModel = {
       );
       actions.setPaused(false);
 
-      handleRunResult({
+      const stopReason = handleRunResult({
         errorMessage,
         simulationId: simulation.id,
         metricsData,
         actions,
         allActions,
       });
-      actions.syncFilesJupyterLite();
       allActions.simulationStatus.setLastCommand(undefined);
+      // Callers orchestrating project runs (store/projects.ts) record this
+      // outcome in the run's metadata.
+      return { stopReason, errorMessage };
     },
   ),
   newSimulation: thunk(
@@ -657,9 +526,6 @@ export const simulationModel: SimulationModel = {
 
       actions.setSimulation(simulation); // Set it again now that files are updated
       wasm.FS.chdir(`/${simulation.id}`);
-
-      // Sync files to JupyterLite storage now that they're available in WASM filesystem
-      await actions.syncFilesJupyterLite();
 
       await allActions.app.setStatus(undefined);
       if (simulation.start) {
