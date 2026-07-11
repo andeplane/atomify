@@ -133,6 +133,7 @@ const NewProjectModal = ({
   const [pickedExample, setPickedExample] = useState<string | undefined>(
     undefined,
   );
+  const [exampleQuery, setExampleQuery] = useState("");
   const [color, setColor] = useState<string | undefined>(undefined);
   const [uploads, setUploads] = useState<File[]>([]);
   const [creating, setCreating] = useState(false);
@@ -143,6 +144,7 @@ const NewProjectModal = ({
       setName("");
       setSource(initialExampleId ? "example" : "blank");
       setPickedExample(initialExampleId);
+      setExampleQuery("");
       setColor(undefined);
       setUploads([]);
       setCreating(false);
@@ -153,6 +155,24 @@ const NewProjectModal = ({
     () => examples.find((example) => example.id === pickedExample),
     [examples, pickedExample],
   );
+
+  // Browsable picker: the whole library, filtered like the Examples screen.
+  const filteredExamples = useMemo(() => {
+    const query = exampleQuery.trim().toLowerCase();
+    if (!query) {
+      return examples;
+    }
+    return examples.filter((example) => {
+      const haystack = [
+        example.title,
+        example.description,
+        ...(example.keywords ?? []),
+      ]
+        .join(" ")
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [examples, exampleQuery]);
 
   const folder = slugify(name.trim() || "untitled-project");
 
@@ -236,7 +256,8 @@ const NewProjectModal = ({
       open={open}
       onClose={onClose}
       title="New project"
-      maxWidth={620}
+      // "From example" expands into a browsable library picker.
+      maxWidth={source === "example" ? 920 : 620}
       testId="new-project-modal"
     >
       <div style={{ padding: "18px 24px 24px" }}>
@@ -346,61 +367,108 @@ const NewProjectModal = ({
         )}
 
         {source === "example" && (
-          <div
-            data-testid="example-picker"
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: 8,
-              marginBottom: 20,
-              maxHeight: 280,
-              overflowY: "auto",
-              paddingRight: 4,
-            }}
-          >
-            {examples.map((example) => {
-              const selected = pickedExample === example.id;
-              return (
-                <div
-                  key={example.id}
-                  onClick={() => setPickedExample(example.id)}
-                  data-testid={`pick-example-${example.id}`}
-                  style={{
-                    padding: 7,
-                    borderRadius: 11,
-                    cursor: "pointer",
-                    border: `1.5px solid ${selected ? "var(--accent)" : "var(--border)"}`,
-                    background: selected ? "var(--accent-soft)" : "var(--surface-2)",
-                  }}
-                >
+          <div style={{ marginBottom: 20 }}>
+            <input
+              className="shell-input"
+              data-testid="np-example-search"
+              value={exampleQuery}
+              placeholder="Search examples — title, description or keyword"
+              onChange={(event) => setExampleQuery(event.target.value)}
+              style={{ marginBottom: 10 }}
+            />
+            <div
+              data-testid="example-picker"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                gap: 10,
+                maxHeight: "min(44vh, 420px)",
+                overflowY: "auto",
+                paddingRight: 4,
+                alignContent: "start",
+              }}
+            >
+              {filteredExamples.map((example) => {
+                const selected = pickedExample === example.id;
+                const category = example.keywords?.[0];
+                return (
                   <div
+                    key={example.id}
+                    onClick={() => setPickedExample(example.id)}
+                    data-testid={`np-example-card-${example.id}`}
                     style={{
-                      width: "100%",
-                      aspectRatio: "16 / 10",
-                      borderRadius: 7,
-                      background: "var(--viewport)",
-                      backgroundImage: `url("${example.imageUrl}")`,
-                      backgroundSize: "cover",
-                      backgroundPosition: "center",
-                    }}
-                  />
-                  <span
-                    style={{
-                      display: "block",
-                      fontSize: 11.5,
-                      fontWeight: 600,
-                      color: "var(--text)",
-                      marginTop: 7,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
+                      padding: 7,
+                      borderRadius: 11,
+                      cursor: "pointer",
+                      border: `1.5px solid ${selected ? "var(--accent)" : "var(--border)"}`,
+                      background: selected
+                        ? "var(--accent-soft)"
+                        : "var(--surface-2)",
                     }}
                   >
-                    {example.title}
-                  </span>
+                    <div
+                      style={{
+                        position: "relative",
+                        width: "100%",
+                        aspectRatio: "16 / 10",
+                        borderRadius: 7,
+                        overflow: "hidden",
+                        background: "var(--viewport)",
+                        backgroundImage: `url("${example.imageUrl}")`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                      }}
+                    >
+                      {category && (
+                        <span
+                          style={{
+                            position: "absolute",
+                            top: 6,
+                            left: 6,
+                            padding: "2px 6px",
+                            borderRadius: 5,
+                            background: "rgba(8,10,14,0.7)",
+                            backdropFilter: "blur(6px)",
+                            color: "#fff",
+                            fontSize: 10,
+                            fontWeight: 600,
+                          }}
+                        >
+                          {category}
+                        </span>
+                      )}
+                    </div>
+                    <span
+                      style={{
+                        display: "block",
+                        fontSize: 11.5,
+                        fontWeight: 600,
+                        color: "var(--text)",
+                        marginTop: 7,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {example.title}
+                    </span>
+                  </div>
+                );
+              })}
+              {filteredExamples.length === 0 && (
+                <div
+                  style={{
+                    gridColumn: "1 / -1",
+                    padding: "22px 0",
+                    textAlign: "center",
+                    fontSize: 12.5,
+                    color: "var(--text-3)",
+                  }}
+                >
+                  No examples match “{exampleQuery.trim()}”.
                 </div>
-              );
-            })}
+              )}
+            </div>
           </div>
         )}
 
