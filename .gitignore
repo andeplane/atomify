@@ -7,3 +7,7 @@ cpp/lammps.mjs
 cpp/lammps.wasm
 cpp/lammps.worker.js
 build/
+/public/jupyter
+/.venv-jupyterlite
+.jupyterlite.doit.db
+/.cache/
