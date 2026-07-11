@@ -31,6 +31,7 @@ import {
   writeRunMeta,
 } from "../storage";
 import { projectAnalysisNotebook } from "../utils/AnalyzeNotebook";
+import { injectKokkosOptIn } from "../utils/kokkos";
 import { getWasm } from "../wasm/wasmInstance";
 import { track } from "../utils/metrics";
 
@@ -892,6 +893,23 @@ export const projectsModel: ProjectsModel = {
         // They bypass the Simulation object (whose files are editor-facing
         // text) and are written to the run's wasm dir directly below.
         binaryFiles.push({ fileName: relative, bytes: content });
+      }
+    }
+    // The Multithreading toggle (New Run modal): KOKKOS acceleration is
+    // engaged per run by the `suffix kk` marker in the input script (the
+    // engine's `-sf kk -k on t 4` args are constant; syncFilesWasm applies
+    // serial-styles preprocessing to scripts WITHOUT the marker — see
+    // src/utils/kokkos.ts). When the toggle is on and the script doesn't
+    // already opt in, inject the marker into the materialized copy here —
+    // the working tree and the run snapshot keep the original text. When
+    // the toggle is off we leave opted-in scripts alone: the toggle
+    // defaults from the script, so "off" only means "don't inject".
+    if (request.useKokkos) {
+      const mainScript = files.find(
+        (file) => file.fileName === request.inputScript,
+      );
+      if (mainScript) {
+        mainScript.content = injectKokkosOptIn(mainScript.content);
       }
     }
     const simulation: Simulation = {

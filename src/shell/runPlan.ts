@@ -9,6 +9,7 @@
  */
 
 import { linspace, type ScriptVariable } from "../utils/scriptVariables";
+import { KOKKOS_THREADS } from "../utils/kokkos";
 
 export interface VarDraft {
   mode: "fixed" | "sweep";
@@ -135,13 +136,11 @@ export function buildCommandPreview(
 }
 
 /**
- * Thread count passed through to startRuns. The wasm build's thread pool is
- * fixed at engine load, so this is informational (the model records it); a
- * per-run picker would be a lie and is deliberately omitted (deviation from
- * the design mock's thread strip).
+ * Thread count passed through to startRuns and shown in the command preview.
+ * The engine's Kokkos thread pool is fixed at engine load (KOKKOS_THREADS =
+ * 4, src/utils/kokkos.ts); a per-run picker would be a lie and is
+ * deliberately omitted (deviation from the design mock's thread strip).
  */
 export function defaultThreadCount(): number {
-  const cores =
-    typeof navigator !== "undefined" ? navigator.hardwareConcurrency : 4;
-  return Math.max(1, Math.min(cores || 4, 8));
+  return KOKKOS_THREADS;
 }

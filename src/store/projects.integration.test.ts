@@ -37,7 +37,7 @@ import {
   type ProjectStorage,
   type RunMeta,
 } from "../storage";
-import { setWasm } from "../wasm/wasmInstance";
+import { getWasm, setWasm } from "../wasm/wasmInstance";
 import type { AtomifyWasmModule } from "../wasm/types";
 import type { LammpsWeb, LMPModifier, Wall } from "../types";
 
@@ -205,6 +205,54 @@ describe("projects store integration", () => {
       const runs = store.getState().projects.active?.runs ?? [];
       expect(runs.map((r) => r.runId)).toEqual(["run-001"]);
       expect(runs[0].meta?.status).toBe("completed");
+    });
+
+    it("useKokkos injects the suffix kk opt-in into the materialized script only", async () => {
+      const engine = createFakeEngine();
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Kokkos Toggle",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const dirName = activeDirName(store);
+
+      await store
+        .getActions()
+        .projects.startRuns([runRequest({ useKokkos: true, threads: 4 })]);
+
+      // The script the engine ran carries the injected opt-in marker…
+      const ranScript = getWasm().FS.readFile(
+        `/${dirName}/${RUNS_DIR}/run-001/in.lmp`,
+        { encoding: "utf8" },
+      );
+      expect(ranScript.startsWith("suffix kk")).toBe(true);
+      expect(ranScript).toContain(SCRIPT);
+      // …while the working tree and the run snapshot keep the original text.
+      expect(await libraryStorage.read(dirName, "in.lmp")).toBe(SCRIPT);
+      expect(
+        await libraryStorage.read(dirName, `${RUNS_DIR}/run-001/in.lmp`),
+      ).toBe(SCRIPT);
+    });
+
+    it("useKokkos: false leaves the script untouched (serial preprocessing applies)", async () => {
+      const engine = createFakeEngine();
+      const { store } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Serial Run",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const dirName = activeDirName(store);
+
+      await store.getActions().projects.startRuns([runRequest()]);
+
+      // No opt-in marker injected; syncFilesWasm applied the serial-styles
+      // preprocessing (suffix off) for the always-on `-sf kk` module.
+      const ranScript = getWasm().FS.readFile(
+        `/${dirName}/${RUNS_DIR}/run-001/in.lmp`,
+        { encoding: "utf8" },
+      );
+      expect(ranScript.startsWith("suffix off")).toBe(true);
+      expect(ranScript).not.toContain("suffix kk");
     });
 
     it("records a failed run with the engine's error message", async () => {

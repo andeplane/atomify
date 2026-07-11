@@ -497,7 +497,7 @@ const NewRunModal = ({
                     Multithreading
                   </div>
                   <div style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 2 }}>
-                    Runs LAMMPS with KOKKOS acceleration
+                    Runs LAMMPS with KOKKOS acceleration (×{threads} threads)
                   </div>
                 </div>
                 <ToggleSwitch
@@ -507,8 +507,9 @@ const NewRunModal = ({
                 />
               </div>
               {/* Deviation from the design mock: no per-run thread picker.
-                  The wasm build's thread pool is fixed when the engine loads,
-                  so a picker here could not take effect. */}
+                  The engine's Kokkos thread pool is fixed at engine load
+                  (KOKKOS_THREADS = 4), so a picker here could not take
+                  effect. */}
             </div>
 
             <div
