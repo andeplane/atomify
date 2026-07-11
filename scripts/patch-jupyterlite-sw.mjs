@@ -37,14 +37,33 @@ const atomifyWithCoiHeaders = (response) => {
   ) {
     return response;
   }
-  const headers = new Headers(response.headers);
-  headers.set("Cross-Origin-Embedder-Policy", "credentialless");
-  headers.set("Cross-Origin-Opener-Policy", "same-origin");
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers,
-  });
+  try {
+    const headers = new Headers(response.headers);
+    headers.set("Cross-Origin-Embedder-Policy", "credentialless");
+    headers.set("Cross-Origin-Opener-Policy", "same-origin");
+    // Null-body statuses reject a body stream in the Response constructor.
+    const body = [101, 103, 204, 205, 304].includes(response.status)
+      ? null
+      : response.body;
+    const patched = new Response(body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers,
+    });
+    // The Response constructor resets url/redirected; restore them for
+    // consumers that read them.
+    if (response.url) {
+      Object.defineProperty(patched, "url", { value: response.url });
+    }
+    if (response.redirected) {
+      Object.defineProperty(patched, "redirected", { value: true });
+    }
+    return patched;
+  } catch (error) {
+    // Never wedge the service worker on an unexpected response shape;
+    // worst case the un-patched response re-blocks the notebook iframe.
+    return response;
+  }
 };
 ${WRAPPED_FUNCTION} = (
   (original) => async (event) =>

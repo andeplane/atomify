@@ -19,29 +19,54 @@
     Must load before the app module.
   -->
   <script>
-    window.coi = { coepCredentialless: () => true };
+    // Escape hatch: /atomify/?sw-reset deterministically unregisters every
+    // service worker on the origin (the COOP/COEP shim below and
+    // JupyterLite's) and clears CacheStorage, then reloads without the
+    // flag for a fresh start — guaranteed recovery if a deployed service
+    // worker ever leaves clients stuck.
+    (() => {
+      const resetting = new URLSearchParams(window.location.search).has(
+        "sw-reset",
+      );
+      window.coi = {
+        coepCredentialless: () => true,
+        shouldRegister: () => !resetting,
+      };
+      if (!resetting) return;
+      const done = () => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("sw-reset");
+        window.location.replace(url);
+      };
+      Promise.all([
+        "serviceWorker" in navigator
+          ? navigator.serviceWorker
+              .getRegistrations()
+              .then((regs) => Promise.all(regs.map((reg) => reg.unregister())))
+          : null,
+        "caches" in window
+          ? caches
+              .keys()
+              .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+          : null,
+      ]).then(done, done);
+    })();
   </script>
   <script src="coi-serviceworker.min.js"></script>
 
   <!--
-    JupyterLite (the Notebook tab iframe) registers its own service worker
-    under jupyter/, which must inject the same COEP header for the iframe to
-    be embeddable in this cross-origin-isolated page (patched in at build
-    time by scripts/patch-jupyterlite-sw.mjs). Nudge that registration to
-    update on every visit so an already-registered stale copy picks up the
-    patched version before the iframe loads, instead of one visit later.
+    Both service workers on this origin (the COOP/COEP shim above and
+    JupyterLite's under jupyter/, which the build patches to inject the
+    same COEP header — see scripts/patch-jupyterlite-sw.mjs) update with
+    skipWaiting + clients.claim. Explicitly check both for updates on
+    every visit so a newly deployed fix reaches stale clients on their
+    next load, instead of whenever the browser's own update heuristics
+    get around to it.
   -->
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.getRegistrations().then((regs) =>
-        regs.forEach((reg) => {
-          if (
-            reg.active &&
-            reg.active.scriptURL.includes("/jupyter/service-worker")
-          ) {
-            reg.update();
-          }
-        }),
+        regs.forEach((reg) => reg.update().catch(() => {})),
       );
     }
   </script>

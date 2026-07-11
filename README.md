@@ -161,7 +161,14 @@ Build JupyterLite
 
 ```
 jupyter lite build --contents jupyterlite/content --output-dir public/jupyter
+node scripts/patch-jupyterlite-sw.mjs
 ```
+
+The second command patches the JupyterLite service worker to inject the
+COOP/COEP headers the cross-origin-isolated app requires (the deploy
+workflow does the same). If a deployed service worker ever misbehaves,
+visiting https://andeplane.github.io/atomify/?sw-reset unregisters every
+service worker and clears their caches for a fresh start.
 
 ### Run locally
 
