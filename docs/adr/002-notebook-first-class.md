@@ -90,14 +90,18 @@ Goal: notebooks can run entire simulations in the kernel:
 %pip install lammps-js
 from lammps import lammps
 import os
+home = os.getcwd()
 for T in [1.0, 2.0, 3.0]:
     rundir = f"runs/run-T{T}"
     os.makedirs(rundir, exist_ok=True)        # mkdir BEFORE LAMMPS writes there
-    lmp = await lammps()
-    lmp.command(f"log {rundir}/log.lammps")
-    lmp.command(f"variable T equal {T}")
-    lmp.file("in.diffusion")                  # reads the project working tree
-    lmp.close()
+    os.chdir(rundir)                          # dumps/write_data land in the run,
+    try:                                      # not the working tree (DriveFS
+        lmp = await lammps()                  # follows the kernel cwd)
+        lmp.command(f"variable T equal {T}")
+        lmp.file("../../in.diffusion")        # script from the working tree
+        lmp.close()
+    finally:
+        os.chdir(home)
 ```
 
 **Supply chain** (review blocker — the wheel exists nowhere consumable

@@ -143,16 +143,21 @@ Naming rules:
 - **Run directories are `run-NNN`** (zero-padded sequence, per the design).
   Allocation takes the max existing number + 1; if the allocated directory
   already exists (concurrent creation from the notebook side), allocation
-  retries with the next number. Runs created by external tools with other
-  names are still listed (§6).
+  retries with the next number. The app **claims the directory by writing
+  its directory record before anything else**, and the notebook template
+  recommends non-numeric run names (`run-T3.0`), so simultaneous
+  allocation cannot silently merge two runs. Runs created by external
+  tools with other names are still listed (§5).
 
 **Snapshot contract** (explicit allow/deny — review finding): a run
 snapshot copies the working tree **excluding** `runs/`, `.atomify/`, and
 `*.ipynb`. Notebooks are analysis, not simulation input; `runs/` excluded
-prevents recursive snapshot growth. To keep snapshots cheap, a file is
-**skipped when byte-identical to the same path in the previous run's
-snapshot** — the record is written as a copy of the previous record
-(storage-level dedup can improve this later without changing the layout).
+prevents recursive snapshot growth. When a file is byte-identical to the
+same path in the previous run's snapshot, the copy skips re-reading and
+re-encoding the working-tree body — but **the bytes are still duplicated
+per run** (the contents schema stores full content per path-keyed record).
+True dedup (content-addressed records behind the storage interface) is
+future work; the size caps below are what actually bound quota today.
 Files larger than a threshold (default 64 MB) are not snapshotted; the run
 records their names + hashes in `run.json` so provenance gaps are explicit.
 
@@ -293,9 +298,15 @@ Flow per run:
    `frame.png`.
 
 **Reconciliation** (crash/zombie handling — review finding): on project
-open and on library listing, any run with `status: "running"` that this
+open and on library listing, a run with `status: "running"` that this
 session does not own is rewritten to `"interrupted"` (partial outputs
-kept, badge in UI). A top-level directory without `.atomify/project.json`
+kept, badge in UI) — with an **ownership/grace rule** so live notebook
+runs are not killed: app/sweep-origin runs reconcile immediately (one app
+session owns the engine), while `origin: "notebook"` runs reconcile only
+when their `run.json` `last_modified` is older than a grace window
+(10 min). Runs in `runs/*` without any `run.json` (external/scripted)
+are listed as "external run" rows with mtime-derived timestamps, never
+reconciled. A top-level directory without `.atomify/project.json`
 is not listed; the library offers "recover as project" for such orphans.
 If the project directory disappears mid-run (deleted from the Jupyter
 side), the run is canceled and its output copies stop.
@@ -307,7 +318,7 @@ side), the run is canceled and its output copies stop.
 | **New project** | Modal: name + start blank / from example / drop files. Creates a persisted project. |
 | **Example → "Use as project"** | Instantiates a project from the example's files. |
 | **Example → "Quick run"** | Runs immediately in a **scratch project on `MemoryProjectStorage`** — nothing persisted, banner offers **"Save as project"**, which materializes the working tree *and completed runs* into the library. Closing the tab discards it. This keeps tire-kicking from littering the library (review finding) while "everything in the library persists" stays absolutely true. |
-| **Share link** | Normal mode: opens as a quick run (same banner/save flow). Embedded mode: `MemoryProjectStorage`, no save affordance, Notebook hidden (ADR-002 §6). |
+| **Share link** | Normal mode: opens as a quick run (same banner/save flow). Embedded mode: `MemoryProjectStorage`, no save affordance, Notebook hidden (ADR-002 §1). |
 
 ### 7. Parameter sweeps
 
@@ -326,7 +337,10 @@ the cartesian product as a **sweep** — one run per combination:
 - The app executes sweep runs **sequentially** (one WASM engine); the Runs
   tab shows queued entries (`status: "queued"` in memory only — never
   persisted, so no zombie queue states) with progress per run and
-  cancel-remaining.
+  cancel-remaining. Consequence of in-memory queuing: a page refresh
+  mid-sweep drops the not-yet-started combinations; on reload the app
+  shows "sweep interrupted — N runs not started" with a re-enqueue
+  affordance (completed runs are untouched).
 - Variable values are injected per run via the vars-wrapper mechanism, and
   recorded in `run.json.vars` — the Runs list surfaces them (ADR-003), which
   is what makes ten near-identical rows distinguishable.

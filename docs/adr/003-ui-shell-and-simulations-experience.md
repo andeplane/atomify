@@ -129,8 +129,9 @@ auto-started run and hides sidebar/library (as today) and the Notebook tab
 6. **Opening a previously-run project**: workspace opens on **Files**
    for never-run projects, **Runs** otherwise. Run detail of a finished
    run shows `frame.png` in the viewport area (with "Run again" overlay)
-   plus the persisted console log and outputs — never a silent black
-   canvas (review blocker). Trajectories are not replayed in v1.
+   plus the console (rendered from the run's persisted `log.lammps`) and
+   outputs — never a silent black canvas (review blocker). Trajectories
+   are not replayed in v1.
 7. **Interrupted runs** (ADR-001 §5 reconciliation) render with a
    distinct badge and keep partial outputs.
 
