@@ -268,14 +268,30 @@ async function captureViewport(): Promise<Uint8Array | null> {
     if (!canvas || canvas.width === 0) {
       return null;
     }
-    const blob = await new Promise<Blob | null>((resolve) =>
-      canvas.toBlob(resolve, "image/png"),
+    // The visualizer renders in its own rAF loop and WebGL drawing buffers
+    // (preserveDrawingBuffer: false) are invalidated after compositing.
+    // Waiting two frames and reading the pixels synchronously right after the
+    // rAF callback — before this frame composites — captures real pixels
+    // instead of a black frame. toDataURL is used over toBlob because it is
+    // synchronous: toBlob's callback lands after compositing.
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
     );
-    if (!blob || blob.size < 200) {
-      // WebGL without preserveDrawingBuffer yields empty frames; skip those.
+    const dataUrl = canvas.toDataURL("image/png");
+    const base64 = dataUrl.split(",")[1];
+    if (!base64) {
       return null;
     }
-    return new Uint8Array(await blob.arrayBuffer());
+    const binary = atob(base64);
+    if (binary.length < 200) {
+      // Empty/cleared buffers compress to nearly nothing; skip those.
+      return null;
+    }
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes;
   } catch {
     return null;
   }
@@ -900,6 +916,23 @@ export const projectsModel: ProjectsModel = {
     // 4. Final full output copy + run.json + best-effort frame capture.
     await copyOutputs(undefined);
     const lammpsState = (getStoreState() as State<StoreModel>).simulation;
+    // This wasm build streams LAMMPS output to stdout instead of writing a
+    // log file; persist the captured console as the run's log.lammps
+    // (ADR-003 §4.6 renders finished-run consoles from it). A log the engine
+    // did write itself wins.
+    try {
+      const logPath = `${RUNS_DIR}/${runId}/log.lammps`;
+      const engineLog = await storage.stat(request.dirName, logPath);
+      if (!engineLog && lammpsState.lammpsOutput.length > 0) {
+        await storage.write(
+          request.dirName,
+          logPath,
+          lammpsState.lammpsOutput.join("\n") + "\n",
+        );
+      }
+    } catch {
+      // The log is a convenience copy; never fail the run over it.
+    }
     const existing = await readRunMeta(storage, request.dirName, runId);
     runMeta = {
       ...(existing ?? runMeta),

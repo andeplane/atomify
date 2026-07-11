@@ -150,7 +150,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
         },
         { k: "Remaining", v: formatDuration(remainingTime) },
         { k: "Steps / second", v: Math.round(timestepsPerSecond).toLocaleString() },
-        { k: "Memory", v: formatBytes(memoryUsage * 1024 * 1024) },
+        { k: "Memory", v: formatBytes(memoryUsage) },
       ];
     }
     return [
