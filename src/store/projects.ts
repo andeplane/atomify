@@ -196,6 +196,35 @@ export interface ProjectsModel {
   >;
   setInputScript: Thunk<ProjectsModel, string, StoreInjections, StoreModel>;
 
+  /**
+   * Raw read of any project-relative path (binary stays Uint8Array).
+   * Defaults to the active project; pass dirName for other projects
+   * (e.g. the Home continue card's frame.png). Returns null when missing.
+   */
+  readFileRaw: Thunk<
+    ProjectsModel,
+    { path: string; dirName?: string; quick?: boolean },
+    StoreInjections,
+    StoreModel,
+    Promise<string | Uint8Array | null>
+  >;
+  /** Direct children of a subdir (run output lists, run-frame lookups). */
+  listFiles: Thunk<
+    ProjectsModel,
+    { subdir: string; dirName?: string; quick?: boolean },
+    StoreInjections,
+    StoreModel,
+    Promise<FileStat[]>
+  >;
+  /** Per-project storage footprint for the Settings storage tab (ADR-003 §5). */
+  projectSizes: Thunk<
+    ProjectsModel,
+    void,
+    StoreInjections,
+    StoreModel,
+    Promise<Record<string, { bytes: number; runs: number }>>
+  >;
+
   startRuns: Thunk<
     ProjectsModel,
     Omit<RunRequest, "dirName" | "quick" | "sweepId">[] ,
@@ -633,6 +662,70 @@ export const projectsModel: ProjectsModel = {
       { inputScript: path },
     );
     actions.patchActiveMeta(meta);
+  }),
+
+  readFileRaw: thunk(
+    async (_actions, { path, dirName, quick }, { getState, injections }) => {
+      const active = getState().active;
+      const dir = dirName ?? active?.meta.dirName;
+      if (!dir) {
+        return null;
+      }
+      const isActive = active?.meta.dirName === dir;
+      const storage = storageFor(
+        injections,
+        quick ?? (isActive ? active!.quick : false),
+      );
+      try {
+        return await storage.read(dir, path);
+      } catch {
+        return null;
+      }
+    },
+  ),
+
+  listFiles: thunk(
+    async (_actions, { subdir, dirName, quick }, { getState, injections }) => {
+      const active = getState().active;
+      const dir = dirName ?? active?.meta.dirName;
+      if (!dir) {
+        return [];
+      }
+      const isActive = active?.meta.dirName === dir;
+      const storage = storageFor(
+        injections,
+        quick ?? (isActive ? active!.quick : false),
+      );
+      try {
+        return await storage.list(dir, subdir);
+      } catch {
+        return [];
+      }
+    },
+  ),
+
+  projectSizes: thunk(async (_actions, _payload, { getState, injections }) => {
+    const storage = injections.libraryStorage;
+    const sizes: Record<string, { bytes: number; runs: number }> = {};
+    for (const meta of getState().projects) {
+      let bytes = 0;
+      let runs = 0;
+      const walk = async (subdir?: string): Promise<void> => {
+        const entries = await storage.list(meta.dirName, subdir).catch(() => []);
+        for (const entry of entries) {
+          if (entry.type === "directory") {
+            await walk(entry.path);
+          } else {
+            bytes += entry.size;
+          }
+        }
+      };
+      await walk();
+      const runDirs = await storage.list(meta.dirName, RUNS_DIR).catch(() => []);
+      runs = runDirs.filter((entry) => entry.type === "directory").length;
+      sizes[meta.dirName] = { bytes, runs };
+    }
+    return sizes;
   }),
 
   startRuns: thunk(async (actions, requests, { getState }) => {

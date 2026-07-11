@@ -42,11 +42,38 @@ export interface SimulationSettings {
   uiUpdateFrequency: number;
 }
 
+/** UI theme (ADR-003 §6): drives the shell tokens via [data-theme]. */
+export type ThemeName = "dark" | "light";
+
+const THEME_STORAGE_KEY = "atomify_theme";
+
+export const loadThemeFromStorage = (): ThemeName => {
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY);
+    if (stored === "dark" || stored === "light") {
+      return stored;
+    }
+  } catch (e) {
+    console.warn("Failed to load theme from localStorage", e);
+  }
+  return "dark";
+};
+
+export const saveThemeToStorage = (theme: ThemeName) => {
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch (e) {
+    console.warn("Failed to save theme to localStorage", e);
+  }
+};
+
 export interface SettingsModel {
   render: RenderSettings;
   simulation: SimulationSettings;
+  theme: ThemeName;
   setRender: Action<SettingsModel, RenderSettings>;
   setSimulation: Action<SettingsModel, SimulationSettings>;
+  setTheme: Action<SettingsModel, ThemeName>;
 }
 
 const defaultRenderSettings: RenderSettings = {
@@ -73,6 +100,7 @@ export const settingsModel: SettingsModel = {
     uiUpdateFrequency: 15,
   },
   render: initialRenderSettings,
+  theme: loadThemeFromStorage(),
   setRender: action((state, render: RenderSettings) => {
     state.render = render;
     saveRenderSettingsToStorage(render);
@@ -80,5 +108,9 @@ export const settingsModel: SettingsModel = {
   setSimulation: action((state, simulation: SimulationSettings) => {
     state.simulation = simulation;
     setSyncFrequency(simulation.speed);
+  }),
+  setTheme: action((state, theme: ThemeName) => {
+    state.theme = theme;
+    saveThemeToStorage(theme);
   }),
 };
