@@ -99,9 +99,16 @@ export interface RunResultContext {
 export function handleRunResult(ctx: RunResultContext): StopReason {
   const { errorMessage, simulationId, metricsData, actions, allActions } = ctx;
 
+  // runPostTimestep is a thunk (returns a promise); a rejection (e.g. wasm
+  // gone) must surface in the console, not as an unhandled rejection.
+  const runPostTimestep = () =>
+    void Promise.resolve(allActions.processing.runPostTimestep(true)).catch(
+      (error) => console.error("Post-timestep processing failed:", error),
+    );
+
   if (errorMessage) {
     if (errorMessage.includes("Atomify::canceled")) {
-      allActions.processing.runPostTimestep(true);
+      runPostTimestep();
       actions.setRunning(false);
       actions.setShowConsole(true);
       track("Simulation.Stop", {
@@ -123,7 +130,7 @@ export function handleRunResult(ctx: RunResultContext): StopReason {
       return "failed";
     }
   } else {
-    allActions.processing.runPostTimestep(true);
+    runPostTimestep();
     actions.setRunning(false);
     actions.setShowConsole(true);
     track("Simulation.Stop", {

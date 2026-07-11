@@ -20,8 +20,13 @@ if (!container) {
 }
 
 const root = createRoot(container);
-root.render(
-  <StoreProvider store={store}>
-    <App />
-  </StoreProvider>,
-);
+// Wait for the persisted settings slice to rehydrate before mounting: easy-peasy
+// replays persisted state asynchronously, silently reverting any dispatch made
+// before it settles (e.g. setLammps from the engine bootstrap).
+void store.persist.resolveRehydration().then(() => {
+  root.render(
+    <StoreProvider store={store}>
+      <App />
+    </StoreProvider>,
+  );
+});

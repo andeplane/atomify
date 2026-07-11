@@ -478,25 +478,31 @@ export const projectsModel: ProjectsModel = {
       return;
     }
     const storage = storageFor(injections, active.quick);
-    // Working tree + notebook only, no runs (ADR-003 §5).
-    const files: NewProjectFile[] = [];
-    for (const entry of active.files) {
-      if (entry.type === "directory") {
-        continue;
-      }
-      const content = await storage.read(active.meta.dirName, entry.path);
-      files.push({
-        fileName: entry.path,
-        content: typeof content === "string" ? content : undefined,
-      });
-    }
-    await actions.createProject({
+    // Working tree + notebook only, no runs (ADR-003 §5). Snapshot the source
+    // listing before createProject switches the active project to the copy.
+    const source = {
+      dirName: active.meta.dirName,
+      files: active.files.filter((entry) => entry.type !== "directory"),
+    };
+    const meta = await actions.createProject({
       displayName: `${active.meta.displayName} (copy)`,
       color: active.meta.color,
       source: active.meta.source,
       inputScript: active.meta.inputScript,
-      files,
+      files: [],
     });
+    // Copy contents directly so binary files survive (a text-only detour
+    // through CreateProjectPayload would empty them); the copied notebook
+    // overwrites the template createProject generated.
+    const library = storageFor(injections, false);
+    for (const entry of source.files) {
+      await library.write(
+        meta.dirName,
+        entry.path,
+        await storage.read(source.dirName, entry.path),
+      );
+    }
+    await actions.refreshActive();
   }),
 
   deleteProject: thunk(async (actions, dirName, { getState, injections }) => {
