@@ -1,8 +1,7 @@
 /**
  * Deep links (ADR-003 §3): ?project=&tab=&run=&file= map 1:1 onto the typed
- * Screen state so refresh restores position. Legacy params (script=, embed
- * codec URLs) are handled only by the embedded-mode path and are ignored
- * here. Unrelated params (e.g. examplesUrl) are preserved on updates.
+ * Screen state so refresh restores position. Legacy params (script=, data=,
+ * embed=) belong to the removed embedded mode and are ignored here. Unrelated params (e.g. examplesUrl) are preserved on updates.
  */
 
 import type { ProjectTab, Screen } from "../store/projects";

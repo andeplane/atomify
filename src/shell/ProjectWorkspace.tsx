@@ -1,8 +1,8 @@
 /**
  * Project workspace (ADR-003 §2): quick-run banner, header (breadcrumb,
- * displayName + dirName/, Running pill, Share, Run split-button with
- * dropdown, project ⋯ menu), the Files | Runs | Notebook tabs, and the
- * per-tab content including the editor and run-detail sub-screens.
+ * displayName + dirName/, Running pill, Run split-button with dropdown,
+ * project ⋯ menu incl. zip download), the Files | Runs | Notebook tabs, and
+ * the per-tab content including the editor and run-detail sub-screens.
  */
 
 import { useState } from "react";
@@ -16,21 +16,8 @@ import EditorScreen from "./EditorScreen";
 import RunsTab from "./RunsTab";
 import RunDetail from "./RunDetail";
 import NotebookTab from "./NotebookTab";
-import {
-  ChevronDownIcon,
-  DotsIcon,
-  InfoIcon,
-  PlayIcon,
-  ShareIcon,
-} from "./icons";
-import {
-  GhostButton,
-  MenuDivider,
-  MenuItem,
-  MONO,
-  Popover,
-  RunningPill,
-} from "./ui";
+import { ChevronDownIcon, DotsIcon, InfoIcon, PlayIcon } from "./icons";
+import { MenuDivider, MenuItem, MONO, Popover, RunningPill } from "./ui";
 
 const ProjectWorkspace = ({
   screen,
@@ -278,15 +265,10 @@ const ProjectWorkspace = ({
             </div>
           </div>
           <div style={{ display: "flex", gap: 9, flexShrink: 0 }}>
-            {!active.quick && (
-              <GhostButton
-                data-testid="share-button"
-                onClick={() => ui.openShare()}
-              >
-                <ShareIcon />
-                Share
-              </GhostButton>
-            )}
+            {/* No Share affordance: URL-encoded sharing and embedded mode
+                were removed (2026-07-11) — the project zip download/import
+                (⋯ menu / New Project upload) is the sharing story until a
+                backend exists. */}
             <div style={{ position: "relative", display: "flex" }}>
               <Tooltip title={ui.engineReady ? "" : "Engine loading…"}>
                 <button

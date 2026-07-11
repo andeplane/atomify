@@ -15,7 +15,6 @@ vi.mock("localforage", () => ({
 vi.mock("../utils/metrics", () => ({
   track: vi.fn(),
   time_event: vi.fn(),
-  getEmbeddingParams: vi.fn(() => ({})),
 }));
 
 import {
@@ -232,9 +231,7 @@ describe("simulation store — pure actions", () => {
 
 // Helper functions
 
-function createMockSimulation(
-  overrides?: Partial<Simulation>,
-): Simulation {
+function createMockSimulation(overrides?: Partial<Simulation>): Simulation {
   return {
     id: "test-sim",
     files: [{ fileName: "in.lmp", content: "run 100" }],

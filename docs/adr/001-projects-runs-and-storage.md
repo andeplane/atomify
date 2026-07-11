@@ -318,7 +318,7 @@ side), the run is canceled and its output copies stop.
 | **New project** | Modal: name + start blank / from example / drop files. Creates a persisted project. |
 | **Example → "Use as project"** | Instantiates a project from the example's files. |
 | **Example → "Quick run"** | Runs immediately in a **scratch project on `MemoryProjectStorage`** — nothing persisted, banner offers **"Save as project"**, which materializes the working tree *and completed runs* into the library. Closing the tab discards it. This keeps tire-kicking from littering the library (review finding) while "everything in the library persists" stays absolutely true. |
-| **Share link** | Normal mode: opens as a quick run (same banner/save flow). Embedded mode: `MemoryProjectStorage`, no save affordance, Notebook hidden (ADR-002 §1). |
+| **Share link** | ~~Normal mode: opens as a quick run (same banner/save flow). Embedded mode: `MemoryProjectStorage`, no save affordance, Notebook hidden (ADR-002 §1).~~ Removed — see the 2026-07-11 amendment below. |
 
 ### 7. Parameter sweeps
 
@@ -419,3 +419,14 @@ instantiation (taking precedence over the generated template, ADR-002 §2).
 - (−) A new worker protocol (`snapshotWorkdir`) is required; its
   step-callback scheduling is constrained by ASYNCIFY re-entry rules and
   must be reviewed against them.
+
+## Amendment (2026-07-11)
+
+Embedded mode and URL-encoded share links (`?data=`/`?script=`, the embed
+codec, `EmbeddedApp` and the entire legacy shell) were removed. Real
+projects blow past GitHub Pages' ~2 KB URL limit, and the iframe/book use
+case is moving to a different mechanism. Sharing is now **project zip
+export/import**: "Download project" in the workspace ⋯ menu produces a zip
+of the tree (optionally with `runs/`), and the New Project modal's Upload
+path imports a single .zip as a whole project (its `.atomify/project.json`
+supplies defaults). A backend-based sharing story comes later.

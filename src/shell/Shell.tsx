@@ -1,8 +1,8 @@
 /**
  * The Atomify shell (ADR-003): sidebar + typed-screen main area, theme
  * wiring, deep links, autosave flushing on visibility changes, notice
- * toasts, and the run launcher. The legacy embedded-mode path renders the
- * old Main/menu flow instead (src/EmbeddedApp.tsx).
+ * toasts, and the run launcher. This IS the app — the legacy embedded-mode
+ * shell was removed 2026-07-11.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -11,8 +11,6 @@ import { useStore, useStoreActions, useStoreState } from "../hooks";
 import { useExamples, type Example } from "../hooks/useExamples";
 import { useSimulationNotifications } from "../hooks/useSimulationNotifications";
 import Simulation from "../components/Simulation";
-import ShareSimulation from "../containers/ShareSimulation";
-import type { Simulation as SimulationType } from "../store/simulation";
 import { isScriptFile } from "../store/projects";
 import { scriptOptsIntoKokkos } from "../utils/kokkos";
 import { track } from "../utils/metrics";
@@ -87,9 +85,6 @@ const Shell = () => {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [renameOpen, setRenameOpen] = useState(false);
   const [runModal, setRunModal] = useState<{ choosingInput: boolean } | null>(
-    null,
-  );
-  const [shareSimulation, setShareSimulation] = useState<SimulationType | null>(
     null,
   );
   const [linkResolved, setLinkResolved] = useState(false);
@@ -325,36 +320,6 @@ const Shell = () => {
     [createProject, notify],
   );
 
-  const openShare = useCallback(async () => {
-    const current = store.getState().projects.active;
-    if (!current || !current.meta.inputScript) {
-      notify.info({
-        message: "Set an input script before sharing the project.",
-      });
-      return;
-    }
-    const files: { fileName: string; content: string }[] = [];
-    for (const file of current.files) {
-      if (
-        file.type === "directory" ||
-        file.format === "base64" ||
-        file.path.endsWith(".ipynb")
-      ) {
-        continue;
-      }
-      files.push({
-        fileName: file.path,
-        content: await readFile(file.path),
-      });
-    }
-    setShareSimulation({
-      id: current.meta.dirName,
-      files,
-      inputScript: current.meta.inputScript,
-      start: true,
-    });
-  }, [store, readFile, notify]);
-
   const ui = useMemo<ShellUI>(
     () => ({
       notify,
@@ -364,7 +329,6 @@ const Shell = () => {
       openRename: () => setRenameOpen(true),
       openNewRun: (options) =>
         setRunModal({ choosingInput: options?.choosingInput ?? false }),
-      openShare: () => void openShare(),
       quickRunExample,
       useExampleAsProject: (example) => {
         track("Example.UseAsProject", { exampleId: example.id });
@@ -381,16 +345,7 @@ const Shell = () => {
       engineReady: lammps !== undefined,
       examples,
     }),
-    [
-      notify,
-      quickRunExample,
-      runProject,
-      launch,
-      openShare,
-      setPaused,
-      lammps,
-      examples,
-    ],
+    [notify, quickRunExample, runProject, launch, setPaused, lammps, examples],
   );
 
   return (
@@ -460,13 +415,6 @@ const Shell = () => {
           <DeleteProjectModal
             dirName={deleteTarget}
             onClose={() => setDeleteTarget(null)}
-          />
-        )}
-        {shareSimulation && (
-          <ShareSimulation
-            visible
-            onClose={() => setShareSimulation(null)}
-            simulation={shareSimulation}
           />
         )}
       </ShellUIContext.Provider>

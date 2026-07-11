@@ -5,7 +5,6 @@ import { createStore, type Store } from "easy-peasy";
 vi.mock("../utils/metrics", () => ({
   track: vi.fn(),
   time_event: vi.fn(),
-  getEmbeddingParams: vi.fn(() => ({})),
 }));
 
 import { renderModel, type RenderModel } from "./render";

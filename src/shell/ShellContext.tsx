@@ -21,7 +21,6 @@ export interface ShellUI {
   openRename: () => void;
   /** New Run modal; choosingInput starts on the input-script chooser. */
   openNewRun: (options?: { choosingInput?: boolean }) => void;
-  openShare: () => void;
   quickRunExample: (example: Example) => void;
   useExampleAsProject: (example: Example) => void;
   /** Header Run button: resolves the input script per ADR-003 §4.4. */
@@ -29,7 +28,10 @@ export interface ShellUI {
   /** One-off "Run this file" — does not change the designated input script. */
   runFile: (path: string) => Promise<void>;
   /** Re-run a finished run with its recorded script + vars. */
-  runAgain: (inputScript: string, vars: Record<string, number>) => Promise<void>;
+  runAgain: (
+    inputScript: string,
+    vars: Record<string, number>,
+  ) => Promise<void>;
   stopRun: () => void;
   engineReady: boolean;
   examples: ExamplesData;

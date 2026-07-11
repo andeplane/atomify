@@ -48,8 +48,6 @@ vi.mock("./SimulationSummaryExpanded", () => ({
 
 describe("ResponsiveSimulationSummary", () => {
   const defaultProps = {
-    isEmbeddedMode: false,
-    showSimulationSummary: true,
     isMobile: false,
     isOverlayCollapsed: false,
     showAnalyze: false,
@@ -63,7 +61,7 @@ describe("ResponsiveSimulationSummary", () => {
     vi.clearAllMocks();
   });
 
-  describe("non-embedded mode", () => {
+  describe("summary vs expanded", () => {
     it("should render SimulationSummary when showAnalyze is false", () => {
       // Arrange & Act
       render(
@@ -126,57 +124,6 @@ describe("ResponsiveSimulationSummary", () => {
 
       // Assert - Mobile should NOT have Expand button
       expect(screen.queryByTestId("expand-button")).not.toBeInTheDocument();
-    });
-  });
-
-  describe("embedded mode", () => {
-    it("should return null when showSimulationSummary is false", () => {
-      // Arrange & Act
-      const { container } = render(
-        <ResponsiveSimulationSummary
-          {...defaultProps}
-          isEmbeddedMode={true}
-          showSimulationSummary={false}
-        />,
-      );
-
-      // Assert
-      expect(container.firstChild).toBeNull();
-    });
-
-    it("should render SimulationSummary when showSimulationSummary is true", () => {
-      // Arrange & Act
-      render(
-        <ResponsiveSimulationSummary
-          {...defaultProps}
-          isEmbeddedMode={true}
-          showSimulationSummary={true}
-        />,
-      );
-
-      // Assert
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
-      expect(
-        screen.queryByTestId("simulation-summary-expanded"),
-      ).not.toBeInTheDocument();
-    });
-
-    it("should not show expanded view in embedded mode even when showAnalyze is true", () => {
-      // Arrange & Act
-      render(
-        <ResponsiveSimulationSummary
-          {...defaultProps}
-          isEmbeddedMode={true}
-          showSimulationSummary={true}
-          showAnalyze={true}
-        />,
-      );
-
-      // Assert - Embedded mode ignores showAnalyze
-      expect(screen.getByTestId("simulation-summary")).toBeInTheDocument();
-      expect(
-        screen.queryByTestId("simulation-summary-expanded"),
-      ).not.toBeInTheDocument();
     });
   });
 

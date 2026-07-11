@@ -17,11 +17,6 @@ import { createStore, type Store } from "easy-peasy";
 vi.mock(import("../utils/metrics"), () => ({
   track: vi.fn(),
   time_event: vi.fn(),
-  getEmbeddingParams: vi.fn(() => ({
-    embedMode: false as const,
-    embedFullscreen: false,
-    embedAutoStart: false,
-  })),
 }));
 
 import { storeModel, type StoreModel } from "./model";

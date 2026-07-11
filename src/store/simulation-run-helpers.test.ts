@@ -21,13 +21,14 @@ vi.mock("localforage", () => ({
 vi.mock("../utils/metrics", () => ({
   track: vi.fn(),
   time_event: vi.fn(),
-  getEmbeddingParams: vi.fn(() => ({})),
 }));
 
 import { track } from "../utils/metrics";
 
 describe("prepareVarsScript", () => {
-  let mockWriteFile: ReturnType<typeof vi.fn<(path: string, data: string) => void>>;
+  let mockWriteFile: ReturnType<
+    typeof vi.fn<(path: string, data: string) => void>
+  >;
   let mockWasm: { FS: { writeFile: (path: string, data: string) => void } };
 
   beforeEach(() => {
@@ -75,13 +76,19 @@ describe("prepareVarsScript", () => {
     expect(mockWriteFile).toHaveBeenCalledTimes(2);
 
     // First call: vars file
-    const [varsPath, varsContent] = mockWriteFile.mock.calls[0] as [string, string];
+    const [varsPath, varsContent] = mockWriteFile.mock.calls[0] as [
+      string,
+      string,
+    ];
     expect(varsPath).toBe("/sim-1/_vars_in.lmp");
     expect(varsContent).toContain("variable temp equal 300");
     expect(varsContent).toContain("variable pressure equal 1");
 
     // Second call: wrapper file (vars + original content)
-    const [wrapperPath, wrapperContent] = mockWriteFile.mock.calls[1] as [string, string];
+    const [wrapperPath, wrapperContent] = mockWriteFile.mock.calls[1] as [
+      string,
+      string,
+    ];
     expect(wrapperPath).toBe("/sim-1/_wrapper_in.lmp");
     expect(wrapperContent).toContain("variable temp equal 300");
     expect(wrapperContent).toContain("run 1000\n");
@@ -164,7 +171,9 @@ describe("handleRunResult", () => {
     });
 
     expect(result).toBe("completed");
-    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(true);
+    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(
+      true,
+    );
     expect(mockActions.setRunning).toHaveBeenCalledWith(false);
     expect(mockActions.setShowConsole).toHaveBeenCalledWith(true);
     expect(track).toHaveBeenCalledWith(
@@ -183,7 +192,9 @@ describe("handleRunResult", () => {
     });
 
     expect(result).toBe("canceled");
-    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(true);
+    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(
+      true,
+    );
     expect(mockActions.setRunning).toHaveBeenCalledWith(false);
     expect(track).toHaveBeenCalledWith(
       "Simulation.Stop",
@@ -201,7 +212,9 @@ describe("handleRunResult", () => {
     });
 
     expect(result).toBe("failed");
-    expect(mockActions.setLastError).toHaveBeenCalledWith("LAMMPS syntax error");
+    expect(mockActions.setLastError).toHaveBeenCalledWith(
+      "LAMMPS syntax error",
+    );
     expect(mockAllActions.processing.runPostTimestep).not.toHaveBeenCalled();
     expect(mockActions.setRunning).toHaveBeenCalledWith(false);
     expect(track).toHaveBeenCalledWith(
@@ -224,6 +237,8 @@ describe("handleRunResult", () => {
 
     // Empty string is falsy, so this path goes to "completed"
     expect(result).toBe("completed");
-    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(true);
+    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(
+      true,
+    );
   });
 });

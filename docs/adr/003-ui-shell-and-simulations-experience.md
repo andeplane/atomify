@@ -211,3 +211,15 @@ auto-started run and hides sidebar/library (as today) and the Notebook tab
   bridge), contained inside panes.
 - (−) Run detail for historical runs is a still image + logs in v1;
   trajectory replay stays future work.
+
+## Amendment (2026-07-11)
+
+Embedded mode is gone: `embed=true` iframes, `AutoStartSimulation`, the
+invisible-tabs `Main` shell, the Share modal and the URL-encoding codec
+were all removed — the projects shell is the whole app. The §3 note about
+legacy params resolving into quick-run state no longer applies (they are
+ignored), and the workspace header has no Share button. URL-encoded
+sharing died on GitHub Pages' ~2 KB URL limit; project zip export/import
+(workspace ⋯ menu / New Project upload) is the sharing story, and the book
+embedding use case will use a different mechanism. Sharing via a backend
+is future work.

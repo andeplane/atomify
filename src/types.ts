@@ -128,7 +128,7 @@ export type PlotData = {
   syncDataPoints?: boolean;
 };
 
-export type ModifierData<K extends 'lmpCompute' | 'lmpFix' | 'lmpVariable'> = {
+export type ModifierData<K extends "lmpCompute" | "lmpFix" | "lmpVariable"> = {
   name: string;
   type: ModifierType;
   isPerAtom: boolean;
@@ -142,15 +142,15 @@ export type ModifierData<K extends 'lmpCompute' | 'lmpFix' | 'lmpVariable'> = {
   hasData1D: boolean;
 } & Record<K, LMPModifier>;
 
-export type Compute = ModifierData<'lmpCompute'>;
-export type Fix = ModifierData<'lmpFix'>;
-export type Variable = ModifierData<'lmpVariable'>;
+export type Compute = ModifierData<"lmpCompute">;
+export type Fix = ModifierData<"lmpFix">;
+export type Variable = ModifierData<"lmpVariable">;
 
 export interface Wall {
-  which: number;    // 0-5 (XLO, XHI, YLO, YHI, ZLO, ZHI)
-  style: number;    // 0-3 (NONE, EDGE, CONSTANT, VARIABLE)
+  which: number; // 0-5 (XLO, XHI, YLO, YHI, ZLO, ZHI)
+  style: number; // 0-3 (NONE, EDGE, CONSTANT, VARIABLE)
   position: number; // current position on axis
-  cutoff: number;   // interaction range
+  cutoff: number; // interaction range
 }
 
 export type LMPData1D = {
@@ -177,20 +177,3 @@ export type GithubFile = {
   isLeaf: boolean;
   children: GithubFile[];
 };
-
-/**
- * Configuration options for embedded simulations.
- * These can be passed via base64-encoded JSON in the 'config' URL parameter.
- *
- * Note: When parsed from URL, all properties are guaranteed to have values (defaults applied).
- */
-export interface EmbedConfig {
-  /** Show the simulation summary overlay (default: true) */
-  showSimulationSummary: boolean;
-  /** Show the simulation box visualization (default: true) */
-  showSimulationBox: boolean;
-  /** Enable camera controls (default: true) */
-  enableCameraControls: boolean;
-  /** Enable particle picking (default: true) */
-  enableParticlePicking: boolean;
-}

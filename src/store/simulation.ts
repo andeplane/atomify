@@ -2,7 +2,7 @@ import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
 import { StoreModel } from "./model";
 import { LammpsWeb } from "../types";
 import { AtomTypes, AtomType, hexToRgb } from "../utils/atomtypes";
-import { track, time_event, getEmbeddingParams } from "../utils/metrics";
+import { track, time_event } from "../utils/metrics";
 import {
   scriptOptsIntoKokkos,
   prepareScriptForSerialStyles,
@@ -65,7 +65,8 @@ export function collectRunMetrics(
   const timesteps = lammps.getTimesteps();
   return {
     timesteps,
-    timestepsPerSecond: durationSeconds > 0 ? (timesteps / durationSeconds).toFixed(3) : "0.000",
+    timestepsPerSecond:
+      durationSeconds > 0 ? (timesteps / durationSeconds).toFixed(3) : "0.000",
     numAtoms: lammps.getNumAtoms(),
     computes: computeNames,
   };
@@ -150,8 +151,6 @@ export interface Simulation {
   analysisScript?: string;
   start: boolean;
   vars?: Record<string, number>;
-  showSimulationBox?: boolean;
-  showWalls?: boolean;
 }
 
 export interface SimulationModel {
@@ -287,7 +286,11 @@ export const simulationModel: SimulationModel = {
           }
           const bond = parseBond(line);
           if (bond) {
-            lammps.setBondDistance(bond.atomType1, bond.atomType2, bond.distance);
+            lammps.setBondDistance(
+              bond.atomType1,
+              bond.atomType2,
+              bond.distance,
+            );
             lammps.setBuildNeighborlist(true);
           }
           const cameraPosition = parseCameraPosition(line);
@@ -369,7 +372,6 @@ export const simulationModel: SimulationModel = {
       actions.setRunning(true);
       track("Simulation.Start", {
         simulationId: simulation?.id,
-        ...getEmbeddingParams(),
       });
       time_event("Simulation.Stop");
 
@@ -385,20 +387,6 @@ export const simulationModel: SimulationModel = {
       }
       if (inputScriptFile.content) {
         actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
-      }
-
-      // Apply embedded settings if provided
-      if (simulation.showSimulationBox !== undefined) {
-        allActions.settings.setRender({
-          ...getStoreState().settings.render,
-          showSimulationBox: simulation.showSimulationBox,
-        });
-      }
-      if (simulation.showWalls !== undefined) {
-        allActions.settings.setRender({
-          ...getStoreState().settings.render,
-          showWalls: simulation.showWalls,
-        });
       }
 
       // Inject URL variables and determine script to run. Must feed

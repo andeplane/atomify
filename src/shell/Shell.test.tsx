@@ -17,11 +17,6 @@ vi.mock(import("../components/Simulation"), () => ({
 vi.mock(import("../utils/metrics"), () => ({
   track: vi.fn(),
   time_event: vi.fn(),
-  getEmbeddingParams: vi.fn(() => ({
-    embedMode: false as const,
-    embedFullscreen: false,
-    embedAutoStart: false,
-  })),
 }));
 
 import Shell from "./Shell";
