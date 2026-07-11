@@ -18,12 +18,26 @@
     requiring CORP headers. In dev, vite sets the same headers directly.
     Must load before the app module.
   -->
+  <!--
+    Service worker lifecycle. Two workers serve /atomify/: the COOP/COEP
+    shim below and JupyterLite's (patched at build time to inject the same
+    COEP header — see scripts/patch-jupyterlite-sw.mjs). Both update with
+    skipWaiting + clients.claim.
+
+    Normal visits: explicitly check both registrations for updates so a
+    newly deployed fix takes over on the next load, instead of whenever
+    the browser's own update heuristics get around to it.
+
+    Escape hatch: /atomify/?sw-reset deterministically unregisters the
+    /atomify/ service workers and deletes JupyterLite's response cache,
+    then reloads without the flag — guaranteed recovery if a deployed
+    worker ever leaves clients stuck. GitHub Pages projects share the
+    andeplane.github.io origin, so both cleanups stay scoped to Atomify
+    (other projects' workers and caches are untouched), and notebook
+    contents live in IndexedDB, which is preserved. src/index.tsx skips
+    booting the app while the reset is in flight.
+  -->
   <script>
-    // Escape hatch: /atomify/?sw-reset deterministically unregisters every
-    // service worker on the origin (the COOP/COEP shim below and
-    // JupyterLite's) and clears CacheStorage, then reloads without the
-    // flag for a fresh start — guaranteed recovery if a deployed service
-    // worker ever leaves clients stuck.
     (() => {
       const resetting = new URLSearchParams(window.location.search).has(
         "sw-reset",
@@ -32,44 +46,41 @@
         coepCredentialless: () => true,
         shouldRegister: () => !resetting,
       };
-      if (!resetting) return;
-      const done = () => {
-        const url = new URL(window.location.href);
-        url.searchParams.delete("sw-reset");
-        window.location.replace(url);
-      };
-      Promise.all([
-        "serviceWorker" in navigator
-          ? navigator.serviceWorker
-              .getRegistrations()
-              .then((regs) => Promise.all(regs.map((reg) => reg.unregister())))
-          : null,
-        "caches" in window
-          ? caches
-              .keys()
-              .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
-          : null,
-      ]).then(done, done);
+      if (resetting) {
+        const done = () => {
+          const url = new URL(window.location.href);
+          url.searchParams.delete("sw-reset");
+          window.location.replace(url);
+        };
+        if (!("serviceWorker" in navigator)) {
+          done();
+          return;
+        }
+        Promise.all([
+          navigator.serviceWorker.getRegistrations().then((regs) =>
+            Promise.all(
+              regs
+                .filter((reg) =>
+                  new URL(reg.scope).pathname.startsWith("/atomify/"),
+                )
+                .map((reg) => reg.unregister()),
+            ),
+          ),
+          "caches" in window ? caches.delete("precache") : null,
+        ]).then(done, done);
+        return;
+      }
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .getRegistrations()
+          .then((regs) =>
+            regs.forEach((reg) => reg.update().catch(() => {})),
+          )
+          .catch(() => {});
+      }
     })();
   </script>
   <script src="coi-serviceworker.min.js"></script>
-
-  <!--
-    Both service workers on this origin (the COOP/COEP shim above and
-    JupyterLite's under jupyter/, which the build patches to inject the
-    same COEP header — see scripts/patch-jupyterlite-sw.mjs) update with
-    skipWaiting + clients.claim. Explicitly check both for updates on
-    every visit so a newly deployed fix reaches stale clients on their
-    next load, instead of whenever the browser's own update heuristics
-    get around to it.
-  -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.getRegistrations().then((regs) =>
-        regs.forEach((reg) => reg.update().catch(() => {})),
-      );
-    }
-  </script>
 </head>
 
 <body>

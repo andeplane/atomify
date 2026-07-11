@@ -167,8 +167,9 @@ node scripts/patch-jupyterlite-sw.mjs
 The second command patches the JupyterLite service worker to inject the
 COOP/COEP headers the cross-origin-isolated app requires (the deploy
 workflow does the same). If a deployed service worker ever misbehaves,
-visiting https://andeplane.github.io/atomify/?sw-reset unregisters every
-service worker and clears their caches for a fresh start.
+visiting https://andeplane.github.io/atomify/?sw-reset unregisters
+Atomify's service workers and deletes JupyterLite's response cache for a
+fresh start (notebook contents are stored in IndexedDB and are preserved).
 
 ### Run locally
 
