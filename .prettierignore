@@ -6,3 +6,14 @@ jupyterlite
 public
 src/wasm
 .github/dependabot.yml
+# Build/tool output (CI runs `make jupyter` before prettier: the venv and
+# the built site must never be formatted — formatting the 500 MB venv hung
+# the CI prettier step for 35+ minutes)
+.venv-jupyterlite
+dist
+pypi
+test-results
+playwright-report
+.claude
+# Separate service with its own tooling (ruff); never formatted from here
+backend
