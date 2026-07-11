@@ -1,10 +1,10 @@
 import { useCallback, useState, useEffect } from "react";
 import { Select, Divider } from "antd";
 import { Simulation } from "../store/simulation";
-import { SimulationFile } from "../store/app";
 import { useStoreActions, useStoreState } from "../hooks";
 import { CaretRightOutlined, EditOutlined } from "@ant-design/icons";
 import { Layout, Skeleton, notification } from "antd";
+import { useExamples, type Example } from "../hooks/useExamples";
 import { track } from "../utils/metrics";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
@@ -16,24 +16,10 @@ import "./Examples.css";
 const { Option } = Select;
 
 const { Header } = Layout;
-interface Example {
-  id: string;
-  title: string;
-  files: SimulationFile[];
-  description: string;
-  analysisDescription?: string;
-  imageUrl: string;
-  inputScript: string;
-  analysisScript?: string;
-  author?: string;
-  authorUrl?: string;
-  keywords?: string[];
-}
 
 const Examples = () => {
-  const [title, setTitle] = useState("Examples");
-  const [description, setDescription] = useState<string>("");
-  const [examples, setExamples] = useState<Example[]>([]);
+  // Data loading shared with the new shell (src/hooks/useExamples.ts).
+  const { title, description, examples, error } = useExamples();
   const [filterKeywords, setFilterKeywords] = useState<string[]>([]);
   // Width measurement no longer needed with CSS Grid
   const setNewSimulation = useStoreActions(
@@ -46,51 +32,10 @@ const Examples = () => {
   );
 
   useEffect(() => {
-    const fetchExamples = async (examplesUrl: string) => {
-      let response = await fetch(examplesUrl, { cache: "no-store" });
-      const data = await response.json();
-      const baseUrl = data["baseUrl"];
-      const title = data["title"] || "Examples";
-      const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`;
-      response = await fetch(descriptionsUrl);
-      if (response.status !== 404) {
-        const description = await response.text();
-        setDescription(description);
-      }
-
-      const examples: Example[] = data["examples"];
-      examples.forEach((example) => {
-        example.imageUrl = `${baseUrl}/${example.imageUrl}`;
-        example.files.forEach((file) => {
-          file.url = `${baseUrl}/${file.url}`;
-        });
-      });
-
-      setTitle(title);
-      setExamples(data["examples"]);
-      track("Examples.Fetch", { examplesUrl });
-    };
-
-    (async () => {
-      const urlSearchParams = new URLSearchParams(window.location.search);
-      const params = Object.fromEntries(urlSearchParams.entries());
-
-      let defaultExamplesUrl = "examples/examples.json";
-      let examplesUrl = defaultExamplesUrl;
-      if (params["examplesUrl"] != null) {
-        examplesUrl = params["examplesUrl"];
-      }
-
-      try {
-        await fetchExamples(examplesUrl);
-      } catch (e) {
-        notification.error({
-          message: `Could not fetch examples from ${examplesUrl}. Fetching default.`,
-        });
-        await fetchExamples(defaultExamplesUrl);
-      }
-    })();
-  }, []);
+    if (error) {
+      notification.error({ message: error });
+    }
+  }, [error]);
 
   const onPlay = useCallback(
     (example: Example) => {

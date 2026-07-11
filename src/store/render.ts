@@ -16,7 +16,8 @@ export interface RenderModel {
   particleRadius: number;
   particles?: Particles;
   bonds?: Bonds;
-  setVisualizer: Action<RenderModel, Visualizer>;
+  /** Undefined releases the reference so a remounting View can recreate it. */
+  setVisualizer: Action<RenderModel, Visualizer | undefined>;
   setParticles: Action<RenderModel, Particles>;
   setBonds: Action<RenderModel, Bonds>;
   setBondRadius: Action<RenderModel, number>;
@@ -37,7 +38,7 @@ export const renderModel: RenderModel = {
     state.particleStyles = particleStyles;
     state.particleStylesUpdated = true;
   }),
-  setVisualizer: action((state, value: Visualizer) => {
+  setVisualizer: action((state, value: Visualizer | undefined) => {
     state.visualizer = value;
     state.particleStylesUpdated = true;
   }),
