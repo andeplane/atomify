@@ -1,6 +1,6 @@
 # ADR-002: The notebook as a first-class analysis and scripting surface
 
-- **Status**: Proposed (rev 2 — after integration review)
+- **Status**: Accepted (2026-07-11)
 - **Date**: 2026-07-11
 - **Deciders**: Anders Hafreager, Claude
 - **Depends on**: ADR-001 (projects, runs, single project filesystem)

@@ -1,6 +1,6 @@
 # ADR-003: UI shell redesign and the projects experience
 
-- **Status**: Proposed (rev 2 — after product review + updated design)
+- **Status**: Accepted (2026-07-11)
 - **Date**: 2026-07-11
 - **Deciders**: Anders Hafreager, Claude
 - **Depends on**: ADR-001 (projects & runs), ADR-002 (notebook)

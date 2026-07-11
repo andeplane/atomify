@@ -1,6 +1,6 @@
 # ADR-001: Projects, runs, and a single project filesystem
 
-- **Status**: Proposed (rev 2 — after architecture + product review)
+- **Status**: Accepted (2026-07-11)
 - **Date**: 2026-07-11
 - **Deciders**: Anders Hafreager, Claude
 

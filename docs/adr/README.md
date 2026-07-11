@@ -5,6 +5,6 @@ context, the decision, alternatives considered, and consequences.
 
 | ADR | Title | Status |
 | --- | --- | --- |
-| [ADR-001](001-projects-runs-and-storage.md) | Projects, runs, and a single project filesystem | Proposed |
-| [ADR-002](002-notebook-first-class.md) | The notebook as a first-class analysis and scripting surface | Proposed |
-| [ADR-003](003-ui-shell-and-simulations-experience.md) | UI shell redesign and the projects experience | Proposed |
+| [ADR-001](001-projects-runs-and-storage.md) | Projects, runs, and a single project filesystem | Accepted |
+| [ADR-002](002-notebook-first-class.md) | The notebook as a first-class analysis and scripting surface | Accepted |
+| [ADR-003](003-ui-shell-and-simulations-experience.md) | UI shell redesign and the projects experience | Accepted |
