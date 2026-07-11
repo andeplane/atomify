@@ -8,10 +8,21 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
 import View from "../containers/View";
 import type { FileStat } from "../storage";
+import RunAnalysis from "./RunAnalysis";
 import { useShellUI } from "./ShellContext";
 import { formatBytes, formatDuration, runNumber } from "./format";
-import { BackIcon, ChartIcon, FileIcon, PlayIcon, StopIcon } from "./icons";
+import {
+  BackIcon,
+  ChartIcon,
+  ChevronDownIcon,
+  FileIcon,
+  PlayIcon,
+  StopIcon,
+} from "./icons";
 import { Chip, GhostButton, MONO, PulseDot, StatusPill } from "./ui";
+
+/** Session-scoped memory for the console strip's collapsed state. */
+const CONSOLE_COLLAPSED_KEY = "atomify_run_console_collapsed";
 
 const RunDetail = ({ runId }: { runId: string }) => {
   const active = useStoreState((state) => state.projects.active);
@@ -57,6 +68,17 @@ const RunDetail = ({ runId }: { runId: string }) => {
   const [frameUrl, setFrameUrl] = useState<string | null>(null);
   const [outputs, setOutputs] = useState<FileStat[]>([]);
   const consoleRef = useRef<HTMLDivElement | null>(null);
+  // Collapsible console strip: default expanded, choice remembered for the
+  // session so the viewport keeps the reclaimed height across run screens.
+  const [consoleCollapsed, setConsoleCollapsed] = useState(
+    () => sessionStorage.getItem(CONSOLE_COLLAPSED_KEY) === "1",
+  );
+  const toggleConsole = () =>
+    setConsoleCollapsed((previous) => {
+      const next = !previous;
+      sessionStorage.setItem(CONSOLE_COLLAPSED_KEY, next ? "1" : "0");
+      return next;
+    });
 
   // Finished runs: persisted log + frame + output list from storage.
   useEffect(() => {
@@ -137,7 +159,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
     if (element) {
       element.scrollTop = element.scrollHeight;
     }
-  }, [consoleLines.length]);
+  }, [consoleLines.length, consoleCollapsed]);
 
   const stats = useMemo(() => {
     if (live) {
@@ -441,11 +463,12 @@ const RunDetail = ({ runId }: { runId: string }) => {
           </div>
         </div>
 
-        {/* Console strip */}
+        {/* Console strip (collapsible: the header bar always stays visible,
+            the log body folds away and the viewport flexes into the space). */}
         <div
           data-testid="run-console"
           style={{
-            height: 190,
+            height: consoleCollapsed ? "auto" : 190,
             flexShrink: 0,
             borderTop: "1px solid var(--border)",
             background: "#0A0C11",
@@ -454,14 +477,47 @@ const RunDetail = ({ runId }: { runId: string }) => {
           }}
         >
           <div
+            onClick={toggleConsole}
             style={{
               display: "flex",
               alignItems: "center",
               gap: 8,
               padding: "9px 18px",
-              borderBottom: "1px solid rgba(255,255,255,0.06)",
+              borderBottom: consoleCollapsed
+                ? "none"
+                : "1px solid rgba(255,255,255,0.06)",
+              cursor: "pointer",
+              userSelect: "none",
             }}
           >
+            <button
+              onClick={(event) => {
+                event.stopPropagation();
+                toggleConsole();
+              }}
+              data-testid="run-console-toggle"
+              aria-label={
+                consoleCollapsed ? "Expand console" : "Collapse console"
+              }
+              aria-expanded={!consoleCollapsed}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 18,
+                height: 18,
+                padding: 0,
+                border: "none",
+                borderRadius: 5,
+                background: "transparent",
+                color: "rgba(255,255,255,0.5)",
+                cursor: "pointer",
+                transform: consoleCollapsed ? "rotate(180deg)" : "none",
+                transition: "transform .15s",
+              }}
+            >
+              <ChevronDownIcon size={13} />
+            </button>
             <span
               style={{
                 fontFamily: MONO,
@@ -474,43 +530,47 @@ const RunDetail = ({ runId }: { runId: string }) => {
             <div style={{ flex: 1 }} />
             {live && (
               <>
-                <span
-                  style={{
-                    fontFamily: MONO,
-                    fontSize: 11,
-                    color: "rgba(255,255,255,0.35)",
-                  }}
-                >
-                  following
-                </span>
+                {!consoleCollapsed && (
+                  <span
+                    style={{
+                      fontFamily: MONO,
+                      fontSize: 11,
+                      color: "rgba(255,255,255,0.35)",
+                    }}
+                  >
+                    following
+                  </span>
+                )}
                 <PulseDot size={6} />
               </>
             )}
           </div>
-          <div
-            ref={consoleRef}
-            style={{
-              flex: 1,
-              overflow: "auto",
-              padding: "10px 18px",
-              fontFamily: MONO,
-              fontSize: 12,
-              lineHeight: 1.7,
-              color: "rgba(255,255,255,0.82)",
-            }}
-          >
-            {consoleLines.length === 0 ? (
-              <div style={{ color: "rgba(255,255,255,0.35)" }}>
-                {live ? "waiting for output…" : "no log recorded"}
-              </div>
-            ) : (
-              consoleLines.map((line, index) => (
-                <div key={index} style={{ whiteSpace: "pre" }}>
-                  {line}
+          {!consoleCollapsed && (
+            <div
+              ref={consoleRef}
+              style={{
+                flex: 1,
+                overflow: "auto",
+                padding: "10px 18px",
+                fontFamily: MONO,
+                fontSize: 12,
+                lineHeight: 1.7,
+                color: "rgba(255,255,255,0.82)",
+              }}
+            >
+              {consoleLines.length === 0 ? (
+                <div style={{ color: "rgba(255,255,255,0.35)" }}>
+                  {live ? "waiting for output…" : "no log recorded"}
                 </div>
-              ))
-            )}
-          </div>
+              ) : (
+                consoleLines.map((line, index) => (
+                  <div key={index} style={{ whiteSpace: "pre" }}>
+                    {line}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -628,6 +688,9 @@ const RunDetail = ({ runId }: { runId: string }) => {
                 style={{ width: "100%" }}
               />
             </div>
+            {/* Live computes/fixes/variables with real-time figures. Finished
+                runs have no live data — outputs and the log are the record. */}
+            <RunAnalysis />
           </>
         )}
 

@@ -9,18 +9,34 @@
 import { test, expect } from "@playwright/test";
 import {
   createFastLjProject,
+  FAST_LJ_SCRIPT,
   gotoApp,
   RUN_TIMEOUT,
   waitForEngine,
   waitRunCompleted,
 } from "./helpers";
 
+// The fast LJ melt plus an msd compute (1D data for the live figure) and a
+// longer run: at the default speed the engine syncs every timestep, so 3000
+// steps keeps the run live for several seconds — a reliable window for the
+// live-analysis assertions below without slowing the suite meaningfully.
+const ANALYSIS_LJ_SCRIPT = FAST_LJ_SCRIPT.replace(
+  "run 400",
+  "compute msd all msd\nrun 3000",
+);
+
 test("run a simulation end-to-end and inspect the recorded run", async ({
   page,
 }) => {
   await test.step("create a project with a fast LJ script", async () => {
     await gotoApp(page);
-    await createFastLjProject(page, "LJ melt", "lj-melt");
+    await createFastLjProject(
+      page,
+      "LJ melt",
+      "lj-melt",
+      "in.melt",
+      ANALYSIS_LJ_SCRIPT,
+    );
   });
 
   await test.step("run the simulation and watch live progress", async () => {
@@ -37,6 +53,38 @@ test("run a simulation end-to-end and inspect the recorded run", async ({
     await expect(page.getByTestId("run-console")).toContainText("LAMMPS", {
       timeout: 60_000,
     });
+  });
+
+  await test.step("live analysis lists computes and opens the figure", async () => {
+    // The side panel's analysis section is only rendered for the live run.
+    await expect(page.getByTestId("run-analysis-section")).toBeVisible();
+    // The msd compute appears once the engine synchronizes UI state.
+    await expect(page.getByTestId("analysis-entry-msd")).toBeVisible({
+      timeout: 60_000,
+    });
+    // 1D entries open the real-time figure in the shell modal.
+    await page.getByTestId("analysis-entry-msd").click();
+    await expect(page.getByTestId("analysis-figure")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByTestId("analysis-figure")).toHaveCount(0);
+  });
+
+  await test.step("the console strip collapses and expands", async () => {
+    // The run's own setup output is in the console whether the run is still
+    // live or just finished (the persisted log renders in the same strip).
+    // The engine banner ("LAMMPS (…)") is NOT reliable here: the live output
+    // buffer is cleared at run start, after the banner was printed.
+    const setupLine = "Created 108 atoms";
+    await expect(page.getByTestId("run-console")).toContainText(setupLine);
+    await page.getByTestId("run-console-toggle").click();
+    // Collapsed: the header bar stays, the log body is gone.
+    await expect(page.getByTestId("run-console")).not.toContainText(setupLine);
+    await expect(page.getByTestId("run-console")).toContainText(
+      "console — log.lammps",
+    );
+    // Clicking the header bar itself toggles too.
+    await page.getByTestId("run-console").click();
+    await expect(page.getByTestId("run-console")).toContainText(setupLine);
   });
 
   await test.step("the run completes", async () => {

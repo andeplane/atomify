@@ -109,11 +109,12 @@ export async function createFastLjProject(
   name: string,
   dirName: string,
   fileName = "in.melt",
+  script = FAST_LJ_SCRIPT,
 ): Promise<void> {
   await createBlankProject(page, name, dirName);
   await createFile(page, fileName);
   await openInEditor(page, fileName);
-  await typeInEditor(page, FAST_LJ_SCRIPT);
+  await typeInEditor(page, script);
 }
 
 /**

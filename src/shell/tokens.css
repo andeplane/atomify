@@ -235,3 +235,20 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Real-time figures (dygraphs) inside the shell. index.css hard-codes the
+   legacy dark-theme label colors; these higher-specificity overrides keep
+   the plot readable in both shell themes. */
+.shell-figure .dygraph-axis-label,
+.shell-figure .dygraph-title,
+.shell-figure .dygraph-xlabel,
+.shell-figure .dygraph-ylabel,
+.shell-figure .dygraph-label {
+  color: var(--text) !important;
+}
+.shell-figure .dygraph-legend,
+.shell-figure .dygraph-custom-legend {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
