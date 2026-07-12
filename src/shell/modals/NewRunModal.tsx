@@ -393,7 +393,18 @@ const NewRunModal = ({
               <span style={{ fontFamily: MONO, color: "var(--text-2)" }}>
                 -var
               </span>{" "}
-              flags — the script itself never changes.
+              flags — the script itself never changes. To add or remove one,{" "}
+              <span
+                onClick={onGoToFiles}
+                style={{
+                  color: "var(--accent)",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                }}
+              >
+                edit the script
+              </span>
+              .
             </div>
 
             {loadingScript && (
