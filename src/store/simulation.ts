@@ -76,7 +76,6 @@ export type StopReason = "canceled" | "failed" | "completed";
 
 export interface RunResultContext {
   errorMessage: string | undefined;
-  simulationId: string;
   metricsData: {
     timesteps: number;
     timestepsPerSecond: string;
@@ -96,9 +95,13 @@ export interface RunResultContext {
 /**
  * Routes a run result to the appropriate canceled / failed / completed path,
  * fires side-effects (error state, tracking), and returns the stop reason.
+ *
+ * Metrics carry no simulationId (it embeds the project dir slug — user
+ * content, PII policy) and no errorMessage (it quotes script content); the
+ * sanitized signal is stopReason + numeric metricsData.
  */
 export function handleRunResult(ctx: RunResultContext): StopReason {
-  const { errorMessage, simulationId, metricsData, actions, allActions } = ctx;
+  const { errorMessage, metricsData, actions, allActions } = ctx;
 
   // runPostTimestep is a thunk (returns a promise); a rejection (e.g. wasm
   // gone) must surface in the console, not as an unhandled rejection.
@@ -113,7 +116,6 @@ export function handleRunResult(ctx: RunResultContext): StopReason {
       actions.setRunning(false);
       actions.setShowConsole(true);
       track("Simulation.Stop", {
-        simulationId,
         stopReason: "canceled",
         ...metricsData,
       });
@@ -123,9 +125,7 @@ export function handleRunResult(ctx: RunResultContext): StopReason {
       actions.setRunning(false);
       actions.setShowConsole(true);
       track("Simulation.Stop", {
-        simulationId,
         stopReason: "failed",
-        errorMessage,
         ...metricsData,
       });
       return "failed";
@@ -135,7 +135,6 @@ export function handleRunResult(ctx: RunResultContext): StopReason {
     actions.setRunning(false);
     actions.setShowConsole(true);
     track("Simulation.Stop", {
-      simulationId,
       stopReason: "completed",
       ...metricsData,
     });
@@ -151,6 +150,19 @@ export interface Simulation {
   analysisScript?: string;
   start: boolean;
   vars?: Record<string, number>;
+}
+
+// The full console of the active run, outside the store: state.lammpsOutput
+// is a DISPLAY buffer capped at the last 2000 lines, but run persistence
+// (runs/<id>/log.lammps, store/projects.ts) needs the whole log — a capped
+// source would silently drop the header and thermo columns of long runs.
+// Reset with resetLammpsOutput (every run start), appended with every
+// addLammpsOutput.
+let fullLammpsOutput: string[] = [];
+
+/** The uncapped console captured since the last resetLammpsOutput. */
+export function getFullLammpsOutput(): readonly string[] {
+  return fullLammpsOutput;
 }
 
 export interface SimulationModel {
@@ -200,9 +212,12 @@ export const simulationModel: SimulationModel = {
   lammpsOutput: [],
   resetLammpsOutput: action((state) => {
     state.lammpsOutput = [];
+    fullLammpsOutput = [];
   }),
   addLammpsOutput: action((state, output: string) => {
+    // Display cap only — the uncapped copy feeds run persistence.
     state.lammpsOutput = [...state.lammpsOutput, output].slice(-2000);
+    fullLammpsOutput.push(output);
   }),
   setShowConsole: action((state, showConsole: boolean) => {
     state.showConsole = showConsole;
@@ -370,9 +385,8 @@ export const simulationModel: SimulationModel = {
 
       lammps.start();
       actions.setRunning(true);
-      track("Simulation.Start", {
-        simulationId: simulation?.id,
-      });
+      // No simulationId — it embeds the project dir slug (user content).
+      track("Simulation.Start", {});
       time_event("Simulation.Stop");
 
       const inputScriptFile = simulation.files.find(
@@ -429,7 +443,6 @@ export const simulationModel: SimulationModel = {
 
       const stopReason = handleRunResult({
         errorMessage,
-        simulationId: simulation.id,
         metricsData,
         actions,
         allActions,
@@ -533,7 +546,8 @@ export const simulationModel: SimulationModel = {
           allActions.app.setSelectedFile(inputScriptFile);
         }
       }
-      track("Simulation.New", { simulationId: simulation?.id });
+      // No simulationId — it embeds the project dir slug (user content).
+      track("Simulation.New", {});
     },
   ),
   setLastError: action((state, error: string | undefined) => {

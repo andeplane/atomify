@@ -164,7 +164,6 @@ describe("handleRunResult", () => {
   it('returns "completed" and calls runPostTimestep when no error', () => {
     const result = handleRunResult({
       errorMessage: undefined,
-      simulationId: "sim-1",
       metricsData,
       actions: mockActions,
       allActions: mockAllActions,
@@ -185,7 +184,6 @@ describe("handleRunResult", () => {
   it('returns "canceled" when error includes Atomify::canceled', () => {
     const result = handleRunResult({
       errorMessage: "ERROR: Atomify::canceled by user",
-      simulationId: "sim-1",
       metricsData,
       actions: mockActions,
       allActions: mockAllActions,
@@ -205,7 +203,6 @@ describe("handleRunResult", () => {
   it('returns "failed" and sets lastError for other errors', () => {
     const result = handleRunResult({
       errorMessage: "LAMMPS syntax error",
-      simulationId: "sim-1",
       metricsData,
       actions: mockActions,
       allActions: mockAllActions,
@@ -219,17 +216,33 @@ describe("handleRunResult", () => {
     expect(mockActions.setRunning).toHaveBeenCalledWith(false);
     expect(track).toHaveBeenCalledWith(
       "Simulation.Stop",
-      expect.objectContaining({
-        stopReason: "failed",
-        errorMessage: "LAMMPS syntax error",
-      }),
+      expect.objectContaining({ stopReason: "failed" }),
     );
+  });
+
+  it("never leaks user content into metrics (no simulationId, no errorMessage)", () => {
+    // simulationId embeds the project dir slug (user-authored name) and
+    // errorMessage quotes script content — neither may leave the device.
+    handleRunResult({
+      errorMessage: "ERROR: unknown command in acme-corp-secret/in.lmp",
+      metricsData,
+      actions: mockActions,
+      allActions: mockAllActions,
+    });
+
+    const stopCalls = vi
+      .mocked(track)
+      .mock.calls.filter(([event]) => event === "Simulation.Stop");
+    expect(stopCalls.length).toBeGreaterThan(0);
+    for (const [, payload] of stopCalls) {
+      expect(payload).not.toHaveProperty("simulationId");
+      expect(payload).not.toHaveProperty("errorMessage");
+    }
   });
 
   it('returns "completed" when errorMessage is empty string', () => {
     const result = handleRunResult({
       errorMessage: "",
-      simulationId: "sim-1",
       metricsData,
       actions: mockActions,
       allActions: mockAllActions,
