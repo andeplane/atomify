@@ -22,6 +22,15 @@ export const SNAPSHOT_SIZE_CAP = 64 * 1024 * 1024;
 /** Notebook-origin "running" runs younger than this are left alone. */
 export const NOTEBOOK_RUN_GRACE_MS = 10 * 60 * 1000;
 
+/**
+ * "Running" runs of ANY origin younger than this are left alone: a run being
+ * claimed right now (allocateRunDir's placeholder, the snapshot window before
+ * the executor records the real run id in activeRun) must not be zombie-marked
+ * by a concurrent refresh. A genuinely interrupted sub-15s run is caught by
+ * the next reconcile pass instead.
+ */
+export const FRESH_RUN_GRACE_MS = 15 * 1000;
+
 const RUN_ID_PATTERN = /^run-(\d+)$/;
 
 /**
@@ -98,11 +107,7 @@ export async function snapshotWorkingTree(
       continue;
     }
     const content = await storage.read(dirName, entry.path);
-    await storage.write(
-      dirName,
-      `${RUNS_DIR}/${runId}/${entry.path}`,
-      content,
-    );
+    await storage.write(dirName, `${RUNS_DIR}/${runId}/${entry.path}`, content);
     copied.push(entry.path);
   }
   return { copied, gaps };
@@ -197,6 +202,12 @@ export async function reconcileRuns(
     if (ownedRunIds.has(run.runId)) {
       continue;
     }
+    // Freshly claimed runs (any origin): see FRESH_RUN_GRACE_MS.
+    const startedAge =
+      now.getTime() - new Date(run.meta.startedAt ?? 0).getTime();
+    if (startedAge < FRESH_RUN_GRACE_MS) {
+      continue;
+    }
     if (run.meta.origin === "notebook") {
       const metaStat = await storage.stat(
         dirName,
@@ -283,7 +294,8 @@ async function sha256Hex(content: string | Uint8Array): Promise<string> {
     typeof content === "string" ? new TextEncoder().encode(content) : content;
   const digest = await crypto.subtle.digest(
     "SHA-256",
-    bytes.buffer instanceof ArrayBuffer && bytes.byteOffset === 0 &&
+    bytes.buffer instanceof ArrayBuffer &&
+      bytes.byteOffset === 0 &&
       bytes.byteLength === bytes.buffer.byteLength
       ? bytes.buffer
       : bytes.slice().buffer,

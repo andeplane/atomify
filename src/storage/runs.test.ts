@@ -3,6 +3,7 @@ import { createMemoryProjectStorage } from "./contentsProjectStorage";
 import {
   allocateRunDir,
   expandSweep,
+  FRESH_RUN_GRACE_MS,
   listRuns,
   NOTEBOOK_RUN_GRACE_MS,
   parseSweepValues,
@@ -147,6 +148,37 @@ describe("runs", () => {
       expect((await readRunMeta(storage, dirName, "run-002"))?.status).toBe(
         "running",
       );
+    });
+
+    it("leaves freshly claimed runs alone regardless of origin", async () => {
+      // A run being claimed right now (allocateRunDir placeholder, snapshot
+      // in progress) must not be zombie-marked by a concurrent refresh.
+      await writeRunMeta(
+        storage,
+        dirName,
+        runMeta("run-001", {
+          status: "running",
+          finishedAt: undefined,
+          origin: "app",
+          startedAt: new Date().toISOString(),
+        }),
+      );
+
+      const early = await reconcileRuns(storage, dirName, new Set());
+      expect(early).toEqual([]);
+      expect((await readRunMeta(storage, dirName, "run-001"))?.status).toBe(
+        "running",
+      );
+
+      // Past the freshness window it reconciles as usual.
+      const later = new Date(Date.now() + FRESH_RUN_GRACE_MS + 1000);
+      const interrupted = await reconcileRuns(
+        storage,
+        dirName,
+        new Set(),
+        later,
+      );
+      expect(interrupted).toEqual(["run-001"]);
     });
 
     it("gives live notebook runs a grace window", async () => {

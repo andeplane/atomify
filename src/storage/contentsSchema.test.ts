@@ -20,6 +20,10 @@ describe("classifyPath", () => {
     expect(classifyPath("data.spce").format).toBe("text");
     expect(classifyPath("log.lammps").format).toBe("text");
     expect(classifyPath("dump.custom").format).toBe("text");
+    // Binary MD artifacts: restart files and binary trajectory dumps.
+    expect(classifyPath("md.restart").format).toBe("base64");
+    expect(classifyPath("traj.dcd").format).toBe("base64");
+    expect(classifyPath("traj.xtc").format).toBe("base64");
   });
 });
 
@@ -65,6 +69,32 @@ describe("bytesToWriteContent", () => {
 
     const binary = bytesToWriteContent("frame.png", new Uint8Array([1, 2]));
     expect(binary).toBeInstanceOf(Uint8Array);
+  });
+
+  it("content-sniffs binaries with unknown extensions (NUL byte)", () => {
+    // write_restart output with an extension not in the table: the header
+    // is ASCII but the payload contains NUL bytes — must stay bytes, a
+    // text decode would corrupt it irreversibly.
+    const bytes = new Uint8Array([0x4c, 0x41, 0x4d, 0x4d, 0x50, 0x53, 0, 42]);
+    const result = bytesToWriteContent("restart.equil", bytes);
+    expect(result).toBeInstanceOf(Uint8Array);
+    expect([...(result as Uint8Array)]).toEqual([...bytes]);
+  });
+
+  it("content-sniffs binaries with unknown extensions (invalid UTF-8)", () => {
+    // 0xFF 0xFE is never valid UTF-8; decoding would produce U+FFFD soup.
+    const bytes = new Uint8Array([0xff, 0xfe, 0x01, 0x02]);
+    const result = bytesToWriteContent("frame.custom", bytes);
+    expect(result).toBeInstanceOf(Uint8Array);
+    expect([...(result as Uint8Array)]).toEqual([...bytes]);
+  });
+
+  it("still decodes valid UTF-8 text with unknown extensions", () => {
+    const result = bytesToWriteContent(
+      "dump.custom",
+      new TextEncoder().encode("ITEM: TIMESTEP\n0\n — ångström"),
+    );
+    expect(result).toBe("ITEM: TIMESTEP\n0\n — ångström");
   });
 });
 

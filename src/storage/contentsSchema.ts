@@ -42,6 +42,10 @@ const BINARY_MIMETYPES: Record<string, string> = {
   npy: "application/octet-stream",
   npz: "application/octet-stream",
   bin: "application/octet-stream",
+  // Binary MD artifacts: write_restart output and binary trajectory dumps.
+  restart: "application/octet-stream",
+  dcd: "application/octet-stream",
+  xtc: "application/octet-stream",
 };
 
 function extensionOf(path: string): string {
@@ -223,6 +227,11 @@ export function recordToReadResult(
  * Decode worker-snapshot bytes into what write() should store: text files
  * (the LAMMPS common case) become strings so they stay readable in the
  * notebook; known-binary extensions stay bytes.
+ *
+ * The extension table cannot be exhaustive (LAMMPS restart/dump names are
+ * arbitrary, e.g. `restart.equil`), so unknown extensions are content-sniffed:
+ * bytes containing a NUL or that are not valid UTF-8 stay bytes — decoding
+ * them would irreversibly corrupt the file (invalid sequences become U+FFFD).
  */
 export function bytesToWriteContent(
   path: string,
@@ -231,5 +240,12 @@ export function bytesToWriteContent(
   if (classifyPath(path).format === "base64") {
     return bytes;
   }
-  return new TextDecoder().decode(bytes);
+  if (bytes.includes(0)) {
+    return bytes;
+  }
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return bytes;
+  }
 }
