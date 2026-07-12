@@ -30,6 +30,40 @@ function itemSweepId(item: RunItem): string | undefined {
   return item.kind === "queued" ? item.request.sweepId : item.entry.meta?.sweepId;
 }
 
+/**
+ * "L = 12 → 18" for the variable a sweep varies (design: the group header
+ * reads "Sweep · L = 12 → 18 · 3 runs"). Null when no varying variable can
+ * be identified from the group's vars.
+ */
+function sweepRangeLabel(group: RunItem[]): string | null {
+  const varsOf = (item: RunItem) =>
+    item.kind === "queued" ? item.request.vars : item.entry.meta?.vars;
+  // Chronological order: run history is newest-first and sits below the queue.
+  const seq = [
+    ...group.filter((item) => item.kind === "run").reverse(),
+    ...group.filter((item) => item.kind === "queued"),
+  ]
+    .map(varsOf)
+    .filter(
+      (vars): vars is Record<string, number> =>
+        !!vars && Object.keys(vars).length > 0,
+    );
+  if (seq.length < 2) {
+    return null;
+  }
+  const fmt = (x: number) => String(Number(x.toFixed(3)));
+  for (const name of Object.keys(seq[0])) {
+    const values = seq.map((vars) => vars[name]);
+    if (values.some((value) => value === undefined)) {
+      continue;
+    }
+    if (values.some((value) => value !== values[0])) {
+      return `${name} = ${fmt(values[0])} → ${fmt(values[values.length - 1])}`;
+    }
+  }
+  return null;
+}
+
 function varsLabel(vars: Record<string, number> | undefined): string | null {
   if (!vars || Object.keys(vars).length === 0) {
     return null;
@@ -143,7 +177,9 @@ const RunsTab = () => {
     const sweepId = itemSweepId(item);
     const previousSweepId = index > 0 ? itemSweepId(items[index - 1]) : undefined;
     if (sweepId && sweepId !== previousSweepId) {
-      const groupSize = items.filter((i) => itemSweepId(i) === sweepId).length;
+      const group = items.filter((i) => itemSweepId(i) === sweepId);
+      const groupSize = group.length;
+      const range = sweepRangeLabel(group);
       const remaining = runQueue.filter(
         (request) => request.sweepId === sweepId,
       ).length;
@@ -169,7 +205,7 @@ const RunsTab = () => {
               flexShrink: 0,
             }}
           >
-            Sweep · {groupSize} runs
+            Sweep{range ? ` · ${range}` : ""} · {groupSize} runs
           </span>
           <span style={{ flex: 1, height: 1, background: "var(--border)" }} />
           {remaining > 0 && (

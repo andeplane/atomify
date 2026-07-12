@@ -76,7 +76,7 @@ test("sweep T over two values runs sequentially and records vars", async ({
     await expect(row2).toContainText("T = 2");
     const sweepHeaders = page.locator('[data-testid^="sweep-header-"]');
     await expect(sweepHeaders).toHaveCount(1);
-    await expect(sweepHeaders.first()).toContainText("Sweep · 2 runs");
+    await expect(sweepHeaders.first()).toContainText("Sweep · T = 1 → 2 · 2 runs");
   });
 
   await test.step("run.json records the vars (read from IndexedDB)", async () => {
