@@ -18,5 +18,9 @@ export {
   snapshotWorkingTree,
   writeRunMeta,
 } from "./runs";
-export { classifyPath, bytesToWriteContent } from "./contentsSchema";
+export {
+  classifyPath,
+  bytesToWriteContent,
+  validateRelativePath,
+} from "./contentsSchema";
 export { slugify, uniqueSlug } from "./slug";

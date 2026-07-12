@@ -11,6 +11,7 @@
 
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createStore, type Store } from "easy-peasy";
+import { strToU8, unzipSync, zipSync } from "fflate";
 
 // Mock metrics — the store models call track/time_event on most transitions;
 // mocking keeps tests quiet and avoids mixpanel/localStorage side effects.
@@ -18,6 +19,8 @@ vi.mock(import("../utils/metrics"), () => ({
   track: vi.fn(),
   time_event: vi.fn(),
 }));
+
+import { track } from "../utils/metrics";
 
 import { storeModel, type StoreModel } from "./model";
 import type { RunRequest, StoreInjections } from "./projects";
@@ -258,6 +261,129 @@ describe("projects store integration", () => {
       );
       expect(ranScript.startsWith("suffix off")).toBe(true);
       expect(ranScript).not.toContain("suffix kk");
+    });
+
+    it("keeps the run snapshot's authored inputs when the engine workdir holds preprocessed copies", async () => {
+      // The engine writes the snapshot's input files into its own FS —
+      // possibly rewritten (kokkos suffix preprocessing). copyOutputs must
+      // not copy those back over the pristine snapshot (ADR-001 §2
+      // provenance contract); only genuine outputs come back.
+      const engine = createFakeEngine({
+        outputs: [
+          { path: "in.lmp", content: `suffix off\n${SCRIPT}` },
+          { path: "data.spce", content: "engine-mangled data" },
+          { path: "log.lammps", content: FAKE_LOG },
+          { path: "dump.out", content: "ITEM: TIMESTEP\n0\n" },
+        ],
+      });
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Provenance",
+        files: [
+          { fileName: "in.lmp", content: SCRIPT },
+          { fileName: "data.spce", content: "some data" },
+        ],
+      });
+      const dirName = activeDirName(store);
+
+      await store.getActions().projects.startRuns([runRequest()]);
+
+      // Snapshotted inputs stay the authored text…
+      expect(
+        await libraryStorage.read(dirName, `${RUNS_DIR}/run-001/in.lmp`),
+      ).toBe(SCRIPT);
+      expect(
+        await libraryStorage.read(dirName, `${RUNS_DIR}/run-001/data.spce`),
+      ).toBe("some data");
+      // …while genuine outputs are copied.
+      expect(
+        await libraryStorage.read(dirName, `${RUNS_DIR}/run-001/log.lammps`),
+      ).toBe(FAKE_LOG);
+      expect(
+        await libraryStorage.read(dirName, `${RUNS_DIR}/run-001/dump.out`),
+      ).toBe("ITEM: TIMESTEP\n0\n");
+    });
+
+    it("persists the full console as log.lammps, beyond the 2000-line display cap", async () => {
+      // No engine-written log: the persisted log.lammps comes from the
+      // captured console, which must be the UNCAPPED accumulator.
+      const engine = createFakeEngine({ manual: true, outputs: [] });
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Long Log",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const dirName = activeDirName(store);
+
+      const runPromise = store.getActions().projects.startRuns([runRequest()]);
+      await waitForCondition(
+        () => engine.runFilePaths.length === 1,
+        "the engine runFile call",
+      );
+      for (let i = 0; i < 2100; i++) {
+        store.getActions().simulation.addLammpsOutput(`line ${i}`);
+      }
+      engine.resolveRun();
+      await runPromise;
+
+      // Display buffer stays capped…
+      expect(store.getState().simulation.lammpsOutput.length).toBe(2000);
+      // …but the persisted log holds every line, from the very first.
+      const log = (await libraryStorage.read(
+        dirName,
+        `${RUNS_DIR}/run-001/log.lammps`,
+      )) as string;
+      const lines = log.split("\n");
+      expect(lines[0]).toBe("line 0");
+      expect(lines[2099]).toBe("line 2099");
+    });
+
+    it("a refreshActive during the run does not zombie-mark the live run", async () => {
+      const engine = createFakeEngine({ manual: true });
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Focus Race",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const dirName = activeDirName(store);
+
+      const runPromise = store.getActions().projects.startRuns([runRequest()]);
+      await waitForCondition(
+        () => engine.runFilePaths.length === 1,
+        "the engine runFile call",
+      );
+      // The executor owns the real run id (not a "pending" placeholder)…
+      expect(store.getState().projects.activeRun?.runId).toBe("run-001");
+      // …so a window-focus refresh reconciles without interrupting it.
+      await store.getActions().projects.refreshActive();
+      expect(
+        (await readRunMeta(libraryStorage, dirName, "run-001"))?.status,
+      ).toBe("running");
+
+      engine.resolveRun();
+      await runPromise;
+      expect(
+        (await readRunMeta(libraryStorage, dirName, "run-001"))?.status,
+      ).toBe("completed");
+    });
+
+    it("sends no user content (simulationId, errorMessage) to metrics", async () => {
+      const engine = createFakeEngine();
+      const { store } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Acme Corp NDA polymer study",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      engine.setErrorMessage("ERROR: quotes script content");
+      vi.mocked(track).mockClear();
+
+      await store.getActions().projects.startRuns([runRequest()]);
+
+      expect(vi.mocked(track).mock.calls.length).toBeGreaterThan(0);
+      for (const [, payload] of vi.mocked(track).mock.calls) {
+        expect(payload ?? {}).not.toHaveProperty("simulationId");
+        expect(payload ?? {}).not.toHaveProperty("errorMessage");
+      }
     });
 
     it("records a failed run with the engine's error message", async () => {
@@ -570,6 +696,68 @@ describe("projects store integration", () => {
       expect(runMeta?.status).toBe("completed");
     });
 
+    it("export includes edits still sitting in the debounce buffer", async () => {
+      const { store } = await createTestStore(createFakeEngine());
+      await store.getActions().projects.createProject({
+        displayName: "Flush Export",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const edited = "# typed just before Download zip\n";
+      store
+        .getActions()
+        .projects.saveFileDebounced({ path: "in.lmp", content: edited });
+
+      const exported = await store
+        .getActions()
+        .projects.exportProject({ includeRuns: false });
+
+      const entries = unzipSync(exported!.bytes);
+      expect(new TextDecoder().decode(entries["in.lmp"])).toBe(edited);
+    });
+
+    it("rejects a zip with an invalid entry name before creating anything", async () => {
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
+      const zip = zipSync({
+        "in.lmp": strToU8(SCRIPT),
+        "strain-50%.data": strToU8("data"),
+      });
+
+      await expect(
+        store.getActions().projects.importProject({ zip }),
+      ).rejects.toThrow(/strain-50%\.data/);
+
+      // Nothing half-imported: the library is untouched.
+      expect(await libraryStorage.listProjects()).toEqual([]);
+    });
+
+    it("cleans up the half-created project when an entry write fails mid-import", async () => {
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
+      const zip = zipSync({
+        "in.lmp": strToU8(SCRIPT),
+        "data.spce": strToU8("some data"),
+      });
+      const write = libraryStorage.write.bind(libraryStorage);
+      vi.spyOn(libraryStorage, "write").mockImplementation(
+        async (dirName, path, content) => {
+          if (path === "data.spce") {
+            throw new Error("quota exceeded");
+          }
+          return write(dirName, path, content);
+        },
+      );
+
+      await expect(
+        store.getActions().projects.importProject({ zip }),
+      ).rejects.toThrow(/Import failed at "data\.spce"/);
+
+      vi.restoreAllMocks();
+      expect(await libraryStorage.listProjects()).toEqual([]);
+      expect(store.getState().projects.active).toBeUndefined();
+      expect(store.getState().projects.screen).toEqual({ name: "home" });
+    });
+
     it("export without runs; import falls back to the zip's project.json name", async () => {
       const engine = createFakeEngine();
       const { store, libraryStorage } = await createTestStore(engine);
@@ -725,6 +913,68 @@ describe("projects store integration", () => {
           `${RUNS_DIR}/run-001/${RUN_META_PATH}`,
         ),
       ).not.toBeNull();
+    });
+  });
+
+  describe("duplicateProject: nested files and pending edits", () => {
+    it("copies nested working-tree files and flushes the debounce buffer", async () => {
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
+      await store.getActions().projects.createProject({
+        displayName: "Nested",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const originalDirName = activeDirName(store);
+      // A nested file (as an imported zip would produce)…
+      await store.getActions().projects.writeFile({
+        path: "potentials/SiC.tersoff",
+        content: "# Tersoff parameters",
+      });
+      // …and an edit still sitting in the 500ms debounce buffer.
+      const edited = "# edited right before Duplicate\n";
+      store
+        .getActions()
+        .projects.saveFileDebounced({ path: "in.lmp", content: edited });
+
+      await store.getActions().projects.duplicateProject();
+
+      const copyDirName = activeDirName(store);
+      expect(copyDirName).not.toBe(originalDirName);
+      expect(
+        await libraryStorage.read(copyDirName, "potentials/SiC.tersoff"),
+      ).toBe("# Tersoff parameters");
+      expect(await libraryStorage.read(copyDirName, "in.lmp")).toBe(edited);
+      // runs/ and the source identity still do not come along.
+      expect(await libraryStorage.list(copyDirName, RUNS_DIR)).toEqual([]);
+    });
+  });
+
+  describe("readFile caching", () => {
+    it("reads run outputs fresh but keeps caching working-tree files", async () => {
+      const engine = createFakeEngine();
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Cache",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const dirName = activeDirName(store);
+      await store.getActions().projects.startRuns([runRequest()]);
+
+      const logPath = `${RUNS_DIR}/run-001/log.lammps`;
+      expect(await store.getActions().projects.readFile(logPath)).toBe(
+        FAKE_LOG,
+      );
+      // The file changes on disk (mid-run copy, or the run id was reused
+      // after deleteRun): the next read must see the new content.
+      await libraryStorage.write(dirName, logPath, "fresh content");
+      expect(await store.getActions().projects.readFile(logPath)).toBe(
+        "fresh content",
+      );
+
+      // Working-tree files stay cached (editor buffer semantics).
+      expect(await store.getActions().projects.readFile("in.lmp")).toBe(SCRIPT);
+      await libraryStorage.write(dirName, "in.lmp", "changed behind the cache");
+      expect(await store.getActions().projects.readFile("in.lmp")).toBe(SCRIPT);
     });
   });
 

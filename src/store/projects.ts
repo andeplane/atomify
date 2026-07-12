@@ -13,7 +13,7 @@
 import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
 import { unzipSync, zipSync } from "fflate";
 import { StoreModel } from "./model";
-import type { Simulation } from "./simulation";
+import { getFullLammpsOutput, type Simulation } from "./simulation";
 import type {
   FileStat,
   ProjectMeta,
@@ -29,6 +29,7 @@ import {
   reconcileRuns,
   RUNS_DIR,
   snapshotWorkingTree,
+  validateRelativePath,
   writeRunMeta,
 } from "../storage";
 import { projectAnalysisNotebook } from "../utils/AnalyzeNotebook";
@@ -300,7 +301,13 @@ async function copyTree(
 /** Best-effort viewport capture for `frame.png` (ADR-003 §2). */
 async function captureViewport(): Promise<Uint8Array | null> {
   try {
-    const canvas = document.querySelector<HTMLCanvasElement>("canvas");
+    // Only the simulation viewport (the container View renders the
+    // visualizer into) counts. A bare `canvas` query would grab whatever
+    // canvas happens to be first — Monaco's minimap, a notebook chart —
+    // once the user navigates away and View unmounts.
+    const canvas = document.querySelector<HTMLCanvasElement>(
+      "#canvas-container canvas",
+    );
     if (!canvas || canvas.width === 0) {
       return null;
     }
@@ -521,13 +528,12 @@ export const projectsModel: ProjectsModel = {
     if (!active) {
       return;
     }
+    // Edits still in the debounce buffer belong in the copy.
+    await actions.flushPendingSaves();
     const storage = storageFor(injections, active.quick);
-    // Working tree + notebook only, no runs (ADR-003 §5). Snapshot the source
-    // listing before createProject switches the active project to the copy.
-    const source = {
-      dirName: active.meta.dirName,
-      files: active.files.filter((entry) => entry.type !== "directory"),
-    };
+    // Remember the source before createProject switches the active project
+    // to the copy.
+    const sourceDirName = active.meta.dirName;
     const meta = await actions.createProject({
       displayName: `${active.meta.displayName} (copy)`,
       color: active.meta.color,
@@ -535,16 +541,32 @@ export const projectsModel: ProjectsModel = {
       inputScript: active.meta.inputScript,
       files: [],
     });
-    // Copy contents directly so binary files survive (a text-only detour
-    // through CreateProjectPayload would empty them); the copied notebook
-    // overwrites the template createProject generated.
+    // Working tree (nested directories included) + notebook, no runs and a
+    // fresh .atomify identity (ADR-003 §5). Copy contents directly so binary
+    // files survive (a text-only detour through CreateProjectPayload would
+    // empty them); the copied notebook overwrites the template createProject
+    // generated.
     const library = storageFor(injections, false);
-    for (const entry of source.files) {
-      await library.write(
-        meta.dirName,
-        entry.path,
-        await storage.read(source.dirName, entry.path),
-      );
+    const entries = await storage.list(sourceDirName);
+    for (const entry of entries) {
+      if (entry.path === RUNS_DIR || entry.path.startsWith(".atomify")) {
+        continue;
+      }
+      if (entry.type === "directory") {
+        await copyTree(
+          storage,
+          sourceDirName,
+          library,
+          meta.dirName,
+          entry.path,
+        );
+      } else {
+        await library.write(
+          meta.dirName,
+          entry.path,
+          await storage.read(sourceDirName, entry.path),
+        );
+      }
     }
     track("Project.Duplicate", {});
     await actions.refreshActive();
@@ -608,11 +630,13 @@ export const projectsModel: ProjectsModel = {
   }),
 
   exportProject: thunk(
-    async (_actions, { includeRuns }, { getState, injections }) => {
+    async (actions, { includeRuns }, { getState, injections }) => {
       const active = getState().active;
       if (!active) {
         return null;
       }
+      // Edits still in the debounce buffer belong in the zip.
+      await actions.flushPendingSaves();
       const storage = storageFor(injections, active.quick);
       const dirName = active.meta.dirName;
       const entries: Record<string, Uint8Array> = {};
@@ -685,6 +709,22 @@ export const projectsModel: ProjectsModel = {
       const payloadPaths = [...files.keys()].filter(
         (path) => !path.startsWith(".atomify/"),
       );
+      // Every entry name must be a valid project-relative path BEFORE any
+      // write: a zip with a "../"/absolute/%-containing entry must fail the
+      // import up front, not strand a half-written project. (The common-root
+      // stripping above cannot bypass this — a stripped "root/../x" still
+      // yields a ".." segment, which is rejected here.)
+      for (const path of payloadPaths) {
+        try {
+          validateRelativePath(path);
+        } catch (error) {
+          throw new Error(
+            `The zip contains an entry that cannot be imported ("${path}"): ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+      }
       const workingScripts = payloadPaths.filter(
         (path) => !path.startsWith(`${RUNS_DIR}/`) && isScriptFile(path),
       );
@@ -708,11 +748,30 @@ export const projectsModel: ProjectsModel = {
       });
       const storage = storageFor(helpers.injections, quick);
       for (const path of payloadPaths) {
-        await storage.write(
-          meta.dirName,
-          path,
-          bytesToWriteContent(path, files.get(path)!),
-        );
+        try {
+          await storage.write(
+            meta.dirName,
+            path,
+            bytesToWriteContent(path, files.get(path)!),
+          );
+        } catch (error) {
+          // All-or-nothing: a half-imported project must not stay in the
+          // library looking complete. Remove it and surface the entry that
+          // failed.
+          await storage.deleteProject(meta.dirName).catch(() => {});
+          if (!quick) {
+            actions.setProjects(
+              await helpers.injections.libraryStorage.listProjects(),
+            );
+          }
+          actions.setActive(undefined);
+          actions.setScreen({ name: "home" });
+          throw new Error(
+            `Import failed at "${path}": ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
       }
       track("Project.Import", {
         fileCount: payloadPaths.length,
@@ -728,15 +787,23 @@ export const projectsModel: ProjectsModel = {
     if (!active) {
       return "";
     }
-    const cached = getState().fileContents[path];
-    if (cached !== undefined) {
-      return cached;
+    // runs/ paths are engine outputs, not editor buffers: they change on
+    // disk mid-run and run ids are reused after deleteRun, so a cache entry
+    // would go stale (or describe a deleted run). Always read them fresh.
+    const isRunOutput = path.startsWith(`${RUNS_DIR}/`);
+    if (!isRunOutput) {
+      const cached = getState().fileContents[path];
+      if (cached !== undefined) {
+        return cached;
+      }
     }
     const storage = storageFor(injections, active.quick);
     const content = await storage.read(active.meta.dirName, path);
     const text =
       typeof content === "string" ? content : new TextDecoder().decode(content);
-    actions.setFileContent({ path, content: text });
+    if (!isRunOutput) {
+      actions.setFileContent({ path, content: text });
+    }
     return text;
   }),
 
@@ -1025,7 +1092,21 @@ export const projectsModel: ProjectsModel = {
 
     // 1. Claim the run directory and snapshot the working tree (ADR-001 §5).
     const runId = await allocateRunDir(storage, request.dirName);
-    const { gaps } = await snapshotWorkingTree(storage, request.dirName, runId);
+    // Record the real run id immediately: reconcileRuns (window focus, tab
+    // clicks) builds its owned set from activeRun.runId, and the snapshot
+    // below can take seconds — "pending" would leave run-NNN unowned and
+    // zombie-marked mid-claim.
+    actions.setActiveRun({
+      dirName: request.dirName,
+      runId,
+      quick: request.quick,
+    });
+    const { copied, gaps } = await snapshotWorkingTree(
+      storage,
+      request.dirName,
+      runId,
+    );
+    const snapshotFiles = new Set(copied);
     let runMeta: RunMeta = {
       schemaVersion: 1,
       id: runId,
@@ -1042,11 +1123,6 @@ export const projectsModel: ProjectsModel = {
       origin: request.sweepId ? "sweep" : (request.origin ?? "button"),
       kokkos: request.useKokkos,
       hasVars: Object.keys(request.vars).length > 0,
-    });
-    actions.setActiveRun({
-      dirName: request.dirName,
-      runId,
-      quick: request.quick,
     });
     actions.setScreen({
       name: "project",
@@ -1122,6 +1198,16 @@ export const projectsModel: ProjectsModel = {
           if (RUN_INTERNAL_FILE.test(file.path)) {
             continue;
           }
+          // The engine wrote the snapshotted inputs into its FS itself —
+          // possibly preprocessed (kokkos suffix rewriting) — so copying
+          // them back would overwrite the pristine snapshot with mangled
+          // text and break run provenance (ADR-001 §2). Skip everything
+          // snapshotWorkingTree copied; only genuine outputs come back.
+          // (Trade-off: a run that MODIFIES an input file in place keeps
+          // the authored version in the snapshot — provenance wins.)
+          if (snapshotFiles.has(file.path)) {
+            continue;
+          }
           await storage.write(
             request.dirName,
             `${RUNS_DIR}/${runId}/${file.path}`,
@@ -1174,15 +1260,18 @@ export const projectsModel: ProjectsModel = {
     // This wasm build streams LAMMPS output to stdout instead of writing a
     // log file; persist the captured console as the run's log.lammps
     // (ADR-003 §4.6 renders finished-run consoles from it). A log the engine
-    // did write itself wins.
+    // did write itself wins. The source is the UNCAPPED accumulator, not
+    // state.lammpsOutput (a display buffer capped at 2000 lines) — long runs
+    // must keep their header and thermo columns.
     try {
       const logPath = `${RUNS_DIR}/${runId}/log.lammps`;
       const engineLog = await storage.stat(request.dirName, logPath);
-      if (!engineLog && lammpsState.lammpsOutput.length > 0) {
+      const fullLog = getFullLammpsOutput();
+      if (!engineLog && fullLog.length > 0) {
         await storage.write(
           request.dirName,
           logPath,
-          lammpsState.lammpsOutput.join("\n") + "\n",
+          fullLog.join("\n") + "\n",
         );
       }
     } catch {
