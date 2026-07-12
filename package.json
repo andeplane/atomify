@@ -63,7 +63,7 @@
     "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/emscripten": "^1.41.5",
-    "@types/node": "^20.19.25",
+    "@types/node": "^26.1.1",
     "@types/uuid": "^11.0.0",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^5.2.0",
