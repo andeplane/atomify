@@ -2,8 +2,6 @@ import SimulationSummary from "./SimulationSummary";
 import SimulationSummaryExpanded from "./SimulationSummaryExpanded";
 
 interface ResponsiveSimulationSummaryProps {
-  isEmbeddedMode: boolean;
-  showSimulationSummary: boolean;
   isMobile: boolean;
   isOverlayCollapsed: boolean;
   showAnalyze: boolean;
@@ -14,8 +12,6 @@ interface ResponsiveSimulationSummaryProps {
 }
 
 const ResponsiveSimulationSummary = ({
-  isEmbeddedMode,
-  showSimulationSummary,
   isMobile,
   isOverlayCollapsed,
   showAnalyze,
@@ -26,22 +22,7 @@ const ResponsiveSimulationSummary = ({
 }: ResponsiveSimulationSummaryProps) => {
   const isDesktop = !isMobile;
 
-  // In embedded mode: show overlay only if showSimulationSummary=true
-  // On mobile: no expand button icon, no expanded view possible
-  if (isEmbeddedMode) {
-    if (showSimulationSummary) {
-      return (
-        <SimulationSummary
-          isCollapsed={isOverlayCollapsed}
-          onExpand={onExpand}
-          onCollapse={onCollapse}
-        />
-      );
-    }
-    return null;
-  }
-
-  // In non-embedded mode: show expanded overlay when showAnalyze is true (desktop only)
+  // Show expanded overlay when showAnalyze is true (desktop only)
   if (showAnalyze && isDesktop) {
     return <SimulationSummaryExpanded onShowLess={onShowLess} />;
   }

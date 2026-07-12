@@ -4,8 +4,6 @@ import type { ReactNode, CSSProperties } from "react";
 import type { State, Actions } from "easy-peasy";
 import View from "./View";
 import { useStoreState, useStoreActions } from "../hooks";
-import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
-import type { EmbeddedModeResult } from "../hooks/useEmbeddedMode";
 import * as THREE from "three";
 import { Visualizer, type ParticleClickEvent } from "omovi";
 import type { StoreModel } from "../store/model";
@@ -23,11 +21,6 @@ vi.mock("omovi", () => ({
 vi.mock("../hooks", () => ({
   useStoreState: vi.fn(),
   useStoreActions: vi.fn(),
-}));
-
-// Mock useEmbeddedMode: controls embed configuration per test
-vi.mock("../hooks/useEmbeddedMode", () => ({
-  useEmbeddedMode: vi.fn(),
 }));
 
 // Mock THREE.js: prevents canvas rendering errors in jsdom
@@ -150,13 +143,12 @@ describe("View", () => {
     mockState = createDefaultMockState();
     mockActions = createDefaultMockActions();
 
-    vi.mocked(useStoreState).mockImplementation(
-      (selector) => selector(mockState as unknown as State<StoreModel>),
+    vi.mocked(useStoreState).mockImplementation((selector) =>
+      selector(mockState as unknown as State<StoreModel>),
     );
-    vi.mocked(useStoreActions).mockImplementation(
-      (selector) => selector(mockActions as unknown as Actions<StoreModel>),
+    vi.mocked(useStoreActions).mockImplementation((selector) =>
+      selector(mockActions as unknown as Actions<StoreModel>),
     );
-    vi.mocked(useEmbeddedMode).mockReturnValue(createDefaultEmbedModeResult());
   });
 
   afterEach(() => {
@@ -188,8 +180,8 @@ describe("View", () => {
 
       // Act: change simulation to a new value
       mockState.simulation.simulation = { id: "sim1" };
-      vi.mocked(useStoreState).mockImplementation(
-        (selector) => selector(mockState as unknown as State<StoreModel>),
+      vi.mocked(useStoreState).mockImplementation((selector) =>
+        selector(mockState as unknown as State<StoreModel>),
       );
       rerender(<View visible={true} />);
 
@@ -210,8 +202,8 @@ describe("View", () => {
 
       // Act: switch to sim2
       mockState.simulation.simulation = { id: "sim2" };
-      vi.mocked(useStoreState).mockImplementation(
-        (selector) => selector(mockState as unknown as State<StoreModel>),
+      vi.mocked(useStoreState).mockImplementation((selector) =>
+        selector(mockState as unknown as State<StoreModel>),
       );
       rerender(<View visible={true} />);
 
@@ -253,17 +245,15 @@ describe("View", () => {
       const mockVisualizerInstance = createMockVisualizerInstance();
 
       // Use a regular function (not arrow) so it can be called with `new`
-      vi.mocked(Visualizer).mockImplementation(
-        function (
-          this: unknown,
-          options?: ConstructorParameters<typeof Visualizer>[0],
-        ) {
-          capturedOnParticleClick = options?.onParticleClick;
-          // Update mockState immediately to prevent infinite re-creation loop
-          mockState.render.visualizer = mockVisualizerInstance;
-          return mockVisualizerInstance as unknown as Visualizer;
-        },
-      );
+      vi.mocked(Visualizer).mockImplementation(function (
+        this: unknown,
+        options?: ConstructorParameters<typeof Visualizer>[0],
+      ) {
+        capturedOnParticleClick = options?.onParticleClick;
+        // Update mockState immediately to prevent infinite re-creation loop
+        mockState.render.visualizer = mockVisualizerInstance;
+        return mockVisualizerInstance as unknown as Visualizer;
+      });
 
       mockState.render.visualizer = null;
 
@@ -274,7 +264,11 @@ describe("View", () => {
 
       // Simulate a particle click to add atom 5 to selectedAtoms
       act(() => {
-        capturedOnParticleClick!({ particleIndex: 5, shiftKey: false, position: new THREE.Vector3(0, 0, 0) });
+        capturedOnParticleClick!({
+          particleIndex: 5,
+          shiftKey: false,
+          position: new THREE.Vector3(0, 0, 0),
+        });
       });
 
       // Record calls before Escape (onParticleClick also calls clearSelection internally)
@@ -294,15 +288,15 @@ describe("View", () => {
   });
 
   // ---------------------------------------------------------------------------
-  // P1: No simulation modal in embedded mode
+  // P1: No simulation modal
   // ---------------------------------------------------------------------------
-  describe("P1: No simulation modal in embedded mode", () => {
-    it("should NOT show the no-simulation modal when isEmbeddedMode is true", () => {
+  describe("P1: No simulation modal", () => {
+    it("should NOT show the no-simulation modal in pane mode (run detail)", () => {
       // Arrange: simulation is null (would normally trigger the modal)
       mockState.simulation.simulation = null;
 
       // Act
-      render(<View visible={true} isEmbeddedMode={true} />);
+      render(<View visible={true} pane />);
 
       // Assert: modal not rendered
       expect(
@@ -310,12 +304,12 @@ describe("View", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("should show the no-simulation modal when not embedded and simulation is null", () => {
+    it("should show the no-simulation modal when simulation is null", () => {
       // Arrange
       mockState.simulation.simulation = null;
 
       // Act
-      render(<View visible={true} isEmbeddedMode={false} />);
+      render(<View visible={true} />);
 
       // Assert
       expect(screen.getByTestId("no-simulation-modal")).toBeInTheDocument();
@@ -326,7 +320,7 @@ describe("View", () => {
       mockState.simulation.simulation = { id: "sim1" };
 
       // Act
-      render(<View visible={true} isEmbeddedMode={false} />);
+      render(<View visible={true} />);
 
       // Assert
       expect(
@@ -370,9 +364,9 @@ describe("View", () => {
       );
     });
 
-    it("should persist showAnalyze to localStorage when not in embedded mode", () => {
+    it("should persist showAnalyze to localStorage", () => {
       // Act
-      render(<View visible={true} isEmbeddedMode={false} />);
+      render(<View visible={true} />);
 
       // Assert: setItem called with the persistence key
       expect(Storage.prototype.setItem).toHaveBeenCalledWith(
@@ -380,96 +374,27 @@ describe("View", () => {
         expect.any(String),
       );
     });
-
-    it("should NOT write showAnalyze to localStorage when in embedded mode", () => {
-      // Arrange
-      vi.mocked(useEmbeddedMode).mockReturnValue({
-        ...createDefaultEmbedModeResult(),
-        isEmbeddedMode: true,
-        embedConfig: {
-          showSimulationSummary: true,
-          showSimulationBox: true,
-          enableCameraControls: true,
-          enableParticlePicking: true,
-        },
-      });
-
-      // Act
-      render(<View visible={true} isEmbeddedMode={true} />);
-
-      // Assert: setItem NOT called with the drawer visibility key
-      expect(Storage.prototype.setItem).not.toHaveBeenCalledWith(
-        "simulationSummaryDrawerVisible",
-        expect.any(String),
-      );
-    });
   });
 
   // ---------------------------------------------------------------------------
-  // P2: embedConfig.showSimulationSummary overrides
+  // P2: summary overlay rendering
   // ---------------------------------------------------------------------------
-  describe("P2: embedConfig.showSimulationSummary overrides", () => {
-    it("should NOT render ResponsiveSimulationSummary when embedded and showSimulationSummary=false", () => {
-      // Arrange
-      vi.mocked(useEmbeddedMode).mockReturnValue({
-        ...createDefaultEmbedModeResult(),
-        embedConfig: {
-          showSimulationSummary: false,
-          showSimulationBox: true,
-          enableCameraControls: true,
-          enableParticlePicking: true,
-        },
-      });
+  describe("P2: summary overlay rendering", () => {
+    it("renders ResponsiveSimulationSummary in the full-screen view", () => {
+      render(<View visible={true} />);
 
-      // Act
-      render(<View visible={true} isEmbeddedMode={true} />);
+      expect(
+        screen.getByTestId("responsive-simulation-summary"),
+      ).toBeInTheDocument();
+    });
 
-      // Assert
+    it("does NOT render ResponsiveSimulationSummary in pane mode", () => {
+      // The run-detail pane has its own status panel (ADR-003).
+      render(<View visible={true} pane />);
+
       expect(
         screen.queryByTestId("responsive-simulation-summary"),
       ).not.toBeInTheDocument();
-    });
-
-    it("should render ResponsiveSimulationSummary when embedded and showSimulationSummary=true", () => {
-      // Arrange
-      vi.mocked(useEmbeddedMode).mockReturnValue({
-        ...createDefaultEmbedModeResult(),
-        embedConfig: {
-          showSimulationSummary: true,
-          showSimulationBox: true,
-          enableCameraControls: true,
-          enableParticlePicking: true,
-        },
-      });
-
-      // Act
-      render(<View visible={true} isEmbeddedMode={true} />);
-
-      // Assert
-      expect(
-        screen.getByTestId("responsive-simulation-summary"),
-      ).toBeInTheDocument();
-    });
-
-    it("should render ResponsiveSimulationSummary in non-embedded mode regardless of embedConfig", () => {
-      // Arrange: embedConfig says false, but non-embedded ignores it
-      vi.mocked(useEmbeddedMode).mockReturnValue({
-        ...createDefaultEmbedModeResult(),
-        embedConfig: {
-          showSimulationSummary: false,
-          showSimulationBox: true,
-          enableCameraControls: true,
-          enableParticlePicking: true,
-        },
-      });
-
-      // Act
-      render(<View visible={true} isEmbeddedMode={false} />);
-
-      // Assert: non-embedded always shows the summary
-      expect(
-        screen.getByTestId("responsive-simulation-summary"),
-      ).toBeInTheDocument();
     });
   });
 
@@ -600,29 +525,14 @@ function createDefaultMockActions() {
     render: {
       // Mirrors the real action: updates mockState so subsequent renders
       // see the newly created visualizer and don't re-trigger creation.
-      setVisualizer: vi.fn((v: ReturnType<typeof createMockVisualizerInstance>) => {
-        mockState.render.visualizer = v;
-      }),
+      setVisualizer: vi.fn(
+        (v: ReturnType<typeof createMockVisualizerInstance>) => {
+          mockState.render.visualizer = v;
+        },
+      ),
     },
     settings: {
       setRender: vi.fn(),
-    },
-  };
-}
-
-function createDefaultEmbedModeResult(): EmbeddedModeResult {
-  return {
-    embeddedSimulationUrl: null,
-    simulationIndex: 0,
-    embeddedData: null,
-    autoStart: false,
-    isEmbeddedMode: false,
-    vars: {},
-    embedConfig: {
-      showSimulationSummary: true,
-      showSimulationBox: true,
-      enableCameraControls: true,
-      enableParticlePicking: true,
     },
   };
 }

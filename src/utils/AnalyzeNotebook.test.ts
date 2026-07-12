@@ -1,163 +1,63 @@
-import { describe, it, expect } from "vitest";
-import AnalyzeNotebook from "./AnalyzeNotebook";
-import { Simulation } from "../store/simulation";
+import { describe, expect, it } from "vitest";
+import { projectAnalysisNotebook } from "./AnalyzeNotebook";
 
-// Helper function to create mock simulation with defaults
-const createMockSimulation = (
-  overrides: Partial<Simulation> = {},
-): Simulation => ({
-  id: "test-sim",
-  inputScript: "",
-  files: [],
-  start: false,
-  ...overrides,
-});
+const cellSource = (source: string | string[]): string =>
+  Array.isArray(source) ? source.join("") : source;
 
-describe("AnalyzeNotebook", () => {
-  it("should generate notebook with simulation ID replaced", () => {
-    // Arrange
-    const simulation = createMockSimulation({
-      id: "test-simulation-123",
-      inputScript: "run 1000",
-    });
+describe("projectAnalysisNotebook", () => {
+  const meta = { displayName: "Diffusion coefficients", dirName: "diffusion" };
 
-    // Act
-    const notebook = AnalyzeNotebook(simulation);
-
-    // Assert
-    expect(notebook.cells[1].source).toContain("test-simulation-123");
-    expect(notebook.cells[1].source).not.toContain("###SIMULATIONID###");
-  });
-
-  it("should have correct notebook structure", () => {
-    // Arrange
-    const simulation = createMockSimulation({ id: "sim-001" });
-
-    // Act
-    const notebook = AnalyzeNotebook(simulation);
-
-    // Assert
+  it("produces a valid pyodide notebook", () => {
+    const notebook = projectAnalysisNotebook(meta);
     expect(notebook.nbformat).toBe(4);
-    expect(notebook.nbformat_minor).toBe(4);
-    expect(notebook.metadata).toBeDefined();
-    expect(notebook.metadata.language_info?.name).toBe("python");
+    expect(notebook.metadata.kernelspec).toMatchObject({ name: "python" });
+    expect(notebook.cells.length).toBeGreaterThan(3);
   });
 
-  it("should have three cells by default (pip install, plot code, empty)", () => {
-    // Arrange
-    const simulation = createMockSimulation({ id: "sim-002" });
-
-    // Act
-    const notebook = AnalyzeNotebook(simulation);
-
-    // Assert
-    expect(notebook.cells).toHaveLength(3);
-    expect(notebook.cells[0].cell_type).toBe("code");
-    expect(notebook.cells[0].source).toContain("%pip install pandas");
-    expect(notebook.cells[1].cell_type).toBe("code");
-    expect(notebook.cells[1].source).toContain("lammps_logfile");
-    expect(notebook.cells[2].cell_type).toBe("code");
-    expect(notebook.cells[2].source).toBe("");
+  it("titles the notebook after the project", () => {
+    const notebook = projectAnalysisNotebook(meta);
+    const header = notebook.cells[0];
+    expect(header.cell_type).toBe("markdown");
+    expect(cellSource(header.source)).toContain("Diffusion coefficients");
   });
 
-  it("should add markdown cell when analysisDescription is provided", () => {
-    // Arrange
-    const simulation = createMockSimulation({
-      id: "sim-003",
-      analysisDescription: "# Analysis\nThis is a test analysis description",
+  it("includes the project description when present", () => {
+    const notebook = projectAnalysisNotebook({
+      ...meta,
+      description: "LJ binary diffusion",
     });
-
-    // Act
-    const notebook = AnalyzeNotebook(simulation);
-
-    // Assert
-    expect(notebook.cells).toHaveLength(4); // markdown + 3 default cells
-    expect(notebook.cells[0].cell_type).toBe("markdown");
-    expect(notebook.cells[0].source).toBe(
-      "# Analysis\nThis is a test analysis description",
+    expect(cellSource(notebook.cells[0].source)).toContain(
+      "LJ binary diffusion",
     );
   });
 
-  it("should place markdown cell before pip install cell", () => {
-    // Arrange
-    const simulation = createMockSimulation({
-      id: "sim-004",
-      analysisDescription: "Test description",
-    });
-
-    // Act
-    const notebook = AnalyzeNotebook(simulation);
-
-    // Assert
-    expect(notebook.cells[0].cell_type).toBe("markdown");
-    expect(notebook.cells[1].source).toContain("%pip install");
+  it("discovers runs by glob rather than hardcoding paths", () => {
+    const notebook = projectAnalysisNotebook(meta);
+    const allCode = notebook.cells
+      .filter((cell) => cell.cell_type === "code")
+      .map((cell) => cellSource(cell.source))
+      .join("\n");
+    expect(allCode).toContain('glob.glob("runs/*');
+    // The notebook cwd is the project dir; no dirName-prefixed paths.
+    expect(allCode).not.toContain("diffusion/");
   });
 
-  it("should contain lammps_logfile import and plotting code", () => {
-    // Arrange
-    const simulation = createMockSimulation({ id: "sim-005" });
-
-    // Act
-    const notebook = AnalyzeNotebook(simulation);
-
-    // Assert
-    const plotCell = notebook.cells[1].source;
-    expect(plotCell).toContain("import lammps_logfile");
-    expect(plotCell).toContain("import matplotlib.pyplot as plt");
-    expect(plotCell).toContain("log.lammps");
-    expect(plotCell).toContain("plt.plot");
+  it("installs analysis deps via piplite wheels", () => {
+    const notebook = projectAnalysisNotebook(meta);
+    const pipCell = notebook.cells.find((cell) =>
+      cellSource(cell.source).includes("%pip install"),
+    );
+    expect(pipCell).toBeDefined();
+    expect(cellSource(pipCell!.source)).toContain("lammps-logfile");
   });
 
-  it("should have correct metadata for Python kernel", () => {
-    // Arrange
-    const simulation = createMockSimulation({ id: "sim-006" });
-
-    // Act
-    const notebook = AnalyzeNotebook(simulation);
-
-    // Assert
-    expect(notebook.metadata.kernelspec?.name).toBe("python");
-    expect(notebook.metadata.kernelspec?.display_name).toBe("Python (Pyodide)");
-    // language is an extra field not in the official types but allowed via PartialJSONObject
-    expect(
-      (notebook.metadata.kernelspec as { language?: string })?.language,
-    ).toBe("python");
-    expect(notebook.metadata.language_info?.name).toBe("python");
-    // version is an extra field not in the official types but allowed via PartialJSONObject
-    expect(
-      (notebook.metadata.language_info as { version?: string })?.version,
-    ).toBe("3.12");
-  });
-
-  it("should handle special characters in simulation ID", () => {
-    // Arrange
-    const simulation = createMockSimulation({
-      id: "sim-with-special-chars_123",
-    });
-
-    // Act
-    const notebook = AnalyzeNotebook(simulation);
-
-    // Assert
-    expect(notebook.cells[1].source).toContain("sim-with-special-chars_123");
-  });
-
-  it("should not modify other cells when adding markdown", () => {
-    // Arrange
-    const simulation = createMockSimulation({
-      id: "sim-007",
-      analysisDescription: "Description",
-    });
-
-    // Act
-    const notebook = AnalyzeNotebook(simulation);
-
-    // Assert
-    // The pip install cell should be at index 1 (after markdown)
-    expect(notebook.cells[1].source).toContain("%pip install pandas");
-    // The plot cell should be at index 2
-    expect(notebook.cells[2].source).toContain("lammps_logfile");
-    // Empty cell should be at index 3
-    expect(notebook.cells[3].source).toBe("");
+  it("reads sweep variables from run metadata", () => {
+    const notebook = projectAnalysisNotebook(meta);
+    const allCode = notebook.cells
+      .map((cell) => cellSource(cell.source))
+      .join("\n");
+    expect(allCode).toContain(".atomify");
+    expect(allCode).toContain("run.json");
+    expect(allCode).toContain('"vars"');
   });
 });

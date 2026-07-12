@@ -21,13 +21,14 @@ vi.mock("localforage", () => ({
 vi.mock("../utils/metrics", () => ({
   track: vi.fn(),
   time_event: vi.fn(),
-  getEmbeddingParams: vi.fn(() => ({})),
 }));
 
 import { track } from "../utils/metrics";
 
 describe("prepareVarsScript", () => {
-  let mockWriteFile: ReturnType<typeof vi.fn<(path: string, data: string) => void>>;
+  let mockWriteFile: ReturnType<
+    typeof vi.fn<(path: string, data: string) => void>
+  >;
   let mockWasm: { FS: { writeFile: (path: string, data: string) => void } };
 
   beforeEach(() => {
@@ -75,13 +76,19 @@ describe("prepareVarsScript", () => {
     expect(mockWriteFile).toHaveBeenCalledTimes(2);
 
     // First call: vars file
-    const [varsPath, varsContent] = mockWriteFile.mock.calls[0] as [string, string];
+    const [varsPath, varsContent] = mockWriteFile.mock.calls[0] as [
+      string,
+      string,
+    ];
     expect(varsPath).toBe("/sim-1/_vars_in.lmp");
     expect(varsContent).toContain("variable temp equal 300");
     expect(varsContent).toContain("variable pressure equal 1");
 
     // Second call: wrapper file (vars + original content)
-    const [wrapperPath, wrapperContent] = mockWriteFile.mock.calls[1] as [string, string];
+    const [wrapperPath, wrapperContent] = mockWriteFile.mock.calls[1] as [
+      string,
+      string,
+    ];
     expect(wrapperPath).toBe("/sim-1/_wrapper_in.lmp");
     expect(wrapperContent).toContain("variable temp equal 300");
     expect(wrapperContent).toContain("run 1000\n");
@@ -157,14 +164,15 @@ describe("handleRunResult", () => {
   it('returns "completed" and calls runPostTimestep when no error', () => {
     const result = handleRunResult({
       errorMessage: undefined,
-      simulationId: "sim-1",
       metricsData,
       actions: mockActions,
       allActions: mockAllActions,
     });
 
     expect(result).toBe("completed");
-    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(true);
+    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(
+      true,
+    );
     expect(mockActions.setRunning).toHaveBeenCalledWith(false);
     expect(mockActions.setShowConsole).toHaveBeenCalledWith(true);
     expect(track).toHaveBeenCalledWith(
@@ -176,14 +184,15 @@ describe("handleRunResult", () => {
   it('returns "canceled" when error includes Atomify::canceled', () => {
     const result = handleRunResult({
       errorMessage: "ERROR: Atomify::canceled by user",
-      simulationId: "sim-1",
       metricsData,
       actions: mockActions,
       allActions: mockAllActions,
     });
 
     expect(result).toBe("canceled");
-    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(true);
+    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(
+      true,
+    );
     expect(mockActions.setRunning).toHaveBeenCalledWith(false);
     expect(track).toHaveBeenCalledWith(
       "Simulation.Stop",
@@ -194,29 +203,46 @@ describe("handleRunResult", () => {
   it('returns "failed" and sets lastError for other errors', () => {
     const result = handleRunResult({
       errorMessage: "LAMMPS syntax error",
-      simulationId: "sim-1",
       metricsData,
       actions: mockActions,
       allActions: mockAllActions,
     });
 
     expect(result).toBe("failed");
-    expect(mockActions.setLastError).toHaveBeenCalledWith("LAMMPS syntax error");
+    expect(mockActions.setLastError).toHaveBeenCalledWith(
+      "LAMMPS syntax error",
+    );
     expect(mockAllActions.processing.runPostTimestep).not.toHaveBeenCalled();
     expect(mockActions.setRunning).toHaveBeenCalledWith(false);
     expect(track).toHaveBeenCalledWith(
       "Simulation.Stop",
-      expect.objectContaining({
-        stopReason: "failed",
-        errorMessage: "LAMMPS syntax error",
-      }),
+      expect.objectContaining({ stopReason: "failed" }),
     );
+  });
+
+  it("never leaks user content into metrics (no simulationId, no errorMessage)", () => {
+    // simulationId embeds the project dir slug (user-authored name) and
+    // errorMessage quotes script content — neither may leave the device.
+    handleRunResult({
+      errorMessage: "ERROR: unknown command in acme-corp-secret/in.lmp",
+      metricsData,
+      actions: mockActions,
+      allActions: mockAllActions,
+    });
+
+    const stopCalls = vi
+      .mocked(track)
+      .mock.calls.filter(([event]) => event === "Simulation.Stop");
+    expect(stopCalls.length).toBeGreaterThan(0);
+    for (const [, payload] of stopCalls) {
+      expect(payload).not.toHaveProperty("simulationId");
+      expect(payload).not.toHaveProperty("errorMessage");
+    }
   });
 
   it('returns "completed" when errorMessage is empty string', () => {
     const result = handleRunResult({
       errorMessage: "",
-      simulationId: "sim-1",
       metricsData,
       actions: mockActions,
       allActions: mockAllActions,
@@ -224,6 +250,8 @@ describe("handleRunResult", () => {
 
     // Empty string is falsy, so this path goes to "completed"
     expect(result).toBe("completed");
-    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(true);
+    expect(mockAllActions.processing.runPostTimestep).toHaveBeenCalledWith(
+      true,
+    );
   });
 });

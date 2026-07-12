@@ -81,6 +81,50 @@ ctx.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => {
   }
 });
 
+/**
+ * Read every file under `dir` (recursively) out of the wasm FS. MEMFS reads
+ * are pure JS — they never call into compiled wasm — so unlike the deferred
+ * native calls above this is safe even while the module is asyncify-suspended
+ * mid-run. Files above maxBytes are reported in `skipped` instead of read
+ * (the mid-run throttle passes a cap; the end-of-run snapshot passes none).
+ */
+function snapshotWorkdir(dir: string, maxBytes?: number) {
+  const files: { path: string; bytes: ArrayBuffer }[] = [];
+  const skipped: { path: string; size: number }[] = [];
+  if (!module || !module.FS.analyzePath(dir).exists) {
+    return { files, skipped };
+  }
+  const base = dir.replace(/\/+$/, "");
+  const walk = (current: string) => {
+    for (const entry of module!.FS.readdir(current)) {
+      if (entry === "." || entry === "..") continue;
+      const fullPath = `${current}/${entry}`;
+      const stat = module!.FS.stat(fullPath);
+      if (module!.FS.isDir(stat.mode)) {
+        walk(fullPath);
+        continue;
+      }
+      const relative = fullPath.slice(base.length + 1);
+      if (maxBytes !== undefined && stat.size > maxBytes) {
+        skipped.push({ path: relative, size: stat.size });
+        continue;
+      }
+      // Without an encoding option Emscripten returns the raw bytes; the
+      // declared type only covers the utf8 overload.
+      const data = module!.FS.readFile(fullPath) as unknown as
+        | Uint8Array
+        | string;
+      const bytes =
+        typeof data === "string"
+          ? new TextEncoder().encode(data)
+          : new Uint8Array(data); // copy: heap subarrays must not be transferred
+      files.push({ path: relative, bytes: bytes.buffer as ArrayBuffer });
+    }
+  };
+  walk(base);
+  return { files, skipped };
+}
+
 /** mkdir -p: create every missing parent, ignoring "already exists". */
 function mkdirp(path: string) {
   if (!module) return;
@@ -327,6 +371,32 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
       case "runCommand":
         callNativeSafely(() => adapter?.runCommand(cmd.command));
         break;
+      case "snapshotWorkdir": {
+        // Always reply — a throw mid-walk (huge dump allocation, bad FS
+        // entry) must not strand the proxy's pending promise, or the run
+        // pipeline waits forever and no further runs can start.
+        try {
+          const { files, skipped } = snapshotWorkdir(cmd.dir, cmd.maxBytes);
+          post(
+            { type: "workdirSnapshot", requestId: cmd.requestId, files, skipped },
+            files.map((file) => file.bytes),
+          );
+        } catch (error) {
+          post({
+            type: "workdirSnapshot",
+            requestId: cmd.requestId,
+            files: [],
+            skipped: [],
+          });
+          post({
+            type: "error",
+            message: `snapshotWorkdir failed: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          });
+        }
+        break;
+      }
     }
   } catch (error) {
     post({

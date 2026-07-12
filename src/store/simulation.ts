@@ -2,14 +2,12 @@ import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
 import { StoreModel } from "./model";
 import { LammpsWeb } from "../types";
 import { AtomTypes, AtomType, hexToRgb } from "../utils/atomtypes";
-import AnalyzeNotebook from "../utils/AnalyzeNotebook";
-import { track, time_event, getEmbeddingParams } from "../utils/metrics";
+import { track, time_event } from "../utils/metrics";
 import {
   scriptOptsIntoKokkos,
   prepareScriptForSerialStyles,
 } from "../utils/kokkos";
 import * as THREE from "three";
-import localforage from "localforage";
 import ColorModifier from "../modifiers/colormodifier";
 import Modifier from "../modifiers/modifier";
 import { SimulationFile } from "./app";
@@ -21,13 +19,6 @@ import {
   parseAtomSizeAndColor,
 } from "../utils/parsers";
 import { getWasm } from "../wasm/wasmInstance";
-
-localforage.config({
-  driver: localforage.INDEXEDDB,
-  name: "JupyterLite Storage",
-  storeName: "files", // Should be alphanumeric, with underscores.
-  description: "some description",
-});
 
 /**
  * Builds a LAMMPS variable-injection script from a vars map, writes
@@ -74,7 +65,8 @@ export function collectRunMetrics(
   const timesteps = lammps.getTimesteps();
   return {
     timesteps,
-    timestepsPerSecond: durationSeconds > 0 ? (timesteps / durationSeconds).toFixed(3) : "0.000",
+    timestepsPerSecond:
+      durationSeconds > 0 ? (timesteps / durationSeconds).toFixed(3) : "0.000",
     numAtoms: lammps.getNumAtoms(),
     computes: computeNames,
   };
@@ -84,7 +76,6 @@ export type StopReason = "canceled" | "failed" | "completed";
 
 export interface RunResultContext {
   errorMessage: string | undefined;
-  simulationId: string;
   metricsData: {
     timesteps: number;
     timestepsPerSecond: string;
@@ -104,17 +95,27 @@ export interface RunResultContext {
 /**
  * Routes a run result to the appropriate canceled / failed / completed path,
  * fires side-effects (error state, tracking), and returns the stop reason.
+ *
+ * Metrics carry no simulationId (it embeds the project dir slug — user
+ * content, PII policy) and no errorMessage (it quotes script content); the
+ * sanitized signal is stopReason + numeric metricsData.
  */
 export function handleRunResult(ctx: RunResultContext): StopReason {
-  const { errorMessage, simulationId, metricsData, actions, allActions } = ctx;
+  const { errorMessage, metricsData, actions, allActions } = ctx;
+
+  // runPostTimestep is a thunk (returns a promise); a rejection (e.g. wasm
+  // gone) must surface in the console, not as an unhandled rejection.
+  const runPostTimestep = () =>
+    void Promise.resolve(allActions.processing.runPostTimestep(true)).catch(
+      (error) => console.error("Post-timestep processing failed:", error),
+    );
 
   if (errorMessage) {
     if (errorMessage.includes("Atomify::canceled")) {
-      allActions.processing.runPostTimestep(true);
+      runPostTimestep();
       actions.setRunning(false);
       actions.setShowConsole(true);
       track("Simulation.Stop", {
-        simulationId,
         stopReason: "canceled",
         ...metricsData,
       });
@@ -124,19 +125,16 @@ export function handleRunResult(ctx: RunResultContext): StopReason {
       actions.setRunning(false);
       actions.setShowConsole(true);
       track("Simulation.Stop", {
-        simulationId,
         stopReason: "failed",
-        errorMessage,
         ...metricsData,
       });
       return "failed";
     }
   } else {
-    allActions.processing.runPostTimestep(true);
+    runPostTimestep();
     actions.setRunning(false);
     actions.setShowConsole(true);
     track("Simulation.Stop", {
-      simulationId,
       stopReason: "completed",
       ...metricsData,
     });
@@ -152,8 +150,19 @@ export interface Simulation {
   analysisScript?: string;
   start: boolean;
   vars?: Record<string, number>;
-  showSimulationBox?: boolean;
-  showWalls?: boolean;
+}
+
+// The full console of the active run, outside the store: state.lammpsOutput
+// is a DISPLAY buffer capped at the last 2000 lines, but run persistence
+// (runs/<id>/log.lammps, store/projects.ts) needs the whole log — a capped
+// source would silently drop the header and thermo columns of long runs.
+// Reset with resetLammpsOutput (every run start), appended with every
+// addLammpsOutput.
+let fullLammpsOutput: string[] = [];
+
+/** The uncapped console captured since the last resetLammpsOutput. */
+export function getFullLammpsOutput(): readonly string[] {
+  return fullLammpsOutput;
 }
 
 export interface SimulationModel {
@@ -177,8 +186,15 @@ export interface SimulationModel {
   setLammps: Action<SimulationModel, LammpsWeb>;
   extractAndApplyAtomifyCommands: Thunk<SimulationModel, string>;
   syncFilesWasm: Thunk<SimulationModel, string | undefined>;
-  syncFilesJupyterLite: Thunk<SimulationModel, undefined>;
-  run: Thunk<SimulationModel>;
+  run: Thunk<
+    SimulationModel,
+    undefined | void,
+    unknown,
+    StoreModel,
+    Promise<
+      { stopReason: StopReason; errorMessage: string | undefined } | undefined
+    >
+  >;
   newSimulation: Thunk<SimulationModel, Simulation>;
   lammps?: LammpsWeb;
   lastError?: string;
@@ -196,9 +212,12 @@ export const simulationModel: SimulationModel = {
   lammpsOutput: [],
   resetLammpsOutput: action((state) => {
     state.lammpsOutput = [];
+    fullLammpsOutput = [];
   }),
   addLammpsOutput: action((state, output: string) => {
+    // Display cap only — the uncapped copy feeds run persistence.
     state.lammpsOutput = [...state.lammpsOutput, output].slice(-2000);
+    fullLammpsOutput.push(output);
   }),
   setShowConsole: action((state, showConsole: boolean) => {
     state.showConsole = showConsole;
@@ -282,7 +301,11 @@ export const simulationModel: SimulationModel = {
           }
           const bond = parseBond(line);
           if (bond) {
-            lammps.setBondDistance(bond.atomType1, bond.atomType2, bond.distance);
+            lammps.setBondDistance(
+              bond.atomType1,
+              bond.atomType2,
+              bond.distance,
+            );
             lammps.setBuildNeighborlist(true);
           }
           const cameraPosition = parseCameraPosition(line);
@@ -330,137 +353,6 @@ export const simulationModel: SimulationModel = {
       }
     },
   ),
-  syncFilesJupyterLite: thunk(
-    async (
-      actions,
-      dummy: undefined,
-      { getStoreState }: { getStoreState: () => State<StoreModel> },
-    ) => {
-      const simulation = getStoreState().simulation.simulation;
-      if (!simulation) {
-        return;
-      }
-      const wasm = getWasm();
-      const fileNames: string[] = wasm.FS.readdir(`/${simulation.id}`);
-      const files: { [key: string]: SimulationFile } = {};
-      fileNames.forEach((fileName: string) => {
-        if ([".", ".."].includes(fileName)) {
-          return;
-        }
-
-        const filePath = `/${simulation.id}/${fileName}`;
-        files[fileName] = {
-          content: wasm.FS.readFile(filePath, { encoding: "utf8" }),
-          fileName,
-        };
-      });
-
-      type JupyterFileType = "directory" | "file" | "notebook";
-
-      const createLocalForageObject = (
-        name: string,
-        path: string,
-        type: JupyterFileType,
-        content?: string | object,
-        existingCreated?: string,
-      ) => {
-        let mimetype = "text/plain";
-        let format = "text";
-        let size = 0;
-        const now = new Date().toISOString();
-
-        if (
-          type === "directory" ||
-          type === "notebook" ||
-          typeof content === "object"
-        ) {
-          mimetype = "application/json";
-          format = "json";
-        }
-
-        if (content) {
-          if (typeof content === "string") {
-            size = content.length;
-          } else {
-            size = JSON.stringify(content).length;
-          }
-        }
-
-        return {
-          name,
-          path,
-          last_modified: now,
-          created: existingCreated ?? now,
-          format,
-          mimetype: mimetype,
-          content: content ? content : [],
-          size,
-          writable: true,
-          type,
-        };
-      };
-
-      interface LocalForageEntry {
-        created?: string;
-        [key: string]: unknown;
-      }
-
-      // Add an example analysis file
-      const analyzeFileName = "analyze.ipynb";
-      const existingAnalyze =
-        await localforage.getItem<LocalForageEntry>(analyzeFileName);
-      await localforage.setItem(
-        analyzeFileName,
-        createLocalForageObject(
-          analyzeFileName,
-          analyzeFileName,
-          "notebook",
-          AnalyzeNotebook(simulation),
-          existingAnalyze?.created,
-        ),
-      );
-
-      const existingDir =
-        await localforage.getItem<LocalForageEntry>(simulation.id);
-      await localforage.setItem(
-        simulation.id,
-        createLocalForageObject(
-          simulation.id,
-          simulation.id,
-          "directory",
-          undefined,
-          existingDir?.created,
-        ),
-      );
-      for (const file of Object.values(files)) {
-        let type: JupyterFileType = "file";
-        let content: string | object | undefined = file.content;
-        const filePath = `${simulation.id}/${file.fileName}`;
-
-        if (file.fileName.endsWith("ipynb") && typeof content === "string") {
-          type = "notebook";
-          content = JSON.parse(content) as object;
-          const existingNotebook = await localforage.getItem(filePath);
-          if (existingNotebook) {
-            // We don't want to overwrite the content of the notebook
-            continue;
-          }
-        }
-        const existingFile =
-          await localforage.getItem<LocalForageEntry>(filePath);
-        await localforage.setItem(
-          filePath,
-          createLocalForageObject(
-            file.fileName,
-            filePath,
-            type,
-            content,
-            existingFile?.created,
-          ),
-        );
-      }
-    },
-  ),
   run: thunk(
     async (
       actions,
@@ -493,10 +385,8 @@ export const simulationModel: SimulationModel = {
 
       lammps.start();
       actions.setRunning(true);
-      track("Simulation.Start", {
-        simulationId: simulation?.id,
-        ...getEmbeddingParams(),
-      });
+      // No simulationId — it embeds the project dir slug (user content).
+      track("Simulation.Start", {});
       time_event("Simulation.Stop");
 
       const inputScriptFile = simulation.files.find(
@@ -511,20 +401,6 @@ export const simulationModel: SimulationModel = {
       }
       if (inputScriptFile.content) {
         actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
-      }
-
-      // Apply embedded settings if provided
-      if (simulation.showSimulationBox !== undefined) {
-        allActions.settings.setRender({
-          ...getStoreState().settings.render,
-          showSimulationBox: simulation.showSimulationBox,
-        });
-      }
-      if (simulation.showWalls !== undefined) {
-        allActions.settings.setRender({
-          ...getStoreState().settings.render,
-          showWalls: simulation.showWalls,
-        });
       }
 
       // Inject URL variables and determine script to run. Must feed
@@ -565,15 +441,16 @@ export const simulationModel: SimulationModel = {
       );
       actions.setPaused(false);
 
-      handleRunResult({
+      const stopReason = handleRunResult({
         errorMessage,
-        simulationId: simulation.id,
         metricsData,
         actions,
         allActions,
       });
-      actions.syncFilesJupyterLite();
       allActions.simulationStatus.setLastCommand(undefined);
+      // Callers orchestrating project runs (store/projects.ts) record this
+      // outcome in the run's metadata.
+      return { stopReason, errorMessage };
     },
   ),
   newSimulation: thunk(
@@ -658,9 +535,6 @@ export const simulationModel: SimulationModel = {
       actions.setSimulation(simulation); // Set it again now that files are updated
       wasm.FS.chdir(`/${simulation.id}`);
 
-      // Sync files to JupyterLite storage now that they're available in WASM filesystem
-      await actions.syncFilesJupyterLite();
-
       await allActions.app.setStatus(undefined);
       if (simulation.start) {
         actions.run();
@@ -672,7 +546,8 @@ export const simulationModel: SimulationModel = {
           allActions.app.setSelectedFile(inputScriptFile);
         }
       }
-      track("Simulation.New", { simulationId: simulation?.id });
+      // No simulationId — it embeds the project dir slug (user content).
+      track("Simulation.New", {});
     },
   ),
   setLastError: action((state, error: string | undefined) => {

@@ -30,9 +30,32 @@
  * script text.
  */
 
+/**
+ * KOKKOS thread count for the constant startup args (`-k on t 4`). The value
+ * is fixed for the whole session: Kokkos::initialize is one-shot per wasm
+ * module (first startWithArgs, at engine load in the worker), and the
+ * module's pthread pool itself is sized at load (PTHREAD_POOL_SIZE 8). 4 is
+ * the sweet spot measured for the wasm build and is what the New Run modal's
+ * Multithreading toggle promises.
+ */
+export const KOKKOS_THREADS = 4;
+
 /** True if the script opts into KOKKOS acceleration via a `suffix kk` line. */
 export function scriptOptsIntoKokkos(content: string): boolean {
   return /^\s*suffix\s+kk\b/im.test(content);
+}
+
+/**
+ * Opt a script into KOKKOS acceleration (the Multithreading toggle): prepend
+ * the `suffix kk` marker unless the script already carries it. Applied to the
+ * materialized run copy only — the working tree and the run snapshot keep the
+ * user's original text.
+ */
+export function injectKokkosOptIn(content: string): string {
+  if (scriptOptsIntoKokkos(content)) {
+    return content;
+  }
+  return "suffix kk # injected by the Multithreading toggle\n" + content;
 }
 
 /**

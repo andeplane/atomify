@@ -1,5 +1,4 @@
 import { action, Action } from "easy-peasy";
-import { isEmbeddedMode } from "../utils/embeddedMode";
 
 interface Status {
   title: string;
@@ -24,14 +23,10 @@ export interface AppModel {
   setStatus: Action<AppModel, Status | undefined>;
 }
 
-// Check if we're in embedded mode at initialization
-function getInitialSelectedMenu(): string {
-  // Use shared utility function to determine embedded mode. isEmbeddedMode() is safe to call on the server.
-  return isEmbeddedMode() ? "view" : "examples";
-}
-
 export const appModel: AppModel = {
-  selectedMenu: getInitialSelectedMenu(),
+  // The shell drives this legacy gate ("view" streams particles into the
+  // renderer); embedded mode and its menu are gone.
+  selectedMenu: "examples",
   setSelectedMenu: action((state, selectedMenu: string) => {
     state.selectedMenu = selectedMenu;
   }),

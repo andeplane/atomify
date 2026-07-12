@@ -34,6 +34,25 @@ frontend-lint: ## Run frontend linter (prettier)
 frontend-lint-fix: ## Fix frontend linting issues
 	cd . && npx prettier --write .
 
+## JUPYTER
+
+JUPYTER_VENV := .venv-jupyterlite
+
+jupyter: ## Build the JupyterLite site into public/jupyter (piplite wheels, lammps.js client, COI patch)
+	test -d node_modules/lammps.js/dist || { echo "error: node_modules/lammps.js/dist is missing — run 'make frontend-install' (npm install) first" >&2; exit 1; }
+	test -x $(JUPYTER_VENV)/bin/pip || python3 -m venv $(JUPYTER_VENV)
+	$(JUPYTER_VENV)/bin/pip install --quiet -r jupyterlite/requirements.txt build
+	rm -rf public/jupyter .jupyterlite.doit.db
+	# Wheels in <repo>/pypi/ (lammps-js, lammps-logfile) are auto-indexed
+	# into the piplite index because the lite dir is the repo root.
+	$(JUPYTER_VENV)/bin/jupyter lite build --contents jupyterlite/content --output-dir public/jupyter
+	# Notebooks import the engine from {site}/lammps/client.js; ship the whole
+	# built package so its relative imports (worker, wasm modules) resolve.
+	mkdir -p public/jupyter/lammps
+	cp -R node_modules/lammps.js/dist/. public/jupyter/lammps/
+	# Cross-origin isolation on static hosting (ADR-002 §5).
+	$(JUPYTER_VENV)/bin/python scripts/jupyter_coi_patch.py public/jupyter
+
 ## BACKEND
 
 backend-install: ## Install backend dependencies

@@ -7,6 +7,7 @@ import {
 import { ProcessingModel, processingModel } from "./processing";
 import { RenderModel, renderModel } from "./render";
 import { AppModel, appModel } from "./app";
+import { ProjectsModel, projectsModel } from "./projects";
 import { persist } from "easy-peasy";
 
 export interface StoreModel {
@@ -16,6 +17,7 @@ export interface StoreModel {
   processing: ProcessingModel;
   app: AppModel;
   render: RenderModel;
+  projects: ProjectsModel;
 }
 
 export const storeModel: StoreModel = {
@@ -25,4 +27,5 @@ export const storeModel: StoreModel = {
   processing: processingModel,
   app: appModel,
   render: renderModel,
+  projects: projectsModel,
 };

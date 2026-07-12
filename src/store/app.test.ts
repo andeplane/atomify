@@ -1,14 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { createStore, type Store } from "easy-peasy";
 import { appModel, type AppModel, type SimulationFile } from "./app";
-
-// Mock isEmbeddedMode — the module reads window.location at import time,
-// so we must mock it before any import of the module under test.
-vi.mock(import("../utils/embeddedMode"), () => ({
-  isEmbeddedMode: vi.fn(() => false),
-}));
-
-import { vi } from "vitest";
 
 describe("app store", () => {
   let store: Store<AppModel>;
@@ -17,35 +9,9 @@ describe("app store", () => {
     store = createStore(appModel);
   });
 
-  describe("getInitialSelectedMenu", () => {
-    afterEach(() => {
-      vi.doUnmock("../utils/embeddedMode");
-      vi.resetModules();
-    });
-
-    // These re-import "./app" (via vi.resetModules + vi.doMock) so the
-    // module's real top-level getInitialSelectedMenu() runs against the
-    // mock, rather than recomputing selectedMenu inline in the test.
-    it("should default to 'examples' when not in embedded mode", async () => {
-      vi.resetModules();
-      vi.doMock("../utils/embeddedMode", () => ({
-        isEmbeddedMode: vi.fn(() => false),
-      }));
-      const { appModel: freshAppModel } = await import("./app");
-      const freshStore = createStore(freshAppModel);
-
-      expect(freshStore.getState().selectedMenu).toBe("examples");
-    });
-
-    it("should default to 'view' when in embedded mode", async () => {
-      vi.resetModules();
-      vi.doMock("../utils/embeddedMode", () => ({
-        isEmbeddedMode: vi.fn(() => true),
-      }));
-      const { appModel: freshAppModel } = await import("./app");
-      const freshStore = createStore(freshAppModel);
-
-      expect(freshStore.getState().selectedMenu).toBe("view");
+  describe("initial state", () => {
+    it("defaults selectedMenu to 'examples' (embedded mode removed)", () => {
+      expect(store.getState().selectedMenu).toBe("examples");
     });
   });
 

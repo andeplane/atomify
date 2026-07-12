@@ -9,6 +9,13 @@
   <link rel="manifest" href="/manifest.json" />
   <title>Atomify LAMMPS - a real time simulator in the browser</title>
 
+  <!-- Shell fonts (design tokens): Manrope UI + JetBrains Mono for code. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+
   <!--
     Cross-origin isolation for SharedArrayBuffer, which the atomify
     (KOKKOS/pthreads) wasm build requires. GitHub Pages can't set COOP/COEP
@@ -21,8 +28,8 @@
   <!--
     Service worker lifecycle. Two workers serve /atomify/: the COOP/COEP
     shim below and JupyterLite's (patched at build time to inject the same
-    COEP header — see scripts/patch-jupyterlite-sw.mjs). Both update with
-    skipWaiting + clients.claim.
+    isolation headers — see scripts/jupyter_coi_patch.py, run by `make
+    jupyter`). Both update with skipWaiting + clients.claim.
 
     Normal visits: explicitly check both registrations for updates so a
     newly deployed fix takes over on the next load, instead of whenever

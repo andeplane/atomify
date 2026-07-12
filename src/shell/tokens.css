@@ -1,0 +1,254 @@
+/*
+ * Design tokens for the Atomify shell (ADR-003 §6), ported from the design
+ * file `design-final.dc.html`. Dark is the default; light activates via
+ * [data-theme="light"] on the document root. The antd bridge in src/theme.ts
+ * mirrors these values — keep them in sync.
+ */
+
+:root,
+[data-theme="dark"] {
+  --bg: #0b0d12;
+  --bg-2: #0e1116;
+  --surface: #14171e;
+  --surface-2: #1a1e27;
+  --surface-hover: #20252f;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.13);
+  --text: #eaecef;
+  --text-2: #9aa1ae;
+  --text-3: #656c79;
+  --accent: #3f6eff;
+  --accent-hover: #5c86ff;
+  --accent-soft: rgba(63, 110, 255, 0.15);
+  --accent-line: rgba(63, 110, 255, 0.35);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.28);
+  --viewport: #05070b;
+  --chip: rgba(255, 255, 255, 0.06);
+  --good: #2fd07a;
+  --good-soft: rgba(47, 208, 122, 0.14);
+  --bad: #e5484d;
+  --bad-soft: rgba(229, 72, 77, 0.13);
+  --warn: #ffb020;
+}
+
+[data-theme="light"] {
+  --bg: #f3f5f9;
+  --bg-2: #eaedf3;
+  --surface: #ffffff;
+  --surface-2: #f7f9fc;
+  --surface-hover: #eef1f7;
+  --border: rgba(17, 20, 28, 0.09);
+  --border-strong: rgba(17, 20, 28, 0.16);
+  --text: #10131a;
+  --text-2: #545c6b;
+  --text-3: #8a92a1;
+  --accent: #2e5bff;
+  --accent-hover: #1e48ea;
+  --accent-soft: rgba(46, 91, 255, 0.1);
+  --accent-line: rgba(46, 91, 255, 0.3);
+  --shadow: 0 1px 2px rgba(16, 20, 30, 0.06), 0 10px 30px rgba(16, 20, 30, 0.1);
+  --viewport: #0a0c11;
+  --chip: rgba(16, 20, 30, 0.05);
+  --good: #17a45c;
+  --good-soft: rgba(23, 164, 92, 0.12);
+  --bad: #d93036;
+  --bad-soft: rgba(217, 48, 54, 0.1);
+  --warn: #c67c00;
+}
+
+.atomify-shell {
+  font-family:
+    Manrope,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+}
+
+.atomify-shell *,
+.atomify-shell *::before,
+.atomify-shell *::after {
+  box-sizing: border-box;
+}
+
+.atomify-shell a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.atomify-shell a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+.atomify-shell ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.atomify-shell ::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.atomify-shell ::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+  background-clip: padding-box;
+}
+.atomify-shell ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@keyframes shell-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shell-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.shell-pulse {
+  animation: shell-pulse 1.6s ease infinite;
+}
+
+.atomify-shell input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--border-strong);
+  outline: none;
+}
+.atomify-shell input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Text inputs share one look across the shell. */
+.shell-input {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+}
+.shell-input:focus {
+  border-color: var(--accent-line);
+}
+.shell-input::placeholder {
+  color: var(--text-3);
+}
+
+.shell-mono {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Hover states the design expresses via style-hover. */
+.shell-hoverable:hover {
+  background: var(--surface-hover);
+}
+.shell-hoverable-text:hover {
+  color: var(--text) !important;
+}
+.shell-row-hover:hover {
+  background: var(--surface-hover);
+}
+.shell-card-hover {
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease;
+}
+.shell-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent-line) !important;
+}
+.shell-primary-hover:hover {
+  background: var(--accent-hover) !important;
+}
+.shell-danger-hover:hover {
+  filter: brightness(1.1);
+}
+.shell-use-btn:hover {
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+.shell-quick-btn:hover {
+  color: var(--good) !important;
+  border-color: var(--good) !important;
+}
+.shell-icon-hover:hover {
+  background: var(--chip);
+  color: var(--text) !important;
+}
+.shell-icon-hover-accent:hover {
+  background: var(--chip);
+  color: var(--accent) !important;
+}
+.shell-icon-hover-good:hover {
+  background: var(--chip);
+  color: var(--good) !important;
+}
+.shell-icon-hover-bad:hover {
+  background: var(--bad-soft);
+  color: var(--bad) !important;
+}
+.shell-dashed-hover:hover {
+  color: var(--accent) !important;
+  border-color: var(--accent-line) !important;
+}
+.shell-outline-danger-hover:hover {
+  color: var(--bad) !important;
+  border-color: var(--bad) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atomify-shell * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Real-time figures (dygraphs) inside the shell. index.css hard-codes the
+   legacy dark-theme label colors; these higher-specificity overrides keep
+   the plot readable in both shell themes. */
+.shell-figure .dygraph-axis-label,
+.shell-figure .dygraph-title,
+.shell-figure .dygraph-xlabel,
+.shell-figure .dygraph-ylabel,
+.shell-figure .dygraph-label {
+  color: var(--text) !important;
+}
+.shell-figure .dygraph-legend,
+.shell-figure .dygraph-custom-legend {
+  background: var(--surface-2) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}

@@ -7,7 +7,21 @@ import type {
   WorkerEvent,
   WorkerStepData,
   WorkerModifierData,
+  WorkdirFile,
 } from "./workerMessages";
+
+/** One file from a workdir snapshot, as delivered to callers. */
+export interface WorkdirSnapshotFile {
+  /** Path relative to the requested dir. */
+  path: string;
+  bytes: Uint8Array;
+}
+
+export interface WorkdirSnapshot {
+  files: WorkdirSnapshotFile[];
+  /** Files present but over the requested maxBytes. */
+  skipped: { path: string; size: number }[];
+}
 
 /** Byte offsets of one streamed series' x/y arrays in the bridge heap. */
 interface SeriesPointers {
@@ -96,6 +110,10 @@ export class LammpsWorkerProxy implements LammpsWeb {
 
   private nextRequestId = 1;
   private readonly pendingRuns = new Map<number, RunResolver>();
+  private readonly pendingSnapshots = new Map<
+    number,
+    (snapshot: WorkdirSnapshot) => void
+  >();
 
   private readyPromise?: Promise<void>;
   private stepListener?: () => void;
@@ -154,6 +172,20 @@ export class LammpsWorkerProxy implements LammpsWeb {
         if (pending) {
           this.pendingRuns.delete(event.requestId);
           pending.resolve();
+        }
+        break;
+      }
+      case "workdirSnapshot": {
+        const resolve = this.pendingSnapshots.get(event.requestId);
+        if (resolve) {
+          this.pendingSnapshots.delete(event.requestId);
+          resolve({
+            files: event.files.map((file: WorkdirFile) => ({
+              path: file.path,
+              bytes: new Uint8Array(file.bytes),
+            })),
+            skipped: event.skipped,
+          });
         }
         break;
       }
@@ -472,6 +504,31 @@ export class LammpsWorkerProxy implements LammpsWeb {
     return new Promise<void>((resolve) => {
       this.pendingRuns.set(requestId, { resolve });
       this.send({ type: "runFile", requestId, path });
+    });
+  }
+
+  /**
+   * Read the files under `dir` out of the worker's wasm FS — the run-outputs
+   * data path (ADR-001 §5). Safe to call mid-run: MEMFS reads are pure JS and
+   * never re-enter the suspended module. Pass maxBytes for the throttled
+   * mid-run copy; omit it for the complete end-of-run snapshot.
+   */
+  snapshotWorkdir(dir: string, maxBytes?: number): Promise<WorkdirSnapshot> {
+    const requestId = this.nextRequestId++;
+    return new Promise<WorkdirSnapshot>((resolve) => {
+      // Belt-and-braces against a dead/wedged worker: resolve empty after
+      // 60s rather than stranding the run pipeline on this await forever.
+      const timeout = setTimeout(() => {
+        if (this.pendingSnapshots.delete(requestId)) {
+          console.error("snapshotWorkdir timed out; returning empty snapshot");
+          resolve({ files: [], skipped: [] });
+        }
+      }, 60_000);
+      this.pendingSnapshots.set(requestId, (snapshot) => {
+        clearTimeout(timeout);
+        resolve(snapshot);
+      });
+      this.send({ type: "snapshotWorkdir", requestId, dir, maxBytes });
     });
   }
 

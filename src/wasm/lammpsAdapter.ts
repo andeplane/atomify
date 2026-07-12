@@ -7,6 +7,7 @@ import type {
   ModifierSnapshot,
 } from "lammps.js";
 import { LammpsWeb, LMPModifier, LMPData1D, ModifierType, Wall } from "../types";
+import { KOKKOS_THREADS } from "../utils/kokkos";
 import { AtomifyWasmModule } from "./types";
 import { getCancel, setCancel, getPausedFlag } from "./wasmInstance";
 import type { WorkerModifierData, WorkerPerAtomData } from "./workerMessages";
@@ -151,15 +152,11 @@ export class LammpsAdapter implements LammpsWeb {
   // read it instead of crossing the wasm boundary per call.
   private modifierInfos: ModifierInfo[] | null = null;
   private syncFrequency = 1;
-  // KOKKOS threads for the constant startup args: one per core, capped at the
-  // module's PTHREAD_POOL_SIZE (8).
-  private readonly kokkosThreads = Math.min(
-    Math.max(
-      1,
-      (typeof navigator !== "undefined" && navigator.hardwareConcurrency) || 4,
-    ),
-    8,
-  );
+  // KOKKOS threads for the constant startup args. Fixed for the session:
+  // Kokkos::initialize is one-shot per wasm module and the pthread pool is
+  // sized at load (PTHREAD_POOL_SIZE 8). Kept at 4 so the New Run modal's
+  // Multithreading toggle ("-k on t 4") matches what actually runs.
+  private readonly kokkosThreads = KOKKOS_THREADS;
   private cancelRequested = false;
   private lastError = "";
   private stepListener?: () => void;

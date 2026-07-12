@@ -9,7 +9,6 @@ import ColorLegend from "../components/ColorLegend";
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
-import { useEmbeddedMode } from "../hooks/useEmbeddedMode";
 import ColorModifier from "../modifiers/colormodifier";
 import * as THREE from "three";
 import {
@@ -28,8 +27,7 @@ function visualizerHasCameraPlanes(
   v: Visualizer,
 ): v is VisualizerWithCameraPlanes {
   return (
-    "updateCameraPlanes" in v &&
-    typeof v.updateCameraPlanes === "function"
+    "updateCameraPlanes" in v && typeof v.updateCameraPlanes === "function"
   );
 }
 
@@ -37,7 +35,13 @@ const { Header } = Layout;
 
 interface ViewProps {
   visible: boolean;
-  isEmbeddedMode?: boolean;
+  /**
+   * Pane mode (new shell's run detail): fill the parent container instead of
+   * the viewport, hide the legacy header/summary overlays (the run detail has
+   * its own status panel), suppress the no-simulation modal, and release the
+   * store's visualizer on unmount so a remount can recreate it.
+   */
+  pane?: boolean;
 }
 
 const VisualizerWrapper = styled.div`
@@ -46,11 +50,17 @@ const VisualizerWrapper = styled.div`
   position: relative;
 `;
 
+const PaneVisualizerWrapper = styled.div`
+  height: 100%;
+  width: 100%;
+  position: relative;
+`;
+
 const MOBILE_BREAKPOINT = 900;
 const SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY = "simulationSummaryDrawerVisible";
 const PROGRESS_BAR_HEIGHT = 8;
 
-const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
+const View = ({ visible, pane = false }: ViewProps) => {
   const [loading, setLoading] = useState(false);
   const [hideNoSimulation, setHideNoSimulation] = useState(false);
   const [showColorSettings, setShowColorSettings] = useState(false);
@@ -61,10 +71,8 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   // Initial state is collapsed on mobile, expanded on desktop.
   const [isOverlayCollapsed, setIsOverlayCollapsed] = useState(isMobile);
   const [selectedAtoms, setSelectedAtoms] = useState<Set<number>>(new Set());
-  const { embedConfig } = useEmbeddedMode();
 
   // Initialize from localStorage, defaulting to false (show overlay, not expanded)
-  // Embedded mode override is handled in useEffect below
   const [showAnalyze, setShowAnalyze] = useState(() => {
     if (typeof window !== "undefined" && window.localStorage) {
       const stored = localStorage.getItem(
@@ -89,27 +97,15 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
     return () => window.removeEventListener("resize", handleResize);
   }, [isMobile]);
 
-  // Handle embedded mode override for drawer visibility
+  // Persist drawer visibility to localStorage
   useEffect(() => {
-    if (isEmbeddedMode && embedConfig.showSimulationSummary !== undefined) {
-      // Embedded mode overrides localStorage preference
-      setShowAnalyze(embedConfig.showSimulationSummary);
-    }
-  }, [isEmbeddedMode, embedConfig.showSimulationSummary]);
-
-  // Persist drawer visibility to localStorage (only when not in embedded mode)
-  useEffect(() => {
-    if (
-      !isEmbeddedMode &&
-      typeof window !== "undefined" &&
-      window.localStorage
-    ) {
+    if (typeof window !== "undefined" && window.localStorage) {
       localStorage.setItem(
         SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY,
         showAnalyze.toString(),
       );
     }
-  }, [showAnalyze, isEmbeddedMode]);
+  }, [showAnalyze]);
   // const simulationBox = useStoreState(state => state.simulation.simulationBox)
   // const simulationOrigo = useStoreState(state => state.simulation.simulationOrigo)
   const cameraPosition = useStoreState(
@@ -201,7 +197,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         }
       });
 
-      if (visualizer && visualizer.scene && boxGroupRef.current.parent === visualizer.scene) {
+      if (
+        visualizer &&
+        visualizer.scene &&
+        boxGroupRef.current.parent === visualizer.scene
+      ) {
         visualizer.scene.remove(boxGroupRef.current);
       }
       boxGroupRef.current = null;
@@ -220,7 +220,11 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
         }
       });
 
-      if (visualizer && visualizer.scene && wallGroupRef.current.parent === visualizer.scene) {
+      if (
+        visualizer &&
+        visualizer.scene &&
+        wallGroupRef.current.parent === visualizer.scene
+      ) {
         visualizer.scene.remove(wallGroupRef.current);
       }
       wallGroupRef.current = null;
@@ -305,12 +309,12 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   useEffect(() => {
     if (visible && domElement.current) {
       // There is a bug where the height is set to zero when going back to this view
-      domElement.current.style.height = "100vh";
+      domElement.current.style.height = pane ? "100%" : "100vh";
     }
     if (visualizer) {
       visualizer.idle = !visible;
     }
-  }, [visible, visualizer]);
+  }, [visible, visualizer, pane]);
 
   // Auto-reset selection when simulation changes
   useEffect(() => {
@@ -391,30 +395,12 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
   // Apply embed config settings
   useEffect(() => {
     if (visualizer) {
-      // Apply camera controls setting
-      visualizer.setControlsEnabled(embedConfig.enableCameraControls);
-
-      // Apply particle picking setting
-      visualizer.setPickingEnabled(embedConfig.enableParticlePicking);
+      // Camera controls and particle picking are always on (the embed
+      // config that could disable them is gone with embedded mode).
+      visualizer.setControlsEnabled(true);
+      visualizer.setPickingEnabled(true);
     }
-  }, [
-    visualizer,
-    embedConfig.enableCameraControls,
-    embedConfig.enableParticlePicking,
-  ]);
-
-  // Apply showSimulationBox setting from embed config (only in embedded mode)
-  useEffect(() => {
-    if (
-      isEmbeddedMode &&
-      renderSettings.showSimulationBox !== embedConfig.showSimulationBox
-    ) {
-      setRenderSettings({
-        ...renderSettings,
-        showSimulationBox: embedConfig.showSimulationBox,
-      });
-    }
-  }, [isEmbeddedMode, embedConfig.showSimulationBox, renderSettings, setRenderSettings]);
+  }, [visualizer]);
 
   // Update camera planes based on simulation box bounds
   useEffect(() => {
@@ -514,55 +500,62 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
       disposeWallGroup();
       if (visualizer) {
         visualizer.dispose();
+        if (pane) {
+          // In the legacy shell View never unmounts, so the store keeping a
+          // reference was harmless. The run-detail pane mounts/unmounts per
+          // navigation: release the disposed instance so the next mount's
+          // creation effect (guarded by `!visualizer`) builds a fresh one.
+          setVisualizer(undefined);
+        }
       }
     };
-  }, [visualizer, disposeBoxGroup, disposeWallGroup]);
+  }, [visualizer, disposeBoxGroup, disposeWallGroup, pane, setVisualizer]);
 
   const title = simulation ? simulation.id : "No simulation";
   const showNoSimulationModal =
-    simulation == null && !hideNoSimulation && !isEmbeddedMode;
+    simulation == null && !hideNoSimulation && !pane;
+
+  const Wrapper = pane ? PaneVisualizerWrapper : VisualizerWrapper;
 
   return (
-    <Layout style={{ height: "100vh" }}>
-      <Header
-        className="site-layout-background"
-        style={{
-          backgroundColor: "rgba(0,0,0,0)",
-          position: "fixed",
-          zIndex: 100,
-        }}
-      >
-        <Col>
-          <Row style={{ fontSize: "32px", fontWeight: 600 }}>{title}</Row>
-          <Row>
-            {running && (
-              <Progress
-                showInfo={false}
-                style={{ marginTop: "-15px" }}
-                strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
-                size={["100%", PROGRESS_BAR_HEIGHT]}
-                percent={Math.round(
-                  100 * (runTimesteps / (runTotalTimesteps + 1)),
-                )}
-              />
-            )}
-          </Row>
-        </Col>
-      </Header>
+    <Layout style={{ height: pane ? "100%" : "100vh" }}>
+      {!pane && (
+        <Header
+          className="site-layout-background"
+          style={{
+            backgroundColor: "rgba(0,0,0,0)",
+            position: "fixed",
+            zIndex: 100,
+          }}
+        >
+          <Col>
+            <Row style={{ fontSize: "32px", fontWeight: 600 }}>{title}</Row>
+            <Row>
+              {running && (
+                <Progress
+                  showInfo={false}
+                  style={{ marginTop: "-15px" }}
+                  strokeColor={{ "0%": "#108ee9", "100%": "#87d068" }}
+                  size={["100%", PROGRESS_BAR_HEIGHT]}
+                  percent={Math.round(
+                    100 * (runTimesteps / (runTotalTimesteps + 1)),
+                  )}
+                />
+              )}
+            </Row>
+          </Col>
+        </Header>
+      )}
       <div id="canvas-container" style={{ height: "100%", width: "100%" }}>
-        <VisualizerWrapper ref={domElement}>
+        <Wrapper ref={domElement}>
           {showColorSettings && (
             <ColorModifierSettings
               open={true}
               onClose={() => setShowColorSettings(false)}
             />
           )}
-          {(!isEmbeddedMode || embedConfig.showSimulationSummary) && (
+          {!pane && (
             <ResponsiveSimulationSummary
-              isEmbeddedMode={isEmbeddedMode}
-              showSimulationSummary={
-                isEmbeddedMode ? embedConfig.showSimulationSummary : true
-              }
               isMobile={isMobile}
               isOverlayCollapsed={isOverlayCollapsed}
               showAnalyze={showAnalyze}
@@ -597,7 +590,7 @@ const View = ({ visible, isEmbeddedMode = false }: ViewProps) => {
               onSettingsClick={() => setShowColorSettings(true)}
             />
           )}
-        </VisualizerWrapper>
+        </Wrapper>
       </div>
       {showNoSimulationModal && (
         <Modal

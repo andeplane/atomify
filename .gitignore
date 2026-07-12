@@ -2,11 +2,15 @@ node_modules
 cpp/lammps
 cpp/obj
 /dist
-# JupyterLite build output (built in CI, or locally via `jupyter lite build`)
+# JupyterLite build output (built in CI, or locally via `make jupyter`)
 /public/jupyter
 .jupyterlite.doit.db
+/.venv-jupyterlite
 .DS_Store
 cpp/lammps.mjs
 cpp/lammps.wasm
 cpp/lammps.worker.js
 build/
+/.cache/
+/playwright-report/
+/test-results/
