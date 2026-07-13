@@ -67,7 +67,7 @@
     "@types/uuid": "^11.0.0",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^5.2.0",
-    "@vitest/ui": "^4.0.18",
+    "@vitest/ui": "^4.1.10",
     "coi-serviceworker": "^0.1.7",
     "gh-pages": "^6.1.1",
     "jsdom": "^29.0.1",
