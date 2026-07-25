@@ -22,26 +22,6 @@
             ]
         },
         {
-            "id": "large_diffusion",
-            "title": "Large diffusion",
-            "description": "A large version of the diffusion example (~250,000 atoms) that runs multithreaded with KOKKOS. The white atoms have mass 1 while the red atoms have mass 4.",
-            "analysisDescription": "# About this simulation\nWe simulate two Lennard Jones particle types with masses 1.0 and 4.0. The diffusion coefficient [https://en.wikipedia.org/wiki/Mass_diffusivity](scales like) D$\\propto 1/\\sqrt{m}$, so we should see a factor 2 higher diffusion coefficient for the small molecules.",
-            "imageUrl": "diffusion/large_diffusion/large_diffusion.png",
-            "inputScript": "large_diffusion.in",
-            "keywords": [
-                "lennard jones",
-                "diffusion",
-                "kokkos",
-                "large"
-            ],
-            "files": [
-                {
-                    "fileName": "large_diffusion.in",
-                    "url": "diffusion/large_diffusion/large_diffusion.in"
-                }
-            ]
-        },
-        {
             "id": "2d-msd-diffusion",
             "title": "2D diffusion coefficient MSD",
             "description": "We measure the diffusion coefficient using the mean square displacement.",
@@ -62,6 +42,89 @@
                 {
                     "fileName": "2d-msd-diffusion.ipynb",
                     "url": "diffusion/2d-msd-diffusion/2d-msd-diffusion.ipynb"
+                }
+            ]
+        },
+        {
+            "id": "sic_nanoparticle",
+            "title": "SiC nanoparticle",
+            "description": "A silicon carbide (SiC) nano particle in a carbon gas. The whole system is neutral, but initially, the particle has net charge. In this simulation, you can observe how the carbon gas attaches to the surface. The system cools down from 2200 K to 500 K.",
+            "imageUrl": "sic/nanoparticle/nanoparticle.png",
+            "inputScript": "nanoparticle.in",
+            "keywords": [
+                "vashishta",
+                "sic",
+                "nanoparticle"
+            ],
+            "files": [
+                {
+                    "fileName": "nanoparticle.in",
+                    "url": "sic/nanoparticle/nanoparticle.in"
+                },
+                {
+                    "fileName": "make_stoichiometric.in",
+                    "url": "sic/nanoparticle/make_stoichiometric.in"
+                },
+                {
+                    "fileName": "SiC.vashishta",
+                    "url": "sic/nanoparticle/SiC.vashishta"
+                },
+                {
+                    "fileName": "siliconcarbide.data",
+                    "url": "sic/nanoparticle/siliconcarbide.data"
+                }
+            ]
+        },
+        {
+            "id": "reax_rdf",
+            "title": "RDX explosive",
+            "description": "RDX is an organic compound normally used as an explosive, especially in world war II.",
+            "imageUrl": "reaxff/RDX/RDX.png",
+            "inputScript": "RDX.in",
+            "keywords": [
+                "reaxff",
+                "explosive"
+            ],
+            "files": [
+                {
+                    "fileName": "lmp_control",
+                    "url": "reaxff/RDX/lmp_control"
+                },
+                {
+                    "fileName": "RDX.in",
+                    "url": "reaxff/RDX/RDX.in"
+                },
+                {
+                    "fileName": "data.RDX",
+                    "url": "reaxff/RDX/data.RDX"
+                },
+                {
+                    "fileName": "ffield.reax.rdx",
+                    "url": "reaxff/RDX/ffield.reax.rdx"
+                },
+                {
+                    "fileName": "param.qeq",
+                    "url": "reaxff/RDX/param.qeq"
+                }
+            ]
+        },
+        {
+            "id": "large_diffusion",
+            "title": "Large diffusion",
+            "description": "A large version of the diffusion example (~250,000 atoms) that runs multithreaded with KOKKOS. The white atoms have mass 1 while the red atoms have mass 4.",
+            "analysisDescription": "# About this simulation\nWe simulate two Lennard Jones particle types with masses 1.0 and 4.0. The diffusion coefficient [https://en.wikipedia.org/wiki/Mass_diffusivity](scales like) D$\\propto 1/\\sqrt{m}$, so we should see a factor 2 higher diffusion coefficient for the small molecules.",
+            "imageUrl": "diffusion/large_diffusion/large_diffusion.png",
+            "inputScript": "large_diffusion.in",
+            "keywords": [
+                "lennard jones",
+                "diffusion",
+                "kokkos",
+                "large"
+            ],
+            "files": [
+                {
+                    "fileName": "large_diffusion.in",
+                    "url": "diffusion/large_diffusion/large_diffusion.in"
                 }
             ]
         },
@@ -246,36 +309,6 @@
                 {
                     "fileName": "param.qeq",
                     "url": "reaxff/CHO/param.qeq"
-                }
-            ]
-        },
-        {
-            "id": "sic_nanoparticle",
-            "title": "SiC nanoparticle",
-            "description": "A silicon carbide (SiC) nano particle in a carbon gas. The whole system is neutral, but initially, the particle has net charge. In this simulation, you can observe how the carbon gas attaches to the surface. The system cools down from 2200 K to 500 K.",
-            "imageUrl": "sic/nanoparticle/nanoparticle.png",
-            "inputScript": "nanoparticle.in",
-            "keywords": [
-                "vashishta",
-                "sic",
-                "nanoparticle"
-            ],
-            "files": [
-                {
-                    "fileName": "nanoparticle.in",
-                    "url": "sic/nanoparticle/nanoparticle.in"
-                },
-                {
-                    "fileName": "make_stoichiometric.in",
-                    "url": "sic/nanoparticle/make_stoichiometric.in"
-                },
-                {
-                    "fileName": "SiC.vashishta",
-                    "url": "sic/nanoparticle/SiC.vashishta"
-                },
-                {
-                    "fileName": "siliconcarbide.data",
-                    "url": "sic/nanoparticle/siliconcarbide.data"
                 }
             ]
         },
@@ -1265,39 +1298,6 @@
                 {
                     "fileName": "param.qeq",
                     "url": "reaxff/FeOH3/param.qeq"
-                }
-            ]
-        },
-        {
-            "id": "reax_rdf",
-            "title": "RDX explosive",
-            "description": "RDX is an organic compound normally used as an explosive, especially in world war II.",
-            "imageUrl": "reaxff/RDX/RDX.png",
-            "inputScript": "RDX.in",
-            "keywords": [
-                "reaxff",
-                "explosive"
-            ],
-            "files": [
-                {
-                    "fileName": "lmp_control",
-                    "url": "reaxff/RDX/lmp_control"
-                },
-                {
-                    "fileName": "RDX.in",
-                    "url": "reaxff/RDX/RDX.in"
-                },
-                {
-                    "fileName": "data.RDX",
-                    "url": "reaxff/RDX/data.RDX"
-                },
-                {
-                    "fileName": "ffield.reax.rdx",
-                    "url": "reaxff/RDX/ffield.reax.rdx"
-                },
-                {
-                    "fileName": "param.qeq",
-                    "url": "reaxff/RDX/param.qeq"
                 }
             ]
         },
