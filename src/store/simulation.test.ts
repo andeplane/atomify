@@ -234,6 +234,7 @@ describe("simulation store — pure actions", () => {
 function createMockSimulation(overrides?: Partial<Simulation>): Simulation {
   return {
     id: "test-sim",
+    metricsId: "test-sim",
     files: [{ fileName: "in.lmp", content: "run 100" }],
     inputScript: "in.lmp",
     start: true,
