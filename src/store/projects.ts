@@ -538,7 +538,12 @@ export const projectsModel: ProjectsModel = {
     const meta = await actions.createProject({
       displayName: `${active.meta.displayName} (copy)`,
       color: active.meta.color,
-      source: active.meta.source,
+      // A duplicate is a fork the user intends to change: drop the example
+      // identity so the copy's runs report its own dir name in metrics
+      // instead of the original example forever (#394). Other provenance
+      // (upload/blank) carries over.
+      source:
+        active.meta.source?.type === "example" ? undefined : active.meta.source,
       inputScript: active.meta.inputScript,
       files: [],
     });
