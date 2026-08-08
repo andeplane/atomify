@@ -1091,9 +1091,9 @@ export const projectsModel: ProjectsModel = {
 
     await actions.flushPendingSaves();
 
-    // Metrics provenance: the curated example id is the only project
-    // identity that may leave the client (dirName/displayName are user
-    // content). Best-effort — a missing project.json never blocks the run.
+    // Metrics provenance: the curated example id when the project came from
+    // the example library. Best-effort — a missing project.json never blocks
+    // the run.
     let exampleId: string | undefined;
     try {
       const rawMeta = await storage.read(request.dirName, PROJECT_META_PATH);
@@ -1201,7 +1201,7 @@ export const projectsModel: ProjectsModel = {
       inputScript: request.inputScript,
       start: false,
       vars: Object.keys(request.vars).length ? request.vars : undefined,
-      metricsId: exampleId,
+      metricsId: exampleId ?? request.dirName,
     };
 
     // 3. Copy outputs out of the worker FS into project storage on a

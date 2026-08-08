@@ -81,7 +81,7 @@ export interface RunResultContext {
     timestepsPerSecond: string;
     numAtoms: number;
     computes: string[];
-    /** Curated example id or "custom" — never a project dir slug. */
+    /** Curated example id or the project dir name. */
     simulationId?: string;
   };
   actions: {
@@ -98,10 +98,9 @@ export interface RunResultContext {
  * Routes a run result to the appropriate canceled / failed / completed path,
  * fires side-effects (error state, tracking), and returns the stop reason.
  *
- * Metrics carry no errorMessage (it quotes script content); the sanitized
- * signal is stopReason + numeric metricsData + a simulationId that is a
- * curated example id or "custom", never a dir slug (user content, PII
- * policy).
+ * Metrics carry no errorMessage (it quotes script content); the signal is
+ * stopReason + numeric metricsData + a simulationId that is the curated
+ * example id or the project dir name.
  */
 export function handleRunResult(ctx: RunResultContext): StopReason {
   const { errorMessage, metricsData, actions, allActions } = ctx;
@@ -154,9 +153,9 @@ export interface Simulation {
   start: boolean;
   vars?: Record<string, number>;
   /**
-   * Identity safe to send to metrics: the curated example id when the
-   * project came from the example library, absent for user projects. Never
-   * derived from `id` — that embeds the project dir slug (user content).
+   * Identity sent to metrics as simulationId: the curated example id when
+   * the project came from the example library, else the project dir name.
+   * Falls back to `id` when unset.
    */
   metricsId?: string;
 }
@@ -394,10 +393,9 @@ export const simulationModel: SimulationModel = {
 
       lammps.start();
       actions.setRunning(true);
-      // simulationId is the curated example id or the literal "custom" —
-      // never simulation.id, which embeds the project dir slug (user
-      // content). The Mixpanel dashboard breaks simulations down by it.
-      const simulationId = simulation.metricsId ?? "custom";
+      // simulationId is the curated example id or the project dir name —
+      // the Mixpanel dashboard breaks simulations down by it.
+      const simulationId = simulation.metricsId ?? simulation.id;
       track("Simulation.Start", { simulationId });
       time_event("Simulation.Stop");
 

@@ -367,28 +367,35 @@ describe("projects store integration", () => {
       ).toBe("completed");
     });
 
-    it("sends no user content (project names, errorMessage) to metrics", async () => {
+    it("sends the project dir name as simulationId for user projects, and never errorMessage", async () => {
       const engine = createFakeEngine();
       const { store } = await createTestStore(engine);
       await store.getActions().projects.createProject({
-        displayName: "Acme Corp NDA polymer study",
+        displayName: "Polymer study",
         files: [{ fileName: "in.lmp", content: SCRIPT }],
       });
+      const dirName = activeDirName(store);
       engine.setErrorMessage("ERROR: quotes script content");
       vi.mocked(track).mockClear();
 
       await store.getActions().projects.startRuns([runRequest()]);
 
-      expect(vi.mocked(track).mock.calls.length).toBeGreaterThan(0);
+      const byName = (name: string) =>
+        vi
+          .mocked(track)
+          .mock.calls.filter(([event]) => event === name)
+          .map(([, payload]) => payload);
+      // A user project has no curated example id: simulationId is the
+      // project dir name so the dashboard can tell simulations apart.
+      expect(byName("Simulation.Start")[0]).toMatchObject({
+        simulationId: dirName,
+      });
+      expect(byName("Simulation.Stop")[0]).toMatchObject({
+        simulationId: dirName,
+      });
+      // errorMessage quotes script content and stays out of metrics.
       for (const [, payload] of vi.mocked(track).mock.calls) {
-        const record = (payload ?? {}) as Record<string, unknown>;
-        // A user project has no curated example id: simulationId falls back
-        // to the literal "custom", never the dir slug / display name.
-        if ("simulationId" in record) {
-          expect(record.simulationId).toBe("custom");
-        }
-        expect(record).not.toHaveProperty("errorMessage");
-        expect(JSON.stringify(record).toLowerCase()).not.toContain("acme");
+        expect(payload ?? {}).not.toHaveProperty("errorMessage");
       }
     });
 
