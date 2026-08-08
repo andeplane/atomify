@@ -270,7 +270,9 @@ export interface ProjectsModel {
 
   startRuns: Thunk<
     ProjectsModel,
-    Omit<RunRequest, "dirName" | "quick" | "sweepId">[],
+    // exampleId is also omitted: it is resolved here from the active
+    // project's meta — a caller-supplied value would be silently overridden.
+    Omit<RunRequest, "dirName" | "quick" | "sweepId" | "exampleId">[],
     StoreInjections,
     StoreModel
   >;
