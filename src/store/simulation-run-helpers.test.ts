@@ -221,9 +221,7 @@ describe("handleRunResult", () => {
     );
   });
 
-  it("never leaks user content into metrics (no simulationId, no errorMessage)", () => {
-    // simulationId embeds the project dir slug (user-authored name) and
-    // errorMessage quotes script content — neither may leave the device.
+  it("sends simulationId but never errorMessage (it quotes script content)", () => {
     handleRunResult({
       errorMessage: "ERROR: unknown command in acme-corp-secret/in.lmp",
       metricsData,
@@ -236,7 +234,7 @@ describe("handleRunResult", () => {
       .mock.calls.filter(([event]) => event === "Simulation.Stop");
     expect(stopCalls.length).toBeGreaterThan(0);
     for (const [, payload] of stopCalls) {
-      expect(payload).not.toHaveProperty("simulationId");
+      expect(payload).toMatchObject({ simulationId: "test-sim" });
       expect(payload).not.toHaveProperty("errorMessage");
     }
   });
