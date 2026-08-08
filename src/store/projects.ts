@@ -1097,11 +1097,13 @@ export const projectsModel: ProjectsModel = {
     let exampleId: string | undefined;
     try {
       const rawMeta = await storage.read(request.dirName, PROJECT_META_PATH);
-      if (typeof rawMeta === "string") {
-        const meta = JSON.parse(rawMeta) as ProjectMeta;
-        if (meta.source?.type === "example") {
-          exampleId = meta.source.exampleId;
-        }
+      const text =
+        typeof rawMeta === "string"
+          ? rawMeta
+          : new TextDecoder().decode(rawMeta);
+      const meta = JSON.parse(text) as ProjectMeta;
+      if (meta.source?.type === "example") {
+        exampleId = meta.source.exampleId;
       }
     } catch {
       // Provenance is optional metadata for metrics only.

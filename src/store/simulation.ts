@@ -391,14 +391,9 @@ export const simulationModel: SimulationModel = {
 
       await actions.syncFilesWasm(undefined);
 
-      lammps.start();
-      actions.setRunning(true);
-      // simulationId is the curated example id or the project dir name —
-      // the Mixpanel dashboard breaks simulations down by it.
-      const simulationId = simulation.metricsId ?? simulation.id;
-      track("Simulation.Start", { simulationId });
-      time_event("Simulation.Stop");
-
+      // Guard before Simulation.Start/time_event fire: an aborted run must
+      // not leave an unmatched Start or a stale Stop timer that would be
+      // charged to the next run.
       const inputScriptFile = simulation.files.find(
         (file) => file.fileName === simulation.inputScript,
       );
@@ -406,9 +401,16 @@ export const simulationModel: SimulationModel = {
         actions.setLastError(
           `Input script ${simulation.inputScript} was not found among the simulation files.`,
         );
-        actions.setRunning(false);
         return;
       }
+
+      lammps.start();
+      actions.setRunning(true);
+      // simulationId is the curated example id or the project dir name —
+      // the Mixpanel dashboard breaks simulations down by it.
+      const simulationId = simulation.metricsId ?? simulation.id;
+      track("Simulation.Start", { simulationId });
+      time_event("Simulation.Stop");
       if (inputScriptFile.content) {
         actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
       }
@@ -556,8 +558,9 @@ export const simulationModel: SimulationModel = {
           allActions.app.setSelectedFile(inputScriptFile);
         }
       }
-      // No simulationId — it embeds the project dir slug (user content).
-      track("Simulation.New", {});
+      track("Simulation.New", {
+        simulationId: simulation.metricsId ?? simulation.id,
+      });
     },
   ),
   setLastError: action((state, error: string | undefined) => {

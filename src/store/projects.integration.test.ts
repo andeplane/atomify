@@ -380,11 +380,6 @@ describe("projects store integration", () => {
 
       await store.getActions().projects.startRuns([runRequest()]);
 
-      const byName = (name: string) =>
-        vi
-          .mocked(track)
-          .mock.calls.filter(([event]) => event === name)
-          .map(([, payload]) => payload);
       // A user project has no curated example id: simulationId is the
       // project dir name so the dashboard can tell simulations apart.
       expect(byName("Simulation.Start")[0]).toMatchObject({
@@ -411,11 +406,6 @@ describe("projects store integration", () => {
 
       await store.getActions().projects.startRuns([runRequest()]);
 
-      const byName = (name: string) =>
-        vi
-          .mocked(track)
-          .mock.calls.filter(([event]) => event === name)
-          .map(([, payload]) => payload);
       expect(byName("Simulation.Start")[0]).toMatchObject({
         simulationId: "watervapor",
       });
@@ -1246,6 +1236,14 @@ function runRequest(
     threads: 1,
     ...overrides,
   };
+}
+
+/** track() calls' payloads for one event name, in call order. */
+function byName(name: string): unknown[] {
+  return vi
+    .mocked(track)
+    .mock.calls.filter(([event]) => event === name)
+    .map(([, payload]) => payload);
 }
 
 function activeDirName(store: Store<StoreModel>): string {
