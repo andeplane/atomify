@@ -81,6 +81,8 @@ export interface RunResultContext {
     timestepsPerSecond: string;
     numAtoms: number;
     computes: string[];
+    /** Curated example id or the project dir name. */
+    simulationId?: string;
   };
   actions: {
     setRunning: (running: boolean) => void;
@@ -96,9 +98,9 @@ export interface RunResultContext {
  * Routes a run result to the appropriate canceled / failed / completed path,
  * fires side-effects (error state, tracking), and returns the stop reason.
  *
- * Metrics carry no simulationId (it embeds the project dir slug — user
- * content, PII policy) and no errorMessage (it quotes script content); the
- * sanitized signal is stopReason + numeric metricsData.
+ * Metrics carry no errorMessage (it quotes script content); the signal is
+ * stopReason + numeric metricsData + a simulationId that is the curated
+ * example id or the project dir name.
  */
 export function handleRunResult(ctx: RunResultContext): StopReason {
   const { errorMessage, metricsData, actions, allActions } = ctx;
@@ -150,6 +152,12 @@ export interface Simulation {
   analysisScript?: string;
   start: boolean;
   vars?: Record<string, number>;
+  /**
+   * Identity sent to metrics as simulationId: the curated example id when
+   * the project came from the example library, else the project dir name.
+   * Falls back to `id` when unset.
+   */
+  metricsId?: string;
 }
 
 // The full console of the active run, outside the store: state.lammpsOutput
@@ -383,12 +391,9 @@ export const simulationModel: SimulationModel = {
 
       await actions.syncFilesWasm(undefined);
 
-      lammps.start();
-      actions.setRunning(true);
-      // No simulationId — it embeds the project dir slug (user content).
-      track("Simulation.Start", {});
-      time_event("Simulation.Stop");
-
+      // Guard before Simulation.Start/time_event fire: an aborted run must
+      // not leave an unmatched Start or a stale Stop timer that would be
+      // charged to the next run.
       const inputScriptFile = simulation.files.find(
         (file) => file.fileName === simulation.inputScript,
       );
@@ -396,9 +401,16 @@ export const simulationModel: SimulationModel = {
         actions.setLastError(
           `Input script ${simulation.inputScript} was not found among the simulation files.`,
         );
-        actions.setRunning(false);
         return;
       }
+
+      lammps.start();
+      actions.setRunning(true);
+      // simulationId is the curated example id or the project dir name —
+      // the Mixpanel dashboard breaks simulations down by it.
+      const simulationId = simulation.metricsId ?? simulation.id;
+      track("Simulation.Start", { simulationId });
+      time_event("Simulation.Stop");
       if (inputScriptFile.content) {
         actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
       }
@@ -443,7 +455,7 @@ export const simulationModel: SimulationModel = {
 
       const stopReason = handleRunResult({
         errorMessage,
-        metricsData,
+        metricsData: { ...metricsData, simulationId },
         actions,
         allActions,
       });
@@ -546,8 +558,9 @@ export const simulationModel: SimulationModel = {
           allActions.app.setSelectedFile(inputScriptFile);
         }
       }
-      // No simulationId — it embeds the project dir slug (user content).
-      track("Simulation.New", {});
+      track("Simulation.New", {
+        simulationId: simulation.metricsId ?? simulation.id,
+      });
     },
   ),
   setLastError: action((state, error: string | undefined) => {

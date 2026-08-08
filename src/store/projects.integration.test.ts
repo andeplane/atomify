@@ -367,23 +367,57 @@ describe("projects store integration", () => {
       ).toBe("completed");
     });
 
-    it("sends no user content (simulationId, errorMessage) to metrics", async () => {
+    it("sends the project dir name as simulationId for user projects, and never errorMessage", async () => {
       const engine = createFakeEngine();
       const { store } = await createTestStore(engine);
       await store.getActions().projects.createProject({
-        displayName: "Acme Corp NDA polymer study",
+        displayName: "Polymer study",
         files: [{ fileName: "in.lmp", content: SCRIPT }],
       });
+      const dirName = activeDirName(store);
       engine.setErrorMessage("ERROR: quotes script content");
       vi.mocked(track).mockClear();
 
       await store.getActions().projects.startRuns([runRequest()]);
 
-      expect(vi.mocked(track).mock.calls.length).toBeGreaterThan(0);
+      // A user project has no curated example id: simulationId is the
+      // project dir name so the dashboard can tell simulations apart.
+      expect(byName("Simulation.Start")[0]).toMatchObject({
+        simulationId: dirName,
+      });
+      expect(byName("Simulation.Stop")[0]).toMatchObject({
+        simulationId: dirName,
+      });
+      // errorMessage quotes script content and stays out of metrics.
       for (const [, payload] of vi.mocked(track).mock.calls) {
-        expect(payload ?? {}).not.toHaveProperty("simulationId");
         expect(payload ?? {}).not.toHaveProperty("errorMessage");
       }
+    });
+
+    it("sends the curated example id to metrics for example-sourced projects", async () => {
+      const engine = createFakeEngine();
+      const { store } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Water vapor",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+        source: { type: "example", exampleId: "watervapor" },
+      });
+      vi.mocked(track).mockClear();
+
+      await store.getActions().projects.startRuns([runRequest()]);
+
+      expect(byName("Simulation.Start")[0]).toMatchObject({
+        simulationId: "watervapor",
+      });
+      expect(byName("Simulation.Stop")[0]).toMatchObject({
+        simulationId: "watervapor",
+      });
+      expect(byName("Run.Start")[0]).toMatchObject({
+        exampleId: "watervapor",
+      });
+      expect(byName("Run.Finish")[0]).toMatchObject({
+        exampleId: "watervapor",
+      });
     });
 
     it("records a failed run with the engine's error message", async () => {
@@ -1202,6 +1236,14 @@ function runRequest(
     threads: 1,
     ...overrides,
   };
+}
+
+/** track() calls' payloads for one event name, in call order. */
+function byName(name: string): unknown[] {
+  return vi
+    .mocked(track)
+    .mock.calls.filter(([event]) => event === name)
+    .map(([, payload]) => payload);
 }
 
 function activeDirName(store: Store<StoreModel>): string {
