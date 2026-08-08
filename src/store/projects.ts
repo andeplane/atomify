@@ -25,7 +25,6 @@ import {
   allocateRunDir,
   bytesToWriteContent,
   listRuns,
-  PROJECT_META_PATH,
   readRunMeta,
   reconcileRuns,
   RUNS_DIR,
@@ -100,6 +99,12 @@ export interface RunRequest {
    * sweepId). Defaults to "button".
    */
   origin?: "button" | "file";
+  /**
+   * Curated example id when the project came from the example library, for
+   * metrics only. Resolved once from the active project's meta at enqueue
+   * (startRuns) so the executor needs no storage read per run.
+   */
+  exampleId?: string;
 }
 
 export type SaveState = "saving" | "saved" | "error";
@@ -1033,6 +1038,10 @@ export const projectsModel: ProjectsModel = {
       dirName: active.meta.dirName,
       quick: active.quick,
       sweepId,
+      exampleId:
+        active.meta.source?.type === "example"
+          ? active.meta.source.exampleId
+          : undefined,
     }));
     actions.setRunQueue([...getState().runQueue, ...queue]);
     await actions.executeNextRun();
@@ -1091,24 +1100,6 @@ export const projectsModel: ProjectsModel = {
 
     await actions.flushPendingSaves();
 
-    // Metrics provenance: the curated example id when the project came from
-    // the example library. Best-effort — a missing project.json never blocks
-    // the run.
-    let exampleId: string | undefined;
-    try {
-      const rawMeta = await storage.read(request.dirName, PROJECT_META_PATH);
-      const text =
-        typeof rawMeta === "string"
-          ? rawMeta
-          : new TextDecoder().decode(rawMeta);
-      const meta = JSON.parse(text) as ProjectMeta;
-      if (meta.source?.type === "example") {
-        exampleId = meta.source.exampleId;
-      }
-    } catch {
-      // Provenance is optional metadata for metrics only.
-    }
-
     // 1. Claim the run directory and snapshot the working tree (ADR-001 §5).
     const runId = await allocateRunDir(storage, request.dirName);
     // Record the real run id immediately: reconcileRuns (window focus, tab
@@ -1142,7 +1133,7 @@ export const projectsModel: ProjectsModel = {
       origin: request.sweepId ? "sweep" : (request.origin ?? "button"),
       kokkos: request.useKokkos,
       hasVars: Object.keys(request.vars).length > 0,
-      exampleId,
+      exampleId: request.exampleId,
     });
     actions.setScreen({
       name: "project",
@@ -1203,7 +1194,7 @@ export const projectsModel: ProjectsModel = {
       inputScript: request.inputScript,
       start: false,
       vars: Object.keys(request.vars).length ? request.vars : undefined,
-      metricsId: exampleId ?? request.dirName,
+      metricsId: request.exampleId ?? request.dirName,
     };
 
     // 3. Copy outputs out of the worker FS into project storage on a
@@ -1321,7 +1312,7 @@ export const projectsModel: ProjectsModel = {
       status: runMeta.status,
       wallSeconds: runMeta.stats?.wallSeconds,
       timesteps: runMeta.stats?.timesteps,
-      exampleId,
+      exampleId: request.exampleId,
     });
     const frame = await captureViewport();
     if (frame) {
