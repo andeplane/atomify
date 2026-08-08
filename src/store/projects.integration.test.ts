@@ -367,7 +367,7 @@ describe("projects store integration", () => {
       ).toBe("completed");
     });
 
-    it("sends no user content (simulationId, errorMessage) to metrics", async () => {
+    it("sends no user content (project names, errorMessage) to metrics", async () => {
       const engine = createFakeEngine();
       const { store } = await createTestStore(engine);
       await store.getActions().projects.createProject({
@@ -381,9 +381,46 @@ describe("projects store integration", () => {
 
       expect(vi.mocked(track).mock.calls.length).toBeGreaterThan(0);
       for (const [, payload] of vi.mocked(track).mock.calls) {
-        expect(payload ?? {}).not.toHaveProperty("simulationId");
-        expect(payload ?? {}).not.toHaveProperty("errorMessage");
+        const record = (payload ?? {}) as Record<string, unknown>;
+        // A user project has no curated example id: simulationId falls back
+        // to the literal "custom", never the dir slug / display name.
+        if ("simulationId" in record) {
+          expect(record.simulationId).toBe("custom");
+        }
+        expect(record).not.toHaveProperty("errorMessage");
+        expect(JSON.stringify(record).toLowerCase()).not.toContain("acme");
       }
+    });
+
+    it("sends the curated example id to metrics for example-sourced projects", async () => {
+      const engine = createFakeEngine();
+      const { store } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Water vapor",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+        source: { type: "example", exampleId: "watervapor" },
+      });
+      vi.mocked(track).mockClear();
+
+      await store.getActions().projects.startRuns([runRequest()]);
+
+      const byName = (name: string) =>
+        vi
+          .mocked(track)
+          .mock.calls.filter(([event]) => event === name)
+          .map(([, payload]) => payload);
+      expect(byName("Simulation.Start")[0]).toMatchObject({
+        simulationId: "watervapor",
+      });
+      expect(byName("Simulation.Stop")[0]).toMatchObject({
+        simulationId: "watervapor",
+      });
+      expect(byName("Run.Start")[0]).toMatchObject({
+        exampleId: "watervapor",
+      });
+      expect(byName("Run.Finish")[0]).toMatchObject({
+        exampleId: "watervapor",
+      });
     });
 
     it("records a failed run with the engine's error message", async () => {

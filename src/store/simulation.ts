@@ -81,6 +81,8 @@ export interface RunResultContext {
     timestepsPerSecond: string;
     numAtoms: number;
     computes: string[];
+    /** Curated example id or "custom" — never a project dir slug. */
+    simulationId?: string;
   };
   actions: {
     setRunning: (running: boolean) => void;
@@ -96,9 +98,10 @@ export interface RunResultContext {
  * Routes a run result to the appropriate canceled / failed / completed path,
  * fires side-effects (error state, tracking), and returns the stop reason.
  *
- * Metrics carry no simulationId (it embeds the project dir slug — user
- * content, PII policy) and no errorMessage (it quotes script content); the
- * sanitized signal is stopReason + numeric metricsData.
+ * Metrics carry no errorMessage (it quotes script content); the sanitized
+ * signal is stopReason + numeric metricsData + a simulationId that is a
+ * curated example id or "custom", never a dir slug (user content, PII
+ * policy).
  */
 export function handleRunResult(ctx: RunResultContext): StopReason {
   const { errorMessage, metricsData, actions, allActions } = ctx;
@@ -150,6 +153,12 @@ export interface Simulation {
   analysisScript?: string;
   start: boolean;
   vars?: Record<string, number>;
+  /**
+   * Identity safe to send to metrics: the curated example id when the
+   * project came from the example library, absent for user projects. Never
+   * derived from `id` — that embeds the project dir slug (user content).
+   */
+  metricsId?: string;
 }
 
 // The full console of the active run, outside the store: state.lammpsOutput
@@ -385,8 +394,11 @@ export const simulationModel: SimulationModel = {
 
       lammps.start();
       actions.setRunning(true);
-      // No simulationId — it embeds the project dir slug (user content).
-      track("Simulation.Start", {});
+      // simulationId is the curated example id or the literal "custom" —
+      // never simulation.id, which embeds the project dir slug (user
+      // content). The Mixpanel dashboard breaks simulations down by it.
+      const simulationId = simulation.metricsId ?? "custom";
+      track("Simulation.Start", { simulationId });
       time_event("Simulation.Stop");
 
       const inputScriptFile = simulation.files.find(
@@ -443,7 +455,7 @@ export const simulationModel: SimulationModel = {
 
       const stopReason = handleRunResult({
         errorMessage,
-        metricsData,
+        metricsData: { ...metricsData, simulationId },
         actions,
         allActions,
       });
