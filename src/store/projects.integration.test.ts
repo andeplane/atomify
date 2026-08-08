@@ -966,7 +966,7 @@ describe("projects store integration", () => {
         copyDirName,
         PROJECT_META_PATH,
       );
-      expect(copyMeta.source).toBeUndefined();
+      expect(copyMeta.source).toEqual({ type: "duplicate" });
 
       vi.mocked(track).mockClear();
       await store.getActions().projects.startRuns([runRequest()]);
