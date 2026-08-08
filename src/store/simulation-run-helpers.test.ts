@@ -147,6 +147,7 @@ describe("handleRunResult", () => {
     timestepsPerSecond: "50.000",
     numAtoms: 10,
     computes: [] as string[],
+    simulationId: "test-sim",
   };
 
   beforeEach(() => {

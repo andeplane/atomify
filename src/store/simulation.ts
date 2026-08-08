@@ -81,8 +81,9 @@ export interface RunResultContext {
     timestepsPerSecond: string;
     numAtoms: number;
     computes: string[];
-    /** Curated example id or the project dir name. */
-    simulationId?: string;
+    /** Curated example id or the project dir name — required like
+     *  Simulation.metricsId, so Stop events always join their Start. */
+    simulationId: string;
   };
   actions: {
     setRunning: (running: boolean) => void;
