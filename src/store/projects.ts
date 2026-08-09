@@ -538,7 +538,12 @@ export const projectsModel: ProjectsModel = {
     const meta = await actions.createProject({
       displayName: `${active.meta.displayName} (copy)`,
       color: active.meta.color,
-      source: active.meta.source,
+      // A duplicate is a fork the user intends to change: dropping the
+      // example identity makes the copy's runs report its own dir name in
+      // metrics instead of the original example forever (#394), and the
+      // explicit "duplicate" source keeps Project.New's breakdown honest
+      // (undefined would look like a blank creation).
+      source: { type: "duplicate" },
       inputScript: active.meta.inputScript,
       files: [],
     });
@@ -550,7 +555,9 @@ export const projectsModel: ProjectsModel = {
     const library = storageFor(injections, false);
     const entries = await storage.list(sourceDirName);
     for (const entry of entries) {
-      if (entry.path === RUNS_DIR || entry.path.startsWith(".atomify")) {
+      // Exact match: a user file named ".atomify-notes.txt" must be copied;
+      // only the identity directory itself stays behind.
+      if (entry.path === RUNS_DIR || entry.path === ".atomify") {
         continue;
       }
       if (entry.type === "directory") {
@@ -605,7 +612,7 @@ export const projectsModel: ProjectsModel = {
     // Everything materializes: working tree AND completed runs (ADR-003).
     const entries = await scratchStorage.list(active.meta.dirName);
     for (const entry of entries) {
-      if (entry.path.startsWith(".atomify")) {
+      if (entry.path === ".atomify") {
         continue; // fresh identity: keep the new project.json
       }
       if (entry.type === "directory") {

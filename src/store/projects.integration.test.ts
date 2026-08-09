@@ -948,6 +948,32 @@ describe("projects store integration", () => {
         ),
       ).not.toBeNull();
     });
+
+    it("drops example provenance so the copy's runs report their own identity (#394)", async () => {
+      const engine = createFakeEngine();
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Water vapor",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+        source: { type: "example", exampleId: "watervapor" },
+      });
+
+      await store.getActions().projects.duplicateProject();
+
+      const copyDirName = activeDirName(store);
+      const copyMeta = await readJson<ProjectMeta>(
+        libraryStorage,
+        copyDirName,
+        PROJECT_META_PATH,
+      );
+      expect(copyMeta.source).toEqual({ type: "duplicate" });
+
+      vi.mocked(track).mockClear();
+      await store.getActions().projects.startRuns([runRequest()]);
+      expect(byName("Simulation.Start")[0]).toMatchObject({
+        simulationId: copyDirName,
+      });
+    });
   });
 
   describe("duplicateProject: nested files and pending edits", () => {

@@ -26,7 +26,7 @@ export interface FileStat {
 }
 
 export interface ProjectSource {
-  type: "blank" | "upload" | "example" | "shared";
+  type: "blank" | "upload" | "example" | "shared" | "duplicate";
   /** Example id from examples.json when type is "example". */
   exampleId?: string;
 }
