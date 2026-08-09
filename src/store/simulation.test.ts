@@ -232,8 +232,11 @@ describe("simulation store — pure actions", () => {
 // Helper functions
 
 function createMockSimulation(overrides?: Partial<Simulation>): Simulation {
+  // One local id keeps id and metricsId consistent when tests override id.
+  const id = overrides?.id ?? "test-sim";
   return {
-    id: "test-sim",
+    id,
+    metricsId: id,
     files: [{ fileName: "in.lmp", content: "run 100" }],
     inputScript: "in.lmp",
     start: true,

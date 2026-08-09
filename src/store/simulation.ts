@@ -81,8 +81,9 @@ export interface RunResultContext {
     timestepsPerSecond: string;
     numAtoms: number;
     computes: string[];
-    /** Curated example id or the project dir name. */
-    simulationId?: string;
+    /** Curated example id or the project dir name — required like
+     *  Simulation.metricsId, so Stop events always join their Start. */
+    simulationId: string;
   };
   actions: {
     setRunning: (running: boolean) => void;
@@ -155,9 +156,11 @@ export interface Simulation {
   /**
    * Identity sent to metrics as simulationId: the curated example id when
    * the project came from the example library, else the project dir name.
-   * Falls back to `id` when unset.
+   * Required so every caller chooses an identity — a fallback to `id`
+   * would silently send per-run-unique `<dirName>/runs/run-NNN` paths and
+   * fragment the Mixpanel per-simulation breakdown (#395).
    */
-  metricsId?: string;
+  metricsId: string;
 }
 
 // The full console of the active run, outside the store: state.lammpsOutput
@@ -408,7 +411,7 @@ export const simulationModel: SimulationModel = {
       actions.setRunning(true);
       // simulationId is the curated example id or the project dir name —
       // the Mixpanel dashboard breaks simulations down by it.
-      const simulationId = simulation.metricsId ?? simulation.id;
+      const simulationId = simulation.metricsId;
       track("Simulation.Start", { simulationId });
       time_event("Simulation.Stop");
       if (inputScriptFile.content) {
@@ -558,9 +561,7 @@ export const simulationModel: SimulationModel = {
           allActions.app.setSelectedFile(inputScriptFile);
         }
       }
-      track("Simulation.New", {
-        simulationId: simulation.metricsId ?? simulation.id,
-      });
+      track("Simulation.New", { simulationId: simulation.metricsId });
     },
   ),
   setLastError: action((state, error: string | undefined) => {
