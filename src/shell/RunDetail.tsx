@@ -15,6 +15,8 @@ import {
   BackIcon,
   ChartIcon,
   ChevronDownIcon,
+  CompressIcon,
+  ExpandIcon,
   FileIcon,
   PlayIcon,
   StopIcon,
@@ -79,6 +81,63 @@ const RunDetail = ({ runId }: { runId: string }) => {
       sessionStorage.setItem(CONSOLE_COLLAPSED_KEY, next ? "1" : "0");
       return next;
     });
+
+  // Fullscreen viewport: native Fullscreen API when available, an in-app
+  // fixed overlay ("immersive") when it is not (or the request is denied).
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const [nativeFullscreen, setNativeFullscreen] = useState(false);
+  const [immersive, setImmersive] = useState(false);
+  const expanded = nativeFullscreen || immersive;
+
+  useEffect(() => {
+    const onChange = () =>
+      setNativeFullscreen(
+        document.fullscreenElement != null &&
+          document.fullscreenElement === viewportRef.current,
+      );
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  useEffect(() => {
+    if (!immersive) {
+      return;
+    }
+    // Native fullscreen exits on Esc by itself; the overlay needs a handler.
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setImmersive(false);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    // The overlay resizes the viewport without a window resize; nudge
+    // listeners (omovi sizes the canvas off resize events).
+    window.dispatchEvent(new Event("resize"));
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.dispatchEvent(new Event("resize"));
+    };
+  }, [immersive]);
+
+  const toggleFullscreen = () => {
+    const element = viewportRef.current;
+    if (!element) {
+      return;
+    }
+    if (nativeFullscreen) {
+      void document.exitFullscreen().catch(() => {});
+      return;
+    }
+    if (immersive) {
+      setImmersive(false);
+      return;
+    }
+    if (typeof element.requestFullscreen === "function") {
+      element.requestFullscreen().catch(() => setImmersive(true));
+    } else {
+      setImmersive(true);
+    }
+  };
 
   // Finished runs: persisted log + frame + output list from storage.
   useEffect(() => {
@@ -337,14 +396,25 @@ const RunDetail = ({ runId }: { runId: string }) => {
 
         {/* Viewport */}
         <div
+          ref={viewportRef}
           data-testid="run-viewport"
-          style={{
-            flex: 1,
-            position: "relative",
-            background: "var(--viewport)",
-            overflow: "hidden",
-            minHeight: 0,
-          }}
+          style={
+            immersive
+              ? {
+                  position: "fixed",
+                  inset: 0,
+                  zIndex: 1000,
+                  background: "var(--viewport)",
+                  overflow: "hidden",
+                }
+              : {
+                  flex: 1,
+                  position: "relative",
+                  background: "var(--viewport)",
+                  overflow: "hidden",
+                  minHeight: 0,
+                }
+          }
         >
           {live ? (
             <View visible pane />
@@ -470,6 +540,32 @@ const RunDetail = ({ runId }: { runId: string }) => {
               </>
             )}
           </div>
+          {/* Fullscreen toggle */}
+          <button
+            onClick={toggleFullscreen}
+            data-testid="viewport-fullscreen"
+            title={expanded ? "Exit full screen (Esc)" : "Full screen"}
+            aria-label={expanded ? "Exit full screen" : "Full screen"}
+            style={{
+              position: "absolute",
+              top: 14,
+              right: 16,
+              width: 32,
+              height: 32,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+              border: "1px solid rgba(255,255,255,0.18)",
+              borderRadius: 9,
+              background: "rgba(10,12,17,0.55)",
+              color: "rgba(255,255,255,0.85)",
+              cursor: "pointer",
+              backdropFilter: "blur(4px)",
+            }}
+          >
+            {expanded ? <CompressIcon /> : <ExpandIcon />}
+          </button>
         </div>
 
         {/* Console strip (collapsible: the header bar always stays visible,
