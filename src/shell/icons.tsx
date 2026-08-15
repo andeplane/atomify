@@ -251,6 +251,20 @@ export const ChevronRightIcon = ({ size = 16 }: IconProps) =>
 export const BackIcon = ({ size = 14 }: IconProps) =>
   stroke(size, <path d="m15 18-6-6 6-6" />, 2);
 
+export const ExpandIcon = ({ size = 15 }: IconProps) =>
+  stroke(
+    size,
+    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />,
+    2,
+  );
+
+export const CompressIcon = ({ size = 15 }: IconProps) =>
+  stroke(
+    size,
+    <path d="M20 10h-6V4M4 14h6v6M14 10l7-7M10 14l-7 7" />,
+    2,
+  );
+
 export const DotsIcon = ({ size = 16 }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
     <circle cx="5" cy="12" r="1.7" />
