@@ -110,6 +110,29 @@ describe("Shell", () => {
     expect(localStorage.getItem("atomify_theme")).toBe("light");
   });
 
+  it("collapses the sidebar to an icon rail and persists the choice", async () => {
+    renderShell();
+
+    const sidebar = screen.getByTestId("sidebar");
+    expect(sidebar.getAttribute("data-collapsed")).toBe("false");
+    expect(screen.getByTestId("nav-examples")).toHaveTextContent(
+      "Example library",
+    );
+
+    await userEvent.click(screen.getByTestId("sidebar-collapse"));
+
+    expect(sidebar.getAttribute("data-collapsed")).toBe("true");
+    // Icon rail: the nav buttons stay clickable but drop their labels.
+    expect(screen.getByTestId("nav-examples")).not.toHaveTextContent(
+      "Example library",
+    );
+    expect(localStorage.getItem("atomify_sidebar_collapsed")).toBe("1");
+
+    await userEvent.click(screen.getByTestId("sidebar-collapse"));
+    expect(sidebar.getAttribute("data-collapsed")).toBe("false");
+    expect(localStorage.getItem("atomify_sidebar_collapsed")).toBe("0");
+  });
+
   it("navigates to the example library and shows fetched examples", async () => {
     renderShell();
 
