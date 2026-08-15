@@ -68,10 +68,10 @@ const RunDetail = ({ runId }: { runId: string }) => {
   const [frameUrl, setFrameUrl] = useState<string | null>(null);
   const [outputs, setOutputs] = useState<FileStat[]>([]);
   const consoleRef = useRef<HTMLDivElement | null>(null);
-  // Collapsible console strip: default expanded, choice remembered for the
-  // session so the viewport keeps the reclaimed height across run screens.
+  // Collapsible console strip: default collapsed so the viewport gets the
+  // height; an explicit expand is remembered for the session.
   const [consoleCollapsed, setConsoleCollapsed] = useState(
-    () => sessionStorage.getItem(CONSOLE_COLLAPSED_KEY) === "1",
+    () => sessionStorage.getItem(CONSOLE_COLLAPSED_KEY) !== "0",
   );
   const toggleConsole = () =>
     setConsoleCollapsed((previous) => {

@@ -49,6 +49,9 @@ test("run a simulation end-to-end and inspect the recorded run", async ({
     await expect(page.getByTestId("status-pill-running")).toBeVisible({
       timeout: 60_000,
     });
+    // The console defaults to collapsed; expand it to watch the live output
+    // (the choice is remembered for the session, so later steps see it open).
+    await page.getByTestId("run-console-toggle").click();
     // Live console follows the engine output.
     await expect(page.getByTestId("run-console")).toContainText("LAMMPS", {
       timeout: 60_000,
