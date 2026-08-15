@@ -425,14 +425,22 @@ body,
   color: #fff !important;
   border: 1px solid #333 !important;
   border-radius: 4px !important;
-  padding: 8px !important;
+  padding: 6px 8px !important;
+  /* The legend is always visible now: shrink to content (the library
+     default is a fixed 250px), cap its footprint on small charts, and
+     never intercept pointer events meant for the plot beneath it. */
+  width: auto !important;
+  max-width: 45% !important;
+  max-height: 45% !important;
+  overflow: hidden !important;
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+  pointer-events: none !important;
 }
 
 .dygraph-custom-legend {
-  background: rgba(0, 0, 0, 0.8);
-  padding: 8px;
-  border-radius: 4px;
   color: #fff;
+  white-space: nowrap;
 }
 
 .dygraph-legend-dot {
