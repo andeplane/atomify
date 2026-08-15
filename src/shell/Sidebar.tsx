@@ -89,9 +89,13 @@ const Sidebar = () => {
   );
   const ui = useShellUI();
 
-  const [collapsed, setCollapsed] = useState(
-    () => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1",
-  );
+  const [collapsed, setCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "1";
+    } catch {
+      return false;
+    }
+  });
   const toggleCollapsed = () =>
     setCollapsed((previous) => {
       const next = !previous;
