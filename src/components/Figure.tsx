@@ -150,9 +150,9 @@ export const FigureGraph = ({
           "#722ed1",
         ],
         legendFormatter: function (data) {
-          if (data.x == null) {
-            return "";
-          }
+          // Without a hovered point (data.x == null) still list the series
+          // names and colors — an empty legend box reads as a bug.
+          const hovering = data.x != null;
           let html = '<div class="dygraph-custom-legend">';
           data.series.forEach(function (series) {
             if (!series.isVisible) return;
@@ -161,7 +161,11 @@ export const FigureGraph = ({
               '<span class="dygraph-legend-dot" style="color: ' +
               color +
               ';">● </span>';
-            html += series.labelHTML + ": " + series.yHTML + "<br/>";
+            html += series.labelHTML;
+            if (hovering) {
+              html += ": " + series.yHTML;
+            }
+            html += "<br/>";
           });
           html += "</div>";
           return html;
