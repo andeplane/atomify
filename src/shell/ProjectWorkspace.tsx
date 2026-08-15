@@ -109,7 +109,7 @@ const ProjectWorkspace = ({
       display: "inline-flex",
       alignItems: "center",
       gap: 7,
-      padding: "10px 14px",
+      padding: "7px 12px",
       border: "none",
       borderBottom: `2px solid ${isActive ? "var(--accent)" : "transparent"}`,
       background: "transparent",
@@ -157,19 +157,19 @@ const ProjectWorkspace = ({
               display: "flex",
               alignItems: "center",
               gap: 10,
-              margin: "16px 0 0",
-              padding: "10px 14px",
-              borderRadius: 10,
+              margin: "8px 0 0",
+              padding: "5px 12px",
+              borderRadius: 9,
               background: "var(--accent-soft)",
               border: "1px solid var(--accent-line)",
-              fontSize: 13,
+              fontSize: 12.5,
               color: "var(--text)",
             }}
           >
             <span
               style={{ color: "var(--accent)", display: "flex", flexShrink: 0 }}
             >
-              <InfoIcon />
+              <InfoIcon size={13} />
             </span>
             <span style={{ flex: 1 }}>
               This is a quick run — files are temporary and will be discarded.
@@ -179,8 +179,8 @@ const ProjectWorkspace = ({
               data-testid="save-as-project"
               className="shell-primary-hover"
               style={{
-                padding: "6px 12px",
-                borderRadius: 8,
+                padding: "4px 10px",
+                borderRadius: 7,
                 border: "none",
                 background: "var(--accent)",
                 color: "#fff",
@@ -199,33 +199,10 @@ const ProjectWorkspace = ({
             display: "flex",
             alignItems: "center",
             gap: 16,
-            padding: "18px 0 0",
+            padding: "10px 0 0",
           }}
         >
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: 12,
-                color: "var(--text-3)",
-                marginBottom: 4,
-              }}
-            >
-              <a
-                href="#"
-                data-testid="breadcrumb-projects"
-                onClick={(event) => {
-                  event.preventDefault();
-                  setScreen({ name: "home" });
-                }}
-                style={{ color: "var(--text-3)" }}
-              >
-                Projects
-              </a>
-              <span>/</span>
-            </div>
             <div
               style={{
                 display: "flex",
@@ -234,11 +211,35 @@ const ProjectWorkspace = ({
                 minWidth: 0,
               }}
             >
+              {/* Breadcrumb inline with the title: one row instead of two. */}
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 12,
+                  color: "var(--text-3)",
+                  flexShrink: 0,
+                }}
+              >
+                <a
+                  href="#"
+                  data-testid="breadcrumb-projects"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setScreen({ name: "home" });
+                  }}
+                  style={{ color: "var(--text-3)" }}
+                >
+                  Projects
+                </a>
+                <span>/</span>
+              </span>
               <h1
                 data-testid="project-title"
                 style={{
                   margin: 0,
-                  fontSize: 21,
+                  fontSize: 17,
                   fontWeight: 800,
                   letterSpacing: "-0.02em",
                   color: "var(--text)",
@@ -430,7 +431,7 @@ const ProjectWorkspace = ({
             )}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 4, marginTop: 14 }}>
+        <div style={{ display: "flex", gap: 4, marginTop: 6 }}>
           {tabs.map((tab) => (
             <button
               key={tab.key}

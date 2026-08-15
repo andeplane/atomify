@@ -236,7 +236,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
             rowGap: 8,
             flexWrap: "wrap",
             minWidth: 0,
-            padding: "12px 24px",
+            padding: "7px 24px",
             borderBottom: "1px solid var(--border)",
           }}
         >
