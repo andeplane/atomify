@@ -110,14 +110,28 @@ const RunDetail = ({ runId }: { runId: string }) => {
       }
     };
     window.addEventListener("keydown", onKey);
-    // The overlay resizes the viewport without a window resize; nudge
-    // listeners (omovi sizes the canvas off resize events).
+    // The overlay resizes the viewport without a window resize; nudge the
+    // remaining window-resize listeners (the 3D canvas itself polls its
+    // container size every frame and doesn't need it).
     window.dispatchEvent(new Event("resize"));
     return () => {
       window.removeEventListener("keydown", onKey);
       window.dispatchEvent(new Event("resize"));
     };
   }, [immersive]);
+
+  // Leave fullscreen when the live run ends: native fullscreen's top layer
+  // hides everything outside the viewport (toasts included), and the
+  // completion UI lives outside it.
+  useEffect(() => {
+    if (live) {
+      return;
+    }
+    setImmersive(false);
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {});
+    }
+  }, [live]);
 
   const toggleFullscreen = () => {
     const element = viewportRef.current;
@@ -540,6 +554,37 @@ const RunDetail = ({ runId }: { runId: string }) => {
               </>
             )}
           </div>
+          {/* Stop stays reachable while the run screen chrome is hidden. */}
+          {expanded && live && (
+            <button
+              onClick={() => ui.stopRun()}
+              data-testid="viewport-stop"
+              title="Stop the run"
+              aria-label="Stop the run"
+              className="shell-danger-hover"
+              style={{
+                position: "absolute",
+                top: 14,
+                right: 58,
+                height: 32,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                padding: "0 12px",
+                border: "none",
+                borderRadius: 9,
+                background: "var(--bad)",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 12.5,
+                cursor: "pointer",
+                fontFamily: "inherit",
+              }}
+            >
+              <StopIcon />
+              Stop
+            </button>
+          )}
           {/* Fullscreen toggle */}
           <button
             onClick={toggleFullscreen}
