@@ -65,7 +65,7 @@
     "@types/node": "^20.19.25",
     "@types/uuid": "^11.0.0",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
-    "@vitejs/plugin-react": "^5.2.0",
+    "@vitejs/plugin-react": "^6.0.5",
     "@vitest/ui": "^4.1.10",
     "coi-serviceworker": "^0.1.7",
     "gh-pages": "^6.1.1",
