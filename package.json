@@ -59,7 +59,7 @@
   },
   "devDependencies": {
     "@jupyterlab/nbformat": "^4.5.0",
-    "@playwright/test": "^1.61.1",
+    "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@types/emscripten": "^1.41.5",
     "@types/node": "^26.2.0",
