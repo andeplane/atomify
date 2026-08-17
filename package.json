@@ -14,7 +14,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/three": "^0.181.0",
-    "antd": "^5.22.0",
+    "antd": "^6.6.0",
     "colormap": "^2.3.2",
     "dygraphs": "^2.1.0",
     "easy-peasy": "^6.0.5",
