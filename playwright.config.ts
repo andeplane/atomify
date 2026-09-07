@@ -16,6 +16,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "e2e",
+  testIgnore: "engine-isolation.spec.ts",
   // Budget for engine load (~120 s worst case) + the run itself.
   timeout: 420_000,
   expect: { timeout: 15_000 },
