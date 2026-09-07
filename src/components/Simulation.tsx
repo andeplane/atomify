@@ -34,6 +34,9 @@ const SimulationComponent = () => {
   );
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
   const setLammps = useStoreActions((actions) => actions.simulation.setLammps);
+  const setEngineError = useStoreActions(
+    (actions) => actions.app.setEngineError,
+  );
   const setStatus = useStoreActions((actions) => actions.app.setStatus);
   const runPostTimestep = useStoreActions(
     (actions) => actions.processing.runPostTimestep,
@@ -168,6 +171,16 @@ const SimulationComponent = () => {
       return;
     }
     loadStartedRef.current = true;
+    setEngineError(undefined);
+    if (
+      !window.crossOriginIsolated ||
+      typeof SharedArrayBuffer === "undefined"
+    ) {
+      setEngineError(
+        "The simulation engine requires cross-origin isolation. Reload the page; if this persists, check browser settings or try another browser.",
+      );
+      return;
+    }
     setStatus({
       title: "Downloading LAMMPS ...",
       text: "",
@@ -182,15 +195,16 @@ const SimulationComponent = () => {
     // interface; the store and modifier/render pipeline keep reading data
     // through the usual heap-pointer path, now backed by the streamed bridge
     // heap instead of a real main-thread module.
-    const proxy = new LammpsWorkerProxy();
-    proxy.onPrint(onPrint);
-    // Surface worker/LAMMPS errors in the console panel rather than only the
-    // devtools console.
-    proxy.onError((message) => onPrint(message));
-    proxyRef.current = proxy;
-    proxy
-      .load()
-      .then(() => {
+    Promise.resolve()
+      .then(async () => {
+        const proxy = new LammpsWorkerProxy();
+        proxy.onPrint(onPrint);
+        proxy.onError((message) => onPrint(message));
+        proxyRef.current = proxy;
+        await proxy.load();
+        return proxy;
+      })
+      .then((proxy) => {
         track("WASM.Load");
         setStatus({
           title: "Downloading LAMMPS ...",
@@ -206,6 +220,7 @@ const SimulationComponent = () => {
         // The module failed to load — don't leave the UI stuck on the
         // "Downloading LAMMPS …" spinner with no explanation.
         const message = error instanceof Error ? error.message : String(error);
+        setEngineError(message);
         onPrint(`Failed to load LAMMPS: ${message}`);
         setStatus(undefined);
         notification.error({
@@ -213,7 +228,7 @@ const SimulationComponent = () => {
           description: message,
         });
       });
-  }, [onPrint, setLammps, setStatus]);
+  }, [onPrint, setLammps, setStatus, setEngineError]);
   return <></>;
 };
 export default SimulationComponent;

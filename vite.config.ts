@@ -62,14 +62,13 @@ export default defineConfig({
     host: true, // Allow access from local network (0.0.0.0)
     port: 3000,
     // Cross-origin isolation, required for SharedArrayBuffer — the atomify
-    // (KOKKOS/pthreads) wasm build needs it. COEP: credentialless keeps
-    // cross-origin subresources (e.g. imported example files) working
-    // without requiring CORP headers on them. On GitHub Pages, which can't
+    // (KOKKOS/pthreads) wasm build needs it. COEP: require-corp also works
+    // in Safari. Cross-origin resources opt in via CORS or CORP. On GitHub Pages, which can't
     // set response headers, the coi-serviceworker shim in index.html applies
     // the equivalent headers instead.
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin",
-      "Cross-Origin-Embedder-Policy": "credentialless",
+      "Cross-Origin-Embedder-Policy": "require-corp",
     },
     proxy: {
       "/chapters": {
@@ -84,7 +83,7 @@ export default defineConfig({
   preview: {
     headers: {
       "Cross-Origin-Opener-Policy": "same-origin",
-      "Cross-Origin-Embedder-Policy": "credentialless",
+      "Cross-Origin-Embedder-Policy": "require-corp",
     },
   },
   // WASM files served from public/ folder, no special config needed
