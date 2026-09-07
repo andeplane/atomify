@@ -78,8 +78,6 @@ ctx.addEventListener("unhandledrejection", (e: PromiseRejectionEvent) => {
     reason instanceof Error ? reason.message : String(reason ?? "");
   if (message.includes("function signature mismatch")) {
     e.preventDefault();
-  } else {
-    post({ type: "error", message });
   }
 });
 

@@ -426,40 +426,20 @@ export class LammpsWorkerProxy implements LammpsWeb {
   load(): Promise<void> {
     if (!this.readyPromise) {
       this.readyPromise = new Promise<void>((resolve, reject) => {
-        const cleanup = () => {
-          this.worker.removeEventListener("message", onMessage);
-          this.worker.removeEventListener("error", onError);
-          this.worker.removeEventListener("messageerror", onMessageError);
-        };
-        const onError = (event: ErrorEvent) => {
-          cleanup();
-          reject(new Error(event.message || "The simulation worker failed to start."));
-        };
-        const onMessageError = () => {
-          cleanup();
-          reject(new Error("The simulation worker could not receive a message."));
-        };
         const onMessage = (ev: MessageEvent<WorkerEvent>) => {
           if (ev.data.type === "ready") {
-            cleanup();
+            this.worker.removeEventListener("message", onMessage);
             resolve();
           } else if (ev.data.type === "error") {
             // A failure during load() posts `error` instead of `ready`; reject
             // so the caller can show it, rather than hanging forever at
             // "Downloading LAMMPS…".
-            cleanup();
+            this.worker.removeEventListener("message", onMessage);
             reject(new Error(ev.data.message));
           }
         };
         this.worker.addEventListener("message", onMessage);
-        this.worker.addEventListener("error", onError);
-        this.worker.addEventListener("messageerror", onMessageError);
-        try {
-          this.send({ type: "load" });
-        } catch (error) {
-          cleanup();
-          reject(error);
-        }
+        this.send({ type: "load" });
       });
     }
     return this.readyPromise;

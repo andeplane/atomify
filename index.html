@@ -20,9 +20,9 @@
     Cross-origin isolation for SharedArrayBuffer, which the atomify
     (KOKKOS/pthreads) wasm build requires. GitHub Pages can't set COOP/COEP
     response headers, so this service-worker shim injects them on the client
-    (the page reloads once on first visit). COEP require-corp works in
-    Safari, Chromium and Firefox. Cross-origin resources opt in via CORS or
-    CORP. In dev, vite sets the same headers directly.
+    (the page reloads once on first visit). COEP credentialless keeps
+    cross-origin subresources (imported example files, etc.) working without
+    requiring CORP headers. In dev, vite sets the same headers directly.
     Must load before the app module.
   -->
   <!--
@@ -50,7 +50,7 @@
         "sw-reset",
       );
       window.coi = {
-        coepCredentialless: () => false,
+        coepCredentialless: () => true,
         shouldRegister: () => !resetting,
       };
       if (resetting) {
@@ -88,27 +88,6 @@
     })();
   </script>
   <script src="coi-serviceworker.min.js"></script>
-  <script>
-    // Existing clients may have loaded under the old credentialless policy.
-    // The shim above posts the new policy to their controller; navigate once
-    // to pick it up. Bound recovery so unsupported contexts cannot loop.
-    if (!new URLSearchParams(location.search).has("sw-reset")) {
-      const key = "atomify-coep-recovery";
-      try {
-        if (window.crossOriginIsolated) {
-          sessionStorage.removeItem(key);
-        } else if (
-          navigator.serviceWorker?.controller &&
-          !sessionStorage.getItem(key)
-        ) {
-          sessionStorage.setItem(key, "1");
-          location.reload();
-        }
-      } catch (_) {
-        // Storage can be disabled; the app will show the isolation error.
-      }
-    }
-  </script>
 </head>
 
 <body>

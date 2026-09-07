@@ -172,6 +172,17 @@ const SimulationComponent = () => {
     }
     loadStartedRef.current = true;
     setEngineError(undefined);
+    // Safari and other WebKit browsers (including iOS browsers) cannot run
+    // our credentialless / SharedArrayBuffer engine configuration.
+    const isWebKit =
+      /AppleWebKit/i.test(navigator.userAgent) &&
+      !/Chrome\/|Chromium\/|Edg\/|OPR\/|Android/i.test(navigator.userAgent);
+    if (isWebKit) {
+      setEngineError(
+        "Safari is not supported for simulations. Use Chrome or Firefox on a desktop computer.",
+      );
+      return;
+    }
     if (
       !window.crossOriginIsolated ||
       typeof SharedArrayBuffer === "undefined"

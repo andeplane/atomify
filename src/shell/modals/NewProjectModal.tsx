@@ -444,20 +444,11 @@ const NewProjectModal = ({
                         borderRadius: 7,
                         overflow: "hidden",
                         background: "var(--viewport)",
+                        backgroundImage: `url("${example.imageUrl}")`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
                       }}
                     >
-                      <img
-                        crossOrigin="anonymous"
-                        src={example.imageUrl}
-                        alt=""
-                        style={{
-                          position: "absolute",
-                          inset: 0,
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
                       {category && (
                         <span
                           style={{
