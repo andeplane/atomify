@@ -15,5 +15,3 @@ pypi
 test-results
 playwright-report
 .claude
-# Separate service with its own tooling (ruff); never formatted from here
-backend
