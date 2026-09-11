@@ -123,7 +123,7 @@ const SettingsModal = ({
   });
 
   const checkboxRow = (
-    key: "showSimulationBox" | "showWalls" | "orthographic",
+    key: "showSimulationBox" | "showWalls" | "orthographic" | "ssao",
     label: string,
   ) => {
     const on = renderSettings[key];
@@ -303,6 +303,7 @@ const SettingsModal = ({
                 marginBottom: 16,
               }}
             >
+              {checkboxRow("ssao", "Ambient occlusion (SSAO)")}
               {checkboxRow("showSimulationBox", "Show simulation box")}
               {checkboxRow("showWalls", "Show walls")}
               {checkboxRow("orthographic", "Orthographic camera")}
