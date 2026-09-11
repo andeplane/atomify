@@ -2,7 +2,7 @@ import { action, Action } from "easy-peasy";
 import { Compute, Fix, Variable, Wall } from "../types";
 import * as THREE from "three";
 
-export interface SimulationStatusModel {
+export interface SimulationStatusData {
   timesteps: number;
   memoryUsage: number;
   runTimesteps: number;
@@ -20,12 +20,12 @@ export interface SimulationStatusModel {
   fixes: { [key: string]: Fix };
   variables: { [key: string]: Variable };
   unitStyle?: import("../utils/units").UnitStyle;
-  setUnitStyle: Action<
-    SimulationStatusModel,
-    import("../utils/units").UnitStyle | undefined
-  >;
   dimension: number;
   walls: Wall[];
+}
+
+export interface SimulationStatusModel extends SimulationStatusData {
+  setSnapshot: Action<SimulationStatusModel, Partial<SimulationStatusData>>;
   setTimesteps: Action<SimulationStatusModel, number>;
   setMemoryUsage: Action<SimulationStatusModel, number>;
   setHasSynchronized: Action<SimulationStatusModel, boolean>;
@@ -52,6 +52,9 @@ export interface SimulationStatusModel {
 }
 
 export const simulationStatusModel: SimulationStatusModel = {
+  setSnapshot: action((state, snapshot) => {
+    Object.assign(state, snapshot);
+  }),
   hasSynchronized: false,
   timesteps: 0,
   memoryUsage: 0,
@@ -65,9 +68,6 @@ export const simulationStatusModel: SimulationStatusModel = {
   computes: {},
   fixes: {},
   variables: {},
-  setUnitStyle: action((state, value) => {
-    state.unitStyle = value;
-  }),
   dimension: 3,
   walls: [],
   setComputes: action((state, value: { [key: string]: Compute }) => {

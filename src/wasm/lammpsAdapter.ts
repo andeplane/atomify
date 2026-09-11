@@ -464,6 +464,8 @@ export class LammpsAdapter implements LammpsWeb {
     return this.particleSnapshot?.types.ptr ?? 0;
   }
 
+  // lammps.js reads lammps_extract_atom(..., "id"), the LAMMPS atom tag
+  // array. These are persistent IDs, not offsets in the sorted atom arrays.
   getIdPointer(): number {
     return this.particleSnapshot?.ids.ptr ?? 0;
   }
