@@ -19,6 +19,8 @@ import {
 import { createWallGroup } from "../utils/wallGeometry";
 
 // Type guard for Visualizer with updateCameraPlanes method
+import { applyLighting } from "../utils/lighting";
+
 interface VisualizerWithCameraPlanes extends Visualizer {
   updateCameraPlanes: (box: THREE.Box3) => void;
 }
@@ -285,9 +287,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
       });
 
       // Apply lighting settings
-      newVisualizer.pointLight.intensity = renderSettings.pointLightIntensity;
-      newVisualizer.ambientLight.intensity =
-        renderSettings.ambientLightIntensity;
+      applyLighting(newVisualizer, renderSettings);
 
       // Check for WebXR support and show VR button if available
       if (navigator.xr) {
@@ -384,8 +384,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
       }
 
       // Update lighting
-      visualizer.pointLight.intensity = renderSettings.pointLightIntensity;
-      visualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
+      applyLighting(visualizer, renderSettings);
 
       // Update camera projection mode
       visualizer.setOrthographic(renderSettings.orthographic);
