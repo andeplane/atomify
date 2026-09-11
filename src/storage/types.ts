@@ -67,6 +67,8 @@ export type RunStatus =
 
 /** Contents of `<dirName>/runs/<runId>/.atomify/run.json`. */
 export interface RunMeta {
+  /** A read-only structural inspection; no dynamics were integrated. */
+  viewOnly?: boolean;
   schemaVersion: 1;
   id: string;
   inputScript: string;

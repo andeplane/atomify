@@ -318,15 +318,17 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
         // strand if something on the run path unexpectedly rejects.
         const { requestId } = cmd;
         runActive = true;
+        let runError = "";
         try {
           if (adapter) {
             await adapter.runFile(cmd.path);
+            // run 0 does not invoke the per-step callback. Capture the final
+            // initialized structure now, after WASM has finished unwinding.
+            if (!adapter.getErrorMessage()) streamStep();
           }
         } catch (error) {
-          post({
-            type: "error",
-            message: error instanceof Error ? error.message : String(error),
-          });
+          runError = error instanceof Error ? error.message : String(error);
+          post({ type: "error", message: runError });
         } finally {
           runActive = false;
           // Run is over (wasm no longer suspended): apply commands that
@@ -335,9 +337,11 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
           post({
             type: "runFinished",
             requestId,
-            error: adapter
-              ? adapter.getErrorMessage()
-              : "LAMMPS module not loaded",
+            error:
+              runError ||
+              (adapter
+                ? adapter.getErrorMessage()
+                : "LAMMPS module not loaded"),
           });
         }
         break;
@@ -378,7 +382,12 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
         try {
           const { files, skipped } = snapshotWorkdir(cmd.dir, cmd.maxBytes);
           post(
-            { type: "workdirSnapshot", requestId: cmd.requestId, files, skipped },
+            {
+              type: "workdirSnapshot",
+              requestId: cmd.requestId,
+              files,
+              skipped,
+            },
             files.map((file) => file.bytes),
           );
         } catch (error) {
