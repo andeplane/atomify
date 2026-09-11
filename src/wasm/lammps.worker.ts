@@ -1,4 +1,10 @@
 /// <reference lib="webworker" />
+import {
+  GROUP_INFO_FILE,
+  GROUP_VARIABLE_FILE,
+  GROUP_READY,
+  parseLammpsGroups,
+} from "../utils/lammpsGroups";
 /**
  * LAMMPS Web Worker entry.
  *
@@ -193,9 +199,14 @@ function streamStep() {
 
   // Computes / fixes / variables (+ per-atom coloring data). Also runs inside
   // this safe step window, since it invokes computes and reads the heap.
-  const { modifiers, perAtom, radii } = adapter
-    ? adapter.snapshotModifiers(perAtomTarget)
-    : { modifiers: [], perAtom: null, radii: null };
+  const { modifiers, perAtom, radii, groups } = adapter
+    ? adapter.snapshotModifiers(perAtomTarget, count)
+    : {
+        modifiers: [],
+        perAtom: null,
+        radii: null,
+        groups: { names: [], masks: new Uint32Array(0) },
+      };
 
   const transfer: Transferable[] = [
     positions.buffer,
@@ -208,6 +219,7 @@ function streamStep() {
   ];
   if (perAtom) transfer.push(perAtom.values);
   if (radii) transfer.push(radii.buffer);
+  transfer.push(groups.masks.buffer);
 
   post(
     {
@@ -228,6 +240,10 @@ function streamStep() {
       runStepsDone: native.getRunStepsDone(),
       runStepsTotal: native.getRunStepsTotal(),
       modifiers,
+      groups: {
+        names: groups.names,
+        masks: groups.masks.buffer as ArrayBuffer,
+      },
       perAtom,
       radii: radii ? (radii.buffer as ArrayBuffer) : null,
       memoryUsage: native.getMemoryUsage(),
@@ -246,6 +262,16 @@ async function load() {
   }
   const printLine = (...args: unknown[]) => {
     const text = args.join(" ");
+    if (text.trim() === GROUP_READY && module && adapter) {
+      // Pure JS/MEMFS work inside the print callback; no nested native calls.
+      // LAMMPS executes this generated include after print returns, before run.
+      const info = module.FS.readFile(GROUP_INFO_FILE, { encoding: "utf8" });
+      module.FS.writeFile(
+        GROUP_VARIABLE_FILE,
+        adapter.prepareGroupVariables(parseLammpsGroups(String(info))),
+      );
+      return;
+    }
     adapter?.observeOutput(text);
     post({ type: "printed", text });
   };

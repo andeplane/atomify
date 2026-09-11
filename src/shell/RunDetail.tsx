@@ -1,3 +1,4 @@
+import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import ContinueRunModal from "./modals/ContinueRunModal";
 /**
  * Run detail (ADR-003 §4): live 3D viewport + following console + status
@@ -28,6 +29,7 @@ import { Chip, GhostButton, MONO, PulseDot, StatusPill } from "./ui";
 const CONSOLE_COLLAPSED_KEY = "atomify_run_console_collapsed";
 
 const RunDetail = ({ runId }: { runId: string }) => {
+  const [colorsOpen, setColorsOpen] = useState(false);
   const active = useStoreState((state) => state.projects.active);
   const loadedSimulationId = useStoreState((s) => s.simulation.simulation?.id);
   const [continueOpen, setContinueOpen] = useState(false);
@@ -312,6 +314,9 @@ const RunDetail = ({ runId }: { runId: string }) => {
       data-testid="run-detail"
       style={{ flex: 1, display: "flex", overflow: "hidden" }}
     >
+      {colorsOpen && (
+        <ColorModifierSettings open onClose={() => setColorsOpen(false)} />
+      )}
       {continueOpen && meta && (
         <ContinueRunModal meta={meta} onClose={() => setContinueOpen(false)} />
       )}
@@ -393,6 +398,14 @@ const RunDetail = ({ runId }: { runId: string }) => {
             runs/{runId}
           </span>
           <div style={{ flex: 1 }} />
+          {(live || viewStructure) && (
+            <GhostButton
+              data-testid="color-atoms"
+              onClick={() => setColorsOpen(true)}
+            >
+              Color atoms
+            </GhostButton>
+          )}
           {meta?.continuationOf && (
             <Chip>Continued from #{runNumber(meta.continuationOf)}</Chip>
           )}

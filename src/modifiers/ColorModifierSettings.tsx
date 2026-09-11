@@ -1,3 +1,4 @@
+import { GROUP_LABEL_PREFIX } from "../utils/lammpsGroups";
 import {
   Modal,
   Select,
@@ -30,6 +31,12 @@ const ColorModifierSettings = ({
   const colorModifier = postTimestepModifiers.find(
     (modifier): modifier is ColorModifier => modifier instanceof ColorModifier,
   );
+  const [selectedValue, setSelectedValue] = useState(
+    colorModifier?.computeName ?? "type",
+  );
+  const refreshRendering = useStoreActions(
+    (a) => a.processing.runPostTimestepRendering,
+  );
   const perAtomComputes = Object.values(computes).filter(
     (compute) => compute.isPerAtom,
   );
@@ -48,6 +55,7 @@ const ColorModifierSettings = ({
   const onChange = useCallback(
     (value: string) => {
       if (!colorModifier) return;
+      setSelectedValue(value);
       if (value !== "type") {
         track("Settings.Render.ColorBy", {
           value: "Compute",
@@ -57,10 +65,12 @@ const ColorModifierSettings = ({
       } else {
         track("Settings.Render.ColorBy", { value: "ParticleType" });
         colorModifier.computeName = undefined;
-        setParticleStylesUpdated(true);
       }
+      setParticleStylesUpdated(true);
+      if (value === "type" || value.startsWith(GROUP_LABEL_PREFIX))
+        void refreshRendering();
     },
-    [colorModifier, setParticleStylesUpdated],
+    [colorModifier, setParticleStylesUpdated, refreshRendering],
   );
 
   const handleCustomRangeToggle = useCallback(
@@ -130,11 +140,8 @@ const ColorModifierSettings = ({
 
   if (!colorModifier) return null;
 
-  const defaultValue = colorModifier.computeName
-    ? colorModifier.computeName
-    : "type";
-
-  const showRangeControls = colorModifier.computeName !== undefined;
+  const showRangeControls = selectedValue !== "type";
+  const coloringGroup = selectedValue.startsWith(GROUP_LABEL_PREFIX);
 
   const colormapOptions = [
     "jet",
@@ -165,19 +172,30 @@ const ColorModifierSettings = ({
         <div>
           <div style={{ marginBottom: 8, fontWeight: 500 }}>Color by:</div>
           <Select
-            defaultValue={defaultValue}
+            aria-label="Color by"
+            value={selectedValue}
             style={{ width: "100%" }}
             onChange={onChange}
           >
             <Option value="type">Particle type</Option>
             <OptGroup label="Computes">
-              {perAtomComputes.map((compute) => (
-                <Option key={compute.name} value={compute.name}>
-                  {compute.name}
-                </Option>
-              ))}
+              {perAtomComputes
+                .filter((c) => !c.name.startsWith(GROUP_LABEL_PREFIX))
+                .map((compute) => (
+                  <Option key={compute.name} value={compute.name}>
+                    {compute.name}
+                  </Option>
+                ))}
             </OptGroup>
-            <OptGroup label="Fixes"></OptGroup>
+            <OptGroup label="Groups">
+              {perAtomComputes
+                .filter((c) => c.name.startsWith(GROUP_LABEL_PREFIX))
+                .map((group) => (
+                  <Option key={group.name} value={group.name}>
+                    {group.name.slice(GROUP_LABEL_PREFIX.length)}
+                  </Option>
+                ))}
+            </OptGroup>
           </Select>
         </div>
 
@@ -201,7 +219,10 @@ const ColorModifierSettings = ({
           </>
         )}
 
-        {showRangeControls && (
+        {coloringGroup && (
+          <div>Group colors: 0 = outside the group, 1 = member.</div>
+        )}
+        {showRangeControls && !coloringGroup && (
           <>
             <Divider style={{ margin: "8px 0" }} />
 

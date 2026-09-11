@@ -1,3 +1,4 @@
+import { prepareGroupInspection } from "../utils/lammpsGroups";
 import { continuationScript } from "../utils/continuation";
 import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
 import { StoreModel } from "./model";
@@ -360,7 +361,10 @@ export const simulationModel: SimulationModel = {
             : prepareScriptForSerialStyles(file.content, {
                 isMainScript: file.fileName === simulation.inputScript,
               });
-          wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, content);
+          wasm.FS.writeFile(
+            `/${simulation.id}/${file.fileName}`,
+            prepareGroupInspection(content),
+          );
         }
       }
     },
@@ -434,7 +438,11 @@ export const simulationModel: SimulationModel = {
         : prepareScriptForSerialStyles(rawContent, { isMainScript: true });
       const scriptToRun =
         continuation === undefined
-          ? prepareVarsScript(simulation, runContent, wasm)
+          ? prepareVarsScript(
+              simulation,
+              prepareGroupInspection(runContent),
+              wasm,
+            )
           : "_wrapper_continue.lmp";
       if (continuation !== undefined)
         wasm.FS.writeFile(
