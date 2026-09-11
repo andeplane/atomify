@@ -223,6 +223,7 @@ function streamStep() {
       boxMatrix: boxMatrix.buffer,
       origin: origin.buffer,
       dimension: box.dimension,
+      unitStyle: adapter?.getUnitStyle(),
       runMode: native.getRunMode(),
       runStepsDone: native.getRunStepsDone(),
       runStepsTotal: native.getRunStepsTotal(),
@@ -243,8 +244,11 @@ async function load() {
     post({ type: "ready" });
     return;
   }
-  const printLine = (...args: unknown[]) =>
-    post({ type: "printed", text: args.join(" ") });
+  const printLine = (...args: unknown[]) => {
+    const text = args.join(" ");
+    adapter?.observeOutput(text);
+    post({ type: "printed", text });
+  };
 
   // Fetch the atomify emscripten glue (embedded wasm, ~50 MB) once and keep it
   // as a Blob. Load createModule from that same blob URL (?url + @vite-ignore

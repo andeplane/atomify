@@ -105,6 +105,7 @@ export interface WorkerStepData {
   /** 3 float32 box origin. */
   origin: ArrayBuffer;
   dimension: number;
+  unitStyle?: import("../utils/units").UnitStyle;
   runMode: number;
   runStepsDone: number;
   runStepsTotal: number;

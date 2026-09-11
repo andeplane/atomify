@@ -19,6 +19,7 @@ export interface SimulationStatusData {
   computes: { [key: string]: Compute };
   fixes: { [key: string]: Fix };
   variables: { [key: string]: Variable };
+  unitStyle?: import("../utils/units").UnitStyle;
   dimension: number;
   walls: Wall[];
 }
@@ -169,6 +170,7 @@ export const simulationStatusModel: SimulationStatusModel = {
     state.box = undefined;
     state.origo = undefined;
     state.dimension = 3;
+    state.unitStyle = undefined;
     state.walls = [];
   }),
 };

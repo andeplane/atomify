@@ -217,6 +217,7 @@ export const processingModel: ProcessingModel = {
         box: getSimulationBox(lammps, wasm, currentStatus.box),
         origo: getSimulationOrigo(lammps, wasm, currentStatus.origo),
         dimension: lammps.getDimension(),
+        unitStyle: lammps.getUnitStyle?.(),
         timesteps: lammps.getTimesteps(),
         numAtoms: lammps.getNumAtoms(),
         runTimesteps: lammps.getRunTimesteps(),
