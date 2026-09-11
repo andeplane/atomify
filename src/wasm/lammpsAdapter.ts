@@ -132,7 +132,13 @@ class ModifierAdapter implements LMPModifier {
   execute = () => true;
 
   sync = () => {
-    this.snapshot = this.native.syncModifier(this.category, this.name);
+    // A modifier LAMMPS cannot invoke yet (never-initialized compute) throws;
+    // keep the last snapshot rather than surfacing it as a run failure.
+    try {
+      this.snapshot = this.native.syncModifier(this.category, this.name);
+    } catch {
+      /* no data yet */
+    }
   };
 
   getData1DNames = () =>
@@ -635,6 +641,29 @@ export class LammpsAdapter implements LammpsWeb {
    * the proxy replays it through lightweight LMPModifier-shaped objects.
    * Must run in the synchronous step window (touches the heap).
    */
+  /**
+   * Invoke and sync one modifier, treating a LAMMPS error as "no data yet".
+   *
+   * The final snapshot the worker takes after every script (so `run 0`
+   * structure views get a frame) can reach computes LAMMPS never
+   * initialized: a script without any run/minimize never calls init(), so
+   * e.g. `compute rdf` has no neighbor list and invoking it throws "Trying
+   * to build an occasional neighbor list before initialization is
+   * complete". LAMMPS errors are recoverable exceptions in library mode, so
+   * skip that modifier (the caller falls back to its static info) instead of
+   * failing the whole snapshot — and with it the run.
+   */
+  private trySyncModifier(
+    category: ModifierCategory,
+    name: string,
+  ): ModifierSnapshot | null {
+    try {
+      return this.native.syncModifier(category, name);
+    } catch {
+      return null;
+    }
+  }
+
   snapshotModifiers(
     perAtomTarget: { category: ModifierCategory; name: string } | null,
     particleCount: number,
@@ -647,10 +676,9 @@ export class LammpsAdapter implements LammpsWeb {
     this.native.syncModifiers();
     let infos = this.native.listModifiers();
     const hasNativeRadii =
-      this.native.syncModifier("variable", this.radiusFlagName)?.scalar === 1;
+      this.trySyncModifier("variable", this.radiusFlagName)?.scalar === 1;
     let radii: Float32Array | null = null;
-    if (hasNativeRadii) {
-      this.native.syncModifier("variable", this.radiusName);
+    if (hasNativeRadii && this.trySyncModifier("variable", this.radiusName)) {
       const view = this.native.getModifierPerAtom("variable", this.radiusName);
       radii = new Float32Array(
         this.module.HEAPF64.subarray(view.ptr / 8, view.ptr / 8 + view.length),
@@ -665,7 +693,7 @@ export class LammpsAdapter implements LammpsWeb {
     this.modifierInfos = infos;
 
     const modifiers: WorkerModifierData[] = infos.map((info) => {
-      const snap = this.native.syncModifier(info.category, info.name);
+      const snap = this.trySyncModifier(info.category, info.name);
       const series = (snap?.series ?? []).map((s) => {
         const xBase = s.x.ptr / 4;
         const yBase = s.y.ptr / 4;
@@ -703,7 +731,7 @@ export class LammpsAdapter implements LammpsWeb {
     const activeGroups = new Map(
       [...this.groups].filter(
         ([, group]) =>
-          this.native.syncModifier("variable", group.flag)?.scalar === 1,
+          this.trySyncModifier("variable", group.flag)?.scalar === 1,
       ),
     );
     for (const [name] of activeGroups) {
@@ -756,7 +784,7 @@ export class LammpsAdapter implements LammpsWeb {
         continue;
       }
       const group = activeGroups.get(names[bit])!;
-      this.native.syncModifier("variable", group.values);
+      if (!this.trySyncModifier("variable", group.values)) continue;
       const view = this.native.getModifierPerAtom("variable", group.values);
       const values = this.module.HEAPF64.subarray(
         view.ptr / 8,
