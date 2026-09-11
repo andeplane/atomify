@@ -235,6 +235,7 @@ function streamStep() {
       boxMatrix: boxMatrix.buffer,
       origin: origin.buffer,
       dimension: box.dimension,
+      unitStyle: adapter?.getUnitStyle(),
       runMode: native.getRunMode(),
       runStepsDone: native.getRunStepsDone(),
       runStepsTotal: native.getRunStepsTotal(),
@@ -271,6 +272,7 @@ async function load() {
       );
       return;
     }
+    adapter?.observeOutput(text);
     post({ type: "printed", text });
   };
 

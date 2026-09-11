@@ -108,6 +108,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private cBondCount = 0;
   private cStep = 0;
   private cDimension = 3;
+  private cUnitStyle?: import("../utils/units").UnitStyle;
   private cRunMode = 0;
   private cRunStepsDone = 0;
   private cRunStepsTotal = 0;
@@ -286,6 +287,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
     this.cBondCount = step.bondCount;
     this.cStep = step.step;
     this.cDimension = step.dimension;
+    this.cUnitStyle = step.unitStyle;
     this.cRunMode = step.runMode;
     this.cRunStepsDone = step.runStepsDone;
     this.cRunStepsTotal = step.runStepsTotal;
@@ -618,6 +620,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
   }
   getOrigoPointer() {
     return this.origPtr;
+  }
+  getUnitStyle() {
+    return this.cUnitStyle;
   }
   getDimension() {
     return this.cDimension;

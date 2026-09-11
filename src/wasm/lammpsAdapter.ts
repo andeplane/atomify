@@ -1,4 +1,9 @@
 import { GROUP_LABEL_PREFIX } from "../utils/lammpsGroups";
+import {
+  modifierAxisLabels,
+  parseUnitStyle,
+  type UnitStyle,
+} from "../utils/units";
 import { v4 as uuidv4 } from "uuid";
 import type {
   LAMMPSWeb as NativeLammps,
@@ -154,6 +159,14 @@ export class LammpsAdapter implements LammpsWeb {
   private readonly module: AtomifyWasmModule;
   private readonly native: NativeLammps;
 
+  private unitStyle?: UnitStyle;
+  observeOutput(line: string) {
+    const units = parseUnitStyle(line);
+    if (units) this.unitStyle = units;
+  }
+  getUnitStyle() {
+    return this.unitStyle;
+  }
   // Private atom variables expose optional native properties without parsing
   // atom_style commands (hybrid styles and read_restart work too).
   private readonly radiusFlagName = `atomify_radius_flag_${uuidv4().replaceAll("-", "")}`;
@@ -317,6 +330,7 @@ export class LammpsAdapter implements LammpsWeb {
 
   start(): boolean {
     this.groups.clear();
+    this.unitStyle = undefined;
     this.lastError = "";
     this.cancelRequested = false;
     // Startup args are CONSTANT for the module's whole life: Kokkos::initialize
@@ -674,8 +688,13 @@ export class LammpsAdapter implements LammpsWeb {
         isPerAtom: snap?.isPerAtom ?? info.isPerAtom,
         hasScalar: snap?.hasScalar ?? info.hasScalar,
         clearPerSync: snap?.clearPerSync ?? info.clearPerSync,
-        xLabel: snap?.xLabel ?? info.xLabel,
-        yLabel: snap?.yLabel ?? info.yLabel,
+        ...modifierAxisLabels(
+          info.category,
+          info.style,
+          snap?.xLabel ?? info.xLabel,
+          snap?.yLabel ?? info.yLabel,
+          this.unitStyle,
+        ),
         scalar: snap?.scalar ?? 0,
         series,
       };

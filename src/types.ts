@@ -67,6 +67,7 @@ export type LammpsWeb = {
 
   computeBonds: () => number;
   computeParticles: () => number;
+  getUnitStyle?: () => import("./utils/units").UnitStyle | undefined;
   getDimension: () => number;
   getWalls: () => CPPArray<Wall>;
 };

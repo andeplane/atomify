@@ -12,6 +12,7 @@ function fixture() {
   const lammps = {
     getCellMatrixPointer: () => 0,
     getOrigoPointer: () => 48,
+    getUnitStyle: vi.fn(() => "metal"),
     getDimension: () => 3,
     getTimesteps: () => 42,
     getNumAtoms: () => 256,
@@ -53,13 +54,20 @@ describe("post-timestep status publication", () => {
           numAtoms: status.numAtoms,
           memoryUsage: status.memoryUsage,
           runType: status.runType,
+          unitStyle: status.unitStyle,
         });
         previous = status;
       }
     });
     await store.getActions().processing.runPostTimestep(false);
     expect(observed).toEqual([
-      { timesteps: 42, numAtoms: 256, memoryUsage: 8192, runType: "Dynamics" },
+      {
+        timesteps: 42,
+        numAtoms: 256,
+        memoryUsage: 8192,
+        runType: "Dynamics",
+        unitStyle: "metal",
+      },
     ]);
     expect(store.getState().simulationStatus).toMatchObject({
       runTimesteps: 40,
