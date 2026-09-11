@@ -1,3 +1,4 @@
+import { installParticleAttributes } from "../rendering/particleAttributes";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 
@@ -273,6 +274,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
           });
         },
       });
+      installParticleAttributes(newVisualizer);
       setVisualizer(newVisualizer);
       setLoading(false);
       newVisualizer.materials.particles.shininess = 50;

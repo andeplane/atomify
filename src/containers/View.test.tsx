@@ -10,6 +10,10 @@ import type { StoreModel } from "../store/model";
 import type { Compute, Fix, Variable, Wall } from "../types";
 import type Modifier from "../modifiers/modifier";
 
+vi.mock("../rendering/particleAttributes", () => ({
+  installParticleAttributes: vi.fn(),
+}));
+
 // Mock omovi: prevents WebGL/canvas errors in jsdom
 vi.mock("omovi", () => ({
   Visualizer: vi.fn(),
