@@ -3,6 +3,8 @@ import { setSyncFrequency } from "../wasm/wasmInstance";
 
 export interface RenderSettings {
   ssao: boolean;
+  /** Defaults to detailed when loading older saved settings. */
+  ssaoQuality?: "detailed" | "fast";
   ssaoRadius: number;
   ssaoIntensity: number;
   ambientLightIntensity: number;

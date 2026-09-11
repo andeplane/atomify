@@ -1,3 +1,4 @@
+import { applyAmbientOcclusion } from "../utils/ambientOcclusion";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 
@@ -287,6 +288,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
       });
 
       // Apply lighting settings
+      applyAmbientOcclusion(newVisualizer, renderSettings);
       applyLighting(newVisualizer, renderSettings);
 
       // Check for WebXR support and show VR button if available
@@ -382,6 +384,9 @@ const View = ({ visible, pane = false }: ViewProps) => {
           },
         });
       }
+
+      if (visualizer.isPostProcessingEnabled())
+        applyAmbientOcclusion(visualizer, renderSettings);
 
       // Update lighting
       applyLighting(visualizer, renderSettings);
