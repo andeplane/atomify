@@ -12,6 +12,7 @@ import * as THREE from "three";
 import SyncFixesModifier from "../modifiers/syncfixesmodifier";
 import SyncVariablesModifier from "../modifiers/syncvariablesmodifier";
 import { StoreModel } from "./model";
+import type { SimulationStatusData } from "./simulationstatus";
 
 const getSimulationBox = (
   lammps: LammpsWeb,
@@ -30,7 +31,9 @@ const getSimulationBox = (
     const elements = currentBox.elements;
     let areEqual = true;
     for (let i = 0; i < 9; i++) {
-      if (elements[i] !== cellMatrixSubArray[i]) {
+      // THREE stores column-major elements; the engine sends row-major.
+      const columnMajorIndex = (i % 3) * 3 + Math.floor(i / 3);
+      if (elements[columnMajorIndex] !== cellMatrixSubArray[i]) {
         areEqual = false;
         break;
       }
@@ -193,15 +196,6 @@ export const processingModel: ProcessingModel = {
       );
       allActions.render.setParticleStylesUpdated(false);
 
-      allActions.simulationStatus.setComputes(modifierOutput.computes);
-      allActions.simulationStatus.setFixes(modifierOutput.fixes);
-      allActions.simulationStatus.setVariables(modifierOutput.variables);
-      if (modifierOutput.bonds) {
-        allActions.simulationStatus.setNumBonds(modifierOutput.bonds.count);
-      } else {
-        allActions.simulationStatus.setNumBonds(0);
-      }
-
       if (everything || getStoreState().app.selectedMenu === "view") {
         if (
           modifierOutput.particles &&
@@ -214,17 +208,22 @@ export const processingModel: ProcessingModel = {
         }
       }
 
-      allActions.simulationStatus.setBox(
-        getSimulationBox(lammps, wasm, getStoreState().simulationStatus.box),
-      );
-      allActions.simulationStatus.setOrigo(
-        getSimulationOrigo(
-          lammps,
-          wasm,
-          getStoreState().simulationStatus.origo,
-        ),
-      );
-      allActions.simulationStatus.setDimension(lammps.getDimension());
+      const currentStatus = getStoreState().simulationStatus;
+      const snapshot: Partial<SimulationStatusData> = {
+        computes: modifierOutput.computes,
+        fixes: modifierOutput.fixes,
+        variables: modifierOutput.variables,
+        numBonds: modifierOutput.bonds?.count ?? 0,
+        box: getSimulationBox(lammps, wasm, currentStatus.box),
+        origo: getSimulationOrigo(lammps, wasm, currentStatus.origo),
+        dimension: lammps.getDimension(),
+        timesteps: lammps.getTimesteps(),
+        numAtoms: lammps.getNumAtoms(),
+        runTimesteps: lammps.getRunTimesteps(),
+        runTotalTimesteps: lammps.getRunTotalTimesteps(),
+        lastCommand: lammps.getLastCommand(),
+        memoryUsage: lammps.getMemoryUsage(),
+      };
       const wallsArray = lammps.getWalls();
       const walls: Wall[] = [];
       for (let i = 0; i < wallsArray.size(); i++) {
@@ -237,29 +236,19 @@ export const processingModel: ProcessingModel = {
         });
       }
       wallsArray.delete();
-      allActions.simulationStatus.setWalls(walls);
-      allActions.simulationStatus.setTimesteps(lammps.getTimesteps());
-      allActions.simulationStatus.setNumAtoms(lammps.getNumAtoms());
-      allActions.simulationStatus.setRunTimesteps(lammps.getRunTimesteps());
-      allActions.simulationStatus.setRunTotalTimesteps(
-        lammps.getRunTotalTimesteps(),
-      );
-      allActions.simulationStatus.setLastCommand(lammps.getLastCommand());
-      allActions.simulationStatus.setMemoryUsage(lammps.getMemoryUsage());
-
-      // LAMMPS whichflag: 0 = idle, 1 = dynamics, 2 = minimization
+      snapshot.walls = walls;
+      // Timings are only meaningful during dynamics/minimization. Preserve
+      // the last estimate at idle, matching the existing summary behavior.
       const whichFlag = lammps.getWhichFlag();
-      allActions.simulationStatus.setRunType(
-        whichFlag === 1 ? "Dynamics" : whichFlag === 2 ? "Minimization" : "",
-      );
-
+      snapshot.runType =
+        whichFlag === 1 ? "Dynamics" : whichFlag === 2 ? "Minimization" : "";
       if (whichFlag !== 0) {
-        // These values are only valid while a run is active (whichFlag != 0)
-        allActions.simulationStatus.setTimestepsPerSecond(
-          lammps.getTimestepsPerSecond(),
-        );
-        allActions.simulationStatus.setRemainingTime(lammps.getCPURemain());
+        snapshot.timestepsPerSecond = lammps.getTimestepsPerSecond();
+        snapshot.remainingTime = lammps.getCPURemain();
       }
+      // One notification gives every summary subscriber a coherent frame,
+      // instead of rerunning selectors for each individual field.
+      allActions.simulationStatus.setSnapshot(snapshot);
     },
   ),
   runPostTimestepRendering: thunk(
