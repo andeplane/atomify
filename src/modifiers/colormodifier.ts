@@ -261,6 +261,7 @@ class ColorModifier extends Modifier {
     const particles = output.particles;
     const particleStyles = input.renderState.particleStyles;
     const visualizer = input.renderState.visualizer;
+    const nativeRadii = input.lammps.getParticleRadii?.();
 
     for (let i = 0; i < particles.count; i++) {
       const realIndex = particles.indices[i];
@@ -269,7 +270,9 @@ class ColorModifier extends Modifier {
       if (!atomType) {
         atomType = defaultAtomTypes[type % defaultAtomTypes.length];
       }
-      const radius = 0.33 * input.renderState.particleRadius * atomType.radius;
+      const radius = nativeRadii
+        ? nativeRadii[i] * input.renderState.particleRadius
+        : 0.33 * input.renderState.particleRadius * atomType.radius;
       visualizer.setRadius(realIndex, radius);
       visualizer.setColor(realIndex, {
         r: atomType.color.r,

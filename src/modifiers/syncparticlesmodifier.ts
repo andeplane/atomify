@@ -78,6 +78,15 @@ class SyncParticlesModifier extends Modifier {
       geometry.getAttribute("particlePosition").needsUpdate = true;
       geometry.getAttribute("particleIndex").needsUpdate = true;
     }
+    const radii = input.lammps.getParticleRadii?.();
+    if (radii && input.renderState.visualizer) {
+      for (let i = 0; i < numParticles; i++) {
+        input.renderState.visualizer.setRadius(
+          idSubarray[i],
+          radii[i] * input.renderState.particleRadius,
+        );
+      }
+    }
   };
 }
 

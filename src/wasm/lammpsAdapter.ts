@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from "uuid";
 import type {
   LAMMPSWeb as NativeLammps,
   ParticleSnapshot,
@@ -6,7 +7,13 @@ import type {
   ModifierInfo,
   ModifierSnapshot,
 } from "lammps.js";
-import { LammpsWeb, LMPModifier, LMPData1D, ModifierType, Wall } from "../types";
+import {
+  LammpsWeb,
+  LMPModifier,
+  LMPData1D,
+  ModifierType,
+  Wall,
+} from "../types";
 import { KOKKOS_THREADS } from "../utils/kokkos";
 import { AtomifyWasmModule } from "./types";
 import { getCancel, setCancel, getPausedFlag } from "./wasmInstance";
@@ -145,6 +152,11 @@ class ModifierAdapter implements LMPModifier {
 export class LammpsAdapter implements LammpsWeb {
   private readonly module: AtomifyWasmModule;
   private readonly native: NativeLammps;
+
+  // Private atom variables expose optional native properties without parsing
+  // atom_style commands (hybrid styles and read_restart work too).
+  private readonly radiusFlagName = `atomify_radius_flag_${uuidv4().replaceAll("-", "")}`;
+  private readonly radiusName = `${this.radiusFlagName}_values`;
 
   private particleSnapshot?: ParticleSnapshot;
   private bondSnapshot?: BondSnapshot;
@@ -367,6 +379,13 @@ export class LammpsAdapter implements LammpsWeb {
     // leaves the global cancel flag set; don't let it abort this run.
     setCancel(false);
 
+    // Definitions survive LAMMPS clear and evaluate against the current atom
+    // style. Define them before execution: commands are forbidden mid-run.
+    this.native.runCommand(
+      `variable ${this.radiusFlagName} equal extract_setting(radius_flag)`,
+    );
+    this.native.runCommand(`variable ${this.radiusName} atom radius`);
+
     // Installed globally (works before the box exists), so every run in
     // every include'd file fires the step callback — no script injection.
     this.native.installAsyncFix(SYNC_FIX_ID, this.syncFrequency);
@@ -586,9 +605,26 @@ export class LammpsAdapter implements LammpsWeb {
    */
   snapshotModifiers(
     perAtomTarget: { category: ModifierCategory; name: string } | null,
-  ): { modifiers: WorkerModifierData[]; perAtom: WorkerPerAtomData | null } {
+  ): {
+    modifiers: WorkerModifierData[];
+    perAtom: WorkerPerAtomData | null;
+    radii: Float32Array | null;
+  } {
     this.native.syncModifiers();
-    const infos = this.native.listModifiers();
+    let infos = this.native.listModifiers();
+    const hasNativeRadii =
+      this.native.syncModifier("variable", this.radiusFlagName)?.scalar === 1;
+    let radii: Float32Array | null = null;
+    if (hasNativeRadii) {
+      this.native.syncModifier("variable", this.radiusName);
+      const view = this.native.getModifierPerAtom("variable", this.radiusName);
+      radii = new Float32Array(
+        this.module.HEAPF64.subarray(view.ptr / 8, view.ptr / 8 + view.length),
+      );
+    }
+    infos = infos.filter(
+      (i) => i.name !== this.radiusFlagName && i.name !== this.radiusName,
+    );
     this.modifierInfos = infos;
 
     const modifiers: WorkerModifierData[] = infos.map((info) => {
@@ -599,8 +635,12 @@ export class LammpsAdapter implements LammpsWeb {
         return {
           name: s.name,
           label: s.label,
-          x: Array.from(this.module.HEAPF32.subarray(xBase, xBase + s.x.length)),
-          y: Array.from(this.module.HEAPF32.subarray(yBase, yBase + s.y.length)),
+          x: Array.from(
+            this.module.HEAPF32.subarray(xBase, xBase + s.x.length),
+          ),
+          y: Array.from(
+            this.module.HEAPF32.subarray(yBase, yBase + s.y.length),
+          ),
         };
       });
       return {
@@ -642,7 +682,7 @@ export class LammpsAdapter implements LammpsWeb {
       }
     }
 
-    return { modifiers, perAtom };
+    return { modifiers, perAtom, radii };
   }
 
   getCompute(name: string): LMPModifier {
