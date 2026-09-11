@@ -47,6 +47,7 @@ export type LammpsWeb = {
   }>;
   getMemoryUsage: () => number;
 
+  getParticleRadii?: () => Float32Array | null;
   getPositionsPointer: () => number;
   getIdPointer: () => number;
   getTypePointer: () => number;

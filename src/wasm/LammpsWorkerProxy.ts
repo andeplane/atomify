@@ -99,6 +99,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private seriesPointers = new Map<string, SeriesPointers[]>();
 
   // --- Cached state, refreshed from worker step / runFinished events ---
+  private cRadii: Float32Array | null = null;
   private cCount = 0;
   private cBondCount = 0;
   private cStep = 0;
@@ -277,6 +278,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
     }
     this.ingestModifiers(step);
 
+    this.cRadii = step.radii ? new Float32Array(step.radii) : null;
     this.cCount = step.count;
     this.cBondCount = step.bondCount;
     this.cStep = step.step;
@@ -591,6 +593,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
 
   computeParticles() {
     return this.cCount;
+  }
+  getParticleRadii() {
+    return this.cRadii;
   }
   getPositionsPointer() {
     return this.posPtr;

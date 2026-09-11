@@ -92,6 +92,8 @@ export interface WorkerStepData {
   types: ArrayBuffer;
   /** count int32 atom ids. */
   ids: ArrayBuffer;
+  /** Native radii in simulation length units, ordered with positions; absent for atomic styles. */
+  radii?: ArrayBuffer | null;
   /** Number of rendered bonds this step (0 when none). */
   bondCount: number;
   /** 3 * bondCount float32 xyz of each bond's first endpoint. */

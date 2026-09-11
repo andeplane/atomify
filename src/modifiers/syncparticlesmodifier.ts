@@ -69,6 +69,15 @@ class SyncParticlesModifier extends Modifier {
       newParticles.mesh.count = numParticles;
     }
 
+    const radii = input.lammps.getParticleRadii?.();
+    if (radii && input.renderState.visualizer) {
+      for (let i = 0; i < numParticles; i++) {
+        input.renderState.visualizer.setRadius(
+          idSubarray[i],
+          radii[i] * input.renderState.particleRadius,
+        );
+      }
+    }
     newParticles.markNeedsUpdate();
   };
 }
