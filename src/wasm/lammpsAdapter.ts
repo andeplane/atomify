@@ -1,3 +1,8 @@
+import {
+  modifierAxisLabels,
+  parseUnitStyle,
+  type UnitStyle,
+} from "../utils/units";
 import type {
   LAMMPSWeb as NativeLammps,
   ParticleSnapshot,
@@ -6,7 +11,13 @@ import type {
   ModifierInfo,
   ModifierSnapshot,
 } from "lammps.js";
-import { LammpsWeb, LMPModifier, LMPData1D, ModifierType, Wall } from "../types";
+import {
+  LammpsWeb,
+  LMPModifier,
+  LMPData1D,
+  ModifierType,
+  Wall,
+} from "../types";
 import { KOKKOS_THREADS } from "../utils/kokkos";
 import { AtomifyWasmModule } from "./types";
 import { getCancel, setCancel, getPausedFlag } from "./wasmInstance";
@@ -145,6 +156,15 @@ class ModifierAdapter implements LMPModifier {
 export class LammpsAdapter implements LammpsWeb {
   private readonly module: AtomifyWasmModule;
   private readonly native: NativeLammps;
+
+  private unitStyle?: UnitStyle;
+  observeOutput(line: string) {
+    const units = parseUnitStyle(line);
+    if (units) this.unitStyle = units;
+  }
+  getUnitStyle() {
+    return this.unitStyle;
+  }
 
   private particleSnapshot?: ParticleSnapshot;
   private bondSnapshot?: BondSnapshot;
@@ -287,6 +307,7 @@ export class LammpsAdapter implements LammpsWeb {
   }
 
   start(): boolean {
+    this.unitStyle = undefined;
     this.lastError = "";
     this.cancelRequested = false;
     // Startup args are CONSTANT for the module's whole life: Kokkos::initialize
@@ -597,8 +618,12 @@ export class LammpsAdapter implements LammpsWeb {
         return {
           name: s.name,
           label: s.label,
-          x: Array.from(this.module.HEAPF32.subarray(xBase, xBase + s.x.length)),
-          y: Array.from(this.module.HEAPF32.subarray(yBase, yBase + s.y.length)),
+          x: Array.from(
+            this.module.HEAPF32.subarray(xBase, xBase + s.x.length),
+          ),
+          y: Array.from(
+            this.module.HEAPF32.subarray(yBase, yBase + s.y.length),
+          ),
         };
       });
       return {
@@ -609,8 +634,13 @@ export class LammpsAdapter implements LammpsWeb {
         isPerAtom: snap?.isPerAtom ?? info.isPerAtom,
         hasScalar: snap?.hasScalar ?? info.hasScalar,
         clearPerSync: snap?.clearPerSync ?? info.clearPerSync,
-        xLabel: snap?.xLabel ?? info.xLabel,
-        yLabel: snap?.yLabel ?? info.yLabel,
+        ...modifierAxisLabels(
+          info.category,
+          info.style,
+          snap?.xLabel ?? info.xLabel,
+          snap?.yLabel ?? info.yLabel,
+          this.unitStyle,
+        ),
         scalar: snap?.scalar ?? 0,
         series,
       };

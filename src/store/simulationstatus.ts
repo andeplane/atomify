@@ -19,6 +19,11 @@ export interface SimulationStatusModel {
   computes: { [key: string]: Compute };
   fixes: { [key: string]: Fix };
   variables: { [key: string]: Variable };
+  unitStyle?: import("../utils/units").UnitStyle;
+  setUnitStyle: Action<
+    SimulationStatusModel,
+    import("../utils/units").UnitStyle | undefined
+  >;
   dimension: number;
   walls: Wall[];
   setTimesteps: Action<SimulationStatusModel, number>;
@@ -60,6 +65,9 @@ export const simulationStatusModel: SimulationStatusModel = {
   computes: {},
   fixes: {},
   variables: {},
+  setUnitStyle: action((state, value) => {
+    state.unitStyle = value;
+  }),
   dimension: 3,
   walls: [],
   setComputes: action((state, value: { [key: string]: Compute }) => {
@@ -162,6 +170,7 @@ export const simulationStatusModel: SimulationStatusModel = {
     state.box = undefined;
     state.origo = undefined;
     state.dimension = 3;
+    state.unitStyle = undefined;
     state.walls = [];
   }),
 };

@@ -1,3 +1,4 @@
+import { UNIT_SYSTEMS } from "../utils/units";
 import { Button } from "antd";
 import { Particles } from "omovi";
 import { useMemo, useState, useEffect, useRef } from "react";
@@ -144,6 +145,10 @@ const SelectedAtomsInfo = ({
   const prevRunningRef = useRef<boolean>(false);
 
   // Get running state from store
+  const unitStyle = useStoreState((state) => state.simulationStatus.unitStyle);
+  const lengthUnit = unitStyle
+    ? UNIT_SYSTEMS[unitStyle].length
+    : "simulation units";
   const running = useStoreState((state) => state.simulation.running);
 
   // Clear time-series data when simulation starts (running goes from false to true)
@@ -414,7 +419,7 @@ const SelectedAtomsInfo = ({
               <MeasurementRow
                 label="Distance"
                 value={distance.toFixed(3)}
-                unit="Å"
+                unit={lengthUnit}
                 plotKey={distanceKey}
                 timeSeriesData={timeSeriesData}
                 onPlotClick={setVisiblePlot}
@@ -433,7 +438,7 @@ const SelectedAtomsInfo = ({
                 atomData[0].position,
                 atomData[1].position,
               ).toFixed(3),
-              unit: "Å",
+              unit: lengthUnit,
               plotKey: getCanonicalDistanceKey(
                 atomData[0].atomId,
                 atomData[1].atomId,
@@ -445,7 +450,7 @@ const SelectedAtomsInfo = ({
                 atomData[1].position,
                 atomData[2].position,
               ).toFixed(3),
-              unit: "Å",
+              unit: lengthUnit,
               plotKey: getCanonicalDistanceKey(
                 atomData[1].atomId,
                 atomData[2].atomId,
@@ -457,7 +462,7 @@ const SelectedAtomsInfo = ({
                 atomData[0].position,
                 atomData[2].position,
               ).toFixed(3),
-              unit: "Å",
+              unit: lengthUnit,
               plotKey: getCanonicalDistanceKey(
                 atomData[0].atomId,
                 atomData[2].atomId,
@@ -596,9 +601,9 @@ const SelectedAtomsInfo = ({
             <Figure
               plotData={{
                 data1D: timeSeriesData[visiblePlot],
-                xLabel: "Time",
+                xLabel: "Timestep",
                 yLabel: visiblePlot.startsWith("distance")
-                  ? "Distance (Å)"
+                  ? `Distance (${lengthUnit})`
                   : "Angle (°)",
                 name: getPlotName(visiblePlot),
               }}

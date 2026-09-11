@@ -225,6 +225,7 @@ export const processingModel: ProcessingModel = {
         ),
       );
       allActions.simulationStatus.setDimension(lammps.getDimension());
+      allActions.simulationStatus.setUnitStyle(lammps.getUnitStyle?.());
       const wallsArray = lammps.getWalls();
       const walls: Wall[] = [];
       for (let i = 0; i < wallsArray.size(); i++) {

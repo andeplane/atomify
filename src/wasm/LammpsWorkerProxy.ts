@@ -1,4 +1,10 @@
-import { LammpsWeb, LMPModifier, LMPData1D, ModifierType, Wall } from "../types";
+import {
+  LammpsWeb,
+  LMPModifier,
+  LMPData1D,
+  ModifierType,
+  Wall,
+} from "../types";
 import type { ModifierCategory } from "lammps.js";
 import { AtomifyWasmModule } from "./types";
 import { getCancel, setCancel } from "./wasmInstance";
@@ -97,6 +103,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private cBondCount = 0;
   private cStep = 0;
   private cDimension = 3;
+  private cUnitStyle?: import("../utils/units").UnitStyle;
   private cRunMode = 0;
   private cRunStepsDone = 0;
   private cRunStepsTotal = 0;
@@ -123,10 +130,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private readonly moduleBridge: AtomifyWasmModule;
 
   constructor() {
-    this.worker = new Worker(
-      new URL("./lammps.worker.ts", import.meta.url),
-      { type: "module" },
-    );
+    this.worker = new Worker(new URL("./lammps.worker.ts", import.meta.url), {
+      type: "module",
+    });
     this.worker.onmessage = (ev: MessageEvent<WorkerEvent>) =>
       this.handleEvent(ev.data);
     this.allocate(4096, 4096, 4096);
@@ -275,6 +281,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
     this.cBondCount = step.bondCount;
     this.cStep = step.step;
     this.cDimension = step.dimension;
+    this.cUnitStyle = step.unitStyle;
     this.cRunMode = step.runMode;
     this.cRunStepsDone = step.runStepsDone;
     this.cRunStepsTotal = step.runStepsTotal;
@@ -312,7 +319,10 @@ export class LammpsWorkerProxy implements LammpsWeb {
           numPoints: series.x.length,
         });
       }
-      this.seriesPointers.set(`${modifier.category}:${modifier.name}`, pointers);
+      this.seriesPointers.set(
+        `${modifier.category}:${modifier.name}`,
+        pointers,
+      );
     }
 
     // Per-atom float64 values for the active coloring compute.
@@ -596,6 +606,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
   }
   getOrigoPointer() {
     return this.origPtr;
+  }
+  getUnitStyle() {
+    return this.cUnitStyle;
   }
   getDimension() {
     return this.cDimension;

@@ -35,14 +35,23 @@ export type WorkerCommand =
   // Which per-atom compute (if any) the main thread is coloring by. The worker
   // streams that compute's per-atom values each step so color-by-compute works;
   // null streams none (the common case), avoiding needless per-atom invocation.
-  | { type: "setPerAtomModifier"; category: ModifierCategory; name: string | null }
+  | {
+      type: "setPerAtomModifier";
+      category: ModifierCategory;
+      name: string | null;
+    }
   | { type: "runCommand"; command: string }
   // Read the files under `dir` out of the worker's wasm FS (the run-outputs
   // data path, ADR-001 §5). MEMFS reads are pure JS, so this is safe even
   // while the module is asyncify-suspended mid-run; files larger than
   // maxBytes are listed in `skipped` instead of transferred (the caller sends
   // maxBytes: undefined for the final end-of-run snapshot).
-  | { type: "snapshotWorkdir"; requestId: number; dir: string; maxBytes?: number };
+  | {
+      type: "snapshotWorkdir";
+      requestId: number;
+      dir: string;
+      maxBytes?: number;
+    };
 
 /** One compute/fix/variable's streamed snapshot (scalar + 1D series). */
 export interface WorkerModifierData {
@@ -94,6 +103,7 @@ export interface WorkerStepData {
   /** 3 float32 box origin. */
   origin: ArrayBuffer;
   dimension: number;
+  unitStyle?: import("../utils/units").UnitStyle;
   runMode: number;
   runStepsDone: number;
   runStepsTotal: number;
