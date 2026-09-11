@@ -1,3 +1,4 @@
+import { continuationScript } from "../utils/continuation";
 import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
 import { StoreModel } from "./model";
 import { LammpsWeb } from "../types";
@@ -199,7 +200,7 @@ export interface SimulationModel {
   syncFilesWasm: Thunk<SimulationModel, string | undefined>;
   run: Thunk<
     SimulationModel,
-    undefined | void,
+    { continuationSteps: number } | undefined | void,
     unknown,
     StoreModel,
     Promise<
@@ -387,12 +388,16 @@ export const simulationModel: SimulationModel = {
 
       const allActions = getStoreActions() as Actions<StoreModel>;
 
-      allActions.render.resetParticleStyles();
-      allActions.simulationStatus.reset();
+      const continuation = payload?.continuationSteps;
+      if (continuation !== undefined) continuationScript(continuation);
+      if (continuation === undefined) {
+        allActions.render.resetParticleStyles();
+        allActions.simulationStatus.reset();
+        actions.resetLammpsOutput();
+        await actions.syncFilesWasm(undefined);
+      }
       actions.setShowConsole(false);
-      actions.resetLammpsOutput();
-
-      await actions.syncFilesWasm(undefined);
+      actions.setLastError(undefined);
 
       // Guard before Simulation.Start/time_event fire: an aborted run must
       // not leave an unmatched Start or a stale Stop timer that would be
@@ -407,14 +412,15 @@ export const simulationModel: SimulationModel = {
         return;
       }
 
-      lammps.start();
+      if (continuation === undefined) lammps.start();
+      actions.setPaused(false);
       actions.setRunning(true);
       // simulationId is the curated example id or the project dir name —
       // the Mixpanel dashboard breaks simulations down by it.
       const simulationId = simulation.metricsId;
       track("Simulation.Start", { simulationId });
       time_event("Simulation.Stop");
-      if (inputScriptFile.content) {
+      if (continuation === undefined && inputScriptFile.content) {
         actions.extractAndApplyAtomifyCommands(inputScriptFile.content);
       }
 
@@ -426,7 +432,15 @@ export const simulationModel: SimulationModel = {
       const runContent = scriptOptsIntoKokkos(rawContent)
         ? rawContent
         : prepareScriptForSerialStyles(rawContent, { isMainScript: true });
-      const scriptToRun = prepareVarsScript(simulation, runContent, wasm);
+      const scriptToRun =
+        continuation === undefined
+          ? prepareVarsScript(simulation, runContent, wasm)
+          : "_wrapper_continue.lmp";
+      if (continuation !== undefined)
+        wasm.FS.writeFile(
+          `/${simulation.id}/${scriptToRun}`,
+          continuationScript(continuation),
+        );
 
       let errorMessage: string | undefined = undefined;
       const startTime = performance.now();
