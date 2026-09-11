@@ -68,7 +68,29 @@ const SimulationComponent = () => {
 
   useEffect(() => {
     const onKeyDown = (ev: KeyboardEvent) => {
-      if (selectedMenu !== "view") {
+      // Shortcuts belong to the viewport, not text entry or modal controls.
+      const path = ev.composedPath();
+      const interacting = path.some(
+        (target) =>
+          target instanceof HTMLElement &&
+          (target.isContentEditable ||
+            target.matches(
+              'input, textarea, select, button, a[href], [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="slider"], [role="spinbutton"]',
+            )),
+      );
+      if (
+        selectedMenu !== "view" ||
+        interacting ||
+        ev.defaultPrevented ||
+        ev.isComposing ||
+        ev.repeat ||
+        ev.ctrlKey ||
+        ev.metaKey ||
+        ev.altKey ||
+        document.querySelector(
+          '[role="dialog"][aria-modal="true"], dialog[open]',
+        )
+      ) {
         return;
       }
 
@@ -93,6 +115,7 @@ const SimulationComponent = () => {
       }
 
       if (running && ev.key === " ") {
+        ev.preventDefault();
         setPaused(!paused);
       }
 
