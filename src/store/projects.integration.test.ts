@@ -146,6 +146,73 @@ describe("projects store integration", () => {
   });
 
   describe("full run loop", () => {
+    it("rejects stale and invalid continuations without resetting the engine or allocating runs", async () => {
+      const engine = createFakeEngine();
+      const start = vi.spyOn(engine.lammps, "start");
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store
+        .getActions()
+        .projects.createProject({
+          displayName: "Continue",
+          files: [{ fileName: "in.lmp", content: SCRIPT }],
+        });
+      await store.getActions().projects.startRuns([runRequest()]);
+      expect(start).toHaveBeenCalledTimes(1);
+      for (const continueFrom of [
+        { runId: "run-001", steps: 0 },
+        { runId: "run-999", steps: 10 },
+      ]) {
+        await store
+          .getActions()
+          .projects.startRuns([runRequest({ continueFrom })]);
+        expect(store.getState().projects.activeRun).toBeUndefined();
+        expect(start).toHaveBeenCalledTimes(1);
+        expect(engine.runFilePaths).toHaveLength(1);
+      }
+      expect(
+        await libraryStorage.stat(activeDirName(store), "runs/run-002"),
+      ).toBeNull();
+      expect(store.getState().projects.residentRun?.runId).toBe("run-001");
+    });
+
+    it("continues using the resident directory and immutable parent inputs", async () => {
+      const engine = createFakeEngine();
+      const start = vi.spyOn(engine.lammps, "start");
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store
+        .getActions()
+        .projects.createProject({
+          displayName: "Continue",
+          files: [{ fileName: "in.lmp", content: SCRIPT }],
+        });
+      await store.getActions().projects.startRuns([runRequest()]);
+      const dir = activeDirName(store);
+      const parent = await readRunMeta(libraryStorage, dir, "run-001");
+      await store
+        .getActions()
+        .projects.writeFile({ path: "in.lmp", content: "different source" });
+      await store
+        .getActions()
+        .projects.startRuns([
+          runRequest({ continueFrom: { runId: "run-001", steps: 20 } }),
+        ]);
+      expect(start).toHaveBeenCalledTimes(1);
+      expect(engine.runFilePaths[1]).toBe(
+        `/${dir}/runs/run-001/_wrapper_continue.lmp`,
+      );
+      expect(await readRunMeta(libraryStorage, dir, "run-001")).toEqual(parent);
+      expect(await libraryStorage.read(dir, "runs/run-002/in.lmp")).toBe(
+        SCRIPT,
+      );
+      expect(
+        await libraryStorage.read(dir, "runs/run-002/in.continue-run-002"),
+      ).toContain("run 20");
+      expect(store.getState().projects.residentRun).toMatchObject({
+        runId: "run-002",
+        workdirId: `${dir}/runs/run-001`,
+      });
+    });
+
     it("records snapshot, run.json, outputs, and clears activeRun after a completed run", async () => {
       const engine = createFakeEngine();
       const { store, libraryStorage } = await createTestStore(engine);

@@ -12,6 +12,10 @@ import type Modifier from "../modifiers/modifier";
 
 vi.mock("../rendering/particleAttributes", () => ({
   installParticleAttributes: vi.fn(),
+  syncParticleAttributes: vi.fn(),
+}));
+vi.mock("../utils/ambientOcclusion", () => ({
+  applyAmbientOcclusion: vi.fn(),
 }));
 
 // Mock omovi: prevents WebGL/canvas errors in jsdom
@@ -526,7 +530,9 @@ function createDefaultMockState() {
 
 function createDefaultMockActions() {
   return {
+    processing: { runPostTimestepRendering: vi.fn() },
     render: {
+      setParticleStylesUpdated: vi.fn(),
       // Mirrors the real action: updates mockState so subsequent renders
       // see the newly created visualizer and don't re-trigger creation.
       setVisualizer: vi.fn(

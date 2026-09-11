@@ -304,6 +304,41 @@ const SettingsModal = ({
               }}
             >
               {checkboxRow("ssao", "Ambient occlusion (SSAO)")}
+              <label
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "8px 0",
+                  color: "var(--text)",
+                  fontSize: 14,
+                }}
+              >
+                Occlusion quality
+                <select
+                  data-testid="render-ssao-quality"
+                  disabled={!renderSettings.ssao}
+                  value={renderSettings.ssaoQuality ?? "detailed"}
+                  onChange={(event) =>
+                    setRenderSettings({
+                      ...renderSettings,
+                      ssaoQuality:
+                        event.target.value === "fast" ? "fast" : "detailed",
+                    })
+                  }
+                  style={{
+                    background: "var(--surface-2)",
+                    color: "var(--text)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 6,
+                    padding: 8,
+                  }}
+                >
+                  <option value="detailed">Detailed — smoother shadows</option>
+                  <option value="fast">Faster — fewer samples</option>
+                </select>
+              </label>
               {checkboxRow("showSimulationBox", "Show simulation box")}
               {checkboxRow("showWalls", "Show walls")}
               {checkboxRow("orthographic", "Orthographic camera")}
