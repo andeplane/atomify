@@ -87,6 +87,7 @@ export interface CreateProjectPayload {
 }
 
 export interface RunRequest {
+  viewOnly?: boolean;
   dirName: string;
   quick: boolean;
   inputScript: string;
@@ -1127,6 +1128,7 @@ export const projectsModel: ProjectsModel = {
     );
     const snapshotFiles = new Set(copied);
     let runMeta: RunMeta = {
+      ...(request.viewOnly ? { viewOnly: true } : {}),
       schemaVersion: 1,
       id: runId,
       inputScript: request.inputScript,

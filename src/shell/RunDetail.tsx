@@ -28,6 +28,7 @@ const CONSOLE_COLLAPSED_KEY = "atomify_run_console_collapsed";
 
 const RunDetail = ({ runId }: { runId: string }) => {
   const active = useStoreState((state) => state.projects.active);
+  const loadedSimulationId = useStoreState((s) => s.simulation.simulation?.id);
   const activeRun = useStoreState((state) => state.projects.activeRun);
   const lammpsOutput = useStoreState((state) => state.simulation.lammpsOutput);
   const runTimesteps = useStoreState(
@@ -65,6 +66,12 @@ const RunDetail = ({ runId }: { runId: string }) => {
   const entry = active?.runs.find((run) => run.runId === runId);
   const meta = entry?.meta ?? null;
   const live = activeRun?.runId === runId && activeRun?.dirName === dirName;
+
+  const viewStructure =
+    meta?.viewOnly &&
+    meta.status === "completed" &&
+    !activeRun &&
+    loadedSimulationId === `${dirName}/runs/${runId}`;
 
   const [log, setLog] = useState<string[] | null>(null);
   const [frameUrl, setFrameUrl] = useState<string | null>(null);
@@ -430,7 +437,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
                 }
           }
         >
-          {live ? (
+          {live || viewStructure ? (
             <View visible pane />
           ) : frameUrl ? (
             <img

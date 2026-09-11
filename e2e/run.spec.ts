@@ -52,10 +52,13 @@ test("run a simulation end-to-end and inspect the recorded run", async ({
     // The console defaults to collapsed; expand it to watch the live output
     // (the choice is remembered for the session, so later steps see it open).
     await page.getByTestId("run-console-toggle").click();
-    // Live console follows the engine output.
-    await expect(page.getByTestId("run-console")).toContainText("LAMMPS", {
-      timeout: 60_000,
-    });
+    // Run setup survives the per-run buffer reset; the engine banner does not.
+    await expect(page.getByTestId("run-console")).toContainText(
+      "Created 108 atoms",
+      {
+        timeout: 60_000,
+      },
+    );
   });
 
   await test.step("live analysis lists computes and opens the figure", async () => {
