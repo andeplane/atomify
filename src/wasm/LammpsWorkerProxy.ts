@@ -1,4 +1,10 @@
-import { LammpsWeb, LMPModifier, LMPData1D, ModifierType, Wall } from "../types";
+import {
+  LammpsWeb,
+  LMPModifier,
+  LMPData1D,
+  ModifierType,
+  Wall,
+} from "../types";
 import type { ModifierCategory } from "lammps.js";
 import { AtomifyWasmModule } from "./types";
 import { getCancel, setCancel } from "./wasmInstance";
@@ -93,6 +99,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private seriesPointers = new Map<string, SeriesPointers[]>();
 
   // --- Cached state, refreshed from worker step / runFinished events ---
+  private cRadii: Float32Array | null = null;
   private cCount = 0;
   private cBondCount = 0;
   private cStep = 0;
@@ -123,10 +130,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private readonly moduleBridge: AtomifyWasmModule;
 
   constructor() {
-    this.worker = new Worker(
-      new URL("./lammps.worker.ts", import.meta.url),
-      { type: "module" },
-    );
+    this.worker = new Worker(new URL("./lammps.worker.ts", import.meta.url), {
+      type: "module",
+    });
     this.worker.onmessage = (ev: MessageEvent<WorkerEvent>) =>
       this.handleEvent(ev.data);
     this.allocate(4096, 4096, 4096);
@@ -271,6 +277,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
     }
     this.ingestModifiers(step);
 
+    this.cRadii = step.radii ? new Float32Array(step.radii) : null;
     this.cCount = step.count;
     this.cBondCount = step.bondCount;
     this.cStep = step.step;
@@ -312,7 +319,10 @@ export class LammpsWorkerProxy implements LammpsWeb {
           numPoints: series.x.length,
         });
       }
-      this.seriesPointers.set(`${modifier.category}:${modifier.name}`, pointers);
+      this.seriesPointers.set(
+        `${modifier.category}:${modifier.name}`,
+        pointers,
+      );
     }
 
     // Per-atom float64 values for the active coloring compute.
@@ -581,6 +591,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
 
   computeParticles() {
     return this.cCount;
+  }
+  getParticleRadii() {
+    return this.cRadii;
   }
   getPositionsPointer() {
     return this.posPtr;

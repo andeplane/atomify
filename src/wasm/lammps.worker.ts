@@ -193,9 +193,9 @@ function streamStep() {
 
   // Computes / fixes / variables (+ per-atom coloring data). Also runs inside
   // this safe step window, since it invokes computes and reads the heap.
-  const { modifiers, perAtom } = adapter
+  const { modifiers, perAtom, radii } = adapter
     ? adapter.snapshotModifiers(perAtomTarget)
-    : { modifiers: [], perAtom: null };
+    : { modifiers: [], perAtom: null, radii: null };
 
   const transfer: Transferable[] = [
     positions.buffer,
@@ -207,6 +207,7 @@ function streamStep() {
     origin.buffer,
   ];
   if (perAtom) transfer.push(perAtom.values);
+  if (radii) transfer.push(radii.buffer);
 
   post(
     {
@@ -227,6 +228,7 @@ function streamStep() {
       runStepsTotal: native.getRunStepsTotal(),
       modifiers,
       perAtom,
+      radii: radii ? (radii.buffer as ArrayBuffer) : null,
       memoryUsage: native.getMemoryUsage(),
       timestepsPerSecond: native.getThermo("spcpu"),
       cpuRemain: native.getThermo("cpuremain"),
