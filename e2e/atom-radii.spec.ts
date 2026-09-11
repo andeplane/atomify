@@ -24,10 +24,12 @@ test("sphere radii are streamed in native units and update during a run", async 
           const v = s.render.visualizer;
           if (!v || s.simulationStatus.timesteps < 2) return false;
           const step = s.simulationStatus.timesteps;
+          const p = s.render.particles;
+          const radii = p.geometry.getAttribute("atomRadius");
           return (
-            Math.abs(v.radiusTexture.getFloat(1) - (1 + step / 1000) / 2) <
-              1 / 255 &&
-            Math.abs(v.radiusTexture.getFloat(2) - 1.5) < 1 / 255 &&
+            Math.abs(radii.getX(p.indices.indexOf(1)) - (1 + step / 1000) / 2) <
+              0.0001 &&
+            Math.abs(radii.getX(p.indices.indexOf(2)) - 1.5) < 0.0001 &&
             !Object.keys(s.simulationStatus.variables).some((name) =>
               name.startsWith("atomify_radius_flag_"),
             )

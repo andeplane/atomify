@@ -1,3 +1,4 @@
+import { syncParticleAttributes } from "../rendering/particleAttributes";
 import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 import { Particles } from "omovi";
@@ -69,6 +70,14 @@ class SyncParticlesModifier extends Modifier {
       newParticles.mesh.count = numParticles;
     }
 
+    syncParticleAttributes(input.renderState?.visualizer, newParticles);
+    // Only positions and IDs stream every frame. Style attributes mark
+    // themselves dirty when styles or the ID-to-instance mapping change.
+    const geometry = newParticles.geometry;
+    if (geometry) {
+      geometry.getAttribute("particlePosition").needsUpdate = true;
+      geometry.getAttribute("particleIndex").needsUpdate = true;
+    }
     const radii = input.lammps.getParticleRadii?.();
     if (radii && input.renderState.visualizer) {
       for (let i = 0; i < numParticles; i++) {
@@ -78,7 +87,6 @@ class SyncParticlesModifier extends Modifier {
         );
       }
     }
-    newParticles.markNeedsUpdate();
   };
 }
 

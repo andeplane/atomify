@@ -51,6 +51,24 @@ for (const [style, data] of [
     });
     const source = await readContentsRecord(page, "data-viewer/sample.data");
     expect(source?.content).toBe(data);
+    // A finished run produces no more snapshots. Reopening its viewport must
+    // restore populated attributes and the same atom styles from cached data.
+    const readStyles = () =>
+      page.evaluate(async () => {
+        const path = "/atomify/src/store/index.ts";
+        const p = (await import(path)).default.getState().render.particles;
+        return {
+          radius: Array.from(p.geometry.getAttribute("atomRadius").array),
+          color: Array.from(p.geometry.getAttribute("atomColor").array),
+        };
+      });
+    const styles = await readStyles();
+    expect(styles.radius).toHaveLength(2);
+    expect(styles.radius.every((r) => Number(r) > 0)).toBe(true);
+    await page.getByTestId("run-detail-back").click();
+    await page.getByTestId("run-row-run-001").click();
+    await expect(canvas).toBeVisible();
+    await expect.poll(readStyles).toEqual(styles);
     const before = await canvas.screenshot();
     const box = (await canvas.boundingBox())!;
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
