@@ -22,7 +22,14 @@ export const loadRenderSettingsFromStorage = (): Partial<RenderSettings> => {
     if (stored) {
       const parsed = JSON.parse(stored);
       if (typeof parsed === "object" && parsed !== null) {
-        return parsed;
+        // The legacy settings dialog persisted a user-editable occlusion
+        // radius and intensity. Neither has a control any more and the
+        // ambient occlusion pass is tuned around the defaults, so a stale
+        // stored value must not change the look.
+        const settings = { ...parsed };
+        delete settings.ssaoRadius;
+        delete settings.ssaoIntensity;
+        return settings;
       }
     }
   } catch (e) {
