@@ -1,3 +1,4 @@
+import { GROUP_LABEL_PREFIX } from "../utils/lammpsGroups";
 import { v4 as uuidv4 } from "uuid";
 import type {
   LAMMPSWeb as NativeLammps,
@@ -158,6 +159,22 @@ export class LammpsAdapter implements LammpsWeb {
   private readonly radiusFlagName = `atomify_radius_flag_${uuidv4().replaceAll("-", "")}`;
   private readonly radiusName = `${this.radiusFlagName}_values`;
 
+  private readonly groupPrefix = `atomify_groups_${uuidv4().replaceAll("-", "")}_`;
+  private groups = new Map<string, { flag: string; values: string }>();
+
+  /** Build variable commands in JS; the input interpreter executes them. */
+  prepareGroupVariables(names: string[]): string {
+    this.groups.clear();
+    return names
+      .map((name, i) => {
+        const flag = `${this.groupPrefix}${i}_exists`;
+        const values = `${this.groupPrefix}${i}_mask`;
+        this.groups.set(`${GROUP_LABEL_PREFIX}${name}`, { flag, values });
+        return `variable ${flag} equal is_defined(group,${name})\nvariable ${values} atom gmask(${name})\n`;
+      })
+      .join("");
+  }
+
   private particleSnapshot?: ParticleSnapshot;
   private bondSnapshot?: BondSnapshot;
   // Refreshed once per sync cycle in syncComputes; modifierNames/makeModifier
@@ -299,6 +316,7 @@ export class LammpsAdapter implements LammpsWeb {
   }
 
   start(): boolean {
+    this.groups.clear();
     this.lastError = "";
     this.cancelRequested = false;
     // Startup args are CONSTANT for the module's whole life: Kokkos::initialize
@@ -605,10 +623,12 @@ export class LammpsAdapter implements LammpsWeb {
    */
   snapshotModifiers(
     perAtomTarget: { category: ModifierCategory; name: string } | null,
+    particleCount: number,
   ): {
     modifiers: WorkerModifierData[];
     perAtom: WorkerPerAtomData | null;
     radii: Float32Array | null;
+    groups: { names: string[]; masks: Uint32Array };
   } {
     this.native.syncModifiers();
     let infos = this.native.listModifiers();
@@ -623,7 +643,10 @@ export class LammpsAdapter implements LammpsWeb {
       );
     }
     infos = infos.filter(
-      (i) => i.name !== this.radiusFlagName && i.name !== this.radiusName,
+      (i) =>
+        i.name !== this.radiusFlagName &&
+        i.name !== this.radiusName &&
+        !i.name.startsWith(this.groupPrefix),
     );
     this.modifierInfos = infos;
 
@@ -658,6 +681,27 @@ export class LammpsAdapter implements LammpsWeb {
       };
     });
 
+    const activeGroups = new Map(
+      [...this.groups].filter(
+        ([, group]) =>
+          this.native.syncModifier("variable", group.flag)?.scalar === 1,
+      ),
+    );
+    for (const [name] of activeGroups) {
+      modifiers.push({
+        name,
+        category: "compute",
+        type: ModifierType.ComputeOther,
+        style: "group/membership",
+        isPerAtom: true,
+        hasScalar: false,
+        clearPerSync: false,
+        xLabel: "",
+        yLabel: "Membership",
+        scalar: 0,
+        series: [],
+      });
+    }
     let perAtom: WorkerPerAtomData | null = null;
     if (perAtomTarget) {
       const info = infos.find(
@@ -682,7 +726,26 @@ export class LammpsAdapter implements LammpsWeb {
       }
     }
 
-    return { modifiers, perAtom, radii };
+    // One compact bitset per atom supports changing the selected group while
+    // paused without entering the asyncify-suspended engine.
+    const names = [...activeGroups.keys()];
+    const masks = new Uint32Array(names.length ? particleCount : 0);
+    for (let bit = 0; bit < names.length; bit++) {
+      const flag = 1 << bit;
+      if (names[bit] === `${GROUP_LABEL_PREFIX}all`) {
+        for (let i = 0; i < particleCount; i++) masks[i] |= flag;
+        continue;
+      }
+      const group = activeGroups.get(names[bit])!;
+      this.native.syncModifier("variable", group.values);
+      const view = this.native.getModifierPerAtom("variable", group.values);
+      const values = this.module.HEAPF64.subarray(
+        view.ptr / 8,
+        view.ptr / 8 + view.length,
+      );
+      for (let i = 0; i < particleCount; i++) if (values[i]) masks[i] |= flag;
+    }
+    return { modifiers, perAtom, radii, groups: { names, masks } };
   }
 
   getCompute(name: string): LMPModifier {

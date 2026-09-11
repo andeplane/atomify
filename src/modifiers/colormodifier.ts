@@ -1,3 +1,4 @@
+import { GROUP_LABEL_PREFIX } from "../utils/lammpsGroups";
 import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 import colormap from "colormap";
@@ -143,12 +144,14 @@ class ColorModifier extends Modifier {
 
   // Get the effective min/max values (custom or global)
   public getEffectiveMinValue(): number {
+    if (this.computeName?.startsWith(GROUP_LABEL_PREFIX)) return 0;
     return this.customMinValue !== undefined
       ? this.customMinValue
       : this.globalMinValue;
   }
 
   public getEffectiveMaxValue(): number {
+    if (this.computeName?.startsWith(GROUP_LABEL_PREFIX)) return 1;
     return this.customMaxValue !== undefined
       ? this.customMaxValue
       : this.globalMaxValue;
@@ -180,6 +183,7 @@ class ColorModifier extends Modifier {
     const computes = input.computes;
     const compute = this.computeName ? computes[this.computeName] : undefined;
     if (!compute || !compute.isPerAtom) {
+      this.runByType(input, output);
       return;
     }
 

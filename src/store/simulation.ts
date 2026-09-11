@@ -1,3 +1,4 @@
+import { prepareGroupInspection } from "../utils/lammpsGroups";
 import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
 import { StoreModel } from "./model";
 import { LammpsWeb } from "../types";
@@ -359,7 +360,10 @@ export const simulationModel: SimulationModel = {
             : prepareScriptForSerialStyles(file.content, {
                 isMainScript: file.fileName === simulation.inputScript,
               });
-          wasm.FS.writeFile(`/${simulation.id}/${file.fileName}`, content);
+          wasm.FS.writeFile(
+            `/${simulation.id}/${file.fileName}`,
+            prepareGroupInspection(content),
+          );
         }
       }
     },
@@ -426,7 +430,11 @@ export const simulationModel: SimulationModel = {
       const runContent = scriptOptsIntoKokkos(rawContent)
         ? rawContent
         : prepareScriptForSerialStyles(rawContent, { isMainScript: true });
-      const scriptToRun = prepareVarsScript(simulation, runContent, wasm);
+      const scriptToRun = prepareVarsScript(
+        simulation,
+        prepareGroupInspection(runContent),
+        wasm,
+      );
 
       let errorMessage: string | undefined = undefined;
       const startTime = performance.now();

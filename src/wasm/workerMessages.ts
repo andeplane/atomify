@@ -110,6 +110,7 @@ export interface WorkerStepData {
   runStepsTotal: number;
   /** Snapshot of every tracked compute/fix/variable this step. */
   modifiers: WorkerModifierData[];
+  groups?: { names: string[]; masks: ArrayBuffer };
   /** Per-atom values for the active coloring compute, or null. */
   perAtom: WorkerPerAtomData | null;
   /** LAMMPS memory usage estimate in bytes. */

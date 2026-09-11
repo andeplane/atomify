@@ -1,3 +1,4 @@
+import { GROUP_LABEL_PREFIX } from "../utils/lammpsGroups";
 import {
   LammpsWeb,
   LMPModifier,
@@ -92,6 +93,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private heapF64Buffer = new ArrayBuffer(0);
   private heapF64 = new Float64Array(0);
   private perAtomCount = 0;
+  private groupNames: string[] = [];
+  private groupMasks = new Uint32Array(0);
+  private preparedGroup?: string;
 
   // Latest streamed compute/fix/variable snapshots + where each modifier's
   // series data landed in the bridge heap this step.
@@ -298,6 +302,11 @@ export class LammpsWorkerProxy implements LammpsWeb {
    * bridge. Runs inside ingestStep, after any reallocation.
    */
   private ingestModifiers(step: WorkerStepData) {
+    this.groupNames = step.groups?.names ?? [];
+    this.groupMasks = step.groups
+      ? new Uint32Array(step.groups.masks)
+      : new Uint32Array(0);
+    this.preparedGroup = undefined;
     this.cModifiers = step.modifiers;
     this.seriesPointers.clear();
     let offset = this.seriesBasePtr / 4; // float index into heapF32
@@ -708,7 +717,20 @@ export class LammpsWorkerProxy implements LammpsWeb {
         ),
       // Per-atom values for the active coloring compute are streamed into the
       // HEAPF64 bridge starting at offset 0 (see ingestModifiers).
-      getPerAtomData: () => 0,
+      getPerAtomData: () => {
+        const bit =
+          category === "compute" ? proxy.groupNames.indexOf(name) : -1;
+        if (bit >= 0 && proxy.preparedGroup !== name) {
+          if (proxy.heapF64.length < proxy.groupMasks.length) {
+            proxy.heapF64Buffer = new ArrayBuffer(proxy.groupMasks.length * 8);
+            proxy.heapF64 = new Float64Array(proxy.heapF64Buffer);
+          }
+          for (let i = 0; i < proxy.groupMasks.length; i++)
+            proxy.heapF64[i] = (proxy.groupMasks[i] >>> bit) & 1;
+          proxy.preparedGroup = name;
+        }
+        return 0;
+      },
       delete: () => {},
     };
   }
@@ -725,7 +747,15 @@ export class LammpsWorkerProxy implements LammpsWeb {
 
   /** Tell the worker which per-atom compute to stream values for (coloring). */
   setPerAtomModifier(category: ModifierCategory, name: string | null) {
-    this.send({ type: "setPerAtomModifier", category, name });
+    this.preparedGroup = undefined;
+    this.send({
+      type: "setPerAtomModifier",
+      category,
+      name:
+        category === "compute" && name?.startsWith(GROUP_LABEL_PREFIX)
+          ? null
+          : name,
+    });
   }
 }
 

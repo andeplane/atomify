@@ -234,7 +234,8 @@ describe("projects store integration", () => {
         { encoding: "utf8" },
       );
       expect(ranScript.startsWith("suffix kk")).toBe(true);
-      expect(ranScript).toContain(SCRIPT);
+      expect(ranScript).toContain("units lj");
+      expect(ranScript).toContain("run 100");
       // …while the working tree and the run snapshot keep the original text.
       expect(await libraryStorage.read(dirName, "in.lmp")).toBe(SCRIPT);
       expect(
