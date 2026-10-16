@@ -186,7 +186,8 @@ const SelectedAtomsInfo = ({
     if (!particles) return new Map<number, number>();
     const map = new Map<number, number>();
     particles.indices.forEach((atomId: number, arrayIndex: number) => {
-      map.set(atomId, arrayIndex);
+      // Keep the first slot: periodic images repeat IDs after the real atoms.
+      if (!map.has(atomId)) map.set(atomId, arrayIndex);
     });
     return map;
   }, [particles]);

@@ -4,6 +4,7 @@ import { ModifierInput, ModifierOutput } from "./types";
 import colormap from "colormap";
 import { AtomType } from "../utils/atomtypes";
 import * as THREE from "three";
+import { realParticleCount } from "./periodicImages";
 
 const defaultAtomTypes: AtomType[] = [
   {
@@ -195,7 +196,7 @@ class ColorModifier extends Modifier {
     const perAtomDataPtr = compute.lmpCompute.getPerAtomData() / 8;
     const perAtomArray = input.wasm.HEAPF64.subarray(
       perAtomDataPtr,
-      perAtomDataPtr + particles.count,
+      perAtomDataPtr + realParticleCount(particles.count, output.imageShifts),
     ) as Float64Array;
 
     // Reset global min/max if requested
@@ -267,7 +268,10 @@ class ColorModifier extends Modifier {
     const visualizer = input.renderState.visualizer;
     const nativeRadii = input.lammps.getParticleRadii?.();
 
-    for (let i = 0; i < particles.count; i++) {
+    // Periodic images share their atom's ID, so styling the real particles
+    // styles every image too.
+    const count = realParticleCount(particles.count, output.imageShifts);
+    for (let i = 0; i < count; i++) {
       const realIndex = particles.indices[i];
       const type = particles.types[i];
       let atomType = particleStyles[type];

@@ -1,5 +1,6 @@
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import ContinueRunModal from "./modals/ContinueRunModal";
+import PeriodicImagesControl from "./PeriodicImagesControl";
 /**
  * Run detail (ADR-003 §4): live 3D viewport + following console + status
  * panel while running; frame.png (or a designed placeholder with Run again)
@@ -406,6 +407,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
               Color atoms
             </GhostButton>
           )}
+          {(live || viewStructure) && <PeriodicImagesControl live={live} />}
           {meta?.continuationOf && (
             <Chip>Continued from #{runNumber(meta.continuationOf)}</Chip>
           )}

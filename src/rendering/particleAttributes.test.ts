@@ -60,6 +60,18 @@ describe("instance styles", () => {
     expect(oldColor).not.toHaveBeenCalled();
     expect(oldRadius).not.toHaveBeenCalled();
   });
+  it("styles every periodic image that shares an atom's ID", () => {
+    const { visualizer: v, particles: p, geometry: g } = fixture();
+    p.indices.set([42, 42, 42]);
+    p.count = 3;
+    syncParticleAttributes(v, p);
+    v.setColor(42, { r: 0, g: 0, b: 255 });
+    v.setRadius(42, 2);
+    expect(Array.from(g.getAttribute("atomColor").array)).toEqual([
+      0, 0, 1, 0, 0, 1, 0, 0, 1,
+    ]);
+    expect(Array.from(g.getAttribute("atomRadius").array)).toEqual([2, 2, 2]);
+  });
   it("does not dirty style buffers when only positions change", () => {
     const { visualizer: v, particles: p, geometry: g } = fixture();
     syncParticleAttributes(v, p);

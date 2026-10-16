@@ -12,6 +12,7 @@ import * as THREE from "three";
 import SyncFixesModifier from "../modifiers/syncfixesmodifier";
 import SyncVariablesModifier from "../modifiers/syncvariablesmodifier";
 import { StoreModel } from "./model";
+import { realParticleCount } from "../modifiers/periodicImages";
 import type { SimulationStatusData } from "./simulationstatus";
 
 const getSimulationBox = (
@@ -213,7 +214,10 @@ export const processingModel: ProcessingModel = {
         computes: modifierOutput.computes,
         fixes: modifierOutput.fixes,
         variables: modifierOutput.variables,
-        numBonds: modifierOutput.bonds?.count ?? 0,
+        numBonds: realParticleCount(
+          modifierOutput.bonds?.count ?? 0,
+          modifierOutput.imageShifts,
+        ),
         box: getSimulationBox(lammps, wasm, currentStatus.box),
         origo: getSimulationOrigo(lammps, wasm, currentStatus.origo),
         dimension: lammps.getDimension(),
