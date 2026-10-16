@@ -1,5 +1,5 @@
 {
-  "name": "Atomify Dev Container with Emscripten",
+  "name": "Atomify Dev Container",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
 
   "features": {
@@ -18,7 +18,7 @@
 
   "customizations": {
     "vscode": {
-      "extensions": ["ms-vscode.cpptools", "ms-python.python"],
+      "extensions": ["ms-python.python"],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "bash"
       }

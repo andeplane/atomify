@@ -24,3 +24,4 @@ export {
   validateRelativePath,
 } from "./contentsSchema";
 export { slugify, uniqueSlug } from "./slug";
+export { isQuotaExceededError, StorageFullError } from "./kv";

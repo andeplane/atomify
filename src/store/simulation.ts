@@ -578,13 +578,6 @@ export const simulationModel: SimulationModel = {
       await allActions.app.setStatus(undefined);
       if (simulation.start) {
         void actions.run();
-      } else {
-        const inputScriptFile = simulation.files.find(
-          (file) => file.fileName === simulation.inputScript,
-        );
-        if (inputScriptFile) {
-          allActions.app.setSelectedFile(inputScriptFile);
-        }
       }
       track("Simulation.New", { simulationId: simulation.metricsId });
     },

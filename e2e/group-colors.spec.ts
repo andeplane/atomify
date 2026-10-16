@@ -50,7 +50,7 @@ test("runtime groups can color paused atoms and follow dynamic membership", asyn
     }, value);
   await pause(true);
   await page.getByTestId("color-atoms").click();
-  await page.locator(".ant-select-selector").first().click();
+  await page.locator(".ant-select").first().click();
   await page.getByText("tracked", { exact: true }).click();
   const colors = () =>
     page.evaluate(async () => {
@@ -76,7 +76,7 @@ test("runtime groups can color paused atoms and follow dynamic membership", asyn
     .toEqual(["outside", "outside"]);
   await pause(true);
   await page.getByTestId("color-atoms").click();
-  await page.locator(".ant-select-selector").first().click();
+  await page.locator(".ant-select").first().click();
   await page.getByText("all", { exact: true }).click();
   await expect.poll(colors).toEqual(["member", "member"]);
   await page.getByRole("button", { name: "Close", exact: true }).last().click();
