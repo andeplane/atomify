@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
 import type { RunListEntry, RunMeta } from "../storage";
 import type { RunRequest } from "../store/projects";
-import { formatBytes, formatDuration, relativeTime, runNumber } from "./format";
+import { formatDuration, relativeTime, runNumber } from "./format";
 import {
   CheckIcon,
   ChevronRightIcon,
@@ -27,7 +27,9 @@ type RunItem =
   | { kind: "run"; entry: RunListEntry };
 
 function itemSweepId(item: RunItem): string | undefined {
-  return item.kind === "queued" ? item.request.sweepId : item.entry.meta?.sweepId;
+  return item.kind === "queued"
+    ? item.request.sweepId
+    : item.entry.meta?.sweepId;
 }
 
 /**
@@ -80,26 +82,47 @@ function statusIcon(status: RunMeta["status"] | "queued" | "external"): {
 } {
   switch (status) {
     case "running":
-      return { bg: "var(--good-soft)", color: "var(--good)", icon: <PulseDot size={8} /> };
+      return {
+        bg: "var(--good-soft)",
+        color: "var(--good)",
+        icon: <PulseDot size={8} />,
+      };
     case "completed":
       return { bg: "var(--chip)", color: "var(--text-2)", icon: <CheckIcon /> };
     case "failed":
-      return { bg: "var(--bad-soft)", color: "var(--bad)", icon: <XIcon size={13} /> };
+      return {
+        bg: "var(--bad-soft)",
+        color: "var(--bad)",
+        icon: <XIcon size={13} />,
+      };
     case "queued":
-      return { bg: "var(--chip)", color: "var(--text-3)", icon: <ClockIcon size={14} /> };
+      return {
+        bg: "var(--chip)",
+        color: "var(--text-3)",
+        icon: <ClockIcon size={14} />,
+      };
     case "canceled":
-      return { bg: "var(--chip)", color: "var(--text-3)", icon: <MinusCircleIcon /> };
+      return {
+        bg: "var(--chip)",
+        color: "var(--text-3)",
+        icon: <MinusCircleIcon />,
+      };
     case "interrupted":
-      return { bg: "var(--chip)", color: "var(--warn)", icon: <WarningIcon size={14} /> };
+      return {
+        bg: "var(--chip)",
+        color: "var(--warn)",
+        icon: <WarningIcon size={14} />,
+      };
     case "external":
-      return { bg: "var(--chip)", color: "var(--text-3)", icon: <FolderOutlineIcon /> };
+      return {
+        bg: "var(--chip)",
+        color: "var(--text-3)",
+        icon: <FolderOutlineIcon />,
+      };
   }
 }
 
-function runSummary(
-  entry: RunListEntry,
-  live: boolean,
-): string {
+function runSummary(entry: RunListEntry, live: boolean): string {
   const meta = entry.meta;
   if (!meta) {
     return "external run — no metadata recorded";
@@ -175,7 +198,8 @@ const RunsTab = () => {
   const rows: ReactNode[] = [];
   items.forEach((item, index) => {
     const sweepId = itemSweepId(item);
-    const previousSweepId = index > 0 ? itemSweepId(items[index - 1]) : undefined;
+    const previousSweepId =
+      index > 0 ? itemSweepId(items[index - 1]) : undefined;
     if (sweepId && sweepId !== previousSweepId) {
       const group = items.filter((i) => itemSweepId(i) === sweepId);
       const groupSize = group.length;
@@ -267,7 +291,9 @@ const RunsTab = () => {
             {icon.icon}
           </span>
           <div style={{ width: 64, flexShrink: 0 }}>
-            <div style={{ fontSize: 14, fontWeight: 800, color: "var(--text-3)" }}>
+            <div
+              style={{ fontSize: 14, fontWeight: 800, color: "var(--text-3)" }}
+            >
               queued
             </div>
           </div>
@@ -371,7 +397,12 @@ const RunsTab = () => {
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div
-            style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              minWidth: 0,
+            }}
           >
             <span
               style={{
@@ -465,7 +496,9 @@ const RunsTab = () => {
             </RowIconButton>
           </span>
         )}
-        <span style={{ color: "var(--text-3)", display: "flex", flexShrink: 0 }}>
+        <span
+          style={{ color: "var(--text-3)", display: "flex", flexShrink: 0 }}
+        >
           <ChevronRightIcon />
         </span>
       </div>,
@@ -489,7 +522,13 @@ const RunsTab = () => {
                 textAlign: "center",
               }}
             >
-              <div style={{ fontSize: 14.5, fontWeight: 700, color: "var(--text)" }}>
+              <div
+                style={{
+                  fontSize: 14.5,
+                  fontWeight: 700,
+                  color: "var(--text)",
+                }}
+              >
                 No runs yet
               </div>
               <div
@@ -515,8 +554,9 @@ const RunsTab = () => {
         title={`Delete run #${deleteTarget ? runNumber(deleteTarget) : ""}?`}
         body={
           <>
-            Deletes <span style={{ fontFamily: MONO }}>runs/{deleteTarget}</span>{" "}
-            with its snapshot and outputs. This cannot be undone.
+            Deletes{" "}
+            <span style={{ fontFamily: MONO }}>runs/{deleteTarget}</span> with
+            its snapshot and outputs. This cannot be undone.
           </>
         }
         confirmLabel="Delete run"

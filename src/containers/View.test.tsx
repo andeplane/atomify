@@ -248,8 +248,7 @@ describe("View", () => {
       // Arrange: provide null visualizer so the component creates one,
       // capturing the onParticleClick callback to simulate a selection.
       let capturedOnParticleClick:
-        | ((event: ParticleClickEvent) => void)
-        | undefined;
+        ((event: ParticleClickEvent) => void) | undefined;
       const mockVisualizerInstance = createMockVisualizerInstance();
 
       // Use a regular function (not arrow) so it can be called with `new`

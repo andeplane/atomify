@@ -38,7 +38,7 @@ const SyncBondsSettings = ({ onClose }: { onClose: () => void }) => {
       dataIndex: "value",
       key: "value",
       width: "80%",
-      render: (value, record) => (
+      render: (value) => (
         <Slider
           min={0.2}
           max={2}

@@ -174,7 +174,7 @@ class ColorModifier extends Modifier {
     const particles = output.particles;
     const visualizer = input.renderState.visualizer;
 
-    let colors = colormap({
+    const colors = colormap({
       colormap: this.colormap,
       nshades: 72,
       format: "float",
@@ -251,7 +251,7 @@ class ColorModifier extends Modifier {
   runByType = (
     input: ModifierInput,
     output: ModifierOutput,
-    everything: boolean = false,
+    _everything: boolean = false,
   ) => {
     if (
       (this.previousColoringMethod === "type" && !output.colorsDirty) ||
