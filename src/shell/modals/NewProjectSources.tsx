@@ -174,9 +174,9 @@ export const ExamplePicker = ({
                       left: 6,
                       padding: "2px 6px",
                       borderRadius: 5,
-                      background: "rgba(8,10,14,0.7)",
+                      background: "var(--media-badge)",
                       backdropFilter: "blur(6px)",
-                      color: "#fff",
+                      color: "var(--on-accent)",
                       fontSize: 10,
                       fontWeight: 600,
                     }}

@@ -4,6 +4,7 @@ import {
 } from "../rendering/particleAttributes";
 import { applyAmbientOcclusion } from "../utils/ambientOcclusion";
 import { useEffect, useState, useRef, useCallback } from "react";
+import type { CSSProperties } from "react";
 import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 
 import {
@@ -17,7 +18,6 @@ import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSumma
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import ColorLegend from "../components/ColorLegend";
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
-import styled from "styled-components";
 import { track } from "../utils/metrics";
 import { applyLighting } from "../utils/lighting";
 import { useSimulationBoxOverlays } from "./useSimulationBoxOverlays";
@@ -35,17 +35,11 @@ interface ViewProps {
   pane?: boolean;
 }
 
-const VisualizerWrapper = styled.div`
-  height: 100vh;
-  width: 100%;
-  position: relative;
-`;
-
-const PaneVisualizerWrapper = styled.div`
-  height: 100%;
-  width: 100%;
-  position: relative;
-`;
+const visualizerWrapperStyle = (pane: boolean): CSSProperties => ({
+  height: pane ? "100%" : "100vh",
+  width: "100%",
+  position: "relative",
+});
 
 const MOBILE_BREAKPOINT = 900;
 const SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY = "simulationSummaryDrawerVisible";
@@ -394,8 +388,6 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const showNoSimulationModal =
     loadedWorkdir == null && !hideNoSimulation && !pane;
 
-  const Wrapper = pane ? PaneVisualizerWrapper : VisualizerWrapper;
-
   return (
     <Layout style={{ height: pane ? "100%" : "100vh" }}>
       {!pane && (
@@ -426,7 +418,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
         </Header>
       )}
       <div id="canvas-container" style={{ height: "100%", width: "100%" }}>
-        <Wrapper ref={domElement}>
+        <div ref={domElement} style={visualizerWrapperStyle(pane)}>
           {showColorSettings && (
             <ColorModifierSettings
               open={true}
@@ -469,7 +461,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
               onSettingsClick={() => setShowColorSettings(true)}
             />
           )}
-        </Wrapper>
+        </div>
       </div>
       {showNoSimulationModal && (
         <Modal

@@ -26,7 +26,6 @@
     "omovi": "^0.25.0",
     "react": "^19.0.0",
     "react-dom": "^19.2.7",
-    "styled-components": "^6.4.1",
     "three": "^0.181.2",
     "uuid": "^14.0.0",
     "web-vitals": "^5.1.0"

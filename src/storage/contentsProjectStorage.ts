@@ -39,8 +39,12 @@ import type {
 
 export const PROJECT_META_PATH = ".atomify/project.json";
 
-/** Colors assigned round-robin to new projects (design palette). */
-const PROJECT_COLORS = [
+/**
+ * Colors assigned round-robin to new projects (design palette). These are
+ * project data (persisted in project.json), not theme tokens, so they stay
+ * the same in both themes; the New Project modal offers the same list.
+ */
+export const PROJECT_COLORS = [
   "#3F6EFF",
   "#7C3AED",
   "#10B981",

@@ -159,7 +159,7 @@ const HomeScreen = () => {
                 height: 42,
                 borderRadius: 12,
                 background: "var(--accent)",
-                color: "#fff",
+                color: "var(--on-accent)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",

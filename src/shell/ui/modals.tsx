@@ -47,7 +47,7 @@ export const ModalShell = ({
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(4,6,10,0.6)",
+        background: "var(--scrim)",
         backdropFilter: "blur(3px)",
         display: "flex",
         alignItems: "center",
@@ -69,7 +69,7 @@ export const ModalShell = ({
           background: "var(--surface)",
           border: "1px solid var(--border)",
           borderRadius: 18,
-          boxShadow: "0 30px 80px rgba(0,0,0,0.4)",
+          boxShadow: "var(--shadow-modal)",
           animation: "shell-fade-up .2s ease",
         }}
       >

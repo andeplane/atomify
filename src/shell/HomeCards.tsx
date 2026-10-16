@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
 import type { Example } from "../hooks/useExamples";
-import type { ProjectMeta } from "../storage";
+import { PROJECT_COLORS, type ProjectMeta } from "../storage";
 import { useShellUI } from "./ShellContext";
 import { formatBytes, relativeTime, runNumber } from "./format";
 import { ChartIcon, ClockIcon, PlayIcon } from "./icons";
@@ -107,7 +107,7 @@ export const ContinueCard = ({
           height: 132,
           background: frameUrl
             ? "var(--viewport)"
-            : `linear-gradient(120deg, ${continueProject.color ?? "#3F6EFF"}33, var(--viewport) 70%)`,
+            : `linear-gradient(120deg, ${continueProject.color ?? PROJECT_COLORS[0]}33, var(--viewport) 70%)`,
           overflow: "hidden",
         }}
       >
@@ -133,10 +133,10 @@ export const ContinueCard = ({
               alignItems: "center",
               gap: 7,
               padding: "4px 10px",
-              borderRadius: 999,
-              background: "rgba(8,10,14,0.72)",
+              borderRadius: "var(--radius-pill)",
+              background: "var(--media-badge)",
               backdropFilter: "blur(6px)",
-              color: "#fff",
+              color: "var(--on-accent)",
               fontSize: 11.5,
               fontWeight: 600,
             }}
@@ -274,7 +274,7 @@ export const RecentProjectCard = ({
             style={{
               display: "inline-flex",
               padding: "3px 10px",
-              borderRadius: 999,
+              borderRadius: "var(--radius-pill)",
               background: "var(--chip)",
               color: "var(--text-2)",
               fontSize: 11.5,

@@ -45,7 +45,7 @@ const RunConsole = ({
         height: consoleCollapsed ? "auto" : 190,
         flexShrink: 0,
         borderTop: "1px solid var(--border)",
-        background: "#0A0C11",
+        background: "var(--console-bg)",
         display: "flex",
         flexDirection: "column",
       }}
@@ -59,7 +59,7 @@ const RunConsole = ({
           padding: "9px 18px",
           borderBottom: consoleCollapsed
             ? "none"
-            : "1px solid rgba(255,255,255,0.06)",
+            : "1px solid var(--console-line)",
           cursor: "pointer",
           userSelect: "none",
         }}
@@ -82,7 +82,7 @@ const RunConsole = ({
             border: "none",
             borderRadius: 5,
             background: "transparent",
-            color: "rgba(255,255,255,0.5)",
+            color: "var(--media-text-3)",
             cursor: "pointer",
             transform: consoleCollapsed ? "rotate(180deg)" : "none",
             transition: "transform .15s",
@@ -94,7 +94,7 @@ const RunConsole = ({
           style={{
             fontFamily: MONO,
             fontSize: 11.5,
-            color: "rgba(255,255,255,0.5)",
+            color: "var(--media-text-3)",
           }}
         >
           console — log.lammps
@@ -107,7 +107,7 @@ const RunConsole = ({
                 style={{
                   fontFamily: MONO,
                   fontSize: 11,
-                  color: "rgba(255,255,255,0.35)",
+                  color: "var(--media-text-4)",
                 }}
               >
                 following
@@ -127,11 +127,11 @@ const RunConsole = ({
             fontFamily: MONO,
             fontSize: 12,
             lineHeight: 1.7,
-            color: "rgba(255,255,255,0.82)",
+            color: "var(--console-text)",
           }}
         >
           {consoleLines.length === 0 ? (
-            <div style={{ color: "rgba(255,255,255,0.35)" }}>
+            <div style={{ color: "var(--media-text-4)" }}>
               {live ? "waiting for output…" : "no log recorded"}
             </div>
           ) : (

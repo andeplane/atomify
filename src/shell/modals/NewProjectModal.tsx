@@ -7,21 +7,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useStoreActions } from "../../hooks";
 import type { Example } from "../../hooks/useExamples";
-import { slugify, classifyPath } from "../../storage";
+import { slugify, classifyPath, PROJECT_COLORS } from "../../storage";
 import type { NewProjectFile } from "../../store/projects";
 import { useShellUI } from "../ShellContext";
 import { FileIcon, GridIcon, UploadIcon } from "../icons";
 import { GhostButton, ModalShell, MONO, PrimaryButton } from "../ui";
 import { ExamplePicker, SourceCard, UploadPicker } from "./NewProjectSources";
-
-export const PROJECT_COLORS = [
-  "#3F6EFF",
-  "#7C3AED",
-  "#10B981",
-  "#06B6D4",
-  "#F43F5E",
-  "#FFB020",
-];
 
 type Source = "blank" | "example" | "upload";
 
@@ -289,7 +280,7 @@ const NewProjectModal = ({
           <div
             style={{
               padding: "12px 14px",
-              borderRadius: 10,
+              borderRadius: "var(--radius)",
               background: "var(--surface-2)",
               border: "1px solid var(--border)",
               fontSize: 12,

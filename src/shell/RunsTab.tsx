@@ -453,7 +453,7 @@ const RunsTab = () => {
             <div
               style={{
                 height: 5,
-                borderRadius: 999,
+                borderRadius: "var(--radius-pill)",
                 background: "var(--border-strong)",
                 overflow: "hidden",
               }}
@@ -463,7 +463,7 @@ const RunsTab = () => {
                 style={{
                   width: `${percent}%`,
                   height: "100%",
-                  borderRadius: 999,
+                  borderRadius: "var(--radius-pill)",
                   background: "var(--good)",
                 }}
               />
