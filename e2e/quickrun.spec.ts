@@ -16,9 +16,9 @@ test("quick run an example, then save it as a project", async ({ page }) => {
     await gotoApp(page);
     await page.getByTestId("nav-examples").click();
     await expect(page.getByTestId("examples-screen")).toBeVisible();
-    await expect(
-      page.getByTestId(`library-example-${EXAMPLE_ID}`),
-    ).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId(`library-example-${EXAMPLE_ID}`)).toBeVisible(
+      { timeout: 30_000 },
+    );
     await waitForEngine(page); // Quick run is disabled until the engine is up
     await page.getByTestId(`library-quick-${EXAMPLE_ID}`).click();
   });

@@ -1,3 +1,7 @@
+import {
+  continuationScript,
+  validContinuationSteps,
+} from "../utils/continuation";
 /**
  * The projects model (ADR-001/003): the persisted library, the active
  * project's working tree + run history, navigation state, and run
@@ -24,6 +28,7 @@ import type {
 import {
   allocateRunDir,
   bytesToWriteContent,
+  isQuotaExceededError,
   listRuns,
   readRunMeta,
   reconcileRuns,
@@ -87,6 +92,9 @@ export interface CreateProjectPayload {
 }
 
 export interface RunRequest {
+  continueFrom?: { runId: string; steps: number };
+  replayOf?: string;
+  viewOnly?: boolean;
   dirName: string;
   quick: boolean;
   inputScript: string;
@@ -116,6 +124,11 @@ const MID_RUN_COPY_INTERVAL_MS = 3000;
 /** Wrapper artifacts from the vars-injection mechanism — engine detail. */
 const RUN_INTERNAL_FILE = /^(_vars_|_wrapper_)/;
 
+/** run.json `error` for a run whose outputs hit the quota (ADR-001
+ *  Consequences). Settings > Storage lists per-project usage with delete. */
+export const STORAGE_FULL_RUN_ERROR =
+  "Browser storage is full — free space in Settings > Storage.";
+
 const SCRIPT_FILE = /(^|\/)in\.[^/]*$|\.in$/;
 
 export function isScriptFile(fileName: string): boolean {
@@ -137,7 +150,18 @@ interface PendingSave {
 }
 const pendingSaves = new Map<string, PendingSave>();
 
+export interface ResidentRun {
+  dirName: string;
+  runId: string;
+  quick: boolean;
+  workdirId: string;
+  inputFiles: string[];
+}
+
 export interface ProjectsModel {
+  /** Only the last completed live engine state can be continued. Never persisted. */
+  residentRun?: ResidentRun;
+  setResidentRun: Action<ProjectsModel, ResidentRun | undefined>;
   screen: Screen;
   projects: ProjectMeta[];
   active?: ActiveProject;
@@ -387,6 +411,9 @@ export const projectsModel: ProjectsModel = {
   }),
   shiftRunQueue: action((state) => {
     state.runQueue = state.runQueue.slice(1);
+  }),
+  setResidentRun: action((state, run) => {
+    state.residentRun = run;
   }),
   setActiveRun: action((state, run) => {
     state.activeRun = run;
@@ -1107,6 +1134,45 @@ export const projectsModel: ProjectsModel = {
       return;
     }
 
+    const resident = getState().residentRun;
+    const priorSimulation = (getStoreState() as State<StoreModel>).simulation
+      .simulation;
+    const continuation = request.continueFrom;
+    if (
+      continuation &&
+      (!validContinuationSteps(continuation.steps) ||
+        !resident ||
+        resident.dirName !== request.dirName ||
+        resident.quick !== request.quick ||
+        resident.runId !== continuation.runId ||
+        priorSimulation?.id !== resident.workdirId ||
+        lammps.getIsRunning() ||
+        lammps.getNumAtoms() === 0)
+    ) {
+      actions.setNotice(
+        "This run is no longer loaded in the engine. Run it again before continuing.",
+      );
+      actions.setActiveRun(undefined);
+      actions.setRunQueue([]);
+      return;
+    }
+    const sourceRunId = continuation?.runId ?? request.replayOf;
+    const parentMeta = sourceRunId
+      ? await readRunMeta(storage, request.dirName, sourceRunId)
+      : null;
+    if (
+      sourceRunId &&
+      (parentMeta?.status !== "completed" ||
+        parentMeta.viewOnly ||
+        (request.replayOf && !parentMeta.inputFiles))
+    ) {
+      actions.setNotice("Only a completed simulation can be continued.");
+      actions.setActiveRun(undefined);
+      actions.setRunQueue([]);
+      return;
+    }
+    const startTimestep = continuation ? lammps.getTimesteps() : undefined;
+    actions.setResidentRun(undefined);
     await actions.flushPendingSaves();
 
     // 1. Claim the run directory and snapshot the working tree (ADR-001 §5).
@@ -1120,17 +1186,62 @@ export const projectsModel: ProjectsModel = {
       runId,
       quick: request.quick,
     });
-    const { copied, gaps } = await snapshotWorkingTree(
-      storage,
-      request.dirName,
-      runId,
-    );
+    let copied: string[], gaps: RunMeta["snapshotGaps"];
+    let inputScript = request.inputScript;
+    let vars = request.vars;
+    if (sourceRunId && parentMeta) {
+      copied = [
+        ...(continuation ? resident!.inputFiles : parentMeta.inputFiles!),
+      ];
+      gaps = parentMeta.snapshotGaps;
+      vars = parentMeta.vars ?? {};
+      // Copy the parent inputs, never today's working tree. Outputs continue
+      // in the resident worker directory and are copied only into the child.
+      for (const path of copied) {
+        await storage.write(
+          request.dirName,
+          `${RUNS_DIR}/${runId}/${path}`,
+          await storage.read(
+            request.dirName,
+            `${RUNS_DIR}/${sourceRunId}/${path}`,
+          ),
+        );
+      }
+      inputScript = parentMeta.inputScript;
+      if (continuation) {
+        const parentInput = await storage.read(
+          request.dirName,
+          `${RUNS_DIR}/${continuation.runId}/${parentMeta.inputScript}`,
+        );
+        if (typeof parentInput !== "string")
+          throw new Error("The parent input script is not text.");
+        inputScript = `in.continue-${runId}`;
+        while (copied.includes(inputScript)) inputScript = `_${inputScript}`;
+        await storage.write(
+          request.dirName,
+          `${RUNS_DIR}/${runId}/${inputScript}`,
+          `${parentInput}\n# Additional steps after ${continuation.runId}\n${continuationScript(continuation.steps)}`,
+        );
+        copied.push(inputScript);
+      }
+    } else {
+      ({ copied, gaps } = await snapshotWorkingTree(
+        storage,
+        request.dirName,
+        runId,
+      ));
+    }
     const snapshotFiles = new Set(copied);
     let runMeta: RunMeta = {
+      ...(request.viewOnly ? { viewOnly: true } : {}),
       schemaVersion: 1,
       id: runId,
-      inputScript: request.inputScript,
-      vars: Object.keys(request.vars).length ? request.vars : undefined,
+      inputScript,
+      vars: Object.keys(vars).length ? vars : undefined,
+      continuationOf: continuation?.runId,
+      replayOf: request.replayOf,
+      inputFiles: copied,
+      continuedFromTimestep: startTimestep,
       sweepId: request.sweepId,
       status: "running",
       startedAt: new Date().toISOString(),
@@ -1190,9 +1301,7 @@ export const projectsModel: ProjectsModel = {
     // the toggle is off we leave opted-in scripts alone: the toggle
     // defaults from the script, so "off" only means "don't inject".
     if (request.useKokkos) {
-      const mainScript = files.find(
-        (file) => file.fileName === request.inputScript,
-      );
+      const mainScript = files.find((file) => file.fileName === inputScript);
       if (mainScript) {
         mainScript.content = injectKokkosOptIn(mainScript.content);
       }
@@ -1200,15 +1309,27 @@ export const projectsModel: ProjectsModel = {
     const simulation: Simulation = {
       id: `${request.dirName}/${RUNS_DIR}/${runId}`,
       files,
-      inputScript: request.inputScript,
+      inputScript,
       start: false,
-      vars: Object.keys(request.vars).length ? request.vars : undefined,
+      vars: Object.keys(vars).length ? vars : undefined,
       metricsId: request.exampleId ?? request.dirName,
     };
 
     // 3. Copy outputs out of the worker FS into project storage on a
     //    throttle, so the notebook can analyze a run in flight (ADR-002 §4).
-    const workdir = `/${simulation.id}`;
+    const workdirId =
+      continuation && resident ? resident.workdirId : simulation.id;
+    const workdir = `/${workdirId}`;
+    // A quota error while copying outputs fails the run with a clear reason
+    // and keeps what was copied (ADR-001 Consequences: never silent loss).
+    let storageFull = false;
+    const projectName =
+      getState().projects.find((p) => p.dirName === request.dirName)
+        ?.displayName ?? request.dirName;
+    const storageFullNotice = () =>
+      `Browser storage is full: run #${runId.replace(/^run-0*/, "")} of ` +
+      `"${projectName}" failed and kept partial outputs. Free space in ` +
+      `Settings > Storage.`;
     const copyOutputs = async (maxBytes?: number) => {
       if (!lammps.snapshotWorkdir) {
         return;
@@ -1236,6 +1357,11 @@ export const projectsModel: ProjectsModel = {
           );
         }
       } catch (error) {
+        if (isQuotaExceededError(error)) {
+          storageFull = true;
+          actions.setNotice(storageFullNotice());
+          return;
+        }
         actions.setNotice(
           `Could not copy run outputs to storage: ${
             error instanceof Error ? error.message : String(error)
@@ -1250,16 +1376,17 @@ export const projectsModel: ProjectsModel = {
       void copyOutputs(MID_RUN_COPY_CAP);
     }, MID_RUN_COPY_INTERVAL_MS);
     try {
-      await storeActions.simulation.newSimulation(simulation);
-      for (const file of binaryFiles) {
+      if (!continuation)
+        await storeActions.simulation.newSimulation(simulation);
+      for (const file of continuation ? [] : binaryFiles) {
         getWasm().FS.writeFile(
           `/${simulation.id}/${file.fileName}`,
           file.bytes,
         );
       }
-      const result = (await storeActions.simulation.run()) as
-        | { stopReason: string; errorMessage?: string }
-        | undefined;
+      const result = (await storeActions.simulation.run(
+        continuation ? { continuationSteps: continuation.steps } : undefined,
+      )) as { stopReason: string; errorMessage?: string } | undefined;
       // run() returns undefined on its guard paths (engine busy, input
       // script missing from the snapshot) — the run never executed.
       stopReason = result?.stopReason ?? "failed";
@@ -1295,20 +1422,27 @@ export const projectsModel: ProjectsModel = {
           fullLog.join("\n") + "\n",
         );
       }
-    } catch {
-      // The log is a convenience copy; never fail the run over it.
+    } catch (error) {
+      // The log is a convenience copy; never fail the run over it — unless
+      // storage is full, in which case the outputs are incomplete too.
+      storageFull ||= isQuotaExceededError(error);
     }
     const existing = await readRunMeta(storage, request.dirName, runId);
     runMeta = {
       ...(existing ?? runMeta),
-      status:
-        stopReason === "canceled"
+      status: storageFull
+        ? "failed"
+        : stopReason === "canceled"
           ? "canceled"
           : stopReason === "failed"
             ? "failed"
             : "completed",
       finishedAt: new Date().toISOString(),
-      error: stopReason === "failed" ? errorMessage : undefined,
+      error: storageFull
+        ? STORAGE_FULL_RUN_ERROR
+        : stopReason === "failed"
+          ? errorMessage
+          : undefined,
       stats: {
         timesteps: lammps.getTimesteps(),
         numAtoms: lammps.getNumAtoms(),
@@ -1316,14 +1450,24 @@ export const projectsModel: ProjectsModel = {
           (Date.now() - new Date(runMeta.startedAt).getTime()) / 1000,
       },
     };
-    await writeRunMeta(storage, request.dirName, runMeta);
+    try {
+      await writeRunMeta(storage, request.dirName, runMeta);
+    } catch (error) {
+      if (!isQuotaExceededError(error)) {
+        throw error;
+      }
+      // Not even run.json fits: it stays "running" on disk until
+      // reconcileRuns marks it interrupted; the notice below says why.
+      storageFull = true;
+      runMeta = { ...runMeta, status: "failed", error: STORAGE_FULL_RUN_ERROR };
+    }
     track("Run.Finish", {
       status: runMeta.status,
       wallSeconds: runMeta.stats?.wallSeconds,
       timesteps: runMeta.stats?.timesteps,
       exampleId: request.exampleId,
     });
-    const frame = await captureViewport();
+    const frame = storageFull ? undefined : await captureViewport();
     if (frame) {
       try {
         await storage.write(
@@ -1336,10 +1480,30 @@ export const projectsModel: ProjectsModel = {
       }
     }
 
+    if (
+      runMeta.status === "completed" &&
+      !runMeta.viewOnly &&
+      lammps.getNumAtoms() > 0
+    ) {
+      actions.setResidentRun({
+        dirName: request.dirName,
+        runId,
+        quick: request.quick,
+        workdirId,
+        inputFiles: copied,
+      });
+    }
     actions.setActiveRun(undefined);
     await actions.refreshActive();
     const state = getState();
-    if (state.screen.name !== "project" || state.screen.runId !== runId) {
+    if (storageFull) {
+      // Queued sweep runs would hit the same wall; stop them here.
+      actions.setRunQueue([]);
+      actions.setNotice(storageFullNotice());
+    } else if (
+      state.screen.name !== "project" ||
+      state.screen.runId !== runId
+    ) {
       actions.setNotice(
         `Run #${runId.replace(/^run-0*/, "")} ${runMeta.status}.`,
       );

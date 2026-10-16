@@ -23,8 +23,14 @@ vi.mock(import("../utils/metrics"), () => ({
 import { track } from "../utils/metrics";
 
 import { storeModel, type StoreModel } from "./model";
-import type { RunRequest, StoreInjections } from "./projects";
 import {
+  STORAGE_FULL_RUN_ERROR,
+  type RunRequest,
+  type StoreInjections,
+} from "./projects";
+import { MemoryStore } from "../storage/kv";
+import {
+  ContentsProjectStorage,
   createMemoryProjectStorage,
   PROJECT_META_PATH,
   readRunMeta,
@@ -146,6 +152,69 @@ describe("projects store integration", () => {
   });
 
   describe("full run loop", () => {
+    it("rejects stale and invalid continuations without resetting the engine or allocating runs", async () => {
+      const engine = createFakeEngine();
+      const start = vi.spyOn(engine.lammps, "start");
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Continue",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      await store.getActions().projects.startRuns([runRequest()]);
+      expect(start).toHaveBeenCalledTimes(1);
+      for (const continueFrom of [
+        { runId: "run-001", steps: 0 },
+        { runId: "run-999", steps: 10 },
+      ]) {
+        await store
+          .getActions()
+          .projects.startRuns([runRequest({ continueFrom })]);
+        expect(store.getState().projects.activeRun).toBeUndefined();
+        expect(start).toHaveBeenCalledTimes(1);
+        expect(engine.runFilePaths).toHaveLength(1);
+      }
+      expect(
+        await libraryStorage.stat(activeDirName(store), "runs/run-002"),
+      ).toBeNull();
+      expect(store.getState().projects.residentRun?.runId).toBe("run-001");
+    });
+
+    it("continues using the resident directory and immutable parent inputs", async () => {
+      const engine = createFakeEngine();
+      const start = vi.spyOn(engine.lammps, "start");
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Continue",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      await store.getActions().projects.startRuns([runRequest()]);
+      const dir = activeDirName(store);
+      const parent = await readRunMeta(libraryStorage, dir, "run-001");
+      await store
+        .getActions()
+        .projects.writeFile({ path: "in.lmp", content: "different source" });
+      await store
+        .getActions()
+        .projects.startRuns([
+          runRequest({ continueFrom: { runId: "run-001", steps: 20 } }),
+        ]);
+      expect(start).toHaveBeenCalledTimes(1);
+      expect(engine.runFilePaths[1]).toBe(
+        `/${dir}/runs/run-001/_wrapper_continue.lmp`,
+      );
+      expect(await readRunMeta(libraryStorage, dir, "run-001")).toEqual(parent);
+      expect(await libraryStorage.read(dir, "runs/run-002/in.lmp")).toBe(
+        SCRIPT,
+      );
+      expect(
+        await libraryStorage.read(dir, "runs/run-002/in.continue-run-002"),
+      ).toContain("run 20");
+      expect(store.getState().projects.residentRun).toMatchObject({
+        runId: "run-002",
+        workdirId: `${dir}/runs/run-001`,
+      });
+    });
+
     it("records snapshot, run.json, outputs, and clears activeRun after a completed run", async () => {
       const engine = createFakeEngine();
       const { store, libraryStorage } = await createTestStore(engine);
@@ -234,7 +303,8 @@ describe("projects store integration", () => {
         { encoding: "utf8" },
       );
       expect(ranScript.startsWith("suffix kk")).toBe(true);
-      expect(ranScript).toContain(SCRIPT);
+      expect(ranScript).toContain("units lj");
+      expect(ranScript).toContain("run 100");
       // …while the working tree and the run snapshot keep the original text.
       expect(await libraryStorage.read(dirName, "in.lmp")).toBe(SCRIPT);
       expect(
@@ -516,6 +586,69 @@ describe("projects store integration", () => {
       expect(meta?.status).toBe("completed");
       expect(store.getState().projects.activeRun).toBeUndefined();
       expect(store.getState().projects.runQueue).toEqual([]);
+    });
+  });
+
+  describe("storage full", () => {
+    it("marks the run failed with a storage-full reason, keeps partial outputs, and stops the sweep", async () => {
+      const engine = createFakeEngine({
+        manual: true,
+        outputs: [
+          { path: "dump.first", content: "copied before the quota hit" },
+          { path: "log.lammps", content: FAKE_LOG },
+        ],
+      });
+      // The quota "fills up" mid-run: output writes after dump.first fail
+      // the way IndexedDB does; run.json still fits.
+      const files = new QuotaMemoryStore(
+        (key) =>
+          /\/runs\/run-\d+\//.test(key) &&
+          !key.endsWith("dump.first") &&
+          !key.endsWith(RUN_META_PATH),
+      );
+      const { store, libraryStorage } = await createTestStore(engine, {
+        libraryStorage: new ContentsProjectStorage(files, new MemoryStore()),
+      });
+      await store.getActions().projects.createProject({
+        displayName: "Big Outputs",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const dirName = activeDirName(store);
+
+      const sweepPromise = store
+        .getActions()
+        .projects.startRuns([
+          runRequest({ vars: { T: 1 } }),
+          runRequest({ vars: { T: 2 } }),
+        ]);
+      await waitForCondition(
+        () => engine.runFilePaths.length === 1,
+        "first runFile call",
+      );
+      files.full = true;
+      engine.resolveRun();
+      await sweepPromise;
+
+      const meta = await readRunMeta(libraryStorage, dirName, "run-001");
+      expect(meta?.status).toBe("failed");
+      expect(meta?.error).toBe(STORAGE_FULL_RUN_ERROR);
+      // Partial outputs are kept, never silently dropped.
+      expect(
+        await libraryStorage.read(dirName, `${RUNS_DIR}/run-001/dump.first`),
+      ).toBe("copied before the quota hit");
+      expect(
+        await libraryStorage.stat(dirName, `${RUNS_DIR}/run-001/log.lammps`),
+      ).toBeNull();
+      // The warning names the project and where to free space.
+      const notice = store.getState().projects.notice;
+      expect(notice).toContain("Browser storage is full");
+      expect(notice).toContain('"Big Outputs"');
+      expect(notice).toContain("Settings > Storage");
+      // The rest of the sweep would hit the same wall: it is not started.
+      expect(engine.runFilePaths).toHaveLength(1);
+      expect(store.getState().projects.runQueue).toEqual([]);
+      expect(store.getState().projects.activeRun).toBeUndefined();
+      expect(store.getState().projects.residentRun).toBeUndefined();
     });
   });
 
@@ -1229,12 +1362,32 @@ function createFakeWasm(): AtomifyWasmModule {
   return wasm as AtomifyWasmModule;
 }
 
-async function createTestStore(engine: FakeEngine): Promise<{
+/** Memory KV that refuses matching writes like a full IndexedDB once `full`. */
+class QuotaMemoryStore extends MemoryStore {
+  full = false;
+  constructor(private readonly refuses: (key: string) => boolean) {
+    super();
+  }
+  async setItem<T>(key: string, value: T): Promise<void> {
+    if (this.full && this.refuses(key)) {
+      throw new DOMException(
+        "The quota has been exceeded.",
+        "QuotaExceededError",
+      );
+    }
+    return super.setItem(key, value);
+  }
+}
+
+async function createTestStore(
+  engine: FakeEngine,
+  options: { libraryStorage?: ProjectStorage } = {},
+): Promise<{
   store: Store<StoreModel>;
   libraryStorage: ProjectStorage;
   scratchStorage: ProjectStorage;
 }> {
-  const libraryStorage = createMemoryProjectStorage();
+  const libraryStorage = options.libraryStorage ?? createMemoryProjectStorage();
   const scratchStorage = createMemoryProjectStorage();
   const injections: StoreInjections = { libraryStorage, scratchStorage };
   const store = createStore(storeModel, { injections });

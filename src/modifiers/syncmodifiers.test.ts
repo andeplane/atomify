@@ -47,6 +47,30 @@ describe("SyncParticlesModifier", () => {
     };
   });
 
+  it("applies native radii to persistent IDs with the user's size scale", () => {
+    const setRadius = vi.fn();
+    input.lammps!.getParticleRadii = () => new Float32Array([0.5, 1, 2]);
+    input.renderState = {
+      visualizer: { setRadius },
+      particleRadius: 2,
+    } as unknown as ModifierInput["renderState"];
+    modifier.run(input as ModifierInput, output as ModifierOutput);
+    expect(setRadius.mock.calls).toEqual([
+      [10, 1],
+      [20, 2],
+      [30, 4],
+    ]);
+    input.wasm!.HEAP32.set([30, 10, 20], 13);
+    input.lammps!.getParticleRadii = () => new Float32Array([2, 0.5, 1]);
+    setRadius.mockClear();
+    modifier.run(input as ModifierInput, output as ModifierOutput);
+    expect(setRadius.mock.calls).toEqual([
+      [30, 4],
+      [10, 1],
+      [20, 2],
+    ]);
+  });
+
   it("should set particle count to 0 and mesh count to 0 when inactive", () => {
     modifier.active = false;
     const mockMesh = { count: 5 };
@@ -117,10 +141,9 @@ describe("SyncParticlesModifier", () => {
 
     // Add a mock mesh
     const mockMesh = { count: 0 };
-    output.particles!.mesh =
-      mockMesh as Partial<ModifierOutput["particles"]> as NonNullable<
-        ModifierOutput["particles"]
-      >["mesh"];
+    output.particles!.mesh = mockMesh as Partial<
+      ModifierOutput["particles"]
+    > as NonNullable<ModifierOutput["particles"]>["mesh"];
 
     // Run again
     modifier.run(input as ModifierInput, output as ModifierOutput);
@@ -150,7 +173,9 @@ describe("SyncBondsModifier", () => {
       } as Partial<AtomifyWasmModule> as AtomifyWasmModule,
       renderState: {
         bondRadius: 0.5,
-      } as Partial<ModifierInput["renderState"]> as ModifierInput["renderState"],
+      } as Partial<
+        ModifierInput["renderState"]
+      > as ModifierInput["renderState"],
     };
 
     // Bond positions1: 2 bonds × 3 floats at byte 0 → index 0
@@ -208,10 +233,9 @@ describe("SyncBondsModifier", () => {
     modifier.run(input as ModifierInput, output as ModifierOutput);
 
     const mockMesh = { count: 0 };
-    output.bonds!.mesh =
-      mockMesh as Partial<ModifierOutput["bonds"]> as NonNullable<
-        ModifierOutput["bonds"]
-      >["mesh"];
+    output.bonds!.mesh = mockMesh as Partial<
+      ModifierOutput["bonds"]
+    > as NonNullable<ModifierOutput["bonds"]>["mesh"];
 
     modifier.run(input as ModifierInput, output as ModifierOutput);
 
@@ -364,9 +388,7 @@ describe("SyncComputesModifier", () => {
     vi.mocked(input.lammps!.getComputeNames).mockReturnValue(
       createMockCPPArray(["c_rdf"]),
     );
-    vi.mocked(input.lammps!.getCompute).mockReturnValue(
-      mockLmpCompute,
-    );
+    vi.mocked(input.lammps!.getCompute).mockReturnValue(mockLmpCompute);
 
     // Set syncDataPoints to trigger data reading via the "everything" param
     modifier.run(input as ModifierInput, output as ModifierOutput, true);
@@ -375,7 +397,11 @@ describe("SyncComputesModifier", () => {
     expect(compute).toBeDefined();
     expect(compute.hasData1D).toBe(true);
     expect(compute.data1D).toBeDefined();
-    expect(compute.data1D!.data).toEqual([[1.0, 10.0], [2.0, 20.0], [3.0, 30.0]]);
+    expect(compute.data1D!.data).toEqual([
+      [1.0, 10.0],
+      [2.0, 20.0],
+      [3.0, 30.0],
+    ]);
     expect(compute.data1D!.labels).toEqual(["x", "g(r)"]);
   });
 });
@@ -405,9 +431,7 @@ describe("SyncFixesModifier", () => {
       lammps: createMockLammps({
         syncFixes: vi.fn(),
         getFixNames: vi.fn(() => createMockCPPArray(["f_ave"])),
-        getFix: vi.fn(
-          () => mockLmpFix,
-        ),
+        getFix: vi.fn(() => mockLmpFix),
       }),
       wasm: {} as Partial<AtomifyWasmModule> as AtomifyWasmModule,
       hasSynchronized: true,
@@ -505,9 +529,7 @@ describe("SyncVariablesModifier", () => {
       lammps: createMockLammps({
         syncVariables: vi.fn(),
         getVariableNames: vi.fn(() => createMockCPPArray(["v_temp"])),
-        getVariable: vi.fn(
-          () => mockLmpVariable,
-        ),
+        getVariable: vi.fn(() => mockLmpVariable),
       }),
       wasm: {} as Partial<AtomifyWasmModule> as AtomifyWasmModule,
       hasSynchronized: true,
@@ -568,8 +590,7 @@ describe("SyncVariablesModifier", () => {
         scalarValue: 273.15,
         syncDataPoints: false,
         hasData1D: false,
-        lmpVariable:
-          existingLmpVariable,
+        lmpVariable: existingLmpVariable,
       },
     };
 
@@ -615,25 +636,24 @@ describe("SyncVariablesModifier", () => {
     vi.mocked(input.lammps!.getVariableNames).mockReturnValue(
       createMockCPPArray(["v_data"]),
     );
-    vi.mocked(input.lammps!.getVariable).mockReturnValue(
-      mockLmpVariable,
-    );
+    vi.mocked(input.lammps!.getVariable).mockReturnValue(mockLmpVariable);
 
     modifier.run(input as ModifierInput, output as ModifierOutput, true);
 
     const variable = output.variables!["v_data"];
     expect(variable.hasData1D).toBe(true);
     expect(variable.data1D).toBeDefined();
-    expect(variable.data1D!.data).toEqual([[0.0, 100.0], [1.0, 200.0]]);
+    expect(variable.data1D!.data).toEqual([
+      [0.0, 100.0],
+      [1.0, 200.0],
+    ]);
     expect(variable.data1D!.labels).toEqual(["x", "series1"]);
   });
 });
 
 // --- Helper functions ---
 
-function createMockLammps(
-  overrides: Partial<LammpsWeb> = {},
-): LammpsWeb {
+function createMockLammps(overrides: Partial<LammpsWeb> = {}): LammpsWeb {
   return {
     getNumAtoms: vi.fn(() => 0),
     computeParticles: vi.fn(() => 0),

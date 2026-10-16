@@ -40,6 +40,8 @@ import {
   RowIconButton,
 } from "./ui";
 
+import ViewDataModal from "./modals/ViewDataModal";
+
 type FileKind = "folder" | "script" | "notebook" | "doc";
 
 function kindOf(entry: FileStat): FileKind {
@@ -104,6 +106,7 @@ const FilesTab = () => {
   const setScreen = useStoreActions((actions) => actions.projects.setScreen);
   const ui = useShellUI();
 
+  const [viewDataPath, setViewDataPath] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [newFileOpen, setNewFileOpen] = useState(false);
   const [renameTarget, setRenameTarget] = useState<string | null>(null);
@@ -410,6 +413,16 @@ const FilesTab = () => {
                       <TargetIcon />
                     </RowIconButton>
                   )}
+                  {editable && kind === "doc" && (
+                    <RowIconButton
+                      title="View structure"
+                      disabled={!ui.engineReady}
+                      data-testid={`view-data-${entry.path}`}
+                      onClick={() => setViewDataPath(entry.path)}
+                    >
+                      <PlayIcon />
+                    </RowIconButton>
+                  )}
                   {editable && (
                     <RowIconButton
                       title="Edit"
@@ -494,6 +507,10 @@ const FilesTab = () => {
         </div>
       </div>
 
+      <ViewDataModal
+        path={viewDataPath}
+        onClose={() => setViewDataPath(null)}
+      />
       <PromptModal
         open={newFileOpen}
         title="New file"

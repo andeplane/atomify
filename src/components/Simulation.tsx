@@ -6,7 +6,7 @@ import { useStoreActions, useStoreState } from "../hooks";
 // bridges its streamed particle/box data back into the store's usual
 // heap-pointer path. See src/wasm/LammpsWorkerProxy.ts.
 import { LammpsWorkerProxy } from "../wasm/LammpsWorkerProxy";
-import { notification } from "antd";
+import { useShellUI } from "../shell/ShellContext";
 import { time_event, track } from "../utils/metrics";
 import {
   getWasmOrNull,
@@ -32,8 +32,17 @@ const SimulationComponent = () => {
   const addLammpsOutput = useStoreActions(
     (actions) => actions.simulation.addLammpsOutput,
   );
-  const selectedMenu = useStoreState((state) => state.app.selectedMenu);
+  const liveViewportVisible = useStoreState(
+    (state) => state.app.liveViewportVisible,
+  );
+  const visualizer = useStoreState((state) => state.render.visualizer);
+  // Hook-based toasts: antd's static notification functions don't render
+  // under React 19 (see ShellContext.tsx). Mounted inside ShellUIContext.
+  const { notify } = useShellUI();
   const setLammps = useStoreActions((actions) => actions.simulation.setLammps);
+  const setEngineError = useStoreActions(
+    (actions) => actions.app.setEngineError,
+  );
   const setStatus = useStoreActions((actions) => actions.app.setStatus);
   const runPostTimestep = useStoreActions(
     (actions) => actions.processing.runPostTimestep,
@@ -65,7 +74,29 @@ const SimulationComponent = () => {
 
   useEffect(() => {
     const onKeyDown = (ev: KeyboardEvent) => {
-      if (selectedMenu !== "view") {
+      // Shortcuts belong to the viewport, not text entry or modal controls.
+      const path = ev.composedPath();
+      const interacting = path.some(
+        (target) =>
+          target instanceof HTMLElement &&
+          (target.isContentEditable ||
+            target.matches(
+              'input, textarea, select, button, a[href], [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="slider"], [role="spinbutton"]',
+            )),
+      );
+      if (
+        !liveViewportVisible ||
+        interacting ||
+        ev.defaultPrevented ||
+        ev.isComposing ||
+        ev.repeat ||
+        ev.ctrlKey ||
+        ev.metaKey ||
+        ev.altKey ||
+        document.querySelector(
+          '[role="dialog"][aria-modal="true"], dialog[open]',
+        )
+      ) {
         return;
       }
 
@@ -84,22 +115,23 @@ const SimulationComponent = () => {
         const value: number =
           syncFrequencyMap[ev.key as keyof typeof syncFrequencyMap];
         setSimulationSettings({ ...simulationSettings, speed: value });
-        notification.info({
+        notify.info({
           message: `Setting simulation speed to ${value}.`,
         });
       }
 
       if (running && ev.key === " ") {
+        ev.preventDefault();
         setPaused(!paused);
       }
 
       if (ev.key === "c" && !ev.metaKey && !ev.ctrlKey) {
-        if (!window.visualizer) return;
-        const cameraPosition = window.visualizer.getCameraPosition();
-        const cameraTarget = window.visualizer.getCameraTarget();
+        if (!visualizer) return;
+        const cameraPosition = visualizer.getCameraPosition();
+        const cameraTarget = visualizer.getCameraTarget();
         const output = `#/camera position ${cameraPosition.x.toFixed(1)} ${cameraPosition.y.toFixed(1)} ${cameraPosition.z.toFixed(1)}\n#/camera target ${cameraTarget.x.toFixed(1)} ${cameraTarget.y.toFixed(1)} ${cameraTarget.z.toFixed(1)}`;
-        navigator.clipboard.writeText(output);
-        notification.info({
+        void navigator.clipboard.writeText(output);
+        notify.info({
           message: "Copied camera position and target to clipboard.",
         });
       }
@@ -109,7 +141,9 @@ const SimulationComponent = () => {
   }, [
     lammps,
     running,
-    selectedMenu,
+    liveViewportVisible,
+    visualizer,
+    notify,
     paused,
     setPaused,
     setSimulationSettings,
@@ -168,6 +202,27 @@ const SimulationComponent = () => {
       return;
     }
     loadStartedRef.current = true;
+    setEngineError(undefined);
+    // Safari and other WebKit browsers (including iOS browsers) cannot run
+    // our credentialless / SharedArrayBuffer engine configuration.
+    const isWebKit =
+      /AppleWebKit/i.test(navigator.userAgent) &&
+      !/Chrome\/|Chromium\/|Edg\/|OPR\/|Android/i.test(navigator.userAgent);
+    if (isWebKit) {
+      setEngineError(
+        "Safari is not supported for simulations. Use Chrome or Firefox on a desktop computer.",
+      );
+      return;
+    }
+    if (
+      !window.crossOriginIsolated ||
+      typeof SharedArrayBuffer === "undefined"
+    ) {
+      setEngineError(
+        "The simulation engine requires cross-origin isolation. Reload the page; if this persists, check browser settings or try another browser.",
+      );
+      return;
+    }
     setStatus({
       title: "Downloading LAMMPS ...",
       text: "",
@@ -182,15 +237,16 @@ const SimulationComponent = () => {
     // interface; the store and modifier/render pipeline keep reading data
     // through the usual heap-pointer path, now backed by the streamed bridge
     // heap instead of a real main-thread module.
-    const proxy = new LammpsWorkerProxy();
-    proxy.onPrint(onPrint);
-    // Surface worker/LAMMPS errors in the console panel rather than only the
-    // devtools console.
-    proxy.onError((message) => onPrint(message));
-    proxyRef.current = proxy;
-    proxy
-      .load()
-      .then(() => {
+    Promise.resolve()
+      .then(async () => {
+        const proxy = new LammpsWorkerProxy();
+        proxy.onPrint(onPrint);
+        proxy.onError((message) => onPrint(message));
+        proxyRef.current = proxy;
+        await proxy.load();
+        return proxy;
+      })
+      .then((proxy) => {
         track("WASM.Load");
         setStatus({
           title: "Downloading LAMMPS ...",
@@ -206,14 +262,15 @@ const SimulationComponent = () => {
         // The module failed to load — don't leave the UI stuck on the
         // "Downloading LAMMPS …" spinner with no explanation.
         const message = error instanceof Error ? error.message : String(error);
+        setEngineError(message);
         onPrint(`Failed to load LAMMPS: ${message}`);
         setStatus(undefined);
-        notification.error({
+        notify.error({
           message: "Failed to load LAMMPS",
           description: message,
         });
       });
-  }, [onPrint, setLammps, setStatus]);
+  }, [onPrint, setLammps, setStatus, setEngineError, notify]);
   return <></>;
 };
 export default SimulationComponent;

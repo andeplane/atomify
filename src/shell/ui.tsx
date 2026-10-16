@@ -173,11 +173,19 @@ export function statusPillColors(status: RunStatus | "queued" | "external"): {
     case "canceled":
       return { bg: "var(--chip)", color: "var(--text-3)", label: "Canceled" };
     case "interrupted":
-      return { bg: "var(--bad-soft)", color: "var(--warn)", label: "Interrupted" };
+      return {
+        bg: "var(--bad-soft)",
+        color: "var(--warn)",
+        label: "Interrupted",
+      };
     case "queued":
       return { bg: "var(--chip)", color: "var(--text-3)", label: "Queued" };
     case "external":
-      return { bg: "var(--chip)", color: "var(--text-3)", label: "External run" };
+      return {
+        bg: "var(--chip)",
+        color: "var(--text-3)",
+        label: "External run",
+      };
   }
 }
 
@@ -567,7 +575,12 @@ export const PromptModal = ({
     }
   };
   return (
-    <ModalShell open={open} onClose={onCancel} maxWidth={420} testId="prompt-modal">
+    <ModalShell
+      open={open}
+      onClose={onCancel}
+      maxWidth={420}
+      testId="prompt-modal"
+    >
       <div style={{ padding: "20px 22px 22px" }}>
         <h3
           style={{
@@ -646,7 +659,12 @@ export const ConfirmModal = ({
     return null;
   }
   return (
-    <ModalShell open={open} onClose={onCancel} maxWidth={420} testId="confirm-modal">
+    <ModalShell
+      open={open}
+      onClose={onCancel}
+      maxWidth={420}
+      testId="confirm-modal"
+    >
       <div style={{ padding: "20px 22px 22px" }}>
         <h3
           style={{

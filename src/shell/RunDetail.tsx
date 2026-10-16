@@ -1,3 +1,5 @@
+import ColorModifierSettings from "../modifiers/ColorModifierSettings";
+import ContinueRunModal from "./modals/ContinueRunModal";
 /**
  * Run detail (ADR-003 §4): live 3D viewport + following console + status
  * panel while running; frame.png (or a designed placeholder with Run again)
@@ -27,7 +29,13 @@ import { Chip, GhostButton, MONO, PulseDot, StatusPill } from "./ui";
 const CONSOLE_COLLAPSED_KEY = "atomify_run_console_collapsed";
 
 const RunDetail = ({ runId }: { runId: string }) => {
+  const [colorsOpen, setColorsOpen] = useState(false);
   const active = useStoreState((state) => state.projects.active);
+  const loadedSimulationId = useStoreState((s) => s.simulation.simulation?.id);
+  const [continueOpen, setContinueOpen] = useState(false);
+  const residentRun = useStoreState((s) => s.projects.residentRun);
+  const runQueue = useStoreState((s) => s.projects.runQueue);
+  const startRuns = useStoreActions((a) => a.projects.startRuns);
   const activeRun = useStoreState((state) => state.projects.activeRun);
   const lammpsOutput = useStoreState((state) => state.simulation.lammpsOutput);
   const runTimesteps = useStoreState(
@@ -65,6 +73,21 @@ const RunDetail = ({ runId }: { runId: string }) => {
   const entry = active?.runs.find((run) => run.runId === runId);
   const meta = entry?.meta ?? null;
   const live = activeRun?.runId === runId && activeRun?.dirName === dirName;
+
+  const canContinue =
+    meta?.status === "completed" &&
+    !meta.viewOnly &&
+    !activeRun &&
+    !runQueue.length &&
+    residentRun?.dirName === dirName &&
+    residentRun?.runId === runId &&
+    residentRun?.quick === active?.quick;
+
+  const viewStructure =
+    meta?.viewOnly &&
+    meta.status === "completed" &&
+    !activeRun &&
+    loadedSimulationId === `${dirName}/runs/${runId}`;
 
   const [log, setLog] = useState<string[] | null>(null);
   const [frameUrl, setFrameUrl] = useState<string | null>(null);
@@ -291,6 +314,12 @@ const RunDetail = ({ runId }: { runId: string }) => {
       data-testid="run-detail"
       style={{ flex: 1, display: "flex", overflow: "hidden" }}
     >
+      {colorsOpen && (
+        <ColorModifierSettings open onClose={() => setColorsOpen(false)} />
+      )}
+      {continueOpen && meta && (
+        <ContinueRunModal meta={meta} onClose={() => setContinueOpen(false)} />
+      )}
       <div
         style={{
           flex: 1,
@@ -369,6 +398,43 @@ const RunDetail = ({ runId }: { runId: string }) => {
             runs/{runId}
           </span>
           <div style={{ flex: 1 }} />
+          {(live || viewStructure) && (
+            <GhostButton
+              data-testid="color-atoms"
+              onClick={() => setColorsOpen(true)}
+            >
+              Color atoms
+            </GhostButton>
+          )}
+          {meta?.continuationOf && (
+            <Chip>Continued from #{runNumber(meta.continuationOf)}</Chip>
+          )}
+          {canContinue && (
+            <GhostButton
+              data-testid="continue-run"
+              onClick={() => setContinueOpen(true)}
+            >
+              Continue simulation
+            </GhostButton>
+          )}
+          {(meta?.continuationOf || meta?.replayOf) && !activeRun && (
+            <GhostButton
+              data-testid="replay-continuation"
+              onClick={() =>
+                void startRuns([
+                  {
+                    inputScript: meta.inputScript,
+                    vars: meta.vars ?? {},
+                    useKokkos: false,
+                    threads: 1,
+                    replayOf: runId,
+                  },
+                ])
+              }
+            >
+              Run full sequence again
+            </GhostButton>
+          )}
           {live && (
             <button
               onClick={() => ui.stopRun()}
@@ -430,7 +496,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
                 }
           }
         >
-          {live ? (
+          {live || viewStructure ? (
             <View visible pane />
           ) : frameUrl ? (
             <img
@@ -472,7 +538,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
               <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.5)" }}>
                 Trajectories aren't replayed yet — run again to watch it live.
               </div>
-              {meta?.inputScript && (
+              {meta?.inputScript && !meta.continuationOf && !meta.replayOf && (
                 <button
                   data-testid="run-again"
                   disabled={!ui.engineReady}

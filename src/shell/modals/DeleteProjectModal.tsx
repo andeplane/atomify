@@ -87,7 +87,14 @@ const DeleteProjectModal = ({
               margin: "10px 0 18px",
             }}
           >
-            <span style={{ color: "var(--bad)", flexShrink: 0, marginTop: 1, display: "flex" }}>
+            <span
+              style={{
+                color: "var(--bad)",
+                flexShrink: 0,
+                marginTop: 1,
+                display: "flex",
+              }}
+            >
               <WarningIcon />
             </span>
             This project has a run in progress — stop it before deleting.

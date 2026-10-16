@@ -47,6 +47,7 @@ export type LammpsWeb = {
   }>;
   getMemoryUsage: () => number;
 
+  getParticleRadii?: () => Float32Array | null;
   getPositionsPointer: () => number;
   getIdPointer: () => number;
   getTypePointer: () => number;
@@ -66,6 +67,7 @@ export type LammpsWeb = {
 
   computeBonds: () => number;
   computeParticles: () => number;
+  getUnitStyle?: () => import("./utils/units").UnitStyle | undefined;
   getDimension: () => number;
   getWalls: () => CPPArray<Wall>;
 };

@@ -34,24 +34,30 @@ Atomify supports special commands that can be added as comments in your LAMMPS i
 ### Atom Styling
 
 **Set atom type with element name (automatic coloring):**
+
 ```
 #/atom <type> <element_name>
 ```
+
 Assigns an element name to an atom type. Atomify will automatically use the standard color and radius for that element.
 
 Example:
+
 ```
 #/atom 1 oxygen
 #/atom 2 hydrogen
 ```
 
 **Set atom type with custom radius and color:**
+
 ```
 #/atom <type> <radius> #RRGGBB
 ```
+
 Sets a custom radius and color (in hexadecimal format) for an atom type.
 
 Example:
+
 ```
 #/atom 1 2.0 #ff0000
 #/atom 2 1.5 #0000ff
@@ -60,12 +66,15 @@ Example:
 ### Dynamic Bonds
 
 **Create bonds between atom types:**
+
 ```
 #/bond <type1> <type2> <distance>
 ```
+
 Creates dynamic bonds between atoms of `type1` and `type2` if they are within the specified `distance`.
 
 Example:
+
 ```
 #/bond 1 2 2.0
 #/bond 1 1 1.7
@@ -74,23 +83,29 @@ Example:
 ### Camera Control
 
 **Set initial camera position:**
+
 ```
 #/camera position <x> <y> <z>
 ```
+
 Sets the initial position of the camera in 3D space.
 
 Example:
+
 ```
 #/camera position 50 40 100
 ```
 
 **Set camera target:**
+
 ```
 #/camera target <x> <y> <z>
 ```
+
 Sets the point in 3D space that the camera looks at.
 
 Example:
+
 ```
 #/camera target 25 25 25
 ```
@@ -138,33 +153,18 @@ Install packages with NPM
 
 `npm install`
 
-### Compile LAMMPS (Optional: if you don't need to modify LAMMPS installation)
-
-Ensure that `em++` is in your path.
-
-```
-cd cpp
-python build.py
-cd ..
-```
+The LAMMPS engine is not built in this repo: it ships prebuilt from the [lammps.js](https://www.npmjs.com/package/lammps.js) npm package, installed by `npm install`.
 
 ### Install JupyterLite (Optional: if you need Jupyter notebooks when running locally)
 
-Create an empty Python environment (Python 3.12 is recommended)
-Install packages
+With Python 3 available (3.12 is recommended), run
 
 ```
-pip install -r jupyterlite/requirements.txt
+make jupyter
 ```
 
-Build JupyterLite
-
-```
-jupyter lite build --contents jupyterlite/content --output-dir public/jupyter
-node scripts/patch-jupyterlite-sw.mjs
-```
-
-The second command patches the JupyterLite service worker to inject the
+This creates a virtualenv in `.venv-jupyterlite`, builds the site into
+`public/jupyter`, and patches the JupyterLite service worker to inject the
 COOP/COEP headers the cross-origin-isolated app requires (the deploy
 workflow does the same). If a deployed service worker ever misbehaves,
 visiting https://andeplane.github.io/atomify/?sw-reset unregisters
