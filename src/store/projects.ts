@@ -28,6 +28,7 @@ import type {
 import {
   allocateRunDir,
   bytesToWriteContent,
+  isQuotaExceededError,
   listRuns,
   readRunMeta,
   reconcileRuns,
@@ -122,6 +123,11 @@ const MID_RUN_COPY_INTERVAL_MS = 3000;
 
 /** Wrapper artifacts from the vars-injection mechanism — engine detail. */
 const RUN_INTERNAL_FILE = /^(_vars_|_wrapper_)/;
+
+/** run.json `error` for a run whose outputs hit the quota (ADR-001
+ *  Consequences). Settings > Storage lists per-project usage with delete. */
+export const STORAGE_FULL_RUN_ERROR =
+  "Browser storage is full — free space in Settings > Storage.";
 
 const SCRIPT_FILE = /(^|\/)in\.[^/]*$|\.in$/;
 
@@ -1314,6 +1320,16 @@ export const projectsModel: ProjectsModel = {
     const workdirId =
       continuation && resident ? resident.workdirId : simulation.id;
     const workdir = `/${workdirId}`;
+    // A quota error while copying outputs fails the run with a clear reason
+    // and keeps what was copied (ADR-001 Consequences: never silent loss).
+    let storageFull = false;
+    const projectName =
+      getState().projects.find((p) => p.dirName === request.dirName)
+        ?.displayName ?? request.dirName;
+    const storageFullNotice = () =>
+      `Browser storage is full: run #${runId.replace(/^run-0*/, "")} of ` +
+      `"${projectName}" failed and kept partial outputs. Free space in ` +
+      `Settings > Storage.`;
     const copyOutputs = async (maxBytes?: number) => {
       if (!lammps.snapshotWorkdir) {
         return;
@@ -1341,6 +1357,11 @@ export const projectsModel: ProjectsModel = {
           );
         }
       } catch (error) {
+        if (isQuotaExceededError(error)) {
+          storageFull = true;
+          actions.setNotice(storageFullNotice());
+          return;
+        }
         actions.setNotice(
           `Could not copy run outputs to storage: ${
             error instanceof Error ? error.message : String(error)
@@ -1401,20 +1422,27 @@ export const projectsModel: ProjectsModel = {
           fullLog.join("\n") + "\n",
         );
       }
-    } catch {
-      // The log is a convenience copy; never fail the run over it.
+    } catch (error) {
+      // The log is a convenience copy; never fail the run over it — unless
+      // storage is full, in which case the outputs are incomplete too.
+      storageFull ||= isQuotaExceededError(error);
     }
     const existing = await readRunMeta(storage, request.dirName, runId);
     runMeta = {
       ...(existing ?? runMeta),
-      status:
-        stopReason === "canceled"
+      status: storageFull
+        ? "failed"
+        : stopReason === "canceled"
           ? "canceled"
           : stopReason === "failed"
             ? "failed"
             : "completed",
       finishedAt: new Date().toISOString(),
-      error: stopReason === "failed" ? errorMessage : undefined,
+      error: storageFull
+        ? STORAGE_FULL_RUN_ERROR
+        : stopReason === "failed"
+          ? errorMessage
+          : undefined,
       stats: {
         timesteps: lammps.getTimesteps(),
         numAtoms: lammps.getNumAtoms(),
@@ -1422,14 +1450,24 @@ export const projectsModel: ProjectsModel = {
           (Date.now() - new Date(runMeta.startedAt).getTime()) / 1000,
       },
     };
-    await writeRunMeta(storage, request.dirName, runMeta);
+    try {
+      await writeRunMeta(storage, request.dirName, runMeta);
+    } catch (error) {
+      if (!isQuotaExceededError(error)) {
+        throw error;
+      }
+      // Not even run.json fits: it stays "running" on disk until
+      // reconcileRuns marks it interrupted; the notice below says why.
+      storageFull = true;
+      runMeta = { ...runMeta, status: "failed", error: STORAGE_FULL_RUN_ERROR };
+    }
     track("Run.Finish", {
       status: runMeta.status,
       wallSeconds: runMeta.stats?.wallSeconds,
       timesteps: runMeta.stats?.timesteps,
       exampleId: request.exampleId,
     });
-    const frame = await captureViewport();
+    const frame = storageFull ? undefined : await captureViewport();
     if (frame) {
       try {
         await storage.write(
@@ -1458,7 +1496,14 @@ export const projectsModel: ProjectsModel = {
     actions.setActiveRun(undefined);
     await actions.refreshActive();
     const state = getState();
-    if (state.screen.name !== "project" || state.screen.runId !== runId) {
+    if (storageFull) {
+      // Queued sweep runs would hit the same wall; stop them here.
+      actions.setRunQueue([]);
+      actions.setNotice(storageFullNotice());
+    } else if (
+      state.screen.name !== "project" ||
+      state.screen.runId !== runId
+    ) {
       actions.setNotice(
         `Run #${runId.replace(/^run-0*/, "")} ${runMeta.status}.`,
       );
