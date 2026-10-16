@@ -7,7 +7,9 @@
  * construction) or an in-memory store (quick runs, embeds, tests). Listing
  * never bulk-reads file bodies beyond the directory being listed: project
  * and run discovery scan keys and read only the small `.atomify/*.json`
- * records.
+ * records. Key scans are scoped too — a key range under the directory
+ * (keysWithPrefix), or a skip-scan of top-level names for the library — so
+ * their cost follows the project, not every file in the whole library.
  */
 
 import {
@@ -19,7 +21,13 @@ import {
   validateRelativePath,
   type ContentsRecord,
 } from "./contentsSchema";
-import { createJupyterCheckpointsStore, createJupyterFilesStore, MemoryStore } from "./kv";
+import {
+  createJupyterCheckpointsStore,
+  createJupyterFilesStore,
+  keysWithPrefix,
+  MemoryStore,
+  topLevelNames,
+} from "./kv";
 import type { KeyValueStore } from "./kv";
 import { uniqueSlug } from "./slug";
 import type {
@@ -50,12 +58,7 @@ export class ContentsProjectStorage implements ProjectStorage {
   // --- Projects -----------------------------------------------------------
 
   async listProjects(): Promise<ProjectMeta[]> {
-    const keys = await this.files.keys();
-    const topLevel = new Set<string>();
-    for (const key of keys) {
-      const slash = key.indexOf("/");
-      topLevel.add(slash === -1 ? key : key.slice(0, slash));
-    }
+    const topLevel = await topLevelNames(this.files);
     const projects: ProjectMeta[] = [];
     for (const dirName of topLevel) {
       const meta = await this.readProjectMeta(dirName);
@@ -67,17 +70,10 @@ export class ContentsProjectStorage implements ProjectStorage {
   }
 
   async createProject(meta: NewProjectMeta): Promise<ProjectMeta> {
-    const keys = await this.files.keys();
-    const taken = new Set(
-      keys.map((key) => {
-        const slash = key.indexOf("/");
-        return slash === -1 ? key : key.slice(0, slash);
-      }),
-    );
+    const taken = new Set(await topLevelNames(this.files));
     const dirName = uniqueSlug(meta.displayName, taken);
     const color =
-      meta.color ??
-      PROJECT_COLORS[taken.size % PROJECT_COLORS.length];
+      meta.color ?? PROJECT_COLORS[taken.size % PROJECT_COLORS.length];
 
     const projectMeta: ProjectMeta = {
       schemaVersion: 1,
@@ -123,14 +119,14 @@ export class ContentsProjectStorage implements ProjectStorage {
 
   async deleteProject(dirName: string): Promise<void> {
     validateRelativePath(dirName);
-    const prefix = `${dirName}/`;
-    const keys = await this.files.keys();
-    for (const key of keys) {
-      if (key === dirName || key.startsWith(prefix)) {
-        await this.files.removeItem(key);
-        await this.checkpoints.removeItem(key);
-      }
-    }
+    // project.json goes after the files and the directory record last: a
+    // closed tab mid-delete leaves a still-listed project to delete again,
+    // never invisible orphaned records eating quota.
+    const metaKey = `${dirName}/${PROJECT_META_PATH}`;
+    const keys = await keysWithPrefix(this.files, `${dirName}/`);
+    await this.removeKeys(keys.filter((key) => key !== metaKey));
+    await this.removeKeys([metaKey]);
+    await this.removeKeys([dirName]);
   }
 
   // --- Files ----------------------------------------------------------------
@@ -142,15 +138,12 @@ export class ContentsProjectStorage implements ProjectStorage {
     }
     const base = subdir ? `${dirName}/${subdir}` : dirName;
     const prefix = `${base}/`;
-    const keys = await this.files.keys();
+    const keys = await keysWithPrefix(this.files, prefix);
 
     // Direct children, plus directories implied by deeper keys whose own
     // record is missing (defensive against externally-written trees).
     const children = new Set<string>();
     for (const key of keys) {
-      if (!key.startsWith(prefix)) {
-        continue;
-      }
       const rest = key.slice(prefix.length);
       const slash = rest.indexOf("/");
       children.add(slash === -1 ? rest : rest.slice(0, slash));
@@ -198,6 +191,14 @@ export class ContentsProjectStorage implements ProjectStorage {
     return recordToStat(record, path);
   }
 
+  /**
+   * Move a file or directory tree. The store has no multi-key transaction
+   * (writes stay on localforage, see kv.ts), so the order is what makes it
+   * crash-safe: every new key (and its checkpoints) is written before any
+   * old key is removed. A tab closed mid-rename leaves the tree under BOTH
+   * names — a duplicate the user can delete — never a half-moved directory
+   * with records missing from both.
+   */
   async rename(dirName: string, from: string, to: string): Promise<void> {
     validateRelativePath(dirName);
     validateRelativePath(from);
@@ -205,20 +206,26 @@ export class ContentsProjectStorage implements ProjectStorage {
     const fromFull = `${dirName}/${from}`;
     const toFull = `${dirName}/${to}`;
     const record = await this.requireRecord(dirName, from);
-
-    if (record.type === "directory") {
-      const prefix = `${fromFull}/`;
-      const keys = await this.files.keys();
-      for (const key of keys) {
-        if (key === fromFull || key.startsWith(prefix)) {
-          const target = toFull + key.slice(fromFull.length);
-          await this.moveKey(key, target);
-        }
-      }
+    if (fromFull === toFull) {
+      // Copy-then-delete onto itself would delete the file.
       return;
     }
+    if (toFull.startsWith(`${fromFull}/`)) {
+      throw new Error(`Cannot move ${from} into itself`);
+    }
+
+    // Ascending key order puts each directory record before its children,
+    // so the new tree is coherent at every point of the copy phase.
+    const keys =
+      record.type === "directory"
+        ? [fromFull, ...(await keysWithPrefix(this.files, `${fromFull}/`))]
+        : [fromFull];
     await this.ensureParents(toFull);
-    await this.moveKey(fromFull, toFull);
+    for (const key of keys) {
+      await this.copyKey(key, toFull + key.slice(fromFull.length));
+    }
+    await this.removeKeys(keys.slice(1));
+    await this.removeKeys([fromFull]);
   }
 
   async remove(dirName: string, path: string): Promise<void> {
@@ -227,17 +234,10 @@ export class ContentsProjectStorage implements ProjectStorage {
     const fullPath = `${dirName}/${path}`;
     const record = await this.files.getItem<ContentsRecord>(fullPath);
     if (record?.type === "directory") {
-      const prefix = `${fullPath}/`;
-      const keys = await this.files.keys();
-      for (const key of keys) {
-        if (key.startsWith(prefix)) {
-          await this.files.removeItem(key);
-          await this.checkpoints.removeItem(key);
-        }
-      }
+      await this.removeKeys(await keysWithPrefix(this.files, `${fullPath}/`));
     }
-    await this.files.removeItem(fullPath);
-    await this.checkpoints.removeItem(fullPath);
+    // The directory record last, so an interrupted remove stays visible.
+    await this.removeKeys([fullPath]);
   }
 
   async stat(dirName: string, path: string): Promise<FileStat | null> {
@@ -287,10 +287,7 @@ export class ContentsProjectStorage implements ProjectStorage {
   private async writeDirectoryRecord(fullPath: string): Promise<void> {
     const existing = await this.files.getItem<ContentsRecord>(fullPath);
     if (!existing) {
-      await this.files.setItem(
-        fullPath,
-        buildDirectoryRecord(fullPath),
-      );
+      await this.files.setItem(fullPath, buildDirectoryRecord(fullPath));
     }
   }
 
@@ -309,7 +306,18 @@ export class ContentsProjectStorage implements ProjectStorage {
     return record;
   }
 
-  private async moveKey(from: string, to: string): Promise<void> {
+  /** Remove records and their checkpoints (independent keys, in parallel). */
+  private async removeKeys(keys: string[]): Promise<void> {
+    await Promise.all(
+      keys.flatMap((key) => [
+        this.files.removeItem(key),
+        this.checkpoints.removeItem(key),
+      ]),
+    );
+  }
+
+  /** Write `from`'s record (and checkpoints) under `to`; `from` is kept. */
+  private async copyKey(from: string, to: string): Promise<void> {
     const record = await this.files.getItem<ContentsRecord>(from);
     if (!record) {
       return;
@@ -334,13 +342,11 @@ export class ContentsProjectStorage implements ProjectStorage {
     } else {
       await this.files.setItem(to, moved);
     }
-    await this.files.removeItem(from);
     // Checkpoints follow the file (mirrors BrowserStorageDrive's own rename).
     const checkpoint = await this.checkpoints.getItem(from);
     if (checkpoint !== null) {
       await this.checkpoints.setItem(to, checkpoint);
     }
-    await this.checkpoints.removeItem(from);
   }
 }
 

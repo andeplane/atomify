@@ -196,7 +196,7 @@ export const processingModel: ProcessingModel = {
       );
       allActions.render.setParticleStylesUpdated(false);
 
-      if (everything || getStoreState().app.selectedMenu === "view") {
+      if (everything || getStoreState().app.liveViewportVisible) {
         if (
           modifierOutput.particles &&
           modifierOutput.particles !== particles
@@ -272,7 +272,7 @@ export const processingModel: ProcessingModel = {
       allActions.render.setParticleStylesUpdated(false);
 
       // Only update rendering state, skip UI state updates
-      if (getStoreState().app.selectedMenu === "view") {
+      if (getStoreState().app.liveViewportVisible) {
         if (
           modifierOutput.particles &&
           modifierOutput.particles !== particles

@@ -29,7 +29,7 @@ function fixture() {
     simulationStatus: simulationStatusModel,
     processing: { ...processingModel, postTimestepModifiers: [] },
     simulation: { lammps },
-    app: { selectedMenu: "shell" },
+    app: { liveViewportVisible: false },
     render: { setParticleStylesUpdated: action(() => {}) },
   } as unknown as StoreModel);
   return { store, lammps, wallsDelete };

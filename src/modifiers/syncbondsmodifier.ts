@@ -22,7 +22,7 @@ class SyncBondsModifier extends Modifier {
     const bondRadius = input.renderState.bondRadius;
     let newBonds = output.bonds;
     if (!newBonds || newBonds.capacity < numBonds) {
-      let newCapacity = numBonds;
+      const newCapacity = numBonds;
       if (newBonds) {
         newBonds.dispose();
       }

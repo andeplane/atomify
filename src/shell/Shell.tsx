@@ -70,8 +70,8 @@ const Shell = () => {
   const startRuns = useStoreActions((actions) => actions.projects.startRuns);
   const readFile = useStoreActions((actions) => actions.projects.readFile);
   const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
-  const setSelectedMenu = useStoreActions(
-    (actions) => actions.app.setSelectedMenu,
+  const setLiveViewportVisible = useStoreActions(
+    (actions) => actions.app.setLiveViewportVisible,
   );
 
   const examples = useExamples();
@@ -242,9 +242,9 @@ const Shell = () => {
   }, [activeRun, openProject, setScreen, store, notify]);
 
   // --- Particle streaming gate --------------------------------------------------
-  // The processing pipeline only pushes particles into the render model when
-  // selectedMenu === "view" (legacy gate). The live run-detail screen IS the
-  // view now; this also enables the viewport keyboard shortcuts there.
+  // The processing pipeline only pushes particles into the render model while
+  // the live run-detail screen (the viewport) is visible; this also enables
+  // the viewport keyboard shortcuts there.
   const liveDetailVisible =
     screen.name === "project" &&
     screen.tab === "runs" &&
@@ -252,8 +252,8 @@ const Shell = () => {
     activeRun?.runId === screen.runId &&
     activeRun?.dirName === screen.dirName;
   useEffect(() => {
-    setSelectedMenu(liveDetailVisible ? "view" : "shell");
-  }, [liveDetailVisible, setSelectedMenu]);
+    setLiveViewportVisible(liveDetailVisible);
+  }, [liveDetailVisible, setLiveViewportVisible]);
 
   // --- Run launcher ----------------------------------------------------------------
   const launch = useCallback(

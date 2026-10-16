@@ -16,17 +16,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
-      # npm install must come before the JupyterLite build: `make jupyter`
+      # npm ci must come before the JupyterLite build: `make jupyter`
       # copies node_modules/lammps.js/dist into public/jupyter/lammps.
       # (make jupyter also applies the COOP/COEP service-worker patch via
-      # scripts/jupyter_coi_patch.py, superseding main's standalone
-      # patch-jupyterlite-sw.mjs step.)
+      # scripts/jupyter_coi_patch.py.)
       - name: Install Packages
-        run: npm install
+        run: npm ci
+      - name: Check lammps.js wheel version
+        run: node scripts/check_lammps_versions.mjs
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Check starter notebook template
+        run: python scripts/check_notebook_template.py
       - name: Build JupyterLite site
         run: make jupyter
       - name: Run Typecheck
@@ -34,9 +37,11 @@ jobs:
       - name: Run Tests
         run: npm run test:run
       - name: Run Prettier
-        run: npx prettier .
+        run: npx prettier --check .
+      - name: Run ESLint
+        run: npm run lint
       - name: Build app
-        run: npm run predeploy
+        run: npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

@@ -157,7 +157,17 @@ describe("getSimulationBoxBounds", () => {
 });
 
 describe("isTriclinicBox", () => {
-  const orthogonalMatrix = new THREE.Matrix3().set(10, 0, 0, 0, 20, 0, 0, 0, 30);
+  const orthogonalMatrix = new THREE.Matrix3().set(
+    10,
+    0,
+    0,
+    0,
+    20,
+    0,
+    0,
+    0,
+    30,
+  );
 
   const triclinicMatrix = new THREE.Matrix3().set(10, 2, 0, 0, 20, 0, 0, 0, 30);
 
@@ -170,12 +180,36 @@ describe("isTriclinicBox", () => {
   });
 
   it.each([
-    ["a.y non-zero", new THREE.Matrix3().set(10, 0, 0, 1, 20, 0, 0, 0, 30), true],
-    ["a.z non-zero", new THREE.Matrix3().set(10, 0, 0, 0, 20, 0, 1, 0, 30), true],
-    ["b.z non-zero", new THREE.Matrix3().set(10, 0, 0, 0, 20, 0, 0, 1, 30), true],
-    ["c.x non-zero", new THREE.Matrix3().set(10, 0, 1, 0, 20, 0, 0, 0, 30), true],
-    ["c.y non-zero", new THREE.Matrix3().set(10, 0, 0, 0, 20, 1, 0, 0, 30), true],
-    ["b.x non-zero", new THREE.Matrix3().set(10, 1, 0, 0, 20, 0, 0, 0, 30), true],
+    [
+      "a.y non-zero",
+      new THREE.Matrix3().set(10, 0, 0, 1, 20, 0, 0, 0, 30),
+      true,
+    ],
+    [
+      "a.z non-zero",
+      new THREE.Matrix3().set(10, 0, 0, 0, 20, 0, 1, 0, 30),
+      true,
+    ],
+    [
+      "b.z non-zero",
+      new THREE.Matrix3().set(10, 0, 0, 0, 20, 0, 0, 1, 30),
+      true,
+    ],
+    [
+      "c.x non-zero",
+      new THREE.Matrix3().set(10, 0, 1, 0, 20, 0, 0, 0, 30),
+      true,
+    ],
+    [
+      "c.y non-zero",
+      new THREE.Matrix3().set(10, 0, 0, 0, 20, 1, 0, 0, 30),
+      true,
+    ],
+    [
+      "b.x non-zero",
+      new THREE.Matrix3().set(10, 1, 0, 0, 20, 0, 0, 0, 30),
+      true,
+    ],
   ])("should return %s when matrix is set", (_, matrix, expected) => {
     expect(isTriclinicBox(matrix)).toBe(expected);
   });
