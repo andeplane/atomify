@@ -67,6 +67,12 @@ const cppArray = <T>(items: T[]) => ({
 
 interface RunResolver {
   resolve: () => void;
+  reject: (error: Error) => void;
+}
+
+interface SnapshotResolver {
+  resolve: (snapshot: WorkdirSnapshot) => void;
+  reject: (error: Error) => void;
 }
 
 export class LammpsWorkerProxy implements LammpsWeb {
@@ -122,15 +128,19 @@ export class LammpsWorkerProxy implements LammpsWeb {
 
   private nextRequestId = 1;
   private readonly pendingRuns = new Map<number, RunResolver>();
-  private readonly pendingSnapshots = new Map<
-    number,
-    (snapshot: WorkdirSnapshot) => void
-  >();
+  private readonly pendingSnapshots = new Map<number, SnapshotResolver>();
+
+  // Set once the worker has crashed (uncaught error / wasm abort / OOM, or an
+  // undeliverable message). The worker cannot be recovered in place, so every
+  // later call fails fast instead of waiting on a reply that will never come.
+  private crashError?: Error;
+  private rejectLoad?: (error: Error) => void;
 
   private readyPromise?: Promise<void>;
   private stepListener?: () => void;
   private printListener?: (text: string) => void;
   private errorListener?: (message: string) => void;
+  private crashListener?: (message: string) => void;
 
   private readonly moduleBridge: AtomifyWasmModule;
 
@@ -140,6 +150,14 @@ export class LammpsWorkerProxy implements LammpsWeb {
     });
     this.worker.onmessage = (ev: MessageEvent<WorkerEvent>) =>
       this.handleEvent(ev.data);
+    // Without these, a crashed worker leaves runFile/snapshotWorkdir promises
+    // pending forever and the UI stuck on "running".
+    this.worker.onerror = (ev: ErrorEvent) => {
+      ev.preventDefault();
+      this.handleCrash(ev.message || "unknown worker error");
+    };
+    this.worker.onmessageerror = () =>
+      this.handleCrash("a worker message could not be deserialized");
     this.allocate(4096, 4096, 4096);
     this.moduleBridge = this.buildModuleBridge();
   }
@@ -147,7 +165,40 @@ export class LammpsWorkerProxy implements LammpsWeb {
   // --- Worker plumbing ---------------------------------------------------
 
   private send(command: WorkerCommand, transfer?: Transferable[]) {
+    // A dead worker can't answer; dropping fire-and-forget commands is safe,
+    // and request/reply callers check crashError before getting here.
+    if (this.crashError) return;
     this.worker.postMessage(command, transfer ?? []);
+  }
+
+  /**
+   * The worker died: fail everything waiting on it, surface the message
+   * through the usual onError path (console output), and notify the crash
+   * listener so the app can tell the user to reload.
+   */
+  private handleCrash(detail: string) {
+    if (this.crashError) return;
+    const error = new Error(`The simulation engine crashed: ${detail}`);
+    this.crashError = error;
+    this.cRunning = false;
+    this.cError = error.message;
+    console.error("LAMMPS worker crashed:", detail);
+    this.rejectLoad?.(error);
+    this.rejectLoad = undefined;
+    const runs = [...this.pendingRuns.values()];
+    const snapshots = [...this.pendingSnapshots.values()];
+    this.pendingRuns.clear();
+    this.pendingSnapshots.clear();
+    for (const run of runs) run.reject(error);
+    for (const snapshot of snapshots) snapshot.reject(error);
+    this.worker.terminate();
+    this.errorListener?.(error.message);
+    this.crashListener?.(error.message);
+  }
+
+  /** True once the worker has crashed; the proxy must be replaced (reload). */
+  get crashed(): boolean {
+    return this.crashError !== undefined;
   }
 
   private handleEvent(event: WorkerEvent) {
@@ -187,10 +238,10 @@ export class LammpsWorkerProxy implements LammpsWeb {
         break;
       }
       case "workdirSnapshot": {
-        const resolve = this.pendingSnapshots.get(event.requestId);
-        if (resolve) {
+        const pending = this.pendingSnapshots.get(event.requestId);
+        if (pending) {
           this.pendingSnapshots.delete(event.requestId);
-          resolve({
+          pending.resolve({
             files: event.files.map((file: WorkdirFile) => ({
               path: file.path,
               bytes: new Uint8Array(file.bytes),
@@ -447,15 +498,22 @@ export class LammpsWorkerProxy implements LammpsWeb {
   load(): Promise<void> {
     if (!this.readyPromise) {
       this.readyPromise = new Promise<void>((resolve, reject) => {
+        if (this.crashError) {
+          reject(this.crashError);
+          return;
+        }
+        this.rejectLoad = reject;
         const onMessage = (ev: MessageEvent<WorkerEvent>) => {
           if (ev.data.type === "ready") {
             this.worker.removeEventListener("message", onMessage);
+            this.rejectLoad = undefined;
             resolve();
           } else if (ev.data.type === "error") {
             // A failure during load() posts `error` instead of `ready`; reject
             // so the caller can show it, rather than hanging forever at
             // "Downloading LAMMPS…".
             this.worker.removeEventListener("message", onMessage);
+            this.rejectLoad = undefined;
             reject(new Error(ev.data.message));
           }
         };
@@ -475,6 +533,14 @@ export class LammpsWorkerProxy implements LammpsWeb {
   }
 
   /**
+   * Called once if the worker crashes (after onError has received the same
+   * message). The engine is unusable from then on; the page must be reloaded.
+   */
+  onCrash(listener: (message: string) => void) {
+    this.crashListener = listener;
+  }
+
+  /**
    * Runs synchronously once per streamed timestep, after the bridge heap has
    * been refreshed — the main-thread analogue of the adapter's step listener.
    */
@@ -485,6 +551,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
   // --- LammpsWeb: lifecycle ---------------------------------------------
 
   start(): boolean {
+    if (this.crashError) return false;
     this.cRunning = true;
     this.cError = "";
     setCancel(false);
@@ -519,11 +586,12 @@ export class LammpsWorkerProxy implements LammpsWeb {
   }
 
   runFile(path: string): Promise<void> {
+    if (this.crashError) return Promise.reject(this.crashError);
     const requestId = this.nextRequestId++;
     this.cRunning = true;
     this.cError = "";
-    return new Promise<void>((resolve) => {
-      this.pendingRuns.set(requestId, { resolve });
+    return new Promise<void>((resolve, reject) => {
+      this.pendingRuns.set(requestId, { resolve, reject });
       this.send({ type: "runFile", requestId, path });
     });
   }
@@ -535,8 +603,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
    * mid-run copy; omit it for the complete end-of-run snapshot.
    */
   snapshotWorkdir(dir: string, maxBytes?: number): Promise<WorkdirSnapshot> {
+    if (this.crashError) return Promise.reject(this.crashError);
     const requestId = this.nextRequestId++;
-    return new Promise<WorkdirSnapshot>((resolve) => {
+    return new Promise<WorkdirSnapshot>((resolve, reject) => {
       // Belt-and-braces against a dead/wedged worker: resolve empty after
       // 60s rather than stranding the run pipeline on this await forever.
       const timeout = setTimeout(() => {
@@ -545,9 +614,15 @@ export class LammpsWorkerProxy implements LammpsWeb {
           resolve({ files: [], skipped: [] });
         }
       }, 60_000);
-      this.pendingSnapshots.set(requestId, (snapshot) => {
-        clearTimeout(timeout);
-        resolve(snapshot);
+      this.pendingSnapshots.set(requestId, {
+        resolve: (snapshot) => {
+          clearTimeout(timeout);
+          resolve(snapshot);
+        },
+        reject: (error) => {
+          clearTimeout(timeout);
+          reject(error);
+        },
       });
       this.send({ type: "snapshotWorkdir", requestId, dir, maxBytes });
     });
