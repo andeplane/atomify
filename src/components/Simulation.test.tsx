@@ -15,17 +15,28 @@ vi.mock("../wasm/wasmInstance", () => ({
   setPausedFlag: vi.fn(),
 }));
 vi.mock("../utils/metrics", () => ({ track: vi.fn(), time_event: vi.fn() }));
-vi.mock("antd", () => ({ notification: { info: vi.fn() } }));
+const { notifyInfo } = vi.hoisted(() => ({ notifyInfo: vi.fn() }));
+vi.mock("../shell/ShellContext", () => ({
+  useShellUI: () => ({ notify: { info: notifyInfo, error: vi.fn() } }),
+}));
 
 const setSpeed = vi.fn();
 const setPaused = vi.fn();
 
+let state: State<StoreModel>;
+
 beforeEach(() => {
   vi.clearAllMocks();
-  const state = {
-    app: { selectedMenu: "view" },
+  state = {
+    app: { liveViewportVisible: true },
     simulation: { running: true, paused: true },
     settings: { simulation: { speed: 1 } },
+    render: {
+      visualizer: {
+        getCameraPosition: () => ({ x: 1, y: 2, z: 3 }),
+        getCameraTarget: () => ({ x: 0, y: 0, z: 0.25 }),
+      },
+    },
   } as unknown as State<StoreModel>;
   const actions = {
     app: {},
@@ -87,9 +98,37 @@ describe("simulation keyboard shortcuts", () => {
     render(<Simulation />);
     fireEvent.keyDown(window, { key: "9" });
     expect(setSpeed).toHaveBeenCalledWith({ speed: 200 });
+    expect(notifyInfo).toHaveBeenCalledWith({
+      message: "Setting simulation speed to 200.",
+    });
     const event = new KeyboardEvent("keydown", { key: " ", cancelable: true });
     window.dispatchEvent(event);
     expect(setPaused).toHaveBeenCalledWith(false);
     expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("ignores shortcuts while the live viewport is not visible", () => {
+    (state.app as { liveViewportVisible: boolean }).liveViewportVisible = false;
+    render(<Simulation />);
+    fireEvent.keyDown(window, { key: "9" });
+    fireEvent.keyDown(window, { key: " " });
+    expect(setSpeed).not.toHaveBeenCalled();
+    expect(setPaused).not.toHaveBeenCalled();
+  });
+
+  it("copies the camera from the store's visualizer and toasts via notify", () => {
+    const writeText = vi.fn();
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText },
+      configurable: true,
+    });
+    render(<Simulation />);
+    fireEvent.keyDown(window, { key: "c" });
+    expect(writeText).toHaveBeenCalledWith(
+      "#/camera position 1.0 2.0 3.0\n#/camera target 0.0 0.0 0.3",
+    );
+    expect(notifyInfo).toHaveBeenCalledWith({
+      message: "Copied camera position and target to clipboard.",
+    });
   });
 });

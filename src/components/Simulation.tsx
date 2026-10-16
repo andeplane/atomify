@@ -6,7 +6,7 @@ import { useStoreActions, useStoreState } from "../hooks";
 // bridges its streamed particle/box data back into the store's usual
 // heap-pointer path. See src/wasm/LammpsWorkerProxy.ts.
 import { LammpsWorkerProxy } from "../wasm/LammpsWorkerProxy";
-import { notification } from "antd";
+import { useShellUI } from "../shell/ShellContext";
 import { time_event, track } from "../utils/metrics";
 import {
   getWasmOrNull,
@@ -32,7 +32,13 @@ const SimulationComponent = () => {
   const addLammpsOutput = useStoreActions(
     (actions) => actions.simulation.addLammpsOutput,
   );
-  const selectedMenu = useStoreState((state) => state.app.selectedMenu);
+  const liveViewportVisible = useStoreState(
+    (state) => state.app.liveViewportVisible,
+  );
+  const visualizer = useStoreState((state) => state.render.visualizer);
+  // Hook-based toasts: antd's static notification functions don't render
+  // under React 19 (see ShellContext.tsx). Mounted inside ShellUIContext.
+  const { notify } = useShellUI();
   const setLammps = useStoreActions((actions) => actions.simulation.setLammps);
   const setEngineError = useStoreActions(
     (actions) => actions.app.setEngineError,
@@ -79,7 +85,7 @@ const SimulationComponent = () => {
             )),
       );
       if (
-        selectedMenu !== "view" ||
+        !liveViewportVisible ||
         interacting ||
         ev.defaultPrevented ||
         ev.isComposing ||
@@ -109,7 +115,7 @@ const SimulationComponent = () => {
         const value: number =
           syncFrequencyMap[ev.key as keyof typeof syncFrequencyMap];
         setSimulationSettings({ ...simulationSettings, speed: value });
-        notification.info({
+        notify.info({
           message: `Setting simulation speed to ${value}.`,
         });
       }
@@ -120,12 +126,12 @@ const SimulationComponent = () => {
       }
 
       if (ev.key === "c" && !ev.metaKey && !ev.ctrlKey) {
-        if (!window.visualizer) return;
-        const cameraPosition = window.visualizer.getCameraPosition();
-        const cameraTarget = window.visualizer.getCameraTarget();
+        if (!visualizer) return;
+        const cameraPosition = visualizer.getCameraPosition();
+        const cameraTarget = visualizer.getCameraTarget();
         const output = `#/camera position ${cameraPosition.x.toFixed(1)} ${cameraPosition.y.toFixed(1)} ${cameraPosition.z.toFixed(1)}\n#/camera target ${cameraTarget.x.toFixed(1)} ${cameraTarget.y.toFixed(1)} ${cameraTarget.z.toFixed(1)}`;
-        navigator.clipboard.writeText(output);
-        notification.info({
+        void navigator.clipboard.writeText(output);
+        notify.info({
           message: "Copied camera position and target to clipboard.",
         });
       }
@@ -135,7 +141,9 @@ const SimulationComponent = () => {
   }, [
     lammps,
     running,
-    selectedMenu,
+    liveViewportVisible,
+    visualizer,
+    notify,
     paused,
     setPaused,
     setSimulationSettings,
@@ -257,12 +265,12 @@ const SimulationComponent = () => {
         setEngineError(message);
         onPrint(`Failed to load LAMMPS: ${message}`);
         setStatus(undefined);
-        notification.error({
+        notify.error({
           message: "Failed to load LAMMPS",
           description: message,
         });
       });
-  }, [onPrint, setLammps, setStatus, setEngineError]);
+  }, [onPrint, setLammps, setStatus, setEngineError, notify]);
   return <></>;
 };
 export default SimulationComponent;

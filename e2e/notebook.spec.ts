@@ -19,7 +19,7 @@ test("notebook iframe targets the project's analysis notebook", async ({
 }) => {
   test.skip(
     !JUPYTER_BUILT,
-    "public/jupyter is not built — run `make jupyterlite` first",
+    "public/jupyter is not built — run `make jupyter` first",
   );
 
   await test.step("create a project and open the Notebook tab", async () => {

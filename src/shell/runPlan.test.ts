@@ -135,7 +135,10 @@ describe("buildCommandPreview", () => {
     drafts.T = { mode: "sweep", value: "3", from: "1", to: "3", steps: "5" };
 
     expect(
-      buildCommandPreview("in.melt", [T], drafts, { enabled: true, threads: 8 }),
+      buildCommandPreview("in.melt", [T], drafts, {
+        enabled: true,
+        threads: 8,
+      }),
     ).toBe("lmp -in in.melt -var T {1 … 3} -sf kk -k on t 8");
   });
 

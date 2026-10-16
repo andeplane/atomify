@@ -7,7 +7,7 @@
 
 import { useEffect, useMemo } from "react";
 import { useStoreState } from "../hooks";
-import { notebookUrlFor } from "../containers/Notebook";
+import { findProjectNotebook, notebookUrlFor } from "./notebookUrl";
 import { track } from "../utils/metrics";
 import { ExternalIcon } from "./icons";
 import { GhostButton, MONO } from "./ui";
@@ -24,9 +24,7 @@ const NotebookTab = () => {
     if (!active) {
       return notebookUrlFor(undefined, undefined);
     }
-    const notebook = active.files.find(
-      (file) => file.type !== "directory" && file.path.endsWith(".ipynb"),
-    );
+    const notebook = findProjectNotebook(active.files);
     return notebookUrlFor(active.meta.dirName, notebook?.path);
   }, [active]);
 

@@ -19,7 +19,7 @@
     "dygraphs": "^2.1.0",
     "easy-peasy": "^6.1.1",
     "fflate": "^0.8.3",
-    "lammps.js": "^1.5.1",
+    "lammps.js": "1.5.1",
     "localforage": "^1.10.0",
     "mixpanel-browser": "^2.75.0",
     "monaco-editor": "^0.55.1",
@@ -41,9 +41,8 @@
     "test:ui": "vitest --ui",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
-    "typecheck": "tsc --noEmit",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.node.json",
+    "lint": "eslint ."
   },
   "browserslist": {
     "production": [
@@ -58,6 +57,7 @@
     ]
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@jupyterlab/nbformat": "^4.6.3",
     "@playwright/test": "^1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -67,11 +67,13 @@
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^6.0.5",
     "@vitest/ui": "^4.1.10",
-    "coi-serviceworker": "^0.1.7",
-    "gh-pages": "^6.1.1",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.13.0",
     "jsdom": "^29.0.1",
     "prettier": "3.9.6",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.2",
     "vite": "^8.1.3",
     "vitest": "^4.1.11"
   }

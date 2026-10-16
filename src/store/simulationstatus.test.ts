@@ -149,9 +149,11 @@ describe("simulationStatus store", () => {
       const computes = { temp: createMockCompute("temp") };
       store.getActions().setComputes(computes);
 
-      store
-        .getActions()
-        .setModifierSyncDataPoints({ name: "temp", type: "compute", value: true });
+      store.getActions().setModifierSyncDataPoints({
+        name: "temp",
+        type: "compute",
+        value: true,
+      });
 
       expect(store.getState().computes["temp"].syncDataPoints).toBe(true);
     });
@@ -171,33 +173,41 @@ describe("simulationStatus store", () => {
       const variables = { myVar: createMockVariable("myVar") };
       store.getActions().setVariables(variables);
 
-      store
-        .getActions()
-        .setModifierSyncDataPoints({ name: "myVar", type: "variable", value: true });
+      store.getActions().setModifierSyncDataPoints({
+        name: "myVar",
+        type: "variable",
+        value: true,
+      });
 
       expect(store.getState().variables["myVar"].syncDataPoints).toBe(true);
     });
 
     it("should be a no-op when the named compute does not exist", () => {
-      store
-        .getActions()
-        .setModifierSyncDataPoints({ name: "missing", type: "compute", value: true });
+      store.getActions().setModifierSyncDataPoints({
+        name: "missing",
+        type: "compute",
+        value: true,
+      });
 
       expect(store.getState().computes).toEqual({});
     });
 
     it("should be a no-op when the named fix does not exist", () => {
-      store
-        .getActions()
-        .setModifierSyncDataPoints({ name: "missing", type: "fix", value: true });
+      store.getActions().setModifierSyncDataPoints({
+        name: "missing",
+        type: "fix",
+        value: true,
+      });
 
       expect(store.getState().fixes).toEqual({});
     });
 
     it("should be a no-op when the named variable does not exist", () => {
-      store
-        .getActions()
-        .setModifierSyncDataPoints({ name: "missing", type: "variable", value: true });
+      store.getActions().setModifierSyncDataPoints({
+        name: "missing",
+        type: "variable",
+        value: true,
+      });
 
       expect(store.getState().variables).toEqual({});
     });

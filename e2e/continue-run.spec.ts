@@ -21,13 +21,11 @@ test("continuation preserves engine state and parent results, and the full seque
 }) => {
   await gotoApp(page);
   await createBlankProject(page, "Continue test", "continue-test");
-  await page
-    .getByTestId("upload-input")
-    .setInputFiles({
-      name: "in.move",
-      mimeType: "text/plain",
-      buffer: Buffer.from(script),
-    });
+  await page.getByTestId("upload-input").setInputFiles({
+    name: "in.move",
+    mimeType: "text/plain",
+    buffer: Buffer.from(script),
+  });
   await waitForEngine(page);
   await page.getByTestId("run-file-in.move").click();
   await expect(page.getByTestId("continue-run")).toBeVisible({
@@ -39,12 +37,10 @@ test("continuation preserves engine state and parent results, and the full seque
     const output = await store
       .getActions()
       .projects.readFile("runs/run-001/trajectory.dump");
-    await store
-      .getActions()
-      .projects.writeFile({
-        path: "in.move",
-        content: "invalid working-tree edit\n",
-      });
+    await store.getActions().projects.writeFile({
+      path: "in.move",
+      content: "invalid working-tree edit\n",
+    });
     return output;
   });
   await page.getByTestId("continue-run").click();
