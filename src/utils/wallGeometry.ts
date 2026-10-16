@@ -1,10 +1,6 @@
 import * as THREE from "three";
 import { Wall } from "../types";
-import {
-  extractBasisVectors,
-  getSimulationBoxBounds,
-  isTriclinicBox,
-} from "./boxGeometry";
+import { getSimulationBoxBounds, isTriclinicBox } from "./boxGeometry";
 
 // Constants for wall rendering
 const WALL_OPACITY = 0.04;
@@ -26,7 +22,6 @@ export function createWallMesh(
   origin: THREE.Vector3,
   dimension: number,
 ): THREE.Mesh {
-  const { a, b, c } = extractBasisVectors(cellMatrix);
   const boxBounds = getSimulationBoxBounds(cellMatrix, origin);
 
   // Determine which axis this wall is on

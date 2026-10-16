@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import Modifier, { ModifierProps } from "./modifier";
+import Modifier from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 
 describe("Modifier", () => {

@@ -9,7 +9,7 @@ import type { ReactNode } from "react";
 import { useStoreActions, useStoreState } from "../hooks";
 import type { RunListEntry, RunMeta } from "../storage";
 import type { RunRequest } from "../store/projects";
-import { formatBytes, formatDuration, relativeTime, runNumber } from "./format";
+import { formatDuration, relativeTime, runNumber } from "./format";
 import {
   CheckIcon,
   ChevronRightIcon,

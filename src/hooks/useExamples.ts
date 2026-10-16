@@ -76,7 +76,7 @@ export function useExamples(): ExamplesData {
 
   useEffect(() => {
     let mounted = true;
-    (async () => {
+    void (async () => {
       const params = new URLSearchParams(window.location.search);
       const examplesUrl = params.get("examplesUrl") ?? DEFAULT_EXAMPLES_URL;
       try {
@@ -84,7 +84,7 @@ export function useExamples(): ExamplesData {
         if (mounted) {
           setState({ ...data, loading: false });
         }
-      } catch (error) {
+      } catch {
         // Fall back to the bundled examples when a custom URL fails.
         try {
           const data = await fetchExamples(DEFAULT_EXAMPLES_URL);

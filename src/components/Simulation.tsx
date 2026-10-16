@@ -124,7 +124,7 @@ const SimulationComponent = () => {
         const cameraPosition = window.visualizer.getCameraPosition();
         const cameraTarget = window.visualizer.getCameraTarget();
         const output = `#/camera position ${cameraPosition.x.toFixed(1)} ${cameraPosition.y.toFixed(1)} ${cameraPosition.z.toFixed(1)}\n#/camera target ${cameraTarget.x.toFixed(1)} ${cameraTarget.y.toFixed(1)} ${cameraTarget.z.toFixed(1)}`;
-        navigator.clipboard.writeText(output);
+        void navigator.clipboard.writeText(output);
         notification.info({
           message: "Copied camera position and target to clipboard.",
         });

@@ -574,7 +574,7 @@ export const simulationModel: SimulationModel = {
 
       await allActions.app.setStatus(undefined);
       if (simulation.start) {
-        actions.run();
+        void actions.run();
       } else {
         const inputScriptFile = simulation.files.find(
           (file) => file.fileName === simulation.inputScript,
