@@ -43,9 +43,14 @@ export const libraryThunks: Pick<
       }
       if (!quick && isStaleExampleCopy(meta)) {
         // One-time migration: rewritten on disk, so the next open is a no-op.
-        meta = await storage.updateProjectMeta(dirName, {
-          source: { type: "duplicate" },
-        });
+        // Only metrics depend on it, so a failed write must not block opening.
+        try {
+          meta = await storage.updateProjectMeta(dirName, {
+            source: { type: "duplicate" },
+          });
+        } catch (error) {
+          console.warn("Could not migrate stale example source", error);
+        }
       }
       const owned = new Set(
         helpers.getState().activeRun
