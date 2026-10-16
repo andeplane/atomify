@@ -1,11 +1,12 @@
 /**
  * The run detail sub-header: back to Runs, the run's number, status and
- * parameters, and its actions (color atoms, slice, continue, replay, stop,
- * analyze in notebook).
+ * parameters, and its actions (color atoms, periodic images, slice,
+ * continue, replay, stop, analyze in notebook).
  */
 
 import { useStoreActions, useStoreState } from "../hooks";
 import type { RunMeta } from "../storage";
+import PeriodicImagesControl from "./PeriodicImagesControl";
 import SliceControls from "./SliceControls";
 import { useShellUI } from "./ShellContext";
 import { runNumber } from "./format";
@@ -119,6 +120,7 @@ const RunDetailHeader = ({
           Color atoms
         </GhostButton>
       )}
+      {(live || viewStructure) && <PeriodicImagesControl live={live} />}
       {(live || viewStructure) && <SliceControls />}
       {meta?.continuationOf && (
         <Chip>Continued from #{runNumber(meta.continuationOf)}</Chip>

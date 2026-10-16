@@ -17,8 +17,11 @@ export interface RenderModel {
   particleStylesUpdated: boolean;
   bondRadius: number;
   particleRadius: number;
+  /** Left-drag pans instead of rotating the camera (toggled with P). */
+  panMode: boolean;
   setBondRadius: Action<RenderModel, number>;
   setParticleRadius: Action<RenderModel, number>;
+  setPanMode: Action<RenderModel, boolean>;
   setParticleStylesUpdated: Action<RenderModel, boolean>;
   resetParticleStyles: Action<RenderModel, void>;
   addParticleStyle: Action<RenderModel, ParticleStyle>;
@@ -29,6 +32,7 @@ export const renderModel: RenderModel = {
   particleStylesUpdated: true,
   bondRadius: 1,
   particleRadius: 1,
+  panMode: false,
   addParticleStyle: action((state, value: ParticleStyle) => {
     const particleStyles = [...state.particleStyles];
     particleStyles[value.index] = value.atomType;
@@ -45,6 +49,9 @@ export const renderModel: RenderModel = {
   setParticleRadius: action((state, value: number) => {
     track("Settings.Render.ParticleRadius", { value });
     state.particleRadius = value;
+  }),
+  setPanMode: action((state, value: boolean) => {
+    state.panMode = value;
   }),
   resetParticleStyles: action((state) => {
     state.particleStyles = [];

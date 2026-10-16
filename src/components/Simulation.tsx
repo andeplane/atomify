@@ -37,6 +37,8 @@ const SimulationComponent = () => {
   // Hook-based toasts: antd's static notification functions don't render
   // under React 19 (see ShellContext.tsx). Mounted inside ShellUIContext.
   const { notify } = useShellUI();
+  const panMode = useStoreState((state) => state.render.panMode);
+  const setPanMode = useStoreActions((actions) => actions.render.setPanMode);
   const setEngineError = useStoreActions(
     (actions) => actions.app.setEngineError,
   );
@@ -122,6 +124,10 @@ const SimulationComponent = () => {
           message: "Copied camera position and target to clipboard.",
         });
       }
+
+      if (ev.key === "p" || ev.key === "P") {
+        setPanMode(!panMode);
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -132,9 +138,18 @@ const SimulationComponent = () => {
     visualizer,
     notify,
     setPaused,
+    panMode,
+    setPanMode,
     setSimulationSettings,
     simulationSettings,
   ]);
+
+  // P only works while the live viewport is visible, so leave pan mode
+  // there too: otherwise a view-only run's 3D view would keep panning on
+  // left-drag with no way to switch it back.
+  useEffect(() => {
+    if (!liveViewportVisible && panMode) setPanMode(false);
+  }, [liveViewportVisible, panMode, setPanMode]);
 
   // The speed setting is how often the engine syncs (and streams a frame).
   // The proxy owns the value and forwards changes to the worker.

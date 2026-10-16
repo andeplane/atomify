@@ -73,6 +73,50 @@ function clipBounds(element: HTMLElement): Span {
   return viewport;
 }
 
+/**
+ * One custom-normal component. Keeps the typed text as a draft so clearing
+ * the field or typing "-" mid-edit doesn't snap it to 0; only a finite
+ * number is committed, and on blur an unfinished draft reverts.
+ */
+export const NormalInput = ({
+  label,
+  value,
+  onCommit,
+}: {
+  label: string;
+  value: number;
+  onCommit: (value: number) => void;
+}) => {
+  const [draft, setDraft] = useState(String(value));
+  const [shown, setShown] = useState(value);
+  if (shown !== value) {
+    setShown(value);
+    setDraft(String(value));
+  }
+  const parse = (text: string) => {
+    const next = text.trim() === "" ? NaN : Number(text);
+    return Number.isFinite(next) ? next : undefined;
+  };
+
+  return (
+    <input
+      type="number"
+      step={0.1}
+      aria-label={`Normal ${label}`}
+      value={draft}
+      onChange={(event) => {
+        setDraft(event.target.value);
+        const next = parse(event.target.value);
+        if (next !== undefined && next !== value) onCommit(next);
+      }}
+      onBlur={() => {
+        if (parse(draft) === undefined) setDraft(String(value));
+      }}
+      style={{ width: "100%", minWidth: 0, fontFamily: MONO }}
+    />
+  );
+};
+
 const rowStyle = {
   display: "flex",
   alignItems: "center",
@@ -154,7 +198,7 @@ const SliceControls = () => {
   };
   const setCustomComponent = (index: number, value: number) => {
     const customNormal = [...slice.customNormal] as Vector3Tuple;
-    customNormal[index] = Number.isFinite(value) ? value : 0;
+    customNormal[index] = value;
     update({ customNormal, ...recentered("custom", customNormal) });
   };
 
@@ -236,16 +280,11 @@ const SliceControls = () => {
           {slice.axis === "custom" && (
             <div style={{ display: "flex", gap: 6 }}>
               {slice.customNormal.map((value, index) => (
-                <input
+                <NormalInput
                   key={index}
-                  type="number"
-                  step={0.1}
-                  aria-label={`Normal ${"xyz"[index]}`}
+                  label={"xyz"[index]}
                   value={value}
-                  onChange={(event) =>
-                    setCustomComponent(index, Number(event.target.value))
-                  }
-                  style={{ width: "100%", minWidth: 0, fontFamily: MONO }}
+                  onCommit={(next) => setCustomComponent(index, next)}
                 />
               ))}
             </div>

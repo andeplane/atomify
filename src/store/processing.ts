@@ -9,6 +9,7 @@ import { Wall } from "../types";
 import * as THREE from "three";
 import type { EngineRegistry } from "../engine/EngineRegistry";
 import { StoreModel } from "./model";
+import { realParticleCount } from "../modifiers/periodicImages";
 import type { StoreInjections } from "./projects";
 import type { SimulationStatusData } from "./simulationstatus";
 
@@ -185,7 +186,10 @@ export const processingModel: ProcessingModel = {
         computes: modifierOutput.computes,
         fixes: modifierOutput.fixes,
         variables: modifierOutput.variables,
-        numBonds: modifierOutput.bonds?.count ?? 0,
+        numBonds: realParticleCount(
+          modifierOutput.bonds?.count ?? 0,
+          modifierOutput.imageShifts,
+        ),
         box: getSimulationBox(frame.boxMatrix, currentStatus.box),
         origo: getSimulationOrigo(frame.origin, currentStatus.origo),
         dimension: frame.dimension,

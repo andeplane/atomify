@@ -1,6 +1,7 @@
 import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 import { Bonds } from "omovi";
+import { replicatePositions } from "./periodicImages";
 
 class SyncBondsModifier extends Modifier {
   constructor({ name, active }: ModifierProps) {
@@ -20,10 +21,13 @@ class SyncBondsModifier extends Modifier {
 
     const frame = input.frame;
     const numBonds = frame.bondCount;
+    const shifts = output.imageShifts ?? [0, 0, 0];
+    const numImages = shifts.length / 3;
+    const numRendered = numBonds * numImages;
     const bondRadius = input.renderState.bondRadius;
     let newBonds = output.bonds;
-    if (!newBonds || newBonds.capacity < numBonds) {
-      const newCapacity = numBonds;
+    if (!newBonds || newBonds.capacity < numRendered) {
+      const newCapacity = numRendered;
       if (newBonds) {
         newBonds.dispose();
       }
@@ -44,10 +48,13 @@ class SyncBondsModifier extends Modifier {
 
     newBonds.positions1.set(frame.bondFirst.subarray(0, 3 * numBonds));
     newBonds.positions2.set(frame.bondSecond.subarray(0, 3 * numBonds));
+    // Shift both ends by the same image translation as the particles.
+    replicatePositions(newBonds.positions1, numBonds, shifts);
+    replicatePositions(newBonds.positions2, numBonds, shifts);
 
-    newBonds.count = numBonds;
+    newBonds.count = numRendered;
     if (newBonds.mesh) {
-      newBonds.mesh.count = numBonds;
+      newBonds.mesh.count = numRendered;
     }
     newBonds.markNeedsUpdate();
   };

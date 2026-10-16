@@ -14,6 +14,7 @@ import { Visualizer, type ParticleClickEvent } from "omovi";
 import type { StoreModel } from "../store/model";
 import type { Compute, Fix, Variable, Wall } from "../types";
 import type { EngineObjects, EngineRegistry } from "../engine/EngineRegistry";
+import type { UnitStyle } from "../utils/units";
 
 vi.mock("../rendering/particleAttributes", () => ({
   installParticleAttributes: vi.fn(),
@@ -80,6 +81,12 @@ vi.mock("../components/SelectedAtomsInfo", () => ({
 
 vi.mock("../components/ColorLegend", () => ({
   default: () => <div data-testid="color-legend" />,
+}));
+
+vi.mock("../components/ScaleBar", () => ({
+  default: ({ unit }: { unit?: string }) => (
+    <div data-testid="scale-bar">{unit}</div>
+  ),
 }));
 
 vi.mock("../modifiers/ColorModifierSettings", () => ({
@@ -468,6 +475,40 @@ describe("View", () => {
       expect(mockVisualizer.idle).toBe(false);
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // P2: scale bar visibility
+  // ---------------------------------------------------------------------------
+  describe("P2: scale bar visibility", () => {
+    it("shows the scale bar with the orthographic camera and the toggle on", () => {
+      // Arrange
+      mockState.settings.render.orthographic = true;
+      mockState.settings.render.showScaleBar = true;
+      mockState.simulationStatus.unitStyle = "metal";
+
+      // Act
+      render(<View visible={true} pane />);
+
+      // Assert: labelled with the length unit of the unit style
+      expect(screen.getByTestId("scale-bar")).toHaveTextContent("Å");
+    });
+
+    it("hides the scale bar in perspective mode", () => {
+      mockState.settings.render.showScaleBar = true;
+
+      render(<View visible={true} pane />);
+
+      expect(screen.queryByTestId("scale-bar")).not.toBeInTheDocument();
+    });
+
+    it("hides the scale bar when the toggle is off", () => {
+      mockState.settings.render.orthographic = true;
+
+      render(<View visible={true} pane />);
+
+      expect(screen.queryByTestId("scale-bar")).not.toBeInTheDocument();
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -506,6 +547,7 @@ function createDefaultMockState() {
       running: false,
       loadedWorkdir: undefined as string | undefined,
     },
+    render: { panMode: false },
     settings: {
       render: {
         ssao: false,
@@ -516,6 +558,7 @@ function createDefaultMockState() {
         orthographic: false,
         showSimulationBox: false,
         showWalls: false,
+        showScaleBar: false,
       },
     },
     simulationStatus: {
@@ -529,6 +572,7 @@ function createDefaultMockState() {
       variables: {} as Record<string, Variable>,
       dimension: 3,
       walls: [] as Wall[],
+      unitStyle: undefined as UnitStyle | undefined,
     },
   };
 }

@@ -9,7 +9,10 @@ type Color = { r: number; g: number; b: number };
 type Style = { color: Color; radius: number };
 type AttributeState = {
   styles: Map<number, Style>;
+  // First instance slot per ID; nextSlot chains further instances of the
+  // same ID (periodic images), ending in -1.
   slots: Map<number, number>;
+  nextSlot?: Int32Array;
   particles?: Particles;
   ids?: Float32Array;
   count?: number;
@@ -104,18 +107,20 @@ export function installParticleAttributes(visualizer: Visualizer): void {
   };
   visualizer.setColor = (id, color) => {
     styleFor(id).color = color;
-    const slot = state.slots.get(id);
-    if (slot !== undefined && state.color) {
-      state.color.setXYZ(slot, color.r / 255, color.g / 255, color.b / 255);
+    let slot = state.slots.get(id) ?? -1;
+    if (slot >= 0 && state.color) {
+      for (; slot >= 0; slot = state.nextSlot![slot])
+        state.color.setXYZ(slot, color.r / 255, color.g / 255, color.b / 255);
       state.color.needsUpdate = true;
     }
     visualizer.forceRender = true;
   };
   visualizer.setRadius = (id, radius) => {
     styleFor(id).radius = radius;
-    const slot = state.slots.get(id);
-    if (slot !== undefined && state.radius) {
-      state.radius.setX(slot, state.hidden?.[slot] ? 0 : radius);
+    let slot = state.slots.get(id) ?? -1;
+    if (slot >= 0 && state.radius) {
+      for (; slot >= 0; slot = state.nextSlot![slot])
+        state.radius.setX(slot, state.hidden?.[slot] ? 0 : radius);
       state.radius.needsUpdate = true;
     }
     visualizer.forceRender = true;
@@ -132,6 +137,7 @@ export function syncParticleAttributes(
   if (state.particles !== particles) {
     state.particles = particles;
     state.ids = new Float32Array(particles.capacity);
+    state.nextSlot = new Int32Array(particles.capacity);
     state.count = -1;
     state.color = new InstancedBufferAttribute(
       new Float32Array(particles.capacity * 3),
@@ -157,8 +163,10 @@ export function syncParticleAttributes(
   // Every radius is rewritten below, so earlier hide flags no longer apply.
   state.hidden = undefined;
   state.slots.clear();
-  for (let i = 0; i < particles.count; i++) {
+  // Walk backwards so each ID's chain starts at its lowest slot.
+  for (let i = particles.count - 1; i >= 0; i--) {
     const id = particles.indices[i];
+    state.nextSlot![i] = state.slots.get(id) ?? -1;
     state.slots.set(id, i);
     const style = state.styles.get(id);
     const color = style?.color ?? { r: 255, g: 255, b: 255 };

@@ -26,6 +26,9 @@ export type ModifierInput = {
 export type ModifierOutput = {
   particles?: Particles;
   bonds?: Bonds;
+  // Periodic image translations (xyz triples, zero shift first) applied by
+  // SyncParticlesModifier; later modifiers replicate or skip images with it.
+  imageShifts?: number[];
   colorsDirty: boolean;
   computes: { [key: string]: Compute };
   fixes: { [key: string]: Fix };

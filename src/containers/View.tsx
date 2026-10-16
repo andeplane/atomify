@@ -17,8 +17,13 @@ import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSummary";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import ColorLegend from "../components/ColorLegend";
+import ScaleBar from "../components/ScaleBar";
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import { track } from "../utils/metrics";
+import { remapLeftDragToPan } from "../utils/leftDragPan";
+import { OrthographicCamera } from "three";
+import { orthographicUnitsPerPixel } from "../utils/scaleBar";
+import { UNIT_SYSTEMS } from "../utils/units";
 import { applyLighting } from "../utils/lighting";
 import { useSimulationBoxOverlays } from "./useSimulationBoxOverlays";
 
@@ -102,6 +107,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const particles = useEngineState((objects) => objects.particles);
   const bonds = useEngineState((objects) => objects.bonds);
   const visualizer = useEngineState((objects) => objects.visualizer);
+  const panMode = useStoreState((state) => state.render.panMode);
 
   const refreshParticleStyles = useStoreActions(
     (actions) => actions.render.setParticleStylesUpdated,
@@ -127,6 +133,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
   const variables = useStoreState((state) => state.simulationStatus.variables);
+  const unitStyle = useStoreState((state) => state.simulationStatus.unitStyle);
 
   // Get color modifier for legend display
   const colorModifier = engine.colorModifier;
@@ -141,6 +148,17 @@ const View = ({ visible, pane = false }: ViewProps) => {
     if (variables[name]) return "variable";
     return undefined;
   };
+
+  const getScaleBarUnitsPerPixel = useCallback(() => {
+    if (!visualizer?.isOrthographic() || !domElement.current) {
+      return undefined;
+    }
+    // omovi has no public getter for the active camera.
+    const camera = visualizer["camera"];
+    return camera instanceof OrthographicCamera
+      ? orthographicUnitsPerPixel(camera, domElement.current.clientHeight)
+      : undefined;
+  }, [visualizer]);
 
   const handleClearSelection = useCallback(() => {
     setSelectedAtoms(new Set());
@@ -162,6 +180,16 @@ const View = ({ visible, pane = false }: ViewProps) => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedAtoms, handleClearSelection]);
+
+  // Pan mode (toggled with P): left-drag pans, for trackpads and browsers
+  // where right-drag is unavailable. Right-drag keeps panning either way.
+  useEffect(() => {
+    if (!panMode || !visualizer || !domElement.current) return;
+    return remapLeftDragToPan(
+      domElement.current,
+      visualizer.renderer.getRawRenderer().domElement,
+    );
+  }, [panMode, visualizer]);
 
   useEffect(() => {
     if (domElement.current && !loading && !visualizer) {
@@ -445,6 +473,25 @@ const View = ({ visible, pane = false }: ViewProps) => {
               }}
             />
           )}
+          {panMode && (
+            <div
+              data-testid="pan-mode-indicator"
+              style={{
+                position: "absolute",
+                bottom: 12,
+                left: 12,
+                zIndex: 1,
+                padding: "4px 10px",
+                borderRadius: 999,
+                background: "rgba(0, 0, 0, 0.55)",
+                color: "rgba(255, 255, 255, 0.85)",
+                fontSize: 12,
+                pointerEvents: "none",
+              }}
+            >
+              Pan mode · press P to rotate
+            </div>
+          )}
           <SelectedAtomsInfo
             selectedAtoms={selectedAtoms}
             particles={particles}
@@ -461,6 +508,14 @@ const View = ({ visible, pane = false }: ViewProps) => {
               onSettingsClick={() => setShowColorSettings(true)}
             />
           )}
+          {visualizer &&
+            renderSettings.showScaleBar &&
+            renderSettings.orthographic && (
+              <ScaleBar
+                getUnitsPerPixel={getScaleBarUnitsPerPixel}
+                unit={unitStyle && UNIT_SYSTEMS[unitStyle].length}
+              />
+            )}
         </div>
       </div>
       {showNoSimulationModal && (

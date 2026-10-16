@@ -61,6 +61,18 @@ describe("instance styles", () => {
     expect(oldColor).not.toHaveBeenCalled();
     expect(oldRadius).not.toHaveBeenCalled();
   });
+  it("styles every periodic image that shares an atom's ID", () => {
+    const { visualizer: v, particles: p, geometry: g } = fixture();
+    p.indices.set([42, 42, 42]);
+    p.count = 3;
+    syncParticleAttributes(v, p);
+    v.setColor(42, { r: 0, g: 0, b: 255 });
+    v.setRadius(42, 2);
+    expect(Array.from(g.getAttribute("atomColor").array)).toEqual([
+      0, 0, 1, 0, 0, 1, 0, 0, 1,
+    ]);
+    expect(Array.from(g.getAttribute("atomRadius").array)).toEqual([2, 2, 2]);
+  });
   it("does not dirty style buffers when only positions change", () => {
     const { visualizer: v, particles: p, geometry: g } = fixture();
     syncParticleAttributes(v, p);
@@ -98,6 +110,15 @@ describe("instance styles", () => {
     expect(radius()).toEqual([1.25, 0]);
     setHiddenParticles(v, p, undefined);
     expect(radius()).toEqual([1.25, 2.5]);
+  });
+  it("keeps hidden periodic images hidden when their atom is restyled", () => {
+    const { visualizer: v, particles: p, geometry: g } = fixture();
+    p.indices.set([42, 42, 42]);
+    p.count = 3;
+    syncParticleAttributes(v, p);
+    setHiddenParticles(v, p, new Uint8Array([0, 1, 0]));
+    v.setRadius(42, 2);
+    expect(Array.from(g.getAttribute("atomRadius").array)).toEqual([2, 0, 2]);
   });
   it("drops hide flags when instances are remapped", () => {
     const { visualizer: v, particles: p, geometry: g } = fixture();
