@@ -15,7 +15,7 @@
 The current shell is an antd `Layout` whose `Sider` menu drives an
 invisible antd `Tabs` (`src/App.tsx`, `src/containers/Main.tsx`,
 `src/hooks/useMenuItems.tsx`). There is no library, no run history, no
-file management, and the run-completion moment is a Console *modal*
+file management, and the run-completion moment is a Console _modal_
 popping over everything (`handleRunResult` → `setShowConsole(true)`).
 
 The design establishes a different information architecture than the old
@@ -26,12 +26,12 @@ View/Console panes; those fold into a per-run **Run detail** screen.
 
 ### 1. Vocabulary (glossary — binding for all UI copy)
 
-| Term | Meaning | UI usage |
-| --- | --- | --- |
-| **Project** | Named directory: working tree + runs (ADR-001) | "Projects", "New project", breadcrumb `Projects /` |
-| **Run** | One execution, immutable record | "Run #005", "Runs" tab |
-| **Simulation** | What a run executes | verbs/marketing only: "Run simulation" button |
-| **Quick run** | Ephemeral scratch project (ADR-001 §6) | banner: "This is a quick run — files are temporary" |
+| Term           | Meaning                                        | UI usage                                            |
+| -------------- | ---------------------------------------------- | --------------------------------------------------- |
+| **Project**    | Named directory: working tree + runs (ADR-001) | "Projects", "New project", breadcrumb `Projects /`  |
+| **Run**        | One execution, immutable record                | "Run #005", "Runs" tab                              |
+| **Simulation** | What a run executes                            | verbs/marketing only: "Run simulation" button       |
+| **Quick run**  | Ephemeral scratch project (ADR-001 §6)         | banner: "This is a quick run — files are temporary" |
 
 "Your simulations" from the original brief is realized as the **Projects**
 library. The word "project" is the user-facing noun (per the design);
@@ -85,9 +85,13 @@ string is replaced by typed state:
 type Screen =
   | { name: "home" }
   | { name: "examples" }
-  | { name: "project"; dirName: string; tab: "files" | "runs" | "notebook";
-      filePath?: string;   // files tab: editor sub-screen
-      runId?: string }     // runs tab: run-detail sub-screen
+  | {
+      name: "project";
+      dirName: string;
+      tab: "files" | "runs" | "notebook";
+      filePath?: string; // files tab: editor sub-screen
+      runId?: string;
+    }; // runs tab: run-detail sub-screen
 ```
 
 Deep links (`?project=diffusion&tab=runs&run=run-005`) map 1:1 so refresh
@@ -142,8 +146,8 @@ auto-started run and hides sidebar/library (as today) and the Notebook tab
   hidden. Run outputs open **read-only** in Monaco with a "snapshot of
   run #NNN" banner; immutability of runs is a UI convention (the kernel
   is not blocked from writing there — documented, not enforced).
-- Editor autosaves (debounced) with visible *saving / saved / couldn't
-  save (retry)* states (ADR-001 §8); the design's Save button is the
+- Editor autosaves (debounced) with visible _saving / saved / couldn't
+  save (retry)_ states (ADR-001 §8); the design's Save button is the
   immediate-flush affordance. `Save & run` = flush + run.
 - **Delete project**: confirm modal states run count and total size
   ("Deletes 14 runs, 320 MB — cannot be undone"); blocked while that
@@ -171,18 +175,18 @@ auto-started run and hides sidebar/library (as today) and the Notebook tab
   iframe keeps its own theme setting in v1.
 - The WASM-loading progress must not block Home/library browsing (today a
   modal blocks everything until the engine loads) — the engine is needed
-  only to *run*, not to browse, edit, or read notebooks.
+  only to _run_, not to browse, edit, or read notebooks.
 
 ### 7. v1 vs deferred
 
-| In v1 | Deferred |
-| --- | --- |
-| Home, library, create (blank/example/upload), open, rename, duplicate, delete | Project tags/search/sort beyond updated-at |
-| Files CRUD + Monaco autosave + input-script selection | Working-tree subfolders UI, drag-reorder |
-| Runs list + run detail + interrupted reconciliation + delete run | Run comparison/diff UI, run notes |
-| Variable sweeps (list/range, sequential queue) | Parallel sweep execution, sweep charts |
-| Quick run + Save as project; share links open as quick runs | Publishing a project as a shareable example |
-| Design tokens, dark + light, storage meter | Accent color picker, thumbnails on cards |
+| In v1                                                                         | Deferred                                    |
+| ----------------------------------------------------------------------------- | ------------------------------------------- |
+| Home, library, create (blank/example/upload), open, rename, duplicate, delete | Project tags/search/sort beyond updated-at  |
+| Files CRUD + Monaco autosave + input-script selection                         | Working-tree subfolders UI, drag-reorder    |
+| Runs list + run detail + interrupted reconciliation + delete run              | Run comparison/diff UI, run notes           |
+| Variable sweeps (list/range, sequential queue)                                | Parallel sweep execution, sweep charts      |
+| Quick run + Save as project; share links open as quick runs                   | Publishing a project as a shareable example |
+| Design tokens, dark + light, storage meter                                    | Accent color picker, thumbnails on cards    |
 
 ## Alternatives considered
 

@@ -19,7 +19,11 @@ import {
   validateRelativePath,
   type ContentsRecord,
 } from "./contentsSchema";
-import { createJupyterCheckpointsStore, createJupyterFilesStore, MemoryStore } from "./kv";
+import {
+  createJupyterCheckpointsStore,
+  createJupyterFilesStore,
+  MemoryStore,
+} from "./kv";
 import type { KeyValueStore } from "./kv";
 import { uniqueSlug } from "./slug";
 import type {
@@ -76,8 +80,7 @@ export class ContentsProjectStorage implements ProjectStorage {
     );
     const dirName = uniqueSlug(meta.displayName, taken);
     const color =
-      meta.color ??
-      PROJECT_COLORS[taken.size % PROJECT_COLORS.length];
+      meta.color ?? PROJECT_COLORS[taken.size % PROJECT_COLORS.length];
 
     const projectMeta: ProjectMeta = {
       schemaVersion: 1,
@@ -287,10 +290,7 @@ export class ContentsProjectStorage implements ProjectStorage {
   private async writeDirectoryRecord(fullPath: string): Promise<void> {
     const existing = await this.files.getItem<ContentsRecord>(fullPath);
     if (!existing) {
-      await this.files.setItem(
-        fullPath,
-        buildDirectoryRecord(fullPath),
-      );
+      await this.files.setItem(fullPath, buildDirectoryRecord(fullPath));
     }
   }
 
