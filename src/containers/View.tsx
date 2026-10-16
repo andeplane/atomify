@@ -4,42 +4,27 @@ import {
 } from "../rendering/particleAttributes";
 import { applyAmbientOcclusion } from "../utils/ambientOcclusion";
 import { useEffect, useState, useRef, useCallback } from "react";
+import type { CSSProperties } from "react";
 import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 
-import { useStoreState, useStoreActions } from "../hooks";
+import {
+  useEngine,
+  useEngineState,
+  useStoreState,
+  useStoreActions,
+} from "../hooks";
 import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSummary";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import ColorLegend from "../components/ColorLegend";
 import ScaleBar from "../components/ScaleBar";
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
-import styled from "styled-components";
 import { track } from "../utils/metrics";
-import ColorModifier from "../modifiers/colormodifier";
-import * as THREE from "three";
-import {
-  createBoxGeometry,
-  calculateBoxRadius,
-  getSimulationBoxBounds,
-} from "../utils/boxGeometry";
-import { createWallGroup } from "../utils/wallGeometry";
+import { OrthographicCamera } from "three";
 import { orthographicUnitsPerPixel } from "../utils/scaleBar";
 import { UNIT_SYSTEMS } from "../utils/units";
-
-// Type guard for Visualizer with updateCameraPlanes method
 import { applyLighting } from "../utils/lighting";
-
-interface VisualizerWithCameraPlanes extends Visualizer {
-  updateCameraPlanes: (box: THREE.Box3) => void;
-}
-
-function visualizerHasCameraPlanes(
-  v: Visualizer,
-): v is VisualizerWithCameraPlanes {
-  return (
-    "updateCameraPlanes" in v && typeof v.updateCameraPlanes === "function"
-  );
-}
+import { useSimulationBoxOverlays } from "./useSimulationBoxOverlays";
 
 const { Header } = Layout;
 
@@ -49,22 +34,16 @@ interface ViewProps {
    * Pane mode (new shell's run detail): fill the parent container instead of
    * the viewport, hide the legacy header/summary overlays (the run detail has
    * its own status panel), suppress the no-simulation modal, and release the
-   * store's visualizer on unmount so a remount can recreate it.
+   * registered visualizer on unmount so a remount can recreate it.
    */
   pane?: boolean;
 }
 
-const VisualizerWrapper = styled.div`
-  height: 100vh;
-  width: 100%;
-  position: relative;
-`;
-
-const PaneVisualizerWrapper = styled.div`
-  height: 100%;
-  width: 100%;
-  position: relative;
-`;
+const visualizerWrapperStyle = (pane: boolean): CSSProperties => ({
+  height: pane ? "100%" : "100vh",
+  width: "100%",
+  position: "relative",
+});
 
 const MOBILE_BREAKPOINT = 900;
 const SIMULATION_SUMMARY_DRAWER_VISIBLE_KEY = "simulationSummaryDrawerVisible";
@@ -122,12 +101,11 @@ const View = ({ visible, pane = false }: ViewProps) => {
     (state) => state.simulation.cameraPosition,
   );
   const cameraTarget = useStoreState((state) => state.simulation.cameraTarget);
-  const particles = useStoreState((state) => state.render.particles);
-  const bonds = useStoreState((state) => state.render.bonds);
-  const visualizer = useStoreState((state) => state.render.visualizer);
-  const setVisualizer = useStoreActions(
-    (actions) => actions.render.setVisualizer,
-  );
+  // The live render objects are the EngineRegistry's, not store state.
+  const engine = useEngine();
+  const particles = useEngineState((objects) => objects.particles);
+  const bonds = useEngineState((objects) => objects.bonds);
+  const visualizer = useEngineState((objects) => objects.visualizer);
 
   const refreshParticleStyles = useStoreActions(
     (actions) => actions.render.setParticleStylesUpdated,
@@ -138,12 +116,11 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const styledVisualizer = useRef<Visualizer | null>(null);
 
   const renderSettings = useStoreState((state) => state.settings.render);
-  const setRenderSettings = useStoreActions(
-    (actions) => actions.settings.setRender,
-  );
   const domElement = useRef<HTMLDivElement | null>(null);
   const running = useStoreState((state) => state.simulation.running);
-  const simulation = useStoreState((state) => state.simulation.simulation);
+  const loadedWorkdir = useStoreState(
+    (state) => state.simulation.loadedWorkdir,
+  );
   const runTotalTimesteps = useStoreState(
     (state) => state.simulationStatus.runTotalTimesteps,
   );
@@ -151,26 +128,13 @@ const View = ({ visible, pane = false }: ViewProps) => {
     (state) => state.simulationStatus.runTimesteps,
   );
   const timesteps = useStoreState((state) => state.simulationStatus.timesteps);
-  const simulationBox = useStoreState((state) => state.simulationStatus.box);
-  const simulationOrigo = useStoreState(
-    (state) => state.simulationStatus.origo,
-  );
-  const postTimestepModifiers = useStoreState(
-    (state) => state.processing.postTimestepModifiers,
-  );
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
   const variables = useStoreState((state) => state.simulationStatus.variables);
-  const dimension = useStoreState((state) => state.simulationStatus.dimension);
-  const walls = useStoreState((state) => state.simulationStatus.walls);
   const unitStyle = useStoreState((state) => state.simulationStatus.unitStyle);
-  const boxGroupRef = useRef<THREE.Group | null>(null);
-  const wallGroupRef = useRef<THREE.Group | null>(null);
 
   // Get color modifier for legend display
-  const colorModifier = postTimestepModifiers.find(
-    (modifier) => modifier instanceof ColorModifier,
-  ) as ColorModifier | undefined;
+  const colorModifier = engine.colorModifier;
 
   // Determine the type of the computeName (compute, fix, or variable)
   const getModifierType = (
@@ -189,7 +153,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
     }
     // omovi has no public getter for the active camera.
     const camera = visualizer["camera"];
-    return camera instanceof THREE.OrthographicCamera
+    return camera instanceof OrthographicCamera
       ? orthographicUnitsPerPixel(camera, domElement.current.clientHeight)
       : undefined;
   }, [visualizer]);
@@ -214,52 +178,6 @@ const View = ({ visible, pane = false }: ViewProps) => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedAtoms, handleClearSelection]);
-
-  const disposeBoxGroup = useCallback(() => {
-    if (boxGroupRef.current) {
-      // Dispose of all cylinders in the group
-      boxGroupRef.current.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry.dispose();
-          if (child.material instanceof THREE.Material) {
-            child.material.dispose();
-          }
-        }
-      });
-
-      if (
-        visualizer &&
-        visualizer.scene &&
-        boxGroupRef.current.parent === visualizer.scene
-      ) {
-        visualizer.scene.remove(boxGroupRef.current);
-      }
-      boxGroupRef.current = null;
-    }
-  }, [visualizer]);
-
-  const disposeWallGroup = useCallback(() => {
-    if (wallGroupRef.current) {
-      // Dispose of all meshes in the group
-      wallGroupRef.current.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.geometry.dispose();
-          if (child.material instanceof THREE.Material) {
-            child.material.dispose();
-          }
-        }
-      });
-
-      if (
-        visualizer &&
-        visualizer.scene &&
-        wallGroupRef.current.parent === visualizer.scene
-      ) {
-        visualizer.scene.remove(wallGroupRef.current);
-      }
-      wallGroupRef.current = null;
-    }
-  }, [visualizer]);
 
   useEffect(() => {
     if (domElement.current && !loading && !visualizer) {
@@ -302,7 +220,9 @@ const View = ({ visible, pane = false }: ViewProps) => {
         },
       });
       installParticleAttributes(newVisualizer);
-      setVisualizer(newVisualizer);
+      engine.setVisualizer(newVisualizer);
+      // A new renderer has no colors or radii yet.
+      refreshParticleStyles(true);
       setLoading(false);
       newVisualizer.materials.particles.shininess = 50;
 
@@ -326,7 +246,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
           .then((supported) => {
             if (supported && domElement.current) {
               const vrButton = newVisualizer.enableXR();
-              vrButton && domElement.current.appendChild(vrButton);
+              if (vrButton) domElement.current.appendChild(vrButton);
             }
           })
           .catch((err) => {
@@ -334,7 +254,14 @@ const View = ({ visible, pane = false }: ViewProps) => {
           });
       }
     }
-  }, [domElement, setVisualizer, visualizer, loading, renderSettings]);
+  }, [
+    domElement,
+    engine,
+    refreshParticleStyles,
+    visualizer,
+    loading,
+    renderSettings,
+  ]);
 
   useEffect(() => {
     if (visible && domElement.current) {
@@ -346,10 +273,10 @@ const View = ({ visible, pane = false }: ViewProps) => {
     }
   }, [visible, visualizer, pane]);
 
-  // Auto-reset selection when simulation changes
+  // Auto-reset selection when a new run is loaded
   useEffect(() => {
     handleClearSelection();
-  }, [simulation, handleClearSelection]);
+  }, [loadedWorkdir, handleClearSelection]);
 
   const prevParticlesRef = useRef<Particles | null>(null);
   useEffect(() => {
@@ -450,97 +377,11 @@ const View = ({ visible, pane = false }: ViewProps) => {
     }
   }, [visualizer]);
 
-  // Update camera planes based on simulation box bounds
-  useEffect(() => {
-    if (!visualizer) {
-      return;
-    }
-
-    // If simulation box is available, use it to update camera planes
-    // This takes precedence over system bounds from particles/bonds
-    if (
-      simulationBox &&
-      simulationOrigo &&
-      visualizerHasCameraPlanes(visualizer)
-    ) {
-      const boundingBox = getSimulationBoxBounds(
-        simulationBox,
-        simulationOrigo,
-      );
-      visualizer.updateCameraPlanes(boundingBox);
-    }
-    // Note: Camera planes are also updated automatically when particles/bonds are added
-    // (as a fallback if simulation box is not available)
-  }, [visualizer, simulationBox, simulationOrigo]);
-
-  // Handle simulation box visualization
-  useEffect(() => {
-    if (!visualizer) {
-      return;
-    }
-
-    const shouldShowBox =
-      renderSettings.showSimulationBox &&
-      simulationBox !== undefined &&
-      simulationOrigo !== undefined;
-
-    // Remove existing box if it exists
-    disposeBoxGroup();
-
-    // Create and add box if enabled and data is available
-    if (shouldShowBox && simulationBox && simulationOrigo) {
-      const radius = calculateBoxRadius(simulationBox);
-      const boxGroup = createBoxGeometry(
-        simulationBox,
-        simulationOrigo,
-        radius,
-      );
-      boxGroupRef.current = boxGroup;
-      visualizer.scene.add(boxGroup);
-    }
-  }, [
+  // Camera planes, simulation box and walls (useSimulationBoxOverlays.ts).
+  const { disposeBoxGroup, disposeWallGroup } = useSimulationBoxOverlays(
     visualizer,
-    simulationBox,
-    simulationOrigo,
-    renderSettings.showSimulationBox,
-    disposeBoxGroup,
-  ]);
-
-  // Handle wall visualization
-  useEffect(() => {
-    if (!visualizer) {
-      return;
-    }
-
-    const shouldShowWalls =
-      renderSettings.showWalls &&
-      walls.length > 0 &&
-      simulationBox !== undefined &&
-      simulationOrigo !== undefined;
-
-    // Remove existing walls if they exist
-    disposeWallGroup();
-
-    // Create and add walls if data is available
-    if (shouldShowWalls && simulationBox && simulationOrigo) {
-      const wallGroup = createWallGroup(
-        walls,
-        simulationBox,
-        simulationOrigo,
-        dimension,
-      );
-      wallGroupRef.current = wallGroup;
-      visualizer.scene.add(wallGroup);
-    }
-  }, [
-    visualizer,
-    walls,
-    simulationBox,
-    simulationOrigo,
-    dimension,
-    renderSettings.showWalls,
-    disposeWallGroup,
-  ]);
+    renderSettings,
+  );
 
   useEffect(() => {
     return () => {
@@ -549,21 +390,19 @@ const View = ({ visible, pane = false }: ViewProps) => {
       if (visualizer) {
         visualizer.dispose();
         if (pane) {
-          // In the legacy shell View never unmounts, so the store keeping a
-          // reference was harmless. The run-detail pane mounts/unmounts per
+          // In the legacy shell View never unmounts, so the registry keeping
+          // a reference was harmless. The run-detail pane mounts/unmounts per
           // navigation: release the disposed instance so the next mount's
           // creation effect (guarded by `!visualizer`) builds a fresh one.
-          setVisualizer(undefined);
+          engine.setVisualizer(undefined);
         }
       }
     };
-  }, [visualizer, disposeBoxGroup, disposeWallGroup, pane, setVisualizer]);
+  }, [visualizer, disposeBoxGroup, disposeWallGroup, pane, engine]);
 
-  const title = simulation ? simulation.id : "No simulation";
+  const title = loadedWorkdir ?? "No simulation";
   const showNoSimulationModal =
-    simulation == null && !hideNoSimulation && !pane;
-
-  const Wrapper = pane ? PaneVisualizerWrapper : VisualizerWrapper;
+    loadedWorkdir == null && !hideNoSimulation && !pane;
 
   return (
     <Layout style={{ height: pane ? "100%" : "100vh" }}>
@@ -595,7 +434,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
         </Header>
       )}
       <div id="canvas-container" style={{ height: "100%", width: "100%" }}>
-        <Wrapper ref={domElement}>
+        <div ref={domElement} style={visualizerWrapperStyle(pane)}>
           {showColorSettings && (
             <ColorModifierSettings
               open={true}
@@ -646,7 +485,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
                 unit={unitStyle && UNIT_SYSTEMS[unitStyle].length}
               />
             )}
-        </Wrapper>
+        </div>
       </div>
       {showNoSimulationModal && (
         <Modal

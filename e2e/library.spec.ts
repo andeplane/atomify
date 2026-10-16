@@ -7,7 +7,7 @@
 import { test, expect } from "@playwright/test";
 import { createBlankProject, createFile, gotoApp } from "./helpers";
 
-test("create, persist, rename, duplicate and delete a project", async ({
+test("create, persist, rename, duplicate and delete a project @smoke", async ({
   page,
 }) => {
   const sidebarProjects = page.locator('[data-testid^="sidebar-project-"]');
@@ -80,7 +80,7 @@ test("create, persist, rename, duplicate and delete a project", async ({
   });
 });
 
-test("export a project as a zip and import it back", async ({
+test("export a project as a zip and import it back @smoke", async ({
   page,
 }, testInfo) => {
   await test.step("create a project with a source file", async () => {

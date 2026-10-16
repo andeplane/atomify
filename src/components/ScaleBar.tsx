@@ -11,7 +11,8 @@ interface ScaleBarProps {
   unit?: string;
 }
 
-// Light on dark in both themes: the 3D viewport background is always dark.
+// The 3D viewport stays dark in both themes, so the bar uses the media tokens
+// (src/shell/tokens.ts) like the other controls floating on it.
 const containerStyle: CSSProperties = {
   position: "absolute",
   bottom: 20,
@@ -21,11 +22,11 @@ const containerStyle: CSSProperties = {
   alignItems: "center",
   gap: 4,
   padding: "8px 12px",
-  background: "rgba(42, 41, 47, 0.6)",
+  background: "var(--media-control-bg)",
   backdropFilter: "blur(8px)",
-  border: "1px solid rgba(255, 255, 255, 0.1)",
-  borderRadius: 10,
-  color: "#fff",
+  border: "1px solid var(--media-control-border)",
+  borderRadius: "var(--radius)",
+  color: "var(--media-text)",
   fontSize: 13,
   fontVariantNumeric: "tabular-nums",
   pointerEvents: "none",
@@ -59,7 +60,7 @@ const ScaleBar = ({ getUnitsPerPixel, unit }: ScaleBarProps) => {
         style={{
           width: widthPx,
           height: 6,
-          border: "2px solid #fff",
+          border: "2px solid var(--media-text)",
           borderTop: "none",
           boxSizing: "border-box",
         }}

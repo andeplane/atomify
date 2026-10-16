@@ -1,5 +1,4 @@
 import { action, Action } from "easy-peasy";
-import { setSyncFrequency } from "../wasm/wasmInstance";
 
 export interface RenderSettings {
   ssao: boolean;
@@ -119,7 +118,6 @@ export const settingsModel: SettingsModel = {
   }),
   setSimulation: action((state, simulation: SimulationSettings) => {
     state.simulation = simulation;
-    setSyncFrequency(simulation.speed);
   }),
   setTheme: action((state, theme: ThemeName) => {
     state.theme = theme;

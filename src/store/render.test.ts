@@ -10,7 +10,6 @@ vi.mock("../utils/metrics", () => ({
 import { renderModel, type RenderModel } from "./render";
 import { track } from "../utils/metrics";
 import type { AtomType } from "../utils/atomtypes";
-import type { Visualizer, Particles, Bonds } from "omovi";
 
 describe("render store", () => {
   let store: Store<RenderModel>;
@@ -27,9 +26,6 @@ describe("render store", () => {
       expect(state.particleStylesUpdated).toBe(true);
       expect(state.bondRadius).toBe(1);
       expect(state.particleRadius).toBe(1);
-      expect(state.visualizer).toBeUndefined();
-      expect(state.particles).toBeUndefined();
-      expect(state.bonds).toBeUndefined();
     });
   });
 
@@ -111,58 +107,6 @@ describe("render store", () => {
 
       expect(store.getState().particleStylesUpdated).toBe(true);
     });
-
-    it("zeroes particle count and marks needs update when particles exist", () => {
-      const mockParticles: Partial<Particles> = {
-        count: 100,
-        markNeedsUpdate: vi.fn(),
-      };
-      store.getActions().setParticles(mockParticles as Particles);
-
-      store.getActions().resetParticleStyles();
-
-      const particles = store.getState().particles;
-      expect(particles!.count).toBe(0);
-      expect(mockParticles.markNeedsUpdate).toHaveBeenCalled();
-    });
-
-    it("zeroes bond count and marks needs update when bonds exist", () => {
-      const mockBonds: Partial<Bonds> = {
-        count: 50,
-        markNeedsUpdate: vi.fn(),
-      };
-      store.getActions().setBonds(mockBonds as Bonds);
-
-      store.getActions().resetParticleStyles();
-
-      const bonds = store.getState().bonds;
-      expect(bonds!.count).toBe(0);
-      expect(mockBonds.markNeedsUpdate).toHaveBeenCalled();
-    });
-
-    it("handles missing particles and bonds gracefully", () => {
-      // No particles or bonds set — should not throw
-      expect(() => store.getActions().resetParticleStyles()).not.toThrow();
-    });
-  });
-
-  describe("setVisualizer", () => {
-    it("stores the visualizer", () => {
-      const mockVisualizer: Partial<Visualizer> = { dispose: vi.fn() };
-
-      store.getActions().setVisualizer(mockVisualizer as Visualizer);
-
-      expect(store.getState().visualizer).toBe(mockVisualizer);
-    });
-
-    it("sets particleStylesUpdated to true", () => {
-      store.getActions().setParticleStylesUpdated(false);
-      const mockVisualizer: Partial<Visualizer> = { dispose: vi.fn() };
-
-      store.getActions().setVisualizer(mockVisualizer as Visualizer);
-
-      expect(store.getState().particleStylesUpdated).toBe(true);
-    });
   });
 
   describe.each([
@@ -187,22 +131,6 @@ describe("render store", () => {
     it("calls track() with correct event", () => {
       store.getActions()[actionName](value);
       expect(track).toHaveBeenCalledWith(trackEvent, { value });
-    });
-  });
-
-  describe("setParticles", () => {
-    it("stores the particles reference", () => {
-      const mockParticles: Partial<Particles> = { count: 42 };
-      store.getActions().setParticles(mockParticles as Particles);
-      expect(store.getState().particles).toBe(mockParticles);
-    });
-  });
-
-  describe("setBonds", () => {
-    it("stores the bonds reference", () => {
-      const mockBonds: Partial<Bonds> = { count: 10 };
-      store.getActions().setBonds(mockBonds as Bonds);
-      expect(store.getState().bonds).toBe(mockBonds);
     });
   });
 

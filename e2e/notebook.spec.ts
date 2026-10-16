@@ -14,12 +14,12 @@ const JUPYTER_BUILT = existsSync(
   join(__dirname, "..", "public", "jupyter", "lab", "index.html"),
 );
 
-test("notebook iframe targets the project's analysis notebook", async ({
+test("notebook iframe targets the project's analysis notebook @smoke", async ({
   page,
 }) => {
   test.skip(
     !JUPYTER_BUILT,
-    "public/jupyter is not built — run `make jupyterlite` first",
+    "public/jupyter is not built — run `make jupyter` first",
   );
 
   await test.step("create a project and open the Notebook tab", async () => {

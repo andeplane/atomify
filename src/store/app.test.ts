@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createStore, type Store } from "easy-peasy";
-import { appModel, type AppModel, type SimulationFile } from "./app";
+import { appModel, type AppModel } from "./app";
 
 describe("app store", () => {
   let store: Store<AppModel>;
@@ -9,45 +9,16 @@ describe("app store", () => {
     store = createStore(appModel);
   });
 
-  describe("initial state", () => {
-    it("defaults selectedMenu to 'examples' (embedded mode removed)", () => {
-      expect(store.getState().selectedMenu).toBe("examples");
-    });
-  });
-
-  describe("setSelectedMenu", () => {
-    it("should update selectedMenu", () => {
-      store.getActions().setSelectedMenu("settings");
-
-      expect(store.getState().selectedMenu).toBe("settings");
-    });
-  });
-
-  describe("setPreferredView", () => {
-    it("should update preferredView", () => {
-      store.getActions().setPreferredView("3d");
-
-      expect(store.getState().preferredView).toBe("3d");
+  describe("liveViewportVisible", () => {
+    it("defaults to false until the shell shows the live viewport", () => {
+      expect(store.getState().liveViewportVisible).toBe(false);
     });
 
-    it("should allow setting preferredView to undefined", () => {
-      store.getActions().setPreferredView("3d");
-      store.getActions().setPreferredView(undefined);
-
-      expect(store.getState().preferredView).toBeUndefined();
-    });
-  });
-
-  describe("setSelectedFile", () => {
-    it("should update selectedFile", () => {
-      const file: SimulationFile = {
-        fileName: "test.lmp",
-        content: "# test content",
-      };
-
-      store.getActions().setSelectedFile(file);
-
-      expect(store.getState().selectedFile).toEqual(file);
+    it("is toggled by setLiveViewportVisible", () => {
+      store.getActions().setLiveViewportVisible(true);
+      expect(store.getState().liveViewportVisible).toBe(true);
+      store.getActions().setLiveViewportVisible(false);
+      expect(store.getState().liveViewportVisible).toBe(false);
     });
   });
 

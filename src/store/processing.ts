@@ -1,31 +1,22 @@
-import { action, thunk, Action, Thunk, State, Actions } from "easy-peasy";
+import { thunk, Thunk, State, Actions } from "easy-peasy";
 import Modifier from "../modifiers/modifier";
 import SyncParticlesModifier from "../modifiers/syncparticlesmodifier";
 import SyncBondsModifier from "../modifiers/syncbondsmodifier";
 import ColorModifier from "../modifiers/colormodifier";
-import SyncComputesModifier from "../modifiers/synccomputesmodifier";
 import { ModifierInput, ModifierOutput } from "../modifiers/types";
-import { LammpsWeb, Wall } from "../types";
-import { AtomifyWasmModule } from "../wasm/types";
-import { getWasm } from "../wasm/wasmInstance";
+import { Wall } from "../types";
 import * as THREE from "three";
-import SyncFixesModifier from "../modifiers/syncfixesmodifier";
-import SyncVariablesModifier from "../modifiers/syncvariablesmodifier";
+import type { EngineRegistry } from "../engine/EngineRegistry";
 import { StoreModel } from "./model";
+import type { StoreInjections } from "./projects";
 import type { SimulationStatusData } from "./simulationstatus";
 
 const getSimulationBox = (
-  lammps: LammpsWeb,
-  wasm: AtomifyWasmModule,
+  // The frame's 9 float32 row-major cell matrix (lammps.js exposes the box
+  // as float32; the old wasm used float64).
+  cellMatrix: Float32Array,
   currentBox?: THREE.Matrix3,
 ) => {
-  // lammps.js exposes the box as float32 (the old wasm used float64)
-  const cellMatrixPointer = lammps.getCellMatrixPointer() / 4;
-  const cellMatrixSubArray = wasm.HEAPF32.subarray(
-    cellMatrixPointer,
-    cellMatrixPointer + 9,
-  ) as Float32Array;
-
   // Check if values changed
   if (currentBox) {
     const elements = currentBox.elements;
@@ -33,7 +24,7 @@ const getSimulationBox = (
     for (let i = 0; i < 9; i++) {
       // THREE stores column-major elements; the engine sends row-major.
       const columnMajorIndex = (i % 3) * 3 + Math.floor(i / 3);
-      if (elements[columnMajorIndex] !== cellMatrixSubArray[i]) {
+      if (elements[columnMajorIndex] !== cellMatrix[i]) {
         areEqual = false;
         break;
       }
@@ -46,36 +37,29 @@ const getSimulationBox = (
 
   // Values changed, return new Matrix3
   return new THREE.Matrix3().set(
-    cellMatrixSubArray[0],
-    cellMatrixSubArray[1],
-    cellMatrixSubArray[2],
-    cellMatrixSubArray[3],
-    cellMatrixSubArray[4],
-    cellMatrixSubArray[5],
-    cellMatrixSubArray[6],
-    cellMatrixSubArray[7],
-    cellMatrixSubArray[8],
+    cellMatrix[0],
+    cellMatrix[1],
+    cellMatrix[2],
+    cellMatrix[3],
+    cellMatrix[4],
+    cellMatrix[5],
+    cellMatrix[6],
+    cellMatrix[7],
+    cellMatrix[8],
   );
 };
 
 const getSimulationOrigo = (
-  lammps: LammpsWeb,
-  wasm: AtomifyWasmModule,
+  // The frame's 3 float32 box origin.
+  origin: Float32Array,
   currentOrigo?: THREE.Vector3,
 ) => {
-  // lammps.js exposes the box origin as float32 (the old wasm used float64)
-  const origoPointer = lammps.getOrigoPointer() / 4;
-  const origoPointerSubArray = wasm.HEAPF32.subarray(
-    origoPointer,
-    origoPointer + 3,
-  ) as Float32Array;
-
   // Check if values changed
   if (currentOrigo) {
     if (
-      currentOrigo.x === origoPointerSubArray[0] &&
-      currentOrigo.y === origoPointerSubArray[1] &&
-      currentOrigo.z === origoPointerSubArray[2]
+      currentOrigo.x === origin[0] &&
+      currentOrigo.y === origin[1] &&
+      currentOrigo.z === origin[2]
     ) {
       // No change, return existing reference
       return currentOrigo;
@@ -83,35 +67,42 @@ const getSimulationOrigo = (
   }
 
   // Values changed, return new Vector3
-  return new THREE.Vector3(
-    origoPointerSubArray[0],
-    origoPointerSubArray[1],
-    origoPointerSubArray[2],
-  );
+  return new THREE.Vector3(origin[0], origin[1], origin[2]);
 };
 
 const getModifierContext = (
   getStoreState: () => State<StoreModel>,
   getStoreActions: () => Actions<StoreModel>,
+  engine: EngineRegistry,
 ) => {
-  const wasm = getWasm();
-  const lammps = getStoreState().simulation.lammps;
+  const lammps = engine.lammps;
   if (!lammps) {
     throw new Error("Lammps instance is not initialized");
   }
-  const renderState = getStoreState().render;
+  // One frame for the whole pass, so every modifier sees the same step.
+  const frame = lammps.latestFrame;
   const computes = getStoreState().simulationStatus.computes;
   const fixes = getStoreState().simulationStatus.fixes;
   const variables = getStoreState().simulationStatus.variables;
   const hasSynchronized = getStoreState().simulationStatus.hasSynchronized;
-  const particles = renderState.particles;
-  const bonds = renderState.bonds;
+  const { particleStyles, particleStylesUpdated, bondRadius, particleRadius } =
+    getStoreState().render;
+  const { visualizer, particles, bonds } = engine;
   const allActions = getStoreActions();
 
   const modifierInput: ModifierInput = {
+    frame,
     lammps,
-    wasm,
-    renderState,
+    // The store's render settings with the registry's live render objects.
+    renderState: {
+      particleStyles,
+      particleStylesUpdated,
+      bondRadius,
+      particleRadius,
+      visualizer,
+      particles,
+      bonds,
+    },
     variables,
     computes,
     fixes,
@@ -121,7 +112,7 @@ const getModifierContext = (
   const modifierOutput: ModifierOutput = {
     particles,
     bonds,
-    colorsDirty: getStoreState().render.particleStylesUpdated,
+    colorsDirty: particleStylesUpdated,
     computes: {},
     fixes: {},
     variables: {},
@@ -134,52 +125,32 @@ const getModifierContext = (
     particles,
     bonds,
     lammps,
-    wasm,
+    frame,
   };
 };
 
+/**
+ * The post-timestep pipeline over the EngineRegistry's modifiers (the
+ * registry comes in as the store's `engine` injection). The modifier
+ * instances, particles and bonds are the registry's; the store receives the
+ * status snapshot.
+ */
 export interface ProcessingModel {
-  postTimestepModifiers: Modifier[];
-  setPostTimestepModifiers: Action<ProcessingModel, Modifier[]>;
-  runPostTimestep: Thunk<ProcessingModel, boolean, undefined, StoreModel>;
-  runPostTimestepRendering: Thunk<ProcessingModel, void, undefined, StoreModel>;
+  runPostTimestep: Thunk<ProcessingModel, boolean, StoreInjections, StoreModel>;
+  runPostTimestepRendering: Thunk<
+    ProcessingModel,
+    void,
+    StoreInjections,
+    StoreModel
+  >;
 }
 
 export const processingModel: ProcessingModel = {
-  postTimestepModifiers: [
-    new SyncParticlesModifier({
-      name: "Particles",
-      active: true,
-    }),
-    new SyncBondsModifier({
-      name: "Bonds",
-      active: true,
-    }),
-    new ColorModifier({
-      name: "Colors",
-      active: true,
-    }),
-    new SyncComputesModifier({
-      name: "Computes",
-      active: true,
-    }),
-    new SyncFixesModifier({
-      name: "Fixes",
-      active: true,
-    }),
-    new SyncVariablesModifier({
-      name: "Variables",
-      active: true,
-    }),
-  ],
-  setPostTimestepModifiers: action((state, value: Modifier[]) => {
-    state.postTimestepModifiers = value;
-  }),
   runPostTimestep: thunk(
     async (
       actions,
       everything: boolean,
-      { getStoreState, getStoreActions },
+      { getStoreState, getStoreActions, injections: { engine } },
     ) => {
       const {
         modifierInput,
@@ -188,23 +159,23 @@ export const processingModel: ProcessingModel = {
         particles,
         bonds,
         lammps,
-        wasm,
-      } = getModifierContext(getStoreState, getStoreActions);
+        frame,
+      } = getModifierContext(getStoreState, getStoreActions, engine);
 
-      getStoreState().processing.postTimestepModifiers.forEach((modifier) =>
+      engine.modifiers.forEach((modifier) =>
         modifier.run(modifierInput, modifierOutput, true),
       );
       allActions.render.setParticleStylesUpdated(false);
 
-      if (everything || getStoreState().app.selectedMenu === "view") {
+      if (everything || getStoreState().app.liveViewportVisible) {
         if (
           modifierOutput.particles &&
           modifierOutput.particles !== particles
         ) {
-          allActions.render.setParticles(modifierOutput.particles);
+          engine.setParticles(modifierOutput.particles);
         }
         if (modifierOutput.bonds && modifierOutput.bonds !== bonds) {
-          allActions.render.setBonds(modifierOutput.bonds);
+          engine.setBonds(modifierOutput.bonds);
         }
       }
 
@@ -214,10 +185,10 @@ export const processingModel: ProcessingModel = {
         fixes: modifierOutput.fixes,
         variables: modifierOutput.variables,
         numBonds: modifierOutput.bonds?.count ?? 0,
-        box: getSimulationBox(lammps, wasm, currentStatus.box),
-        origo: getSimulationOrigo(lammps, wasm, currentStatus.origo),
-        dimension: lammps.getDimension(),
-        unitStyle: lammps.getUnitStyle?.(),
+        box: getSimulationBox(frame.boxMatrix, currentStatus.box),
+        origo: getSimulationOrigo(frame.origin, currentStatus.origo),
+        dimension: frame.dimension,
+        unitStyle: frame.unitStyle,
         timesteps: lammps.getTimesteps(),
         numAtoms: lammps.getNumAtoms(),
         runTimesteps: lammps.getRunTimesteps(),
@@ -225,19 +196,12 @@ export const processingModel: ProcessingModel = {
         lastCommand: lammps.getLastCommand(),
         memoryUsage: lammps.getMemoryUsage(),
       };
-      const wallsArray = lammps.getWalls();
-      const walls: Wall[] = [];
-      for (let i = 0; i < wallsArray.size(); i++) {
-        const wall = wallsArray.get(i);
-        walls.push({
-          which: wall.which,
-          style: wall.style,
-          position: wall.position,
-          cutoff: wall.cutoff,
-        });
-      }
-      wallsArray.delete();
-      snapshot.walls = walls;
+      snapshot.walls = frame.walls.map((wall): Wall => ({
+        which: wall.which,
+        style: wall.style,
+        position: wall.position,
+        cutoff: wall.cutoff,
+      }));
       // Timings are only meaningful during dynamics/minimization. Preserve
       // the last estimate at idle, matching the existing summary behavior.
       const whichFlag = lammps.getWhichFlag();
@@ -253,18 +217,21 @@ export const processingModel: ProcessingModel = {
     },
   ),
   runPostTimestepRendering: thunk(
-    async (actions, payload: void, { getStoreState, getStoreActions }) => {
+    async (
+      actions,
+      payload: void,
+      { getStoreState, getStoreActions, injections: { engine } },
+    ) => {
       const { modifierInput, modifierOutput, allActions, particles, bonds } =
-        getModifierContext(getStoreState, getStoreActions);
+        getModifierContext(getStoreState, getStoreActions, engine);
 
       // Only run rendering-related modifiers (Particles, Bonds, Colors)
-      const renderingModifiers =
-        getStoreState().processing.postTimestepModifiers.filter(
-          (modifier: Modifier) =>
-            modifier instanceof SyncParticlesModifier ||
-            modifier instanceof SyncBondsModifier ||
-            modifier instanceof ColorModifier,
-        ) as Modifier[];
+      const renderingModifiers = engine.modifiers.filter(
+        (modifier: Modifier) =>
+          modifier instanceof SyncParticlesModifier ||
+          modifier instanceof SyncBondsModifier ||
+          modifier instanceof ColorModifier,
+      );
 
       renderingModifiers.forEach((modifier: Modifier) =>
         modifier.run(modifierInput, modifierOutput, true),
@@ -272,15 +239,15 @@ export const processingModel: ProcessingModel = {
       allActions.render.setParticleStylesUpdated(false);
 
       // Only update rendering state, skip UI state updates
-      if (getStoreState().app.selectedMenu === "view") {
+      if (getStoreState().app.liveViewportVisible) {
         if (
           modifierOutput.particles &&
           modifierOutput.particles !== particles
         ) {
-          allActions.render.setParticles(modifierOutput.particles);
+          engine.setParticles(modifierOutput.particles);
         }
         if (modifierOutput.bonds && modifierOutput.bonds !== bonds) {
-          allActions.render.setBonds(modifierOutput.bonds);
+          engine.setBonds(modifierOutput.bonds);
         }
       }
     },

@@ -32,7 +32,7 @@ function replaceRequired(
 }
 
 /** omovi 0.25 uses the same radius expression for drawing and GPU picking. */
-export function useRadiusAttribute(source: string): string {
+export function applyRadiusAttribute(source: string): string {
   return replaceRequired(
     replaceRequired(
       source,
@@ -62,7 +62,7 @@ export function installParticleAttributes(visualizer: Visualizer): void {
     const originalCompile = material.onBeforeCompile;
     material.onBeforeCompile = (shader, renderer) => {
       originalCompile.call(material, shader, renderer);
-      shader.vertexShader = useRadiusAttribute(shader.vertexShader);
+      shader.vertexShader = applyRadiusAttribute(shader.vertexShader);
       shader.vertexShader =
         "attribute vec3 atomColor;\nvarying vec3 vAtomColor;\n" +
         replaceRequired(
@@ -87,7 +87,7 @@ export function installParticleAttributes(visualizer: Visualizer): void {
     material.customProgramCacheKey = () => "atomify-particle-attributes-v1";
     patchedMaterials.add(material);
   }
-  picking.vertexShader = useRadiusAttribute(picking.vertexShader);
+  picking.vertexShader = applyRadiusAttribute(picking.vertexShader);
   material.needsUpdate = true;
   picking.needsUpdate = true;
   const state: AttributeState = { styles: new Map(), slots: new Map() };
