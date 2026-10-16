@@ -1,9 +1,20 @@
 /*
  * Design tokens for the Atomify shell (ADR-003 §6), ported from the design
  * file `design-final.dc.html`. Dark is the default; light activates via
- * [data-theme="light"] on the document root. The antd bridge in src/theme.ts
- * mirrors these values — keep them in sync.
+ * [data-theme="light"] on the document root.
+ *
+ * The values are owned by src/shell/tokens.ts (which also themes antd via
+ * src/theme.ts); this file mirrors them as CSS custom properties.
+ * tokens.test.ts fails if the two drift apart, so change both together.
  */
+
+:root {
+  --font-sans:
+    Manrope, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius: 10px;
+  --radius-pill: 999px;
+}
 
 :root,
 [data-theme="dark"] {
@@ -12,6 +23,7 @@
   --surface: #14171e;
   --surface-2: #1a1e27;
   --surface-hover: #20252f;
+  --surface-elevated: #1a1e27;
   --border: rgba(255, 255, 255, 0.07);
   --border-strong: rgba(255, 255, 255, 0.13);
   --text: #eaecef;
@@ -21,14 +33,35 @@
   --accent-hover: #5c86ff;
   --accent-soft: rgba(63, 110, 255, 0.15);
   --accent-line: rgba(63, 110, 255, 0.35);
+  --on-accent: #ffffff;
+  --on-accent-divider: rgba(255, 255, 255, 0.28);
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.28);
-  --viewport: #05070b;
+  --shadow-modal: 0 30px 80px rgba(0, 0, 0, 0.4);
+  --scrim: rgba(4, 6, 10, 0.6);
+  --knob: #ffffff;
+  --knob-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --swatch-border: rgba(255, 255, 255, 0.1);
   --chip: rgba(255, 255, 255, 0.06);
   --good: #2fd07a;
   --good-soft: rgba(47, 208, 122, 0.14);
   --bad: #e5484d;
   --bad-soft: rgba(229, 72, 77, 0.13);
   --warn: #ffb020;
+  --notebook: #e8735a;
+  --viewport: #05070b;
+  --viewport-glow: rgba(63, 110, 255, 0.1);
+  --console-bg: #0a0c11;
+  --console-text: rgba(255, 255, 255, 0.82);
+  --console-line: rgba(255, 255, 255, 0.06);
+  --media-text: rgba(255, 255, 255, 0.85);
+  --media-text-2: rgba(255, 255, 255, 0.6);
+  --media-text-3: rgba(255, 255, 255, 0.5);
+  --media-text-4: rgba(255, 255, 255, 0.35);
+  --media-text-code: rgba(255, 255, 255, 0.75);
+  --media-track: rgba(255, 255, 255, 0.14);
+  --media-control-bg: rgba(10, 12, 17, 0.55);
+  --media-control-border: rgba(255, 255, 255, 0.18);
+  --media-badge: rgba(8, 10, 14, 0.7);
 }
 
 [data-theme="light"] {
@@ -37,6 +70,7 @@
   --surface: #ffffff;
   --surface-2: #f7f9fc;
   --surface-hover: #eef1f7;
+  --surface-elevated: #ffffff;
   --border: rgba(17, 20, 28, 0.09);
   --border-strong: rgba(17, 20, 28, 0.16);
   --text: #10131a;
@@ -46,23 +80,39 @@
   --accent-hover: #1e48ea;
   --accent-soft: rgba(46, 91, 255, 0.1);
   --accent-line: rgba(46, 91, 255, 0.3);
+  --on-accent: #ffffff;
+  --on-accent-divider: rgba(255, 255, 255, 0.28);
   --shadow: 0 1px 2px rgba(16, 20, 30, 0.06), 0 10px 30px rgba(16, 20, 30, 0.1);
-  --viewport: #0a0c11;
+  --shadow-modal: 0 30px 80px rgba(0, 0, 0, 0.4);
+  --scrim: rgba(4, 6, 10, 0.6);
+  --knob: #ffffff;
+  --knob-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  --swatch-border: rgba(0, 0, 0, 0.08);
   --chip: rgba(16, 20, 30, 0.05);
   --good: #17a45c;
   --good-soft: rgba(23, 164, 92, 0.12);
   --bad: #d93036;
   --bad-soft: rgba(217, 48, 54, 0.1);
   --warn: #c67c00;
+  --notebook: #e8735a;
+  --viewport: #0a0c11;
+  --viewport-glow: rgba(63, 110, 255, 0.1);
+  --console-bg: #0a0c11;
+  --console-text: rgba(255, 255, 255, 0.82);
+  --console-line: rgba(255, 255, 255, 0.06);
+  --media-text: rgba(255, 255, 255, 0.85);
+  --media-text-2: rgba(255, 255, 255, 0.6);
+  --media-text-3: rgba(255, 255, 255, 0.5);
+  --media-text-4: rgba(255, 255, 255, 0.35);
+  --media-text-code: rgba(255, 255, 255, 0.75);
+  --media-track: rgba(255, 255, 255, 0.14);
+  --media-control-bg: rgba(10, 12, 17, 0.55);
+  --media-control-border: rgba(255, 255, 255, 0.18);
+  --media-badge: rgba(8, 10, 14, 0.7);
 }
 
 .atomify-shell {
-  font-family:
-    Manrope,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   font-size: 14px;
   color: var(--text);
@@ -131,7 +181,7 @@
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   background: var(--border-strong);
   outline: none;
 }
@@ -144,14 +194,14 @@
   background: var(--accent);
   cursor: pointer;
   border: 2px solid var(--surface);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--knob-shadow);
 }
 
 /* Text inputs share one look across the shell. */
 .shell-input {
   width: 100%;
   padding: 11px 13px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text);
@@ -167,7 +217,7 @@
 }
 
 .shell-mono {
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
 }
 
 /* Hover states the design expresses via style-hover. */
@@ -197,7 +247,7 @@
 }
 .shell-use-btn:hover {
   background: var(--accent) !important;
-  color: #fff !important;
+  color: var(--on-accent) !important;
 }
 .shell-quick-btn:hover {
   color: var(--good) !important;

@@ -37,7 +37,7 @@ const navButtonStyle = (
   gap: collapsed ? 0 : 11,
   width: "100%",
   padding: collapsed ? "9px 0" : "8px 12px",
-  borderRadius: 10,
+  borderRadius: "var(--radius)",
   border: "none",
   cursor: "pointer",
   background: active ? "var(--accent-soft)" : "transparent",
@@ -121,7 +121,7 @@ const Sidebar = () => {
     alignItems: "center",
     justifyContent: "center",
     background: theme === mode ? "var(--accent)" : "transparent",
-    color: theme === mode ? "#fff" : "var(--text-3)",
+    color: theme === mode ? "var(--on-accent)" : "var(--text-3)",
   });
 
   const collapseButton = (
@@ -339,7 +339,7 @@ const Sidebar = () => {
               alignItems: "center",
               gap: 10,
               padding: "8px 12px",
-              borderRadius: 10,
+              borderRadius: "var(--radius)",
               border: "1px dashed var(--border-strong)",
               background: "transparent",
               color: "var(--text-3)",

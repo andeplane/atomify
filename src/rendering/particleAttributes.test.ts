@@ -10,7 +10,7 @@ import {
   installParticleAttributes,
   setHiddenParticles,
   syncParticleAttributes,
-  useRadiusAttribute,
+  applyRadiusAttribute,
 } from "./particleAttributes";
 
 const radiusShader =
@@ -77,7 +77,7 @@ describe("instance styles", () => {
     const { picking } = fixture();
     expect(picking.vertexShader).toContain("attribute float atomRadius;");
     expect(picking.vertexShader).not.toContain("texture2D(radiusTexture");
-    expect(() => useRadiusAttribute("void main() {}")).toThrow(
+    expect(() => applyRadiusAttribute("void main() {}")).toThrow(
       "Unsupported omovi",
     );
   });

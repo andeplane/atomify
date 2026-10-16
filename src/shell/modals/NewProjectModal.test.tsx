@@ -13,6 +13,7 @@ import { ShellUIContext, type ShellUI } from "../ShellContext";
 import type { Example } from "../../hooks/useExamples";
 import { storeModel, type StoreModel } from "../../store/model";
 import type { StoreInjections } from "../../store/projects";
+import { EngineRegistry } from "../../engine/EngineRegistry";
 import { createMemoryProjectStorage } from "../../storage";
 
 function makeExample(id: string, title: string, keywords: string[]): Example {
@@ -40,6 +41,7 @@ describe("NewProjectModal example picker", () => {
     const injections: StoreInjections = {
       libraryStorage: createMemoryProjectStorage(),
       scratchStorage: createMemoryProjectStorage(),
+      engine: new EngineRegistry(),
     };
     store = createStore(storeModel, { injections });
   });

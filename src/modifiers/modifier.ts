@@ -19,7 +19,7 @@ class Modifier {
   run = (
     input: ModifierInput,
     output: ModifierOutput,
-    everything: boolean = false,
+    _everything: boolean = false,
   ): void => {
     throw new Error(
       `${this.constructor.name}.run() is not implemented. Subclasses must override run().`,

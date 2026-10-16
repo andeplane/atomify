@@ -11,24 +11,49 @@
  * main thread renders them.
  */
 
-import type { ModifierCategory, WallInfo } from "lammps.js";
-import type { ModifierType } from "../types";
+import type { ModifierCategory } from "lammps.js";
+import type { EngineFrame } from "./engineFrame";
+import { dependencies } from "../../package.json";
+
+/**
+ * Version of this message protocol. The worker reports it in its `ready`
+ * event and the proxy refuses to drive a worker that speaks another version
+ * (e.g. a stale worker script cached from a different deploy). Bump it on
+ * any incompatible change to WorkerCommand / WorkerEvent.
+ */
+export const WORKER_PROTOCOL_VERSION = 2;
+
+/**
+ * The lammps.js release the app is built against (pinned exactly in
+ * package.json). The worker reports it in `ready` alongside the protocol
+ * version; both sides read this one constant, so a mismatch means the worker
+ * script and the page come from different builds.
+ */
+export const LAMMPS_JS_VERSION: string = dependencies["lammps.js"];
 
 /** Commands sent from the main thread to the worker. */
 export type WorkerCommand =
   | { type: "load" }
+  // Worker-FS writes. Commands are delivered in order, so a file written
+  // before runFile is in place when the run starts. mkdir is mkdir -p;
+  // writeFile and chdir create missing directories too.
   | { type: "writeFile"; path: string; content: string | Uint8Array }
   | { type: "mkdir"; path: string }
   | { type: "chdir"; path: string }
   // Reset per-run flags before a run. Kokkos itself is started once at load.
   | { type: "start" }
   | { type: "runFile"; requestId: number; path: string }
+  // Run control. LammpsWorkerProxy is its only owner: it keeps the cancel /
+  // paused / sync-frequency state and forwards each change here, and the
+  // worker's LammpsAdapter applies it in its between-step wait loop. A cancel
+  // ends the active run (and unpauses it).
   | { type: "cancel" }
-  // Pause/resume the run. The worker owns the LammpsAdapter whose between-step
-  // wait loop reads the (worker-local) paused flag, so pausing must be sent as
-  // a command — setting the main thread's flag alone does nothing.
   | { type: "pause"; paused: boolean }
   | { type: "setSyncFrequency"; every: number }
+  // Frame backpressure: the main thread has consumed a streamed `step` frame.
+  // The worker posts no new frame while one is unacknowledged (see
+  // frameGate.ts).
+  | { type: "frameAck" }
   | { type: "setBuildNeighborlist"; build: boolean }
   | { type: "setBondDistance"; type1: number; type2: number; distance: number }
   | { type: "clearBondDistances" }
@@ -53,75 +78,14 @@ export type WorkerCommand =
       maxBytes?: number;
     };
 
-/** One compute/fix/variable's streamed snapshot (scalar + 1D series). */
-export interface WorkerModifierData {
-  name: string;
-  category: ModifierCategory;
-  /** Atomify's UI classification, derived from category + LAMMPS style. */
-  type: ModifierType;
-  style: string;
-  isPerAtom: boolean;
-  hasScalar: boolean;
-  clearPerSync: boolean;
-  xLabel: string;
-  yLabel: string;
-  scalar: number;
-  series: { name: string; label: string; x: number[]; y: number[] }[];
-}
-
-/** Per-atom float64 values for the active coloring compute. */
-export interface WorkerPerAtomData {
-  category: ModifierCategory;
-  name: string;
-  /** count float64 values, one per atom (ordered like the particle snapshot). */
-  values: ArrayBuffer;
-}
-
 /**
- * A single synced timestep streamed from the worker. All arrays are freshly
- * allocated copies whose ArrayBuffers are transferred (zero-copy) to the main
- * thread; the main thread owns them after receipt.
+ * A single synced timestep streamed from the worker. Every array in the frame
+ * is a fresh copy whose buffer is transferred (zero-copy) to the main thread,
+ * which owns it after receipt (see engineFrame.ts).
  */
 export interface WorkerStepData {
   type: "step";
-  step: number;
-  count: number;
-  /** 3 * count float32 xyz positions. */
-  positions: ArrayBuffer;
-  /** count int32 atom types. */
-  types: ArrayBuffer;
-  /** count int32 atom ids. */
-  ids: ArrayBuffer;
-  /** Native radii in simulation length units, ordered with positions; absent for atomic styles. */
-  radii?: ArrayBuffer | null;
-  /** Number of rendered bonds this step (0 when none). */
-  bondCount: number;
-  /** 3 * bondCount float32 xyz of each bond's first endpoint. */
-  bondFirst: ArrayBuffer;
-  /** 3 * bondCount float32 xyz of each bond's second endpoint. */
-  bondSecond: ArrayBuffer;
-  /** 9 float32 row-major cell matrix. */
-  boxMatrix: ArrayBuffer;
-  /** 3 float32 box origin. */
-  origin: ArrayBuffer;
-  dimension: number;
-  unitStyle?: import("../utils/units").UnitStyle;
-  runMode: number;
-  runStepsDone: number;
-  runStepsTotal: number;
-  /** Snapshot of every tracked compute/fix/variable this step. */
-  modifiers: WorkerModifierData[];
-  groups?: { names: string[]; masks: ArrayBuffer };
-  /** Per-atom values for the active coloring compute, or null. */
-  perAtom: WorkerPerAtomData | null;
-  /** LAMMPS memory usage estimate in bytes. */
-  memoryUsage: number;
-  /** Timesteps/second (thermo "spcpu"). */
-  timestepsPerSecond: number;
-  /** Estimated CPU seconds remaining (thermo "cpuremain"). */
-  cpuRemain: number;
-  /** Renderable wall fixes (EDGE/CONSTANT). */
-  walls: WallInfo[];
+  frame: EngineFrame;
 }
 
 /** One file read out of the worker FS by snapshotWorkdir. */
@@ -134,7 +98,9 @@ export interface WorkdirFile {
 
 /** Events sent from the worker to the main thread. */
 export type WorkerEvent =
-  | { type: "ready" }
+  // The module is loaded. Carries the worker's protocol and lammps.js versions
+  // so the proxy can refuse a worker from another build.
+  | { type: "ready"; protocolVersion: number; engineVersion: string }
   | WorkerStepData
   | { type: "printed"; text: string }
   | { type: "error"; message: string }

@@ -25,7 +25,7 @@ const ANALYSIS_LJ_SCRIPT = FAST_LJ_SCRIPT.replace(
   "compute msd all msd\nrun 3000",
 );
 
-test("run a simulation end-to-end and inspect the recorded run", async ({
+test("run a simulation end-to-end and inspect the recorded run @smoke", async ({
   page,
 }) => {
   await test.step("create a project with a fast LJ script", async () => {

@@ -5,6 +5,7 @@
 
 import { useCallback, useState } from "react";
 import type * as THREE from "three";
+import { useEngine } from "../engine/EngineContext";
 import { useStoreActions, useStoreState } from "../hooks";
 import SliceModifier, {
   sliceNormal,
@@ -52,11 +53,8 @@ const SliceControls = () => {
   // Stable, so the popover's outside-click listener isn't re-armed on every
   // render while the run streams updates.
   const close = useCallback(() => setOpen(false), []);
-  const sliceModifier = useStoreState((state) =>
-    state.processing.postTimestepModifiers.find(
-      (modifier): modifier is SliceModifier =>
-        modifier instanceof SliceModifier,
-    ),
+  const sliceModifier = useEngine().modifiers.find(
+    (modifier): modifier is SliceModifier => modifier instanceof SliceModifier,
   );
   const box = useStoreState((state) => state.simulationStatus.box);
   const origo = useStoreState((state) => state.simulationStatus.origo);
