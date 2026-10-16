@@ -3,7 +3,8 @@ import { useStoreActions, useStoreState } from "../hooks";
 // The atomify wasm build is a multithreaded KOKKOS/pthreads module that must
 // run inside a Web Worker (it cannot initialize on the main thread). It is
 // owned by LammpsWorkerProxy, which spawns the worker (lammps.worker.ts) and
-// keeps the latest streamed frame for the store's modifier/render pipeline.
+// keeps the latest streamed frame; the run pipeline (RunController) feeds
+// each run's frames into the store's modifier/render pipeline.
 // See src/wasm/LammpsWorkerProxy.ts.
 import { LammpsWorkerProxy } from "../wasm/LammpsWorkerProxy";
 import { useShellUI } from "../shell/ShellContext";
@@ -11,7 +12,6 @@ import { time_event, track } from "../utils/metrics";
 
 const SimulationComponent = () => {
   const lammps = useStoreState((state) => state.simulation.lammps);
-  const simulation = useStoreState((state) => state.simulation.simulation);
   const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
   const simulationSettings = useStoreState(
     (state) => state.settings.simulation,
@@ -35,17 +35,6 @@ const SimulationComponent = () => {
     (actions) => actions.app.setEngineError,
   );
   const setStatus = useStoreActions((actions) => actions.app.setStatus);
-  const runPostTimestep = useStoreActions(
-    (actions) => actions.processing.runPostTimestep,
-  );
-  const runPostTimestepRendering = useStoreActions(
-    (actions) => actions.processing.runPostTimestepRendering,
-  );
-  const setHasSynchronized = useStoreActions(
-    (actions) => actions.simulationStatus.setHasSynchronized,
-  );
-  const renderCycleCounter = useRef(0);
-  const proxyRef = useRef<LammpsWorkerProxy>(undefined);
   const loadStartedRef = useRef(false);
 
   const onPrint = useCallback(
@@ -138,7 +127,6 @@ const SimulationComponent = () => {
     notify,
     setPaused,
     setSimulationSettings,
-    simulation,
     simulationSettings,
   ]);
 
@@ -147,36 +135,6 @@ const SimulationComponent = () => {
   useEffect(() => {
     lammps?.setSyncFrequency(simulationSettings.speed);
   }, [lammps, simulationSettings.speed]);
-
-  useEffect(() => {
-    // Runs synchronously once per frame the engine delivers. Pause and cancel
-    // are run control on the proxy, applied by the worker's adapter between
-    // steps; the frame of the step a run pauses at is still delivered, so the
-    // display matches the state the simulation actually pauses at.
-    proxyRef.current?.setStepListener(() => {
-      if (lammps && simulation) {
-        setHasSynchronized(true);
-
-        // Always update 3D rendering (high frequency)
-        runPostTimestepRendering();
-
-        // Update UI state only every Nth cycle (low frequency)
-        renderCycleCounter.current += 1;
-        const uiUpdateFrequency = simulationSettings.uiUpdateFrequency || 15;
-        if (renderCycleCounter.current >= uiUpdateFrequency) {
-          renderCycleCounter.current = 0;
-          runPostTimestep(false);
-        }
-      }
-    });
-  }, [
-    lammps,
-    simulation,
-    runPostTimestep,
-    runPostTimestepRendering,
-    setHasSynchronized,
-    simulationSettings,
-  ]);
 
   useEffect(() => {
     // The store's lammps outlives this component, so a remount doesn't spawn
@@ -218,7 +176,8 @@ const SimulationComponent = () => {
     // Worker), so it runs inside a Web Worker. The proxy owns that worker and
     // is the store's LammpsWeb: the modifier/render pipeline reads the typed
     // arrays of its latest streamed frame, and engine-FS writes are forwarded
-    // to the worker as commands.
+    // to the worker as commands. The run pipeline (RunController) owns the
+    // proxy's step listener while a run streams.
     Promise.resolve()
       .then(async () => {
         const proxy = new LammpsWorkerProxy();
@@ -234,7 +193,6 @@ const SimulationComponent = () => {
             description: "Reload the page to restart the engine.",
           });
         });
-        proxyRef.current = proxy;
         await proxy.load();
         return proxy;
       })

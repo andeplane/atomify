@@ -164,9 +164,9 @@ describe("View", () => {
   });
 
   // ---------------------------------------------------------------------------
-  // P0: Auto-clear selection on simulation change
+  // P0: Auto-clear selection when a new run is loaded
   // ---------------------------------------------------------------------------
-  describe("P0: Auto-clear selection on simulation change", () => {
+  describe("P0: Auto-clear selection when a new run is loaded", () => {
     it("should call clearSelection on initial mount", () => {
       // Arrange
       const mockVisualizer = mockState.render.visualizer!;
@@ -178,16 +178,16 @@ describe("View", () => {
       expect(mockVisualizer.clearSelection).toHaveBeenCalled();
     });
 
-    it("should call clearSelection again when simulation value changes", () => {
-      // Arrange: start with no simulation
-      mockState.simulation.simulation = null;
+    it("should call clearSelection again when a run is loaded", () => {
+      // Arrange: start with no loaded run
+      mockState.simulation.loadedWorkdir = undefined;
       const mockVisualizer = mockState.render.visualizer!;
       const { rerender } = render(<View visible={true} />);
 
       const callsAfterMount = mockVisualizer.clearSelection.mock.calls.length;
 
-      // Act: change simulation to a new value
-      mockState.simulation.simulation = { id: "sim1" };
+      // Act: load a run
+      mockState.simulation.loadedWorkdir = "proj/runs/run-001";
       vi.mocked(useStoreState).mockImplementation((selector) =>
         selector(mockState as unknown as State<StoreModel>),
       );
@@ -199,17 +199,17 @@ describe("View", () => {
       );
     });
 
-    it("should call clearSelection when simulation changes from one to another", () => {
-      // Arrange: start with sim1
-      mockState.simulation.simulation = { id: "sim1" };
+    it("should call clearSelection when the loaded run changes", () => {
+      // Arrange: start with run-001
+      mockState.simulation.loadedWorkdir = "proj/runs/run-001";
       const mockVisualizer = mockState.render.visualizer!;
       const { rerender } = render(<View visible={true} />);
 
       const callsAfterFirstRender =
         mockVisualizer.clearSelection.mock.calls.length;
 
-      // Act: switch to sim2
-      mockState.simulation.simulation = { id: "sim2" };
+      // Act: switch to run-002
+      mockState.simulation.loadedWorkdir = "proj/runs/run-002";
       vi.mocked(useStoreState).mockImplementation((selector) =>
         selector(mockState as unknown as State<StoreModel>),
       );
@@ -299,8 +299,8 @@ describe("View", () => {
   // ---------------------------------------------------------------------------
   describe("P1: No simulation modal", () => {
     it("should NOT show the no-simulation modal in pane mode (run detail)", () => {
-      // Arrange: simulation is null (would normally trigger the modal)
-      mockState.simulation.simulation = null;
+      // Arrange: no run loaded (would normally trigger the modal)
+      mockState.simulation.loadedWorkdir = undefined;
 
       // Act
       render(<View visible={true} pane />);
@@ -311,9 +311,9 @@ describe("View", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("should show the no-simulation modal when simulation is null", () => {
+    it("should show the no-simulation modal when no run is loaded", () => {
       // Arrange
-      mockState.simulation.simulation = null;
+      mockState.simulation.loadedWorkdir = undefined;
 
       // Act
       render(<View visible={true} />);
@@ -322,9 +322,9 @@ describe("View", () => {
       expect(screen.getByTestId("no-simulation-modal")).toBeInTheDocument();
     });
 
-    it("should NOT show the modal when simulation exists", () => {
+    it("should NOT show the modal when a run is loaded", () => {
       // Arrange
-      mockState.simulation.simulation = { id: "sim1" };
+      mockState.simulation.loadedWorkdir = "proj/runs/run-001";
 
       // Act
       render(<View visible={true} />);
@@ -488,7 +488,7 @@ function createDefaultMockState() {
       cameraPosition: undefined,
       cameraTarget: undefined,
       running: false,
-      simulation: undefined as { id: string } | null | undefined,
+      loadedWorkdir: undefined as string | undefined,
     },
     render: {
       particles: undefined as unknown,

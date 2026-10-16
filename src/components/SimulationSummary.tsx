@@ -22,7 +22,9 @@ const SimulationSummary = ({
   const setSimulationSettings = useStoreActions(
     (actions) => actions.settings.setSimulation,
   );
-  const simulation = useStoreState((state) => state.simulation.simulation);
+  const loadedWorkdir = useStoreState(
+    (state) => state.simulation.loadedWorkdir,
+  );
   const runType = useStoreState((state) => state.simulationStatus.runType);
   const numAtoms = useStoreState((state) => state.simulationStatus.numAtoms);
   const numBonds = useStoreState((state) => state.simulationStatus.numBonds);
@@ -75,7 +77,7 @@ const SimulationSummary = ({
 
   return (
     <div className="simulationsummary">
-      {simulation && (
+      {loadedWorkdir && (
         <>
           <div
             className="simulation-summary-minimize-button"

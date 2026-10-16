@@ -7,17 +7,22 @@ import {
  * project's working tree + run history, navigation state, and run
  * orchestration (single runs and sweeps) on top of the storage layer.
  *
- * Runs execute through the existing simulation model unchanged: each run
- * materializes a legacy `Simulation` whose id is `<dirName>/runs/<runId>`,
- * so the engine pipeline writes into the run directory by construction.
- * This model does the work around that: snapshot, run.json, output copies
- * into project storage, and queue advancement.
+ * A run executes through the run pipeline (engine/RunController.ts) in its
+ * own engine workdir, `<dirName>/runs/<runId>`, so the engine writes into
+ * the run directory by construction. This model does the work around it:
+ * the queue, the run directory with its snapshot and initial run.json, the
+ * resident run a continuation needs, and queue advancement.
  */
 
-import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
+import { action, Action, thunk, Thunk, State } from "easy-peasy";
 import { unzipSync, zipSync } from "fflate";
 import { StoreModel } from "./model";
-import { getFullLammpsOutput, type Simulation } from "./simulation";
+import { createStoreRunHost } from "./runHost";
+import {
+  RunController,
+  STORAGE_FULL_RUN_ERROR,
+  storageFullNotice,
+} from "../engine/RunController";
 import type {
   FileStat,
   ProjectMeta,
@@ -28,7 +33,6 @@ import type {
 import {
   allocateRunDir,
   bytesToWriteContent,
-  isQuotaExceededError,
   listRuns,
   readRunMeta,
   reconcileRuns,
@@ -38,8 +42,9 @@ import {
   writeRunMeta,
 } from "../storage";
 import { projectAnalysisNotebook } from "../utils/AnalyzeNotebook";
-import { injectKokkosOptIn } from "../utils/kokkos";
 import { track } from "../utils/metrics";
+
+export { STORAGE_FULL_RUN_ERROR };
 
 export interface StoreInjections {
   /** The persistent library (JupyterLite contents IndexedDB). */
@@ -115,18 +120,6 @@ export interface RunRequest {
 }
 
 export type SaveState = "saving" | "saved" | "error";
-
-/** Files ≤ this size stream to storage during the run; larger wait for the end. */
-const MID_RUN_COPY_CAP = 4 * 1024 * 1024;
-const MID_RUN_COPY_INTERVAL_MS = 3000;
-
-/** Wrapper artifacts from the vars-injection mechanism — engine detail. */
-const RUN_INTERNAL_FILE = /^(_vars_|_wrapper_)/;
-
-/** run.json `error` for a run whose outputs hit the quota (ADR-001
- *  Consequences). Settings > Storage lists per-project usage with delete. */
-export const STORAGE_FULL_RUN_ERROR =
-  "Browser storage is full — free space in Settings > Storage.";
 
 const SCRIPT_FILE = /(^|\/)in\.[^/]*$|\.in$/;
 
@@ -326,48 +319,6 @@ async function copyTree(
     } else {
       await to.write(toDir, entry.path, await from.read(fromDir, entry.path));
     }
-  }
-}
-
-/** Best-effort viewport capture for `frame.png` (ADR-003 §2). */
-async function captureViewport(): Promise<Uint8Array | null> {
-  try {
-    // Only the simulation viewport (the container View renders the
-    // visualizer into) counts. A bare `canvas` query would grab whatever
-    // canvas happens to be first — Monaco's minimap, a notebook chart —
-    // once the user navigates away and View unmounts.
-    const canvas = document.querySelector<HTMLCanvasElement>(
-      "#canvas-container canvas",
-    );
-    if (!canvas || canvas.width === 0) {
-      return null;
-    }
-    // The visualizer renders in its own rAF loop and WebGL drawing buffers
-    // (preserveDrawingBuffer: false) are invalidated after compositing.
-    // Waiting two frames and reading the pixels synchronously right after the
-    // rAF callback — before this frame composites — captures real pixels
-    // instead of a black frame. toDataURL is used over toBlob because it is
-    // synchronous: toBlob's callback lands after compositing.
-    await new Promise<void>((resolve) =>
-      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
-    );
-    const dataUrl = canvas.toDataURL("image/png");
-    const base64 = dataUrl.split(",")[1];
-    if (!base64) {
-      return null;
-    }
-    const binary = atob(base64);
-    if (binary.length < 200) {
-      // Empty/cleared buffers compress to nearly nothing; skip those.
-      return null;
-    }
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) {
-      bytes[i] = binary.charCodeAt(i);
-    }
-    return bytes;
-  } catch {
-    return null;
   }
 }
 
@@ -1124,7 +1075,6 @@ export const projectsModel: ProjectsModel = {
     });
 
     const storage = storageFor(injections, request.quick);
-    const storeActions = getStoreActions() as Actions<StoreModel>;
     const lammps = (getStoreState() as State<StoreModel>).simulation.lammps;
     if (!lammps) {
       actions.setNotice("The simulation engine is still loading.");
@@ -1134,8 +1084,8 @@ export const projectsModel: ProjectsModel = {
     }
 
     const resident = getState().residentRun;
-    const priorSimulation = (getStoreState() as State<StoreModel>).simulation
-      .simulation;
+    const loadedWorkdir = (getStoreState() as State<StoreModel>).simulation
+      .loadedWorkdir;
     const continuation = request.continueFrom;
     if (
       continuation &&
@@ -1144,7 +1094,7 @@ export const projectsModel: ProjectsModel = {
         resident.dirName !== request.dirName ||
         resident.quick !== request.quick ||
         resident.runId !== continuation.runId ||
-        priorSimulation?.id !== resident.workdirId ||
+        loadedWorkdir !== resident.workdirId ||
         lammps.getIsRunning() ||
         lammps.getNumAtoms() === 0)
     ) {
@@ -1230,7 +1180,6 @@ export const projectsModel: ProjectsModel = {
         runId,
       ));
     }
-    const snapshotFiles = new Set(copied);
     let runMeta: RunMeta = {
       ...(request.viewOnly ? { viewOnly: true } : {}),
       schemaVersion: 1,
@@ -1262,219 +1211,34 @@ export const projectsModel: ProjectsModel = {
     });
     await actions.refreshActive();
 
-    // 2. Materialize the legacy Simulation from the snapshot: its id is the
-    //    run directory, so the whole engine pipeline (kokkos preprocessing,
-    //    vars wrapper, wasm FS writes, streaming) lands inside the run.
-    const snapshotEntries = await storage.list(
-      request.dirName,
-      `${RUNS_DIR}/${runId}`,
-    );
-    const files = [];
-    const binaryFiles: { fileName: string; bytes: Uint8Array }[] = [];
-    for (const entry of snapshotEntries) {
-      if (entry.type === "directory") {
-        continue;
-      }
-      const relative = entry.path.slice(`${RUNS_DIR}/${runId}/`.length);
-      if (relative.startsWith(".atomify")) {
-        continue;
-      }
-      const content = await storage.read(request.dirName, entry.path);
-      if (typeof content === "string") {
-        files.push({ fileName: relative, content });
-      } else {
-        // Binary inputs (restart files, .npy…) must reach the engine FS
-        // byte-exact — TextDecoder would mangle them into U+FFFD soup.
-        // They bypass the Simulation object (whose files are editor-facing
-        // text) and are written to the run's wasm dir directly below.
-        binaryFiles.push({ fileName: relative, bytes: content });
-      }
-    }
-    // The Multithreading toggle (New Run modal): KOKKOS acceleration is
-    // engaged per run by the `suffix kk` marker in the input script (the
-    // engine's `-sf kk -k on t 4` args are constant; syncFilesWasm applies
-    // serial-styles preprocessing to scripts WITHOUT the marker — see
-    // src/utils/kokkos.ts). When the toggle is on and the script doesn't
-    // already opt in, inject the marker into the materialized copy here —
-    // the working tree and the run snapshot keep the original text. When
-    // the toggle is off we leave opted-in scripts alone: the toggle
-    // defaults from the script, so "off" only means "don't inject".
-    if (request.useKokkos) {
-      const mainScript = files.find((file) => file.fileName === inputScript);
-      if (mainScript) {
-        mainScript.content = injectKokkosOptIn(mainScript.content);
-      }
-    }
-    const simulation: Simulation = {
-      id: `${request.dirName}/${RUNS_DIR}/${runId}`,
-      files,
-      inputScript,
-      start: false,
-      vars: Object.keys(vars).length ? vars : undefined,
-      metricsId: request.exampleId ?? request.dirName,
-    };
-
-    // 3. Copy outputs out of the worker FS into project storage on a
-    //    throttle, so the notebook can analyze a run in flight (ADR-002 §4).
-    const workdirId =
-      continuation && resident ? resident.workdirId : simulation.id;
-    const workdir = `/${workdirId}`;
-    // A quota error while copying outputs fails the run with a clear reason
-    // and keeps what was copied (ADR-001 Consequences: never silent loss).
-    let storageFull = false;
+    // 2. Everything from loading the snapshot into the engine to the final
+    //    run.json and frame.png is the run pipeline's (RunController).
     const projectName =
       getState().projects.find((p) => p.dirName === request.dirName)
         ?.displayName ?? request.dirName;
-    const storageFullNotice = () =>
-      `Browser storage is full: run #${runId.replace(/^run-0*/, "")} of ` +
-      `"${projectName}" failed and kept partial outputs. Free space in ` +
-      `Settings > Storage.`;
-    const copyOutputs = async (maxBytes?: number) => {
-      if (!lammps.snapshotWorkdir) {
-        return;
-      }
-      try {
-        const snapshot = await lammps.snapshotWorkdir(workdir, maxBytes);
-        for (const file of snapshot.files) {
-          if (RUN_INTERNAL_FILE.test(file.path)) {
-            continue;
-          }
-          // The engine wrote the snapshotted inputs into its FS itself —
-          // possibly preprocessed (kokkos suffix rewriting) — so copying
-          // them back would overwrite the pristine snapshot with mangled
-          // text and break run provenance (ADR-001 §2). Skip everything
-          // snapshotWorkingTree copied; only genuine outputs come back.
-          // (Trade-off: a run that MODIFIES an input file in place keeps
-          // the authored version in the snapshot — provenance wins.)
-          if (snapshotFiles.has(file.path)) {
-            continue;
-          }
-          await storage.write(
-            request.dirName,
-            `${RUNS_DIR}/${runId}/${file.path}`,
-            bytesToWriteContent(file.path, file.bytes),
-          );
-        }
-      } catch (error) {
-        if (isQuotaExceededError(error)) {
-          storageFull = true;
-          actions.setNotice(storageFullNotice());
-          return;
-        }
-        actions.setNotice(
-          `Could not copy run outputs to storage: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        );
-      }
-    };
-
-    let stopReason: string = "failed";
-    let errorMessage: string | undefined;
-    const interval = setInterval(() => {
-      void copyOutputs(MID_RUN_COPY_CAP);
-    }, MID_RUN_COPY_INTERVAL_MS);
-    try {
-      if (!continuation)
-        await storeActions.simulation.newSimulation(simulation);
-      for (const file of continuation ? [] : binaryFiles) {
-        lammps.writeFile(`/${simulation.id}/${file.fileName}`, file.bytes);
-      }
-      const result = (await storeActions.simulation.run(
-        continuation ? { continuationSteps: continuation.steps } : undefined,
-      )) as { stopReason: string; errorMessage?: string } | undefined;
-      // run() returns undefined on its guard paths (engine busy, input
-      // script missing from the snapshot) — the run never executed.
-      stopReason = result?.stopReason ?? "failed";
-      errorMessage =
-        result?.errorMessage ??
-        (result
-          ? undefined
-          : ((getStoreState() as State<StoreModel>).simulation.lastError ??
-            "The engine did not start this run."));
-    } catch (error) {
-      errorMessage = error instanceof Error ? error.message : String(error);
-    } finally {
-      clearInterval(interval);
-    }
-
-    // 4. Final full output copy + run.json + best-effort frame capture.
-    await copyOutputs(undefined);
-    const lammpsState = (getStoreState() as State<StoreModel>).simulation;
-    // This wasm build streams LAMMPS output to stdout instead of writing a
-    // log file; persist the captured console as the run's log.lammps
-    // (ADR-003 §4.6 renders finished-run consoles from it). A log the engine
-    // did write itself wins. The source is the UNCAPPED accumulator, not
-    // state.lammpsOutput (a display buffer capped at 2000 lines) — long runs
-    // must keep their header and thermo columns.
-    try {
-      const logPath = `${RUNS_DIR}/${runId}/log.lammps`;
-      const engineLog = await storage.stat(request.dirName, logPath);
-      const fullLog = getFullLammpsOutput();
-      if (!engineLog && fullLog.length > 0) {
-        await storage.write(
-          request.dirName,
-          logPath,
-          fullLog.join("\n") + "\n",
-        );
-      }
-    } catch (error) {
-      // The log is a convenience copy; never fail the run over it — unless
-      // storage is full, in which case the outputs are incomplete too.
-      storageFull ||= isQuotaExceededError(error);
-    }
-    const existing = await readRunMeta(storage, request.dirName, runId);
-    runMeta = {
-      ...(existing ?? runMeta),
-      status: storageFull
-        ? "failed"
-        : stopReason === "canceled"
-          ? "canceled"
-          : stopReason === "failed"
-            ? "failed"
-            : "completed",
-      finishedAt: new Date().toISOString(),
-      error: storageFull
-        ? STORAGE_FULL_RUN_ERROR
-        : stopReason === "failed"
-          ? errorMessage
+    const outcome = await new RunController(
+      lammps,
+      createStoreRunHost(getStoreState, getStoreActions),
+    ).execute({
+      storage,
+      dirName: request.dirName,
+      meta: runMeta,
+      useKokkos: request.useKokkos,
+      continuation:
+        continuation && resident
+          ? { workdirId: resident.workdirId, steps: continuation.steps }
           : undefined,
-      stats: {
-        timesteps: lammps.getTimesteps(),
-        numAtoms: lammps.getNumAtoms(),
-        wallSeconds:
-          (Date.now() - new Date(runMeta.startedAt).getTime()) / 1000,
-      },
-    };
-    try {
-      await writeRunMeta(storage, request.dirName, runMeta);
-    } catch (error) {
-      if (!isQuotaExceededError(error)) {
-        throw error;
-      }
-      // Not even run.json fits: it stays "running" on disk until
-      // reconcileRuns marks it interrupted; the notice below says why.
-      storageFull = true;
-      runMeta = { ...runMeta, status: "failed", error: STORAGE_FULL_RUN_ERROR };
-    }
+      exampleId: request.exampleId,
+      projectName,
+    });
+    const { storageFull, workdirId } = outcome;
+    runMeta = outcome.meta;
     track("Run.Finish", {
       status: runMeta.status,
       wallSeconds: runMeta.stats?.wallSeconds,
       timesteps: runMeta.stats?.timesteps,
       exampleId: request.exampleId,
     });
-    const frame = storageFull ? undefined : await captureViewport();
-    if (frame) {
-      try {
-        await storage.write(
-          request.dirName,
-          `${RUNS_DIR}/${runId}/.atomify/frame.png`,
-          frame,
-        );
-      } catch {
-        // Frame capture is decorative; never fail the run over it.
-      }
-    }
 
     if (
       runMeta.status === "completed" &&
@@ -1495,7 +1259,7 @@ export const projectsModel: ProjectsModel = {
     if (storageFull) {
       // Queued sweep runs would hit the same wall; stop them here.
       actions.setRunQueue([]);
-      actions.setNotice(storageFullNotice());
+      actions.setNotice(storageFullNotice(runId, projectName));
     } else if (
       state.screen.name !== "project" ||
       state.screen.runId !== runId
@@ -1504,11 +1268,11 @@ export const projectsModel: ProjectsModel = {
         `Run #${runId.replace(/^run-0*/, "")} ${runMeta.status}.`,
       );
     }
-    if (lammpsState.running) {
-      // Defensive: the engine reported running after run() settled.
+    if ((getStoreState() as State<StoreModel>).simulation.running) {
+      // Defensive: the store still reports a run after the pipeline settled.
       return;
     }
-    // 5. Advance the sweep queue.
+    // 3. Advance the sweep queue.
     await actions.executeNextRun();
   }),
 };

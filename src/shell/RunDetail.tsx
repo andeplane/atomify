@@ -31,7 +31,7 @@ const CONSOLE_COLLAPSED_KEY = "atomify_run_console_collapsed";
 const RunDetail = ({ runId }: { runId: string }) => {
   const [colorsOpen, setColorsOpen] = useState(false);
   const active = useStoreState((state) => state.projects.active);
-  const loadedSimulationId = useStoreState((s) => s.simulation.simulation?.id);
+  const loadedWorkdir = useStoreState((s) => s.simulation.loadedWorkdir);
   const [continueOpen, setContinueOpen] = useState(false);
   const residentRun = useStoreState((s) => s.projects.residentRun);
   const runQueue = useStoreState((s) => s.projects.runQueue);
@@ -87,7 +87,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
     meta?.viewOnly &&
     meta.status === "completed" &&
     !activeRun &&
-    loadedSimulationId === `${dirName}/runs/${runId}`;
+    loadedWorkdir === `${dirName}/runs/${runId}`;
 
   const [log, setLog] = useState<string[] | null>(null);
   const [frameUrl, setFrameUrl] = useState<string | null>(null);

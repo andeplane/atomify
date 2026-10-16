@@ -137,7 +137,9 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const renderSettings = useStoreState((state) => state.settings.render);
   const domElement = useRef<HTMLDivElement | null>(null);
   const running = useStoreState((state) => state.simulation.running);
-  const simulation = useStoreState((state) => state.simulation.simulation);
+  const loadedWorkdir = useStoreState(
+    (state) => state.simulation.loadedWorkdir,
+  );
   const runTotalTimesteps = useStoreState(
     (state) => state.simulationStatus.runTotalTimesteps,
   );
@@ -328,10 +330,10 @@ const View = ({ visible, pane = false }: ViewProps) => {
     }
   }, [visible, visualizer, pane]);
 
-  // Auto-reset selection when simulation changes
+  // Auto-reset selection when a new run is loaded
   useEffect(() => {
     handleClearSelection();
-  }, [simulation, handleClearSelection]);
+  }, [loadedWorkdir, handleClearSelection]);
 
   const prevParticlesRef = useRef<Particles | null>(null);
   useEffect(() => {
@@ -541,9 +543,9 @@ const View = ({ visible, pane = false }: ViewProps) => {
     };
   }, [visualizer, disposeBoxGroup, disposeWallGroup, pane, setVisualizer]);
 
-  const title = simulation ? simulation.id : "No simulation";
+  const title = loadedWorkdir ?? "No simulation";
   const showNoSimulationModal =
-    simulation == null && !hideNoSimulation && !pane;
+    loadedWorkdir == null && !hideNoSimulation && !pane;
 
   const Wrapper = pane ? PaneVisualizerWrapper : VisualizerWrapper;
 

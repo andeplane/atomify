@@ -314,7 +314,7 @@ export class LammpsAdapter {
 
   /**
    * Never rejects: run failures (including cancellation) are stored and
-   * surfaced through getErrorMessage, which the run thunk checks after
+   * surfaced through getErrorMessage, which the run pipeline checks after
    * awaiting — rethrowing here would lose the Atomify::canceled marker that
    * routes stop-button aborts away from the error path.
    */

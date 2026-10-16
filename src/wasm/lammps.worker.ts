@@ -353,8 +353,8 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
         break;
       case "runFile": {
         // Always answer with runFinished (even on throw) so the proxy's
-        // runFile promise — and the store's `await lammps.runFile` — can never
-        // strand if something on the run path unexpectedly rejects.
+        // runFile promise — and the run pipeline's `await lammps.runFile` —
+        // can never strand if something on the run path unexpectedly rejects.
         const { requestId } = cmd;
         runActive = true;
         let runError = "";
