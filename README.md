@@ -34,24 +34,30 @@ Atomify supports special commands that can be added as comments in your LAMMPS i
 ### Atom Styling
 
 **Set atom type with element name (automatic coloring):**
+
 ```
 #/atom <type> <element_name>
 ```
+
 Assigns an element name to an atom type. Atomify will automatically use the standard color and radius for that element.
 
 Example:
+
 ```
 #/atom 1 oxygen
 #/atom 2 hydrogen
 ```
 
 **Set atom type with custom radius and color:**
+
 ```
 #/atom <type> <radius> #RRGGBB
 ```
+
 Sets a custom radius and color (in hexadecimal format) for an atom type.
 
 Example:
+
 ```
 #/atom 1 2.0 #ff0000
 #/atom 2 1.5 #0000ff
@@ -60,12 +66,15 @@ Example:
 ### Dynamic Bonds
 
 **Create bonds between atom types:**
+
 ```
 #/bond <type1> <type2> <distance>
 ```
+
 Creates dynamic bonds between atoms of `type1` and `type2` if they are within the specified `distance`.
 
 Example:
+
 ```
 #/bond 1 2 2.0
 #/bond 1 1 1.7
@@ -74,23 +83,29 @@ Example:
 ### Camera Control
 
 **Set initial camera position:**
+
 ```
 #/camera position <x> <y> <z>
 ```
+
 Sets the initial position of the camera in 3D space.
 
 Example:
+
 ```
 #/camera position 50 40 100
 ```
 
 **Set camera target:**
+
 ```
 #/camera target <x> <y> <z>
 ```
+
 Sets the point in 3D space that the camera looks at.
 
 Example:
+
 ```
 #/camera target 25 25 25
 ```

@@ -1,22 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta name="theme-color" content="#000000" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>Atomify LAMMPS - a real time simulator in the browser</title>
 
-<head>
-  <meta charset="utf-8" />
-  <link rel="shortcut icon" href="/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-  <meta name="theme-color" content="#000000" />
-  <link rel="manifest" href="/manifest.json" />
-  <title>Atomify LAMMPS - a real time simulator in the browser</title>
+    <!-- Shell fonts (design tokens): Manrope UI + JetBrains Mono for code. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
 
-  <!-- Shell fonts (design tokens): Manrope UI + JetBrains Mono for code. -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
-    rel="stylesheet">
-
-  <!--
+    <!--
     Cross-origin isolation for SharedArrayBuffer, which the atomify
     (KOKKOS/pthreads) wasm build requires. GitHub Pages can't set COOP/COEP
     response headers, so this service-worker shim injects them on the client
@@ -25,7 +28,7 @@
     requiring CORP headers. In dev, vite sets the same headers directly.
     Must load before the app module.
   -->
-  <!--
+    <!--
     Service worker lifecycle. Two workers serve /atomify/: the COOP/COEP
     shim below and JupyterLite's (patched at build time to inject the same
     isolation headers — see scripts/jupyter_coi_patch.py, run by `make
@@ -44,60 +47,56 @@
     contents live in IndexedDB, which is preserved. src/index.tsx skips
     booting the app while the reset is in flight.
   -->
-  <script>
-    (() => {
-      const resetting = new URLSearchParams(window.location.search).has(
-        "sw-reset",
-      );
-      window.coi = {
-        coepCredentialless: () => true,
-        shouldRegister: () => !resetting,
-      };
-      if (resetting) {
-        const done = () => {
-          const url = new URL(window.location.href);
-          url.searchParams.delete("sw-reset");
-          window.location.replace(url);
+    <script>
+      (() => {
+        const resetting = new URLSearchParams(window.location.search).has(
+          "sw-reset",
+        );
+        window.coi = {
+          coepCredentialless: () => true,
+          shouldRegister: () => !resetting,
         };
-        if (!("serviceWorker" in navigator)) {
-          done();
+        if (resetting) {
+          const done = () => {
+            const url = new URL(window.location.href);
+            url.searchParams.delete("sw-reset");
+            window.location.replace(url);
+          };
+          if (!("serviceWorker" in navigator)) {
+            done();
+            return;
+          }
+          Promise.all([
+            navigator.serviceWorker
+              .getRegistrations()
+              .then((regs) =>
+                Promise.all(
+                  regs
+                    .filter((reg) =>
+                      new URL(reg.scope).pathname.startsWith("/atomify/"),
+                    )
+                    .map((reg) => reg.unregister()),
+                ),
+              ),
+            "caches" in window ? caches.delete("precache") : null,
+          ]).then(done, done);
           return;
         }
-        Promise.all([
-          navigator.serviceWorker.getRegistrations().then((regs) =>
-            Promise.all(
-              regs
-                .filter((reg) =>
-                  new URL(reg.scope).pathname.startsWith("/atomify/"),
-                )
-                .map((reg) => reg.unregister()),
-            ),
-          ),
-          "caches" in window ? caches.delete("precache") : null,
-        ]).then(done, done);
-        return;
-      }
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .getRegistrations()
-          .then((regs) =>
-            regs.forEach((reg) => reg.update().catch(() => {})),
-          )
-          .catch(() => {});
-      }
-    })();
-  </script>
-  <script src="coi-serviceworker.min.js"></script>
-</head>
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker
+            .getRegistrations()
+            .then((regs) => regs.forEach((reg) => reg.update().catch(() => {})))
+            .catch(() => {});
+        }
+      })();
+    </script>
+    <script src="coi-serviceworker.min.js"></script>
+  </head>
 
-<body>
-  <noscript>
-    You need to enable JavaScript to run this app.
-  </noscript>
+  <body>
+    <noscript> You need to enable JavaScript to run this app. </noscript>
 
-  <div id="root"></div>
-  <script type="module" src="/src/index.tsx"></script>
-</body>
-
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
 </html>
-
