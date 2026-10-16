@@ -322,12 +322,15 @@ export const Popover = ({
   children,
   minWidth = 216,
   testId,
+  align = "right",
 }: {
   open: boolean;
   onClose: () => void;
   children: ReactNode;
   minWidth?: number;
   testId?: string;
+  /** Which edge of the anchor the popover lines up with. */
+  align?: "left" | "right";
 }) => {
   const ref = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
@@ -356,7 +359,7 @@ export const Popover = ({
       style={{
         position: "absolute",
         top: "calc(100% + 6px)",
-        right: 0,
+        [align]: 0,
         zIndex: 100,
         minWidth,
         background: "var(--surface)",

@@ -18,6 +18,8 @@ type AttributeState = {
   count?: number;
   color?: InstancedBufferAttribute;
   radius?: InstancedBufferAttribute;
+  /** Per-slot hide flags (1 = drawn with zero radius); unset = none hidden. */
+  hidden?: Uint8Array;
 };
 const states = new WeakMap<Visualizer, AttributeState>();
 const patchedMaterials = new WeakSet<object>();
@@ -118,7 +120,7 @@ export function installParticleAttributes(visualizer: Visualizer): void {
     let slot = state.slots.get(id) ?? -1;
     if (slot >= 0 && state.radius) {
       for (; slot >= 0; slot = state.nextSlot![slot])
-        state.radius.setX(slot, radius);
+        state.radius.setX(slot, state.hidden?.[slot] ? 0 : radius);
       state.radius.needsUpdate = true;
     }
     visualizer.forceRender = true;
@@ -158,6 +160,8 @@ export function syncParticleAttributes(
     return;
   state.ids!.set(particles.indices.subarray(0, particles.count));
   state.count = particles.count;
+  // Every radius is rewritten below, so earlier hide flags no longer apply.
+  state.hidden = undefined;
   state.slots.clear();
   // Walk backwards so each ID's chain starts at its lowest slot.
   for (let i = particles.count - 1; i >= 0; i--) {
@@ -174,4 +178,41 @@ export function syncParticleAttributes(
     if (!state.slots.has(id)) state.styles.delete(id);
   state.color!.needsUpdate = true;
   state.radius!.needsUpdate = true;
+}
+
+/**
+ * Hide instances by drawing them with zero radius, so whole atoms disappear
+ * from both drawing and GPU picking while IDs and slots stay untouched.
+ * `hidden[i]` follows the particles' array order; pass undefined to show all.
+ * Call after syncParticleAttributes for the same frame.
+ */
+export function setHiddenParticles(
+  visualizer: Visualizer | undefined,
+  particles: Particles,
+  hidden: Uint8Array | undefined,
+): void {
+  const state = visualizer ? states.get(visualizer) : undefined;
+  if (!visualizer || !state || state.particles !== particles || !state.radius)
+    return;
+  const previous = state.hidden;
+  if (!hidden && !previous) return;
+  let changed = false;
+  for (let i = 0; i < particles.count; i++) {
+    const hide = hidden ? hidden[i] : 0;
+    if (hide === (previous ? previous[i] : 0)) continue;
+    const radius = state.styles.get(particles.indices[i])?.radius ?? 0.33;
+    state.radius.setX(i, hide ? 0 : radius);
+    changed = true;
+  }
+  if (hidden) {
+    const flags = previous ?? new Uint8Array(particles.capacity);
+    flags.set(hidden.subarray(0, particles.count));
+    state.hidden = flags;
+  } else {
+    state.hidden = undefined;
+  }
+  if (changed) {
+    state.radius.needsUpdate = true;
+    visualizer.forceRender = true;
+  }
 }

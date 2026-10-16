@@ -7,6 +7,7 @@ vi.mock("../utils/metrics", () => ({ track: vi.fn(), time_event: vi.fn() }));
 import { storeModel } from "./model";
 import { createStoreRunHost } from "./runHost";
 import { EngineRegistry } from "../engine/EngineRegistry";
+import SliceModifier from "../modifiers/slicemodifier";
 import { createMemoryProjectStorage } from "../storage";
 import type { AtomType } from "../utils/atomtypes";
 
@@ -47,5 +48,17 @@ describe("store run host", () => {
     expect(bonds.count).toBe(0);
     // The buffers stay registered for the new run's frames to refill.
     expect(engine.particles).toBe(particles);
+  });
+
+  it("switches the slice off for a fresh run", () => {
+    const { engine, host } = fixture();
+    const slice = engine.modifiers.find(
+      (modifier) => modifier instanceof SliceModifier,
+    )!;
+    slice.active = true;
+
+    host.beginFreshRun("proj/runs/run-002");
+
+    expect(slice.active).toBe(false);
   });
 });

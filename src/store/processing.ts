@@ -3,6 +3,7 @@ import Modifier from "../modifiers/modifier";
 import SyncParticlesModifier from "../modifiers/syncparticlesmodifier";
 import SyncBondsModifier from "../modifiers/syncbondsmodifier";
 import ColorModifier from "../modifiers/colormodifier";
+import SliceModifier from "../modifiers/slicemodifier";
 import { ModifierInput, ModifierOutput } from "../modifiers/types";
 import { Wall } from "../types";
 import * as THREE from "three";
@@ -229,12 +230,13 @@ export const processingModel: ProcessingModel = {
       const { modifierInput, modifierOutput, allActions, particles, bonds } =
         getModifierContext(getStoreState, getStoreActions, engine);
 
-      // Only run rendering-related modifiers (Particles, Bonds, Colors)
+      // Only run rendering-related modifiers (Particles, Bonds, Colors, Slice)
       const renderingModifiers = engine.modifiers.filter(
         (modifier: Modifier) =>
           modifier instanceof SyncParticlesModifier ||
           modifier instanceof SyncBondsModifier ||
-          modifier instanceof ColorModifier,
+          modifier instanceof ColorModifier ||
+          modifier instanceof SliceModifier,
       );
 
       renderingModifiers.forEach((modifier: Modifier) =>

@@ -13,6 +13,7 @@ describe("EngineRegistry", () => {
       "Particles",
       "Bonds",
       "Colors",
+      "Slice",
       "Computes",
       "Fixes",
       "Variables",

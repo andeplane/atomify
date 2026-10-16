@@ -7,6 +7,7 @@
 import type { Actions, State } from "easy-peasy";
 import type { EngineRegistry } from "../engine/EngineRegistry";
 import type { RunHost } from "../engine/RunController";
+import SliceModifier from "../modifiers/slicemodifier";
 import type { StoreModel } from "./model";
 import { getFullLammpsOutput } from "./simulation";
 
@@ -32,6 +33,13 @@ export function createStoreRunHost(
       const colorModifier = engine.colorModifier;
       if (colorModifier) {
         colorModifier.computeName = undefined;
+      }
+      // The slab is in absolute coordinates; a new box may not contain it.
+      const sliceModifier = engine.modifiers.find(
+        (modifier) => modifier instanceof SliceModifier,
+      );
+      if (sliceModifier) {
+        sliceModifier.active = false;
       }
       engine.clearGeometry();
       actions.render.resetParticleStyles();

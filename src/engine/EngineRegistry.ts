@@ -17,6 +17,7 @@ import type { Bonds, Particles, Visualizer } from "omovi";
 import type { LammpsWeb } from "../types";
 import type Modifier from "../modifiers/modifier";
 import ColorModifier from "../modifiers/colormodifier";
+import SliceModifier from "../modifiers/slicemodifier";
 import SyncBondsModifier from "../modifiers/syncbondsmodifier";
 import SyncComputesModifier from "../modifiers/synccomputesmodifier";
 import SyncFixesModifier from "../modifiers/syncfixesmodifier";
@@ -41,6 +42,8 @@ export function createDefaultModifiers(): Modifier[] {
     new SyncParticlesModifier({ name: "Particles", active: true }),
     new SyncBondsModifier({ name: "Bonds", active: true }),
     new ColorModifier({ name: "Colors", active: true }),
+    // After Particles/Bonds/Colors: it hides atoms those just restyled.
+    new SliceModifier({ name: "Slice", active: false }),
     new SyncComputesModifier({ name: "Computes", active: true }),
     new SyncFixesModifier({ name: "Fixes", active: true }),
     new SyncVariablesModifier({ name: "Variables", active: true }),
