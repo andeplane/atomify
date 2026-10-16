@@ -48,6 +48,8 @@ const Shell = () => {
   const activeRun = useStoreState((state) => state.projects.activeRun);
   const notice = useStoreState((state) => state.projects.notice);
   const lammps = useStoreState((state) => state.simulation.lammps);
+  // Set when the engine failed to load or its worker crashed mid-session.
+  const engineError = useStoreState((state) => state.app.engineError);
 
   const initialize = useStoreActions((actions) => actions.projects.initialize);
   const openProject = useStoreActions(
@@ -342,10 +344,19 @@ const Shell = () => {
         setPaused(false);
         setCancel(true);
       },
-      engineReady: lammps !== undefined,
+      engineReady: lammps !== undefined && !engineError,
       examples,
     }),
-    [notify, quickRunExample, runProject, launch, setPaused, lammps, examples],
+    [
+      notify,
+      quickRunExample,
+      runProject,
+      launch,
+      setPaused,
+      lammps,
+      engineError,
+      examples,
+    ],
   );
 
   return (

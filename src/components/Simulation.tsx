@@ -239,6 +239,16 @@ const SimulationComponent = () => {
         const proxy = new LammpsWorkerProxy();
         proxy.onPrint(onPrint);
         proxy.onError((message) => onPrint(message));
+        // A crashed worker can't be restarted in place: flag the engine as
+        // unavailable (sidebar chip, run buttons disabled) until a reload.
+        // Any in-flight run has already been failed by the proxy.
+        proxy.onCrash((message) => {
+          setEngineError(`${message}. Reload the page to restart the engine.`);
+          notify.error({
+            message: "The simulation engine crashed",
+            description: "Reload the page to restart the engine.",
+          });
+        });
         proxyRef.current = proxy;
         await proxy.load();
         return proxy;

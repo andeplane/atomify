@@ -505,6 +505,30 @@ describe("projects store integration", () => {
       expect(runMeta?.finishedAt).toBeTruthy();
       expect(store.getState().projects.activeRun).toBeUndefined();
     });
+
+    it("records a failed run when the engine worker crashes mid-run", async () => {
+      const engine = createFakeEngine();
+      // What LammpsWorkerProxy does after worker.onerror: the pending run
+      // and every later snapshot reject with the crash error.
+      const crash = new Error("The simulation engine crashed: Aborted(OOM)");
+      engine.lammps.runFile = () => Promise.reject(crash);
+      engine.lammps.snapshotWorkdir = () => Promise.reject(crash);
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Crashy",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const dirName = activeDirName(store);
+
+      await store.getActions().projects.startRuns([runRequest()]);
+
+      const runMeta = await readRunMeta(libraryStorage, dirName, "run-001");
+      expect(runMeta?.status).toBe("failed");
+      expect(runMeta?.error).toBe(crash.message);
+      expect(store.getState().simulation.running).toBe(false);
+      expect(store.getState().simulation.lastError).toBe(crash.message);
+      expect(store.getState().projects.activeRun).toBeUndefined();
+    });
   });
 
   describe("sweeps", () => {

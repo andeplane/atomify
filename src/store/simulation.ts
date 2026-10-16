@@ -459,6 +459,9 @@ export const simulationModel: SimulationModel = {
         console.log("Got exception: ", exception);
         if (typeof exception === "number") {
           errorMessage = lammps.getExceptionMessage(exception);
+        } else if (exception instanceof Error) {
+          // e.g. the proxy's "The simulation engine crashed: …" rejection.
+          errorMessage = exception.message;
         } else {
           errorMessage = String(exception);
         }
