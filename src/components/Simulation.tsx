@@ -144,6 +144,13 @@ const SimulationComponent = () => {
     simulationSettings,
   ]);
 
+  // P only works while the live viewport is visible, so leave pan mode
+  // there too: otherwise a view-only run's 3D view would keep panning on
+  // left-drag with no way to switch it back.
+  useEffect(() => {
+    if (!liveViewportVisible && panMode) setPanMode(false);
+  }, [liveViewportVisible, panMode, setPanMode]);
+
   // The speed setting is how often the engine syncs (and streams a frame).
   // The proxy owns the value and forwards changes to the worker.
   useEffect(() => {

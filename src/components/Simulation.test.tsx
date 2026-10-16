@@ -131,6 +131,15 @@ describe("simulation keyboard shortcuts", () => {
     expect(setPanMode).toHaveBeenCalledWith(true);
   });
 
+  it("turns pan mode off once the live viewport is no longer visible", () => {
+    (state.render as { panMode: boolean }).panMode = true;
+    const { rerender } = render(<Simulation />);
+    expect(setPanMode).not.toHaveBeenCalled();
+    (state.app as { liveViewportVisible: boolean }).liveViewportVisible = false;
+    rerender(<Simulation />);
+    expect(setPanMode).toHaveBeenCalledWith(false);
+  });
+
   it("ignores shortcuts while the live viewport is not visible", () => {
     (state.app as { liveViewportVisible: boolean }).liveViewportVisible = false;
     render(<Simulation />);
