@@ -67,6 +67,13 @@ export type RunStatus =
 
 /** Contents of `<dirName>/runs/<runId>/.atomify/run.json`. */
 export interface RunMeta {
+  continuationOf?: string;
+  replayOf?: string;
+  /** Pristine input paths, used to replay continuation recipes. */
+  inputFiles?: string[];
+  continuedFromTimestep?: number;
+  /** A read-only structural inspection; no dynamics were integrated. */
+  viewOnly?: boolean;
   schemaVersion: 1;
   id: string;
   inputScript: string;

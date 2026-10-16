@@ -34,6 +34,9 @@ const SimulationComponent = () => {
   );
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
   const setLammps = useStoreActions((actions) => actions.simulation.setLammps);
+  const setEngineError = useStoreActions(
+    (actions) => actions.app.setEngineError,
+  );
   const setStatus = useStoreActions((actions) => actions.app.setStatus);
   const runPostTimestep = useStoreActions(
     (actions) => actions.processing.runPostTimestep,
@@ -65,7 +68,29 @@ const SimulationComponent = () => {
 
   useEffect(() => {
     const onKeyDown = (ev: KeyboardEvent) => {
-      if (selectedMenu !== "view") {
+      // Shortcuts belong to the viewport, not text entry or modal controls.
+      const path = ev.composedPath();
+      const interacting = path.some(
+        (target) =>
+          target instanceof HTMLElement &&
+          (target.isContentEditable ||
+            target.matches(
+              'input, textarea, select, button, a[href], [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="slider"], [role="spinbutton"]',
+            )),
+      );
+      if (
+        selectedMenu !== "view" ||
+        interacting ||
+        ev.defaultPrevented ||
+        ev.isComposing ||
+        ev.repeat ||
+        ev.ctrlKey ||
+        ev.metaKey ||
+        ev.altKey ||
+        document.querySelector(
+          '[role="dialog"][aria-modal="true"], dialog[open]',
+        )
+      ) {
         return;
       }
 
@@ -90,6 +115,7 @@ const SimulationComponent = () => {
       }
 
       if (running && ev.key === " ") {
+        ev.preventDefault();
         setPaused(!paused);
       }
 
@@ -168,6 +194,27 @@ const SimulationComponent = () => {
       return;
     }
     loadStartedRef.current = true;
+    setEngineError(undefined);
+    // Safari and other WebKit browsers (including iOS browsers) cannot run
+    // our credentialless / SharedArrayBuffer engine configuration.
+    const isWebKit =
+      /AppleWebKit/i.test(navigator.userAgent) &&
+      !/Chrome\/|Chromium\/|Edg\/|OPR\/|Android/i.test(navigator.userAgent);
+    if (isWebKit) {
+      setEngineError(
+        "Safari is not supported for simulations. Use Chrome or Firefox on a desktop computer.",
+      );
+      return;
+    }
+    if (
+      !window.crossOriginIsolated ||
+      typeof SharedArrayBuffer === "undefined"
+    ) {
+      setEngineError(
+        "The simulation engine requires cross-origin isolation. Reload the page; if this persists, check browser settings or try another browser.",
+      );
+      return;
+    }
     setStatus({
       title: "Downloading LAMMPS ...",
       text: "",
@@ -182,15 +229,16 @@ const SimulationComponent = () => {
     // interface; the store and modifier/render pipeline keep reading data
     // through the usual heap-pointer path, now backed by the streamed bridge
     // heap instead of a real main-thread module.
-    const proxy = new LammpsWorkerProxy();
-    proxy.onPrint(onPrint);
-    // Surface worker/LAMMPS errors in the console panel rather than only the
-    // devtools console.
-    proxy.onError((message) => onPrint(message));
-    proxyRef.current = proxy;
-    proxy
-      .load()
-      .then(() => {
+    Promise.resolve()
+      .then(async () => {
+        const proxy = new LammpsWorkerProxy();
+        proxy.onPrint(onPrint);
+        proxy.onError((message) => onPrint(message));
+        proxyRef.current = proxy;
+        await proxy.load();
+        return proxy;
+      })
+      .then((proxy) => {
         track("WASM.Load");
         setStatus({
           title: "Downloading LAMMPS ...",
@@ -206,6 +254,7 @@ const SimulationComponent = () => {
         // The module failed to load — don't leave the UI stuck on the
         // "Downloading LAMMPS …" spinner with no explanation.
         const message = error instanceof Error ? error.message : String(error);
+        setEngineError(message);
         onPrint(`Failed to load LAMMPS: ${message}`);
         setStatus(undefined);
         notification.error({
@@ -213,7 +262,7 @@ const SimulationComponent = () => {
           description: message,
         });
       });
-  }, [onPrint, setLammps, setStatus]);
+  }, [onPrint, setLammps, setStatus, setEngineError]);
   return <></>;
 };
 export default SimulationComponent;

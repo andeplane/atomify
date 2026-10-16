@@ -1,3 +1,4 @@
+import { GROUP_LABEL_PREFIX } from "../utils/lammpsGroups";
 import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 import colormap from "colormap";
@@ -143,12 +144,14 @@ class ColorModifier extends Modifier {
 
   // Get the effective min/max values (custom or global)
   public getEffectiveMinValue(): number {
+    if (this.computeName?.startsWith(GROUP_LABEL_PREFIX)) return 0;
     return this.customMinValue !== undefined
       ? this.customMinValue
       : this.globalMinValue;
   }
 
   public getEffectiveMaxValue(): number {
+    if (this.computeName?.startsWith(GROUP_LABEL_PREFIX)) return 1;
     return this.customMaxValue !== undefined
       ? this.customMaxValue
       : this.globalMaxValue;
@@ -180,6 +183,7 @@ class ColorModifier extends Modifier {
     const computes = input.computes;
     const compute = this.computeName ? computes[this.computeName] : undefined;
     if (!compute || !compute.isPerAtom) {
+      this.runByType(input, output);
       return;
     }
 
@@ -261,6 +265,7 @@ class ColorModifier extends Modifier {
     const particles = output.particles;
     const particleStyles = input.renderState.particleStyles;
     const visualizer = input.renderState.visualizer;
+    const nativeRadii = input.lammps.getParticleRadii?.();
 
     for (let i = 0; i < particles.count; i++) {
       const realIndex = particles.indices[i];
@@ -269,7 +274,9 @@ class ColorModifier extends Modifier {
       if (!atomType) {
         atomType = defaultAtomTypes[type % defaultAtomTypes.length];
       }
-      const radius = 0.33 * input.renderState.particleRadius * atomType.radius;
+      const radius = nativeRadii
+        ? nativeRadii[i] * input.renderState.particleRadius
+        : 0.33 * input.renderState.particleRadius * atomType.radius;
       visualizer.setRadius(realIndex, radius);
       visualizer.setColor(realIndex, {
         r: atomType.color.r,

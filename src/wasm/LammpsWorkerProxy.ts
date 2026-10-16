@@ -1,4 +1,11 @@
-import { LammpsWeb, LMPModifier, LMPData1D, ModifierType, Wall } from "../types";
+import { GROUP_LABEL_PREFIX } from "../utils/lammpsGroups";
+import {
+  LammpsWeb,
+  LMPModifier,
+  LMPData1D,
+  ModifierType,
+  Wall,
+} from "../types";
 import type { ModifierCategory } from "lammps.js";
 import { AtomifyWasmModule } from "./types";
 import { getCancel, setCancel } from "./wasmInstance";
@@ -86,6 +93,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private heapF64Buffer = new ArrayBuffer(0);
   private heapF64 = new Float64Array(0);
   private perAtomCount = 0;
+  private groupNames: string[] = [];
+  private groupMasks = new Uint32Array(0);
+  private preparedGroup?: string;
 
   // Latest streamed compute/fix/variable snapshots + where each modifier's
   // series data landed in the bridge heap this step.
@@ -93,10 +103,12 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private seriesPointers = new Map<string, SeriesPointers[]>();
 
   // --- Cached state, refreshed from worker step / runFinished events ---
+  private cRadii: Float32Array | null = null;
   private cCount = 0;
   private cBondCount = 0;
   private cStep = 0;
   private cDimension = 3;
+  private cUnitStyle?: import("../utils/units").UnitStyle;
   private cRunMode = 0;
   private cRunStepsDone = 0;
   private cRunStepsTotal = 0;
@@ -123,10 +135,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private readonly moduleBridge: AtomifyWasmModule;
 
   constructor() {
-    this.worker = new Worker(
-      new URL("./lammps.worker.ts", import.meta.url),
-      { type: "module" },
-    );
+    this.worker = new Worker(new URL("./lammps.worker.ts", import.meta.url), {
+      type: "module",
+    });
     this.worker.onmessage = (ev: MessageEvent<WorkerEvent>) =>
       this.handleEvent(ev.data);
     this.allocate(4096, 4096, 4096);
@@ -271,10 +282,12 @@ export class LammpsWorkerProxy implements LammpsWeb {
     }
     this.ingestModifiers(step);
 
+    this.cRadii = step.radii ? new Float32Array(step.radii) : null;
     this.cCount = step.count;
     this.cBondCount = step.bondCount;
     this.cStep = step.step;
     this.cDimension = step.dimension;
+    this.cUnitStyle = step.unitStyle;
     this.cRunMode = step.runMode;
     this.cRunStepsDone = step.runStepsDone;
     this.cRunStepsTotal = step.runStepsTotal;
@@ -291,6 +304,11 @@ export class LammpsWorkerProxy implements LammpsWeb {
    * bridge. Runs inside ingestStep, after any reallocation.
    */
   private ingestModifiers(step: WorkerStepData) {
+    this.groupNames = step.groups?.names ?? [];
+    this.groupMasks = step.groups
+      ? new Uint32Array(step.groups.masks)
+      : new Uint32Array(0);
+    this.preparedGroup = undefined;
     this.cModifiers = step.modifiers;
     this.seriesPointers.clear();
     let offset = this.seriesBasePtr / 4; // float index into heapF32
@@ -312,7 +330,10 @@ export class LammpsWorkerProxy implements LammpsWeb {
           numPoints: series.x.length,
         });
       }
-      this.seriesPointers.set(`${modifier.category}:${modifier.name}`, pointers);
+      this.seriesPointers.set(
+        `${modifier.category}:${modifier.name}`,
+        pointers,
+      );
     }
 
     // Per-atom float64 values for the active coloring compute.
@@ -582,6 +603,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
   computeParticles() {
     return this.cCount;
   }
+  getParticleRadii() {
+    return this.cRadii;
+  }
   getPositionsPointer() {
     return this.posPtr;
   }
@@ -596,6 +620,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
   }
   getOrigoPointer() {
     return this.origPtr;
+  }
+  getUnitStyle() {
+    return this.cUnitStyle;
   }
   getDimension() {
     return this.cDimension;
@@ -695,7 +722,20 @@ export class LammpsWorkerProxy implements LammpsWeb {
         ),
       // Per-atom values for the active coloring compute are streamed into the
       // HEAPF64 bridge starting at offset 0 (see ingestModifiers).
-      getPerAtomData: () => 0,
+      getPerAtomData: () => {
+        const bit =
+          category === "compute" ? proxy.groupNames.indexOf(name) : -1;
+        if (bit >= 0 && proxy.preparedGroup !== name) {
+          if (proxy.heapF64.length < proxy.groupMasks.length) {
+            proxy.heapF64Buffer = new ArrayBuffer(proxy.groupMasks.length * 8);
+            proxy.heapF64 = new Float64Array(proxy.heapF64Buffer);
+          }
+          for (let i = 0; i < proxy.groupMasks.length; i++)
+            proxy.heapF64[i] = (proxy.groupMasks[i] >>> bit) & 1;
+          proxy.preparedGroup = name;
+        }
+        return 0;
+      },
       delete: () => {},
     };
   }
@@ -712,7 +752,15 @@ export class LammpsWorkerProxy implements LammpsWeb {
 
   /** Tell the worker which per-atom compute to stream values for (coloring). */
   setPerAtomModifier(category: ModifierCategory, name: string | null) {
-    this.send({ type: "setPerAtomModifier", category, name });
+    this.preparedGroup = undefined;
+    this.send({
+      type: "setPerAtomModifier",
+      category,
+      name:
+        category === "compute" && name?.startsWith(GROUP_LABEL_PREFIX)
+          ? null
+          : name,
+    });
   }
 }
 

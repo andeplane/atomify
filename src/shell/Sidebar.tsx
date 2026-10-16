@@ -27,7 +27,10 @@ import { ColorDot, PulseDot } from "./ui";
 /** Persisted collapse choice — the rail should survive reloads. */
 const SIDEBAR_COLLAPSED_KEY = "atomify_sidebar_collapsed";
 
-const navButtonStyle = (active: boolean, collapsed: boolean): CSSProperties => ({
+const navButtonStyle = (
+  active: boolean,
+  collapsed: boolean,
+): CSSProperties => ({
   display: "flex",
   alignItems: "center",
   justifyContent: collapsed ? "center" : "flex-start",
@@ -77,6 +80,7 @@ const Sidebar = () => {
   const projects = useStoreState((state) => state.projects.projects);
   const activeRun = useStoreState((state) => state.projects.activeRun);
   const theme = useStoreState((state) => state.settings.theme);
+  const engineError = useStoreState((state) => state.app.engineError);
   const status = useStoreState((state) => state.app.status);
   const setTheme = useStoreActions((actions) => actions.settings.setTheme);
   const setScreen = useStoreActions((actions) => actions.projects.setScreen);
@@ -354,10 +358,20 @@ const Sidebar = () => {
 
       {!ui.engineReady && (
         <div
-          data-testid="engine-loading-chip"
+          data-testid={
+            engineError ? "engine-error-chip" : "engine-loading-chip"
+          }
+          role={engineError ? "alert" : "status"}
           title={
             collapsed
-              ? `Engine loading…${status ? ` ${Math.ceil(100 * status.progress)}%` : ""}`
+              ? engineError
+                ? `Engine unavailable: ${engineError}`
+                : `Engine loading…${status ? ` ${Math.ceil(100 * status.progress)}%` : ""}`
+              : undefined
+          }
+          aria-label={
+            collapsed && engineError
+              ? `Engine unavailable: ${engineError}`
               : undefined
           }
           style={{
@@ -374,11 +388,16 @@ const Sidebar = () => {
             color: "var(--text-2)",
           }}
         >
-          <PulseDot size={7} />
+          {engineError ? (
+            <span aria-hidden="true">!</span>
+          ) : (
+            <PulseDot size={7} />
+          )}
           {!collapsed && (
             <span style={{ flex: 1 }}>
-              Engine loading…
-              {status ? ` ${Math.ceil(100 * status.progress)}%` : ""}
+              {engineError
+                ? `Engine unavailable: ${engineError}`
+                : `Engine loading…${status ? ` ${Math.ceil(100 * status.progress)}%` : ""}`}
             </span>
           )}
         </div>

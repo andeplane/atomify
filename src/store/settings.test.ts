@@ -34,6 +34,14 @@ describe("loadRenderSettingsFromStorage", () => {
     );
   });
 
+  it("ignores a persisted occlusion radius and intensity", () => {
+    vi.mocked(Storage.prototype.getItem).mockReturnValue(
+      JSON.stringify({ ssao: true, ssaoRadius: 1, ssaoIntensity: 30 }),
+    );
+
+    expect(loadRenderSettingsFromStorage()).toEqual({ ssao: true });
+  });
+
   it("should return empty object when key is missing", () => {
     vi.mocked(Storage.prototype.getItem).mockReturnValue(null);
 

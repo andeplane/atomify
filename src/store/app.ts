@@ -15,6 +15,8 @@ export interface SimulationFile {
 export interface AppModel {
   selectedMenu: string;
   status?: Status;
+  engineError?: string;
+  setEngineError: Action<AppModel, string | undefined>;
   preferredView?: string;
   selectedFile?: SimulationFile;
   setSelectedMenu: Action<AppModel, string>;
@@ -24,6 +26,9 @@ export interface AppModel {
 }
 
 export const appModel: AppModel = {
+  setEngineError: action((state, error) => {
+    state.engineError = error;
+  }),
   // The shell drives this legacy gate ("view" streams particles into the
   // renderer); embedded mode and its menu are gone.
   selectedMenu: "examples",

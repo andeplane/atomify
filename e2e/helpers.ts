@@ -46,6 +46,7 @@ export async function waitForEngine(page: Page): Promise<void> {
   await expect(page.getByTestId("engine-loading-chip")).toHaveCount(0, {
     timeout: ENGINE_TIMEOUT,
   });
+  await expect(page.getByTestId("engine-error-chip")).toHaveCount(0);
 }
 
 /** Create a blank project through the New Project modal. */

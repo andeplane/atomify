@@ -1,3 +1,8 @@
+import {
+  installParticleAttributes,
+  syncParticleAttributes,
+} from "../rendering/particleAttributes";
+import { applyAmbientOcclusion } from "../utils/ambientOcclusion";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 
@@ -19,6 +24,8 @@ import {
 import { createWallGroup } from "../utils/wallGeometry";
 
 // Type guard for Visualizer with updateCameraPlanes method
+import { applyLighting } from "../utils/lighting";
+
 interface VisualizerWithCameraPlanes extends Visualizer {
   updateCameraPlanes: (box: THREE.Box3) => void;
 }
@@ -118,6 +125,14 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const setVisualizer = useStoreActions(
     (actions) => actions.render.setVisualizer,
   );
+
+  const refreshParticleStyles = useStoreActions(
+    (actions) => actions.render.setParticleStylesUpdated,
+  );
+  const refreshRendering = useStoreActions(
+    (actions) => actions.processing.runPostTimestepRendering,
+  );
+  const styledVisualizer = useRef<Visualizer | null>(null);
 
   const renderSettings = useStoreState((state) => state.settings.render);
   const setRenderSettings = useStoreActions(
@@ -271,6 +286,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
           });
         },
       });
+      installParticleAttributes(newVisualizer);
       setVisualizer(newVisualizer);
       setLoading(false);
       newVisualizer.materials.particles.shininess = 50;
@@ -285,9 +301,8 @@ const View = ({ visible, pane = false }: ViewProps) => {
       });
 
       // Apply lighting settings
-      newVisualizer.pointLight.intensity = renderSettings.pointLightIntensity;
-      newVisualizer.ambientLight.intensity =
-        renderSettings.ambientLightIntensity;
+      applyAmbientOcclusion(newVisualizer, renderSettings);
+      applyLighting(newVisualizer, renderSettings);
 
       // Check for WebXR support and show VR button if available
       if (navigator.xr) {
@@ -356,6 +371,14 @@ const View = ({ visible, pane = false }: ViewProps) => {
     }
 
     if (particles) {
+      // A completed run can predate this viewport. Bind attributes and restore
+      // styles from the cached frame even when no further timestep will arrive.
+      syncParticleAttributes(visualizer, particles);
+      if (styledVisualizer.current !== visualizer) {
+        styledVisualizer.current = visualizer;
+        refreshParticleStyles(true);
+        refreshRendering();
+      }
       visualizer.add(particles);
     }
 
@@ -367,7 +390,15 @@ const View = ({ visible, pane = false }: ViewProps) => {
     if (bonds) {
       visualizer.add(bonds);
     }
-  }, [particles, prevParticles, prevBonds, bonds, visualizer]);
+  }, [
+    particles,
+    prevParticles,
+    prevBonds,
+    bonds,
+    visualizer,
+    refreshParticleStyles,
+    refreshRendering,
+  ]);
 
   // Apply render settings when they change
   useEffect(() => {
@@ -383,9 +414,11 @@ const View = ({ visible, pane = false }: ViewProps) => {
         });
       }
 
+      if (visualizer.isPostProcessingEnabled())
+        applyAmbientOcclusion(visualizer, renderSettings);
+
       // Update lighting
-      visualizer.pointLight.intensity = renderSettings.pointLightIntensity;
-      visualizer.ambientLight.intensity = renderSettings.ambientLightIntensity;
+      applyLighting(visualizer, renderSettings);
 
       // Update camera projection mode
       visualizer.setOrthographic(renderSettings.orthographic);

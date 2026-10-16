@@ -53,73 +53,23 @@ jupyter: ## Build the JupyterLite site into public/jupyter (piplite wheels, lamm
 	# Cross-origin isolation on static hosting (ADR-002 §5).
 	$(JUPYTER_VENV)/bin/python scripts/jupyter_coi_patch.py public/jupyter
 
-## BACKEND
-
-backend-install: ## Install backend dependencies
-	cd backend && uv sync --all-extras
-
-backend-start: ## Start backend development server
-	cd backend && uv run uvicorn atomify_api.main:app --reload --host 127.0.0.1 --port 8000
-
-backend-start-prod: ## Start backend server (production mode)
-	cd backend && uv run uvicorn atomify_api.main:app --host 0.0.0.0 --port 8000
-
-backend-test: ## Run backend tests
-	cd backend && uv run pytest $(ARGS)
-
-backend-test-verbose: ## Run backend tests with verbose output
-	cd backend && uv run pytest -v $(ARGS)
-
-backend-typecheck: ## Run backend type checking (ty)
-	cd backend && uv run ty check src/
-
-backend-lint: ## Run backend linter (ruff)
-	cd backend && uv run ruff check src/
-
-backend-lint-fix: ## Fix backend linting issues
-	cd backend && uv run ruff check --fix src/
-
-backend-format: ## Format backend code (ruff)
-	cd backend && uv run ruff format src/
-
-backend-migrate: ## Run database migrations
-	cd backend && uv run alembic upgrade head
-
-backend-migrate-create: ## Create a new migration (use ARGS="-m 'message'")
-	cd backend && uv run alembic revision --autogenerate $(ARGS)
-
-backend-db-reset: ## Reset database (WARNING: deletes all data)
-	cd backend && rm -f atomify.db && uv run alembic upgrade head
-
-## DOCKER
-
-docker-build: ## Build backend Docker image
-	cd backend && docker build -t atomify-api:latest .
-
-docker-run: ## Run backend in Docker
-	cd backend && docker run -p 8000:8000 --env-file .env atomify-api:latest
-
 ## DEVELOPMENT
 
 dev-frontend: frontend-start ## Alias for frontend-start
 
-dev-backend: backend-start ## Alias for backend-start
+test: frontend-test-run ## Run all tests
 
-test: frontend-test-run backend-test ## Run all tests
+lint: frontend-lint ## Run all linters
 
-lint: frontend-lint backend-lint ## Run all linters
+lint-fix: frontend-lint-fix ## Fix all linting issues
 
-lint-fix: frontend-lint-fix backend-lint-fix ## Fix all linting issues
+typecheck: frontend-typecheck ## Run all type checkers
 
-typecheck: frontend-typecheck backend-typecheck ## Run all type checkers
-
-install: frontend-install backend-install ## Install all dependencies
+install: frontend-install ## Install all dependencies
 
 ## CI / QUALITY
 
 ci-frontend: frontend-install frontend-typecheck frontend-lint frontend-test-run ## Run all frontend CI checks
 
-ci-backend: backend-install backend-typecheck backend-lint backend-test ## Run all backend CI checks
-
-ci: ci-frontend ci-backend ## Run all CI checks
+ci: ci-frontend ## Run all CI checks
 
