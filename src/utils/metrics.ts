@@ -26,7 +26,6 @@ export const time_event = (event_name: string) => {
     window.location.hostname === "localhost" ||
     window.location.hostname === "127.0.0.1"
   ) {
-    //eslint-disable-line no-restricted-globals
     return;
   }
 

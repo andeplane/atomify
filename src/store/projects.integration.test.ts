@@ -150,12 +150,10 @@ describe("projects store integration", () => {
       const engine = createFakeEngine();
       const start = vi.spyOn(engine.lammps, "start");
       const { store, libraryStorage } = await createTestStore(engine);
-      await store
-        .getActions()
-        .projects.createProject({
-          displayName: "Continue",
-          files: [{ fileName: "in.lmp", content: SCRIPT }],
-        });
+      await store.getActions().projects.createProject({
+        displayName: "Continue",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
       await store.getActions().projects.startRuns([runRequest()]);
       expect(start).toHaveBeenCalledTimes(1);
       for (const continueFrom of [
@@ -179,12 +177,10 @@ describe("projects store integration", () => {
       const engine = createFakeEngine();
       const start = vi.spyOn(engine.lammps, "start");
       const { store, libraryStorage } = await createTestStore(engine);
-      await store
-        .getActions()
-        .projects.createProject({
-          displayName: "Continue",
-          files: [{ fileName: "in.lmp", content: SCRIPT }],
-        });
+      await store.getActions().projects.createProject({
+        displayName: "Continue",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
       await store.getActions().projects.startRuns([runRequest()]);
       const dir = activeDirName(store);
       const parent = await readRunMeta(libraryStorage, dir, "run-001");

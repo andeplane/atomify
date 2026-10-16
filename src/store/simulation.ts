@@ -574,7 +574,7 @@ export const simulationModel: SimulationModel = {
 
       await allActions.app.setStatus(undefined);
       if (simulation.start) {
-        actions.run();
+        void actions.run();
       }
       track("Simulation.New", { simulationId: simulation.metricsId });
     },

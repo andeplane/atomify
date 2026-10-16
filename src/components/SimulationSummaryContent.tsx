@@ -252,7 +252,7 @@ const SimulationSummaryContent = ({
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (text, record) => (
+      render: (text) => (
         <Row justify="space-between">
           <Col span={8}>{text}</Col>{" "}
           <Col span={2}>
