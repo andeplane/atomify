@@ -87,19 +87,19 @@ const RunViewport = ({
             justifyContent: "center",
             gap: 14,
             backgroundImage:
-              "radial-gradient(circle at 50% 40%, rgba(63,110,255,0.10), transparent 60%)",
+              "radial-gradient(circle at 50% 40%, var(--viewport-glow), transparent 60%)",
           }}
         >
           <div
             style={{
               fontSize: 14,
               fontWeight: 700,
-              color: "rgba(255,255,255,0.85)",
+              color: "var(--media-text)",
             }}
           >
             No frame was captured for this run
           </div>
-          <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.5)" }}>
+          <div style={{ fontSize: 12.5, color: "var(--media-text-3)" }}>
             Trajectories aren't replayed yet — run again to watch it live.
           </div>
           {meta?.inputScript && !meta.continuationOf && !meta.replayOf && (
@@ -115,10 +115,10 @@ const RunViewport = ({
                 alignItems: "center",
                 gap: 8,
                 padding: "9px 16px",
-                borderRadius: 10,
+                borderRadius: "var(--radius)",
                 border: "none",
                 background: "var(--accent)",
-                color: "#fff",
+                color: "var(--on-accent)",
                 fontWeight: 700,
                 fontSize: 13,
                 cursor: ui.engineReady ? "pointer" : "not-allowed",
@@ -145,7 +145,7 @@ const RunViewport = ({
           style={{
             fontFamily: MONO,
             fontSize: 13,
-            color: "rgba(255,255,255,0.85)",
+            color: "var(--media-text)",
           }}
         >
           {meta?.inputScript ?? ""}
@@ -157,8 +157,8 @@ const RunViewport = ({
                 marginTop: 9,
                 width: 200,
                 height: 5,
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.14)",
+                borderRadius: "var(--radius-pill)",
+                background: "var(--media-track)",
                 overflow: "hidden",
               }}
             >
@@ -166,7 +166,7 @@ const RunViewport = ({
                 style={{
                   width: `${percent}%`,
                   height: "100%",
-                  borderRadius: 999,
+                  borderRadius: "var(--radius-pill)",
                   background: "var(--accent)",
                 }}
               />
@@ -175,7 +175,7 @@ const RunViewport = ({
               style={{
                 marginTop: 7,
                 fontSize: 12,
-                color: "rgba(255,255,255,0.6)",
+                color: "var(--media-text-2)",
               }}
             >
               step {runTimesteps.toLocaleString()} of{" "}
@@ -204,7 +204,7 @@ const RunViewport = ({
             border: "none",
             borderRadius: 9,
             background: "var(--bad)",
-            color: "#fff",
+            color: "var(--on-accent)",
             fontWeight: 700,
             fontSize: 12.5,
             cursor: "pointer",
@@ -231,10 +231,10 @@ const RunViewport = ({
           alignItems: "center",
           justifyContent: "center",
           padding: 0,
-          border: "1px solid rgba(255,255,255,0.18)",
+          border: "1px solid var(--media-control-border)",
           borderRadius: 9,
-          background: "rgba(10,12,17,0.55)",
-          color: "rgba(255,255,255,0.85)",
+          background: "var(--media-control-bg)",
+          color: "var(--media-text)",
           cursor: "pointer",
           backdropFilter: "blur(4px)",
         }}

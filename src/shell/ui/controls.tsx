@@ -12,8 +12,8 @@ import {
 } from "react";
 import type { RunStatus } from "../../storage";
 
-export const MONO =
-  '"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+/** Monospace font stack for inline styles (the --font-mono token). */
+export const MONO = "var(--font-mono)";
 
 // --- Buttons ----------------------------------------------------------------
 
@@ -29,10 +29,10 @@ export const PrimaryButton = ({ style, children, ...rest }: ButtonProps) => (
       alignItems: "center",
       gap: 8,
       padding: "9px 14px",
-      borderRadius: 10,
+      borderRadius: "var(--radius)",
       border: "none",
       background: "var(--accent)",
-      color: "#fff",
+      color: "var(--on-accent)",
       fontWeight: 700,
       fontSize: 13,
       cursor: rest.disabled ? "not-allowed" : "pointer",
@@ -54,7 +54,7 @@ export const GhostButton = ({ style, children, ...rest }: ButtonProps) => (
       alignItems: "center",
       gap: 7,
       padding: "9px 14px",
-      borderRadius: 10,
+      borderRadius: "var(--radius)",
       border: "1px solid var(--border-strong)",
       background: "transparent",
       color: "var(--text)",
@@ -79,10 +79,10 @@ export const DangerButton = ({ style, children, ...rest }: ButtonProps) => (
       alignItems: "center",
       gap: 7,
       padding: "9px 18px",
-      borderRadius: 10,
+      borderRadius: "var(--radius)",
       border: "none",
       background: "var(--bad)",
-      color: "#fff",
+      color: "var(--on-accent)",
       fontWeight: 700,
       fontSize: 13,
       cursor: "pointer",
@@ -134,7 +134,7 @@ export const RunningPill = ({ label = "Running" }: { label?: string }) => (
       alignItems: "center",
       gap: 6,
       padding: "3px 10px",
-      borderRadius: 999,
+      borderRadius: "var(--radius-pill)",
       background: "var(--good-soft)",
       color: "var(--good)",
       fontSize: 11.5,
@@ -199,7 +199,7 @@ export const StatusPill = ({
         display: "inline-flex",
         alignItems: "center",
         padding: "3px 10px",
-        borderRadius: 999,
+        borderRadius: "var(--radius-pill)",
         background: bg,
         color,
         fontSize: 11.5,
@@ -287,7 +287,7 @@ export const ToggleSwitch = ({
     style={{
       width: 38,
       height: 22,
-      borderRadius: 999,
+      borderRadius: "var(--radius-pill)",
       border: "none",
       cursor: "pointer",
       position: "relative",
@@ -306,9 +306,9 @@ export const ToggleSwitch = ({
         width: 16,
         height: 16,
         borderRadius: "50%",
-        background: "#fff",
+        background: "var(--knob)",
         transition: "left .15s",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+        boxShadow: "var(--knob-shadow)",
       }}
     />
   </button>

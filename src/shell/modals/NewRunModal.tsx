@@ -380,7 +380,7 @@ const NewRunModal = ({
                 fontFamily: MONO,
                 fontSize: 11.5,
                 lineHeight: 1.6,
-                color: "rgba(255,255,255,0.75)",
+                color: "var(--media-text-code)",
                 wordBreak: "break-all",
               }}
             >

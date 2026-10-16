@@ -157,7 +157,7 @@ const RunDetailHeader = ({
             borderRadius: 9,
             border: "none",
             background: "var(--bad)",
-            color: "#fff",
+            color: "var(--on-accent)",
             fontWeight: 700,
             fontSize: 12.5,
             cursor: "pointer",

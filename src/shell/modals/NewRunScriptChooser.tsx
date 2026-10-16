@@ -34,7 +34,7 @@ const NewRunScriptChooser = ({
           gap: 10,
           alignItems: "flex-start",
           padding: "11px 14px",
-          borderRadius: 10,
+          borderRadius: "var(--radius)",
           background: "var(--accent-soft)",
           border: "1px solid var(--accent-line)",
           fontSize: 13,

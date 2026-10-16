@@ -79,7 +79,7 @@ const DeleteProjectModal = ({
               gap: 9,
               alignItems: "flex-start",
               padding: "11px 13px",
-              borderRadius: 10,
+              borderRadius: "var(--radius)",
               background: "var(--bad-soft)",
               fontSize: 12.5,
               color: "var(--text)",

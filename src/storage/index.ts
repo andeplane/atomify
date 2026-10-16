@@ -3,6 +3,7 @@ export {
   ContentsProjectStorage,
   createIndexedDbProjectStorage,
   createMemoryProjectStorage,
+  PROJECT_COLORS,
   PROJECT_META_PATH,
 } from "./contentsProjectStorage";
 export {

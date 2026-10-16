@@ -130,7 +130,7 @@ const NewRunParameterRow = ({
         className="shell-danger-hover"
         style={{
           padding: "5px 12px",
-          borderRadius: 999,
+          borderRadius: "var(--radius-pill)",
           border: "none",
           cursor: "pointer",
           fontFamily: "inherit",
@@ -138,7 +138,7 @@ const NewRunParameterRow = ({
           fontWeight: 700,
           flexShrink: 0,
           background: sweeping ? "var(--accent)" : "var(--chip)",
-          color: sweeping ? "#fff" : "var(--text-2)",
+          color: sweeping ? "var(--on-accent)" : "var(--text-2)",
         }}
       >
         Sweep
