@@ -17,8 +17,12 @@ import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSummary";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import ColorLegend from "../components/ColorLegend";
+import ScaleBar from "../components/ScaleBar";
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import { track } from "../utils/metrics";
+import { OrthographicCamera } from "three";
+import { orthographicUnitsPerPixel } from "../utils/scaleBar";
+import { UNIT_SYSTEMS } from "../utils/units";
 import { applyLighting } from "../utils/lighting";
 import { useSimulationBoxOverlays } from "./useSimulationBoxOverlays";
 
@@ -127,6 +131,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
   const variables = useStoreState((state) => state.simulationStatus.variables);
+  const unitStyle = useStoreState((state) => state.simulationStatus.unitStyle);
 
   // Get color modifier for legend display
   const colorModifier = engine.colorModifier;
@@ -141,6 +146,17 @@ const View = ({ visible, pane = false }: ViewProps) => {
     if (variables[name]) return "variable";
     return undefined;
   };
+
+  const getScaleBarUnitsPerPixel = useCallback(() => {
+    if (!visualizer?.isOrthographic() || !domElement.current) {
+      return undefined;
+    }
+    // omovi has no public getter for the active camera.
+    const camera = visualizer["camera"];
+    return camera instanceof OrthographicCamera
+      ? orthographicUnitsPerPixel(camera, domElement.current.clientHeight)
+      : undefined;
+  }, [visualizer]);
 
   const handleClearSelection = useCallback(() => {
     setSelectedAtoms(new Set());
@@ -461,6 +477,14 @@ const View = ({ visible, pane = false }: ViewProps) => {
               onSettingsClick={() => setShowColorSettings(true)}
             />
           )}
+          {visualizer &&
+            renderSettings.showScaleBar &&
+            renderSettings.orthographic && (
+              <ScaleBar
+                getUnitsPerPixel={getScaleBarUnitsPerPixel}
+                unit={unitStyle && UNIT_SYSTEMS[unitStyle].length}
+              />
+            )}
         </div>
       </div>
       {showNoSimulationModal && (
