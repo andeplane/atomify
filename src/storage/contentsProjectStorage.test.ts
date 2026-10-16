@@ -1,7 +1,7 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import { ContentsProjectStorage } from "./contentsProjectStorage";
 import type { ContentsRecord } from "./contentsSchema";
-import { MemoryStore } from "./kv";
+import { MemoryStore, type KeyValueStore } from "./kv";
 import type { ProjectMeta, ProjectStorage } from "./types";
 
 describe("ContentsProjectStorage", () => {
@@ -79,7 +79,9 @@ describe("ContentsProjectStorage", () => {
     });
 
     it("deletes recursively including checkpoints", async () => {
-      const { dirName } = await storage.createProject({ displayName: "Doomed" });
+      const { dirName } = await storage.createProject({
+        displayName: "Doomed",
+      });
       await storage.write(dirName, "in.script", "run 100");
       await checkpoints.setItem(`${dirName}/in.script`, [{ id: "0" }]);
 
@@ -205,6 +207,119 @@ describe("ContentsProjectStorage", () => {
       expect(
         await checkpoints.getItem(`${dirName}/runs/run-001/log.lammps`),
       ).toBeNull();
+    });
+
+    it("scopes key scans to the directory instead of listing the whole store", async () => {
+      await storage.write(dirName, "data/one.txt", "1");
+      // A sibling whose name shares the prefix must not leak in.
+      const other = await storage.createProject({ displayName: "Proj 2" });
+      await storage.write(other.dirName, "data/one.txt", "x");
+      const keys = vi.spyOn(files, "keys");
+
+      expect((await storage.list(dirName, "data")).map((s) => s.path)).toEqual([
+        "data/one.txt",
+      ]);
+      await storage.rename(dirName, "data", "inputs");
+      await storage.remove(dirName, "inputs");
+      await storage.listProjects();
+      await storage.deleteProject(dirName);
+
+      expect(keys).not.toHaveBeenCalled();
+      expect(await storage.read(other.dirName, "data/one.txt")).toBe("x");
+    });
+
+    it("falls back to filtering keys() for stores without prefix queries", async () => {
+      const plain: KeyValueStore = {
+        getItem: (key) => files.getItem(key),
+        setItem: (key, value) => files.setItem(key, value),
+        removeItem: (key) => files.removeItem(key),
+        keys: () => files.keys(),
+      };
+      const fallback = new ContentsProjectStorage(plain, checkpoints);
+      await fallback.write(dirName, "data/one.txt", "1");
+
+      await fallback.rename(dirName, "data", "inputs");
+
+      expect((await fallback.list(dirName)).map((s) => s.path)).toContain(
+        "inputs",
+      );
+      expect((await fallback.listProjects()).map((p) => p.dirName)).toEqual([
+        dirName,
+      ]);
+    });
+
+    it("renames crash-safely: every new key is written before any old key is removed", async () => {
+      await storage.write(dirName, "data/one.txt", "1");
+      await storage.write(dirName, "data/deep/two.txt", "2");
+      await checkpoints.setItem(`${dirName}/data/one.txt`, [{ id: "0" }]);
+      const ops: string[] = [];
+      for (const [name, store] of [
+        ["files", files],
+        ["checkpoints", checkpoints],
+      ] as const) {
+        const set = store.setItem.bind(store);
+        const remove = store.removeItem.bind(store);
+        vi.spyOn(store, "setItem").mockImplementation((key, value) => {
+          ops.push(`${name} set ${key}`);
+          return set(key, value);
+        });
+        vi.spyOn(store, "removeItem").mockImplementation((key) => {
+          ops.push(`${name} remove ${key}`);
+          return remove(key);
+        });
+      }
+
+      await storage.rename(dirName, "data", "inputs");
+
+      const lastSet = ops.findLastIndex((op) => op.includes(" set "));
+      const firstRemove = ops.findIndex((op) => op.includes(" remove "));
+      expect(lastSet).toBeLessThan(firstRemove);
+      expect(ops).toContain(`checkpoints set ${dirName}/inputs/one.txt`);
+      // The old directory record goes last.
+      expect(ops.at(-1)).toMatch(new RegExp(` remove ${dirName}/data$`));
+    });
+
+    it("leaves a duplicate, never a hole, when a rename is interrupted", async () => {
+      await storage.write(dirName, "data/one.txt", "1");
+      await storage.write(dirName, "data/two.txt", "2");
+      vi.spyOn(files, "removeItem").mockRejectedValue(new Error("tab closed"));
+
+      await expect(storage.rename(dirName, "data", "inputs")).rejects.toThrow();
+
+      for (const dir of ["data", "inputs"]) {
+        expect(await storage.read(dirName, `${dir}/one.txt`)).toBe("1");
+        expect(await storage.read(dirName, `${dir}/two.txt`)).toBe("2");
+      }
+    });
+
+    it("treats a rename onto itself as a no-op and refuses moving into itself", async () => {
+      await storage.write(dirName, "data/one.txt", "1");
+
+      await storage.rename(dirName, "data", "data");
+      expect(await storage.read(dirName, "data/one.txt")).toBe("1");
+
+      await expect(
+        storage.rename(dirName, "data", "data/nested"),
+      ).rejects.toThrow(/into itself/);
+      expect(await storage.read(dirName, "data/one.txt")).toBe("1");
+    });
+
+    it("deletes project.json and the directory record last", async () => {
+      await storage.write(dirName, "in.script", "run 100");
+      const removed: string[] = [];
+      const remove = files.removeItem.bind(files);
+      vi.spyOn(files, "removeItem").mockImplementation((key) => {
+        removed.push(key);
+        return remove(key);
+      });
+
+      await storage.deleteProject(dirName);
+
+      expect(removed.slice(-2)).toEqual([
+        `${dirName}/.atomify/project.json`,
+        dirName,
+      ]);
+      expect(await files.keys()).toEqual([]);
     });
 
     it("rejects paths JupyterLite cannot handle", async () => {
