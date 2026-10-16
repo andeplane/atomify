@@ -1,4 +1,15 @@
+import type { EngineFrame, EngineSeries } from "./wasm/engineFrame";
+
+/**
+ * The main thread's handle on the LAMMPS engine (implemented by
+ * LammpsWorkerProxy; the wasm module itself lives in the engine worker).
+ */
 export type LammpsWeb = {
+  /**
+   * The latest synced timestep streamed from the engine: particles, bonds,
+   * box, computes/fixes/variables. Replaced (never mutated) on every step.
+   */
+  readonly latestFrame: EngineFrame;
   getNumAtoms: () => number;
   setSyncFrequency: (every: number) => void;
   setBuildNeighborlist: (buildNeighborlist: boolean) => void;
@@ -16,18 +27,14 @@ export type LammpsWeb = {
   getCPURemain: () => number;
   getWhichFlag: () => number;
   getCompute: (name: string) => LMPModifier;
-  getComputeNames: () => CPPArray<string>;
+  getComputeNames: () => string[];
   getFix: (name: string) => LMPModifier;
-  getFixNames: () => CPPArray<string>;
+  getFixNames: () => string[];
   getVariable: (name: string) => LMPModifier;
-  getVariableNames: () => CPPArray<string>;
-  syncComputes: () => void;
-  syncFixes: () => void;
-  syncVariables: () => void;
+  getVariableNames: () => string[];
   /**
-   * Select the per-atom compute whose values are streamed for color-by-compute.
-   * Only implemented by the worker proxy (the main-thread adapter reads per-atom
-   * data directly, so it has nothing to do); optional for other implementations.
+   * Select the per-atom compute whose values are streamed (as
+   * latestFrame.perAtom) for color-by-compute; null streams none.
    */
   setPerAtomModifier?: (
     category: "compute" | "fix" | "variable",
@@ -35,8 +42,8 @@ export type LammpsWeb = {
   ) => void;
   /**
    * Read the files under a wasm-FS directory (the run-outputs data path,
-   * ADR-001 §5). Only implemented by the worker proxy; safe mid-run because
-   * MEMFS reads never re-enter the suspended module.
+   * ADR-001 §5). Safe mid-run because MEMFS reads never re-enter the
+   * suspended module.
    */
   snapshotWorkdir?: (
     dir: string,
@@ -46,30 +53,21 @@ export type LammpsWeb = {
     skipped: { path: string; size: number }[];
   }>;
   getMemoryUsage: () => number;
-
-  getParticleRadii?: () => Float32Array | null;
-  getPositionsPointer: () => number;
-  getIdPointer: () => number;
-  getTypePointer: () => number;
-  getCellMatrixPointer: () => number;
-  getOrigoPointer: () => number;
-  getBondsPosition1Pointer: () => number;
-  getBondsPosition2Pointer: () => number;
   getExceptionMessage: (address: number) => string;
 
-  step: () => void;
+  // Engine-FS writes, applied in order before any later runFile. Nothing is
+  // mirrored on the main thread; read engine files with snapshotWorkdir.
+  // mkdir is mkdir -p; writeFile and chdir create missing directories.
+  writeFile: (path: string, data: string | Uint8Array) => void;
+  mkdir: (path: string) => void;
+  chdir: (path: string) => void;
+
   stop: () => boolean;
   start: () => boolean;
   cancel: () => void;
   runCommand: (command: string) => void;
   /** Never rejects; run failures are surfaced through getErrorMessage. */
   runFile: (path: string) => Promise<void>;
-
-  computeBonds: () => number;
-  computeParticles: () => number;
-  getUnitStyle?: () => import("./utils/units").UnitStyle | undefined;
-  getDimension: () => number;
-  getWalls: () => CPPArray<Wall>;
 };
 
 export enum ModifierType {
@@ -94,27 +92,22 @@ export enum ModifierType {
   VariableOther,
 }
 
-type CPPArray<T> = {
-  get: (index: number) => T;
-  size: () => number;
-  delete: () => void;
-};
-
+/**
+ * A live view of one compute/fix/variable: every getter reads the engine's
+ * latest frame, so the store can keep the object across steps. Per-atom
+ * values are read from the frame directly (see perAtomValues).
+ */
 export type LMPModifier = {
   getName: () => string;
   getType: () => ModifierType;
-  getPerAtomData: () => number;
   getIsPerAtom: () => boolean;
   hasScalarData: () => boolean;
   getClearPerSync: () => boolean;
   getScalarValue: () => number;
-  sync: () => void;
   getXLabel: () => string;
   getYLabel: () => string;
-  getData1DNames: () => CPPArray<string>;
-  getData1D: () => CPPArray<LMPData1D>;
-  execute: () => boolean;
-  delete: () => void;
+  /** The modifier's 1D series in the latest frame. */
+  getData1D: () => EngineSeries[];
 };
 
 export type Data1D = {
@@ -154,14 +147,6 @@ export interface Wall {
   position: number; // current position on axis
   cutoff: number; // interaction range
 }
-
-export type LMPData1D = {
-  getLabel: () => string;
-  getXValuesPointer: () => number;
-  getYValuesPointer: () => number;
-  getNumPoints: () => number;
-  delete: () => void;
-};
 
 export type LammpsOutput = {
   // type: LineType

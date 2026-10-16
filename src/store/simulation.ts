@@ -20,17 +20,16 @@ import {
   parseBond,
   parseAtomSizeAndColor,
 } from "../utils/parsers";
-import { getWasm } from "../wasm/wasmInstance";
 
 /**
  * Builds a LAMMPS variable-injection script from a vars map, writes
- * both the vars file and the wrapper file to the WASM filesystem,
+ * both the vars file and the wrapper file to the engine's filesystem,
  * and returns the script filename that should be executed.
  */
 export function prepareVarsScript(
   simulation: Pick<Simulation, "id" | "inputScript" | "vars">,
   inputScriptContent: string,
-  wasm: { FS: { writeFile(path: string, data: string): void } },
+  engine: Pick<LammpsWeb, "writeFile">,
 ): string {
   if (!simulation.vars || Object.keys(simulation.vars).length === 0) {
     return simulation.inputScript;
@@ -42,11 +41,11 @@ export function prepareVarsScript(
       .join("\n") + "\n\n";
 
   const varsFileName = `_vars_${simulation.inputScript}`;
-  wasm.FS.writeFile(`/${simulation.id}/${varsFileName}`, varsScript);
+  engine.writeFile(`/${simulation.id}/${varsFileName}`, varsScript);
 
   const wrapperScript = varsScript + inputScriptContent;
   const wrapperFileName = `_wrapper_${simulation.inputScript}`;
-  wasm.FS.writeFile(`/${simulation.id}/${wrapperFileName}`, wrapperScript);
+  engine.writeFile(`/${simulation.id}/${wrapperFileName}`, wrapperScript);
 
   return wrapperFileName;
 }
@@ -344,7 +343,10 @@ export const simulationModel: SimulationModel = {
         return;
       }
 
-      const wasm = getWasm();
+      const lammps = getStoreState().simulation.lammps;
+      if (!lammps) {
+        throw new Error("Lammps instance is not initialized");
+      }
       // KOKKOS is opt-in per simulation (a `suffix kk` line in the input
       // script). Non-opted simulations get their command files preprocessed at
       // write time so their styles run serially under the always-on `-sf kk`
@@ -361,7 +363,7 @@ export const simulationModel: SimulationModel = {
             : prepareScriptForSerialStyles(file.content, {
                 isMainScript: file.fileName === simulation.inputScript,
               });
-          wasm.FS.writeFile(
+          lammps.writeFile(
             `/${simulation.id}/${file.fileName}`,
             prepareGroupInspection(content),
           );
@@ -431,7 +433,6 @@ export const simulationModel: SimulationModel = {
       // Inject URL variables and determine script to run. Must feed
       // prepareVarsScript the same (possibly serial-preprocessed) content that
       // syncFilesWasm wrote, so the vars-wrapper path matches the direct path.
-      const wasm = getWasm();
       const rawContent = inputScriptFile.content ?? "";
       const runContent = scriptOptsIntoKokkos(rawContent)
         ? rawContent
@@ -441,11 +442,11 @@ export const simulationModel: SimulationModel = {
           ? prepareVarsScript(
               simulation,
               prepareGroupInspection(runContent),
-              wasm,
+              lammps,
             )
           : "_wrapper_continue.lmp";
       if (continuation !== undefined)
-        wasm.FS.writeFile(
+        lammps.writeFile(
           `/${simulation.id}/${scriptToRun}`,
           continuationScript(continuation),
         );
@@ -521,15 +522,13 @@ export const simulationModel: SimulationModel = {
 
       (getStoreActions() as Actions<StoreModel>).render.resetParticleStyles();
 
-      const wasm = getWasm();
       const lammps = getStoreState().simulation.lammps;
       if (!lammps) {
         throw new Error("Lammps instance is not initialized");
       }
 
-      if (!wasm.FS.analyzePath(`/${simulation.id}`).exists) {
-        wasm.FS.mkdir(`/${simulation.id}`);
-      }
+      // mkdir -p in the engine FS: an existing directory is fine.
+      lammps.mkdir(`/${simulation.id}`);
 
       // Reset all settings for dynamic bonds
       lammps.clearBondDistances();
@@ -570,7 +569,7 @@ export const simulationModel: SimulationModel = {
       });
 
       actions.setSimulation(simulation); // Set it again now that files are updated
-      wasm.FS.chdir(`/${simulation.id}`);
+      lammps.chdir(`/${simulation.id}`);
 
       await allActions.app.setStatus(undefined);
       if (simulation.start) {

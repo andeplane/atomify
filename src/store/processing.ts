@@ -5,9 +5,7 @@ import SyncBondsModifier from "../modifiers/syncbondsmodifier";
 import ColorModifier from "../modifiers/colormodifier";
 import SyncComputesModifier from "../modifiers/synccomputesmodifier";
 import { ModifierInput, ModifierOutput } from "../modifiers/types";
-import { LammpsWeb, Wall } from "../types";
-import { AtomifyWasmModule } from "../wasm/types";
-import { getWasm } from "../wasm/wasmInstance";
+import { Wall } from "../types";
 import * as THREE from "three";
 import SyncFixesModifier from "../modifiers/syncfixesmodifier";
 import SyncVariablesModifier from "../modifiers/syncvariablesmodifier";
@@ -15,17 +13,11 @@ import { StoreModel } from "./model";
 import type { SimulationStatusData } from "./simulationstatus";
 
 const getSimulationBox = (
-  lammps: LammpsWeb,
-  wasm: AtomifyWasmModule,
+  // The frame's 9 float32 row-major cell matrix (lammps.js exposes the box
+  // as float32; the old wasm used float64).
+  cellMatrix: Float32Array,
   currentBox?: THREE.Matrix3,
 ) => {
-  // lammps.js exposes the box as float32 (the old wasm used float64)
-  const cellMatrixPointer = lammps.getCellMatrixPointer() / 4;
-  const cellMatrixSubArray = wasm.HEAPF32.subarray(
-    cellMatrixPointer,
-    cellMatrixPointer + 9,
-  ) as Float32Array;
-
   // Check if values changed
   if (currentBox) {
     const elements = currentBox.elements;
@@ -33,7 +25,7 @@ const getSimulationBox = (
     for (let i = 0; i < 9; i++) {
       // THREE stores column-major elements; the engine sends row-major.
       const columnMajorIndex = (i % 3) * 3 + Math.floor(i / 3);
-      if (elements[columnMajorIndex] !== cellMatrixSubArray[i]) {
+      if (elements[columnMajorIndex] !== cellMatrix[i]) {
         areEqual = false;
         break;
       }
@@ -46,36 +38,29 @@ const getSimulationBox = (
 
   // Values changed, return new Matrix3
   return new THREE.Matrix3().set(
-    cellMatrixSubArray[0],
-    cellMatrixSubArray[1],
-    cellMatrixSubArray[2],
-    cellMatrixSubArray[3],
-    cellMatrixSubArray[4],
-    cellMatrixSubArray[5],
-    cellMatrixSubArray[6],
-    cellMatrixSubArray[7],
-    cellMatrixSubArray[8],
+    cellMatrix[0],
+    cellMatrix[1],
+    cellMatrix[2],
+    cellMatrix[3],
+    cellMatrix[4],
+    cellMatrix[5],
+    cellMatrix[6],
+    cellMatrix[7],
+    cellMatrix[8],
   );
 };
 
 const getSimulationOrigo = (
-  lammps: LammpsWeb,
-  wasm: AtomifyWasmModule,
+  // The frame's 3 float32 box origin.
+  origin: Float32Array,
   currentOrigo?: THREE.Vector3,
 ) => {
-  // lammps.js exposes the box origin as float32 (the old wasm used float64)
-  const origoPointer = lammps.getOrigoPointer() / 4;
-  const origoPointerSubArray = wasm.HEAPF32.subarray(
-    origoPointer,
-    origoPointer + 3,
-  ) as Float32Array;
-
   // Check if values changed
   if (currentOrigo) {
     if (
-      currentOrigo.x === origoPointerSubArray[0] &&
-      currentOrigo.y === origoPointerSubArray[1] &&
-      currentOrigo.z === origoPointerSubArray[2]
+      currentOrigo.x === origin[0] &&
+      currentOrigo.y === origin[1] &&
+      currentOrigo.z === origin[2]
     ) {
       // No change, return existing reference
       return currentOrigo;
@@ -83,22 +68,19 @@ const getSimulationOrigo = (
   }
 
   // Values changed, return new Vector3
-  return new THREE.Vector3(
-    origoPointerSubArray[0],
-    origoPointerSubArray[1],
-    origoPointerSubArray[2],
-  );
+  return new THREE.Vector3(origin[0], origin[1], origin[2]);
 };
 
 const getModifierContext = (
   getStoreState: () => State<StoreModel>,
   getStoreActions: () => Actions<StoreModel>,
 ) => {
-  const wasm = getWasm();
   const lammps = getStoreState().simulation.lammps;
   if (!lammps) {
     throw new Error("Lammps instance is not initialized");
   }
+  // One frame for the whole pass, so every modifier sees the same step.
+  const frame = lammps.latestFrame;
   const renderState = getStoreState().render;
   const computes = getStoreState().simulationStatus.computes;
   const fixes = getStoreState().simulationStatus.fixes;
@@ -109,8 +91,8 @@ const getModifierContext = (
   const allActions = getStoreActions();
 
   const modifierInput: ModifierInput = {
+    frame,
     lammps,
-    wasm,
     renderState,
     variables,
     computes,
@@ -134,7 +116,7 @@ const getModifierContext = (
     particles,
     bonds,
     lammps,
-    wasm,
+    frame,
   };
 };
 
@@ -188,7 +170,7 @@ export const processingModel: ProcessingModel = {
         particles,
         bonds,
         lammps,
-        wasm,
+        frame,
       } = getModifierContext(getStoreState, getStoreActions);
 
       getStoreState().processing.postTimestepModifiers.forEach((modifier) =>
@@ -214,10 +196,10 @@ export const processingModel: ProcessingModel = {
         fixes: modifierOutput.fixes,
         variables: modifierOutput.variables,
         numBonds: modifierOutput.bonds?.count ?? 0,
-        box: getSimulationBox(lammps, wasm, currentStatus.box),
-        origo: getSimulationOrigo(lammps, wasm, currentStatus.origo),
-        dimension: lammps.getDimension(),
-        unitStyle: lammps.getUnitStyle?.(),
+        box: getSimulationBox(frame.boxMatrix, currentStatus.box),
+        origo: getSimulationOrigo(frame.origin, currentStatus.origo),
+        dimension: frame.dimension,
+        unitStyle: frame.unitStyle,
         timesteps: lammps.getTimesteps(),
         numAtoms: lammps.getNumAtoms(),
         runTimesteps: lammps.getRunTimesteps(),
@@ -225,19 +207,12 @@ export const processingModel: ProcessingModel = {
         lastCommand: lammps.getLastCommand(),
         memoryUsage: lammps.getMemoryUsage(),
       };
-      const wallsArray = lammps.getWalls();
-      const walls: Wall[] = [];
-      for (let i = 0; i < wallsArray.size(); i++) {
-        const wall = wallsArray.get(i);
-        walls.push({
-          which: wall.which,
-          style: wall.style,
-          position: wall.position,
-          cutoff: wall.cutoff,
-        });
-      }
-      wallsArray.delete();
-      snapshot.walls = walls;
+      snapshot.walls = frame.walls.map((wall): Wall => ({
+        which: wall.which,
+        style: wall.style,
+        position: wall.position,
+        cutoff: wall.cutoff,
+      }));
       // Timings are only meaningful during dynamics/minimization. Preserve
       // the last estimate at idle, matching the existing summary behavior.
       const whichFlag = lammps.getWhichFlag();

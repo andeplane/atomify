@@ -11,7 +11,6 @@ vi.mock("../hooks", () => ({
 }));
 vi.mock("../wasm/LammpsWorkerProxy", () => ({ LammpsWorkerProxy: vi.fn() }));
 vi.mock("../wasm/wasmInstance", () => ({
-  getWasmOrNull: () => ({}),
   setPausedFlag: vi.fn(),
 }));
 vi.mock("../utils/metrics", () => ({ track: vi.fn(), time_event: vi.fn() }));
@@ -29,7 +28,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   state = {
     app: { liveViewportVisible: true },
-    simulation: { running: true, paused: true },
+    // An engine is already loaded, so the component doesn't spawn a worker.
+    simulation: { running: true, paused: true, lammps: {} },
     settings: { simulation: { speed: 1 } },
     render: {
       visualizer: {

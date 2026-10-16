@@ -26,14 +26,13 @@ vi.mock("../utils/metrics", () => ({
 import { track } from "../utils/metrics";
 
 describe("prepareVarsScript", () => {
-  let mockWriteFile: ReturnType<
-    typeof vi.fn<(path: string, data: string) => void>
-  >;
-  let mockWasm: { FS: { writeFile: (path: string, data: string) => void } };
+  type WriteFile = (path: string, data: string | Uint8Array) => void;
+  let mockWriteFile: ReturnType<typeof vi.fn<WriteFile>>;
+  let mockEngine: { writeFile: WriteFile };
 
   beforeEach(() => {
-    mockWriteFile = vi.fn<(path: string, data: string) => void>();
-    mockWasm = { FS: { writeFile: mockWriteFile } };
+    mockWriteFile = vi.fn<WriteFile>();
+    mockEngine = { writeFile: mockWriteFile };
   });
 
   it("returns the original inputScript when vars is undefined", () => {
@@ -43,7 +42,7 @@ describe("prepareVarsScript", () => {
       vars: undefined,
     };
 
-    const result = prepareVarsScript(sim, "some content", mockWasm);
+    const result = prepareVarsScript(sim, "some content", mockEngine);
 
     expect(result).toBe("in.lmp");
     expect(mockWriteFile).not.toHaveBeenCalled();
@@ -56,7 +55,7 @@ describe("prepareVarsScript", () => {
       vars: {},
     };
 
-    const result = prepareVarsScript(sim, "some content", mockWasm);
+    const result = prepareVarsScript(sim, "some content", mockEngine);
 
     expect(result).toBe("in.lmp");
     expect(mockWriteFile).not.toHaveBeenCalled();
@@ -70,7 +69,7 @@ describe("prepareVarsScript", () => {
     };
     const inputContent = "run 1000\n";
 
-    const result = prepareVarsScript(sim, inputContent, mockWasm);
+    const result = prepareVarsScript(sim, inputContent, mockEngine);
 
     expect(result).toBe("_wrapper_in.lmp");
     expect(mockWriteFile).toHaveBeenCalledTimes(2);
@@ -101,7 +100,7 @@ describe("prepareVarsScript", () => {
       vars: { x: 42 },
     };
 
-    prepareVarsScript(sim, "", mockWasm);
+    prepareVarsScript(sim, "", mockEngine);
 
     const varsContent = mockWriteFile.mock.calls[0][1] as string;
     expect(varsContent).toBe("variable x equal 42\n\n");

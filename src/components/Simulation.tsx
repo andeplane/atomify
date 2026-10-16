@@ -3,21 +3,18 @@ import { useStoreActions, useStoreState } from "../hooks";
 // The atomify wasm build is a multithreaded KOKKOS/pthreads module that must
 // run inside a Web Worker (it cannot initialize on the main thread). It is
 // owned by LammpsWorkerProxy, which spawns the worker (lammps.worker.ts) and
-// bridges its streamed particle/box data back into the store's usual
-// heap-pointer path. See src/wasm/LammpsWorkerProxy.ts.
+// keeps the latest streamed frame for the store's modifier/render pipeline.
+// See src/wasm/LammpsWorkerProxy.ts.
 import { LammpsWorkerProxy } from "../wasm/LammpsWorkerProxy";
 import { useShellUI } from "../shell/ShellContext";
 import { time_event, track } from "../utils/metrics";
 import {
-  getWasmOrNull,
-  setWasm,
   getSyncFrequency,
   setSyncFrequency,
   setPausedFlag,
 } from "../wasm/wasmInstance";
 
 const SimulationComponent = () => {
-  const wasm = getWasmOrNull();
   const lammps = useStoreState((state) => state.simulation.lammps);
   const simulation = useStoreState((state) => state.simulation.simulation);
   const paused = useStoreState((state) => state.simulation.paused);
@@ -167,7 +164,7 @@ const SimulationComponent = () => {
     // still runs here on the pausing step so the display matches the state
     // the simulation actually pauses at.
     proxyRef.current?.setStepListener(() => {
-      if (lammps && wasm && simulation) {
+      if (lammps && simulation) {
         setHasSynchronized(true);
 
         // Always update 3D rendering (high frequency)
@@ -188,7 +185,6 @@ const SimulationComponent = () => {
       }
     });
   }, [
-    wasm,
     lammps,
     simulation,
     runPostTimestep,
@@ -198,7 +194,9 @@ const SimulationComponent = () => {
   ]);
 
   useEffect(() => {
-    if (getWasmOrNull() || loadStartedRef.current) {
+    // The store's lammps outlives this component, so a remount doesn't spawn
+    // a second engine; the ref covers the window before the load finishes.
+    if (lammps || loadStartedRef.current) {
       return;
     }
     loadStartedRef.current = true;
@@ -233,10 +231,9 @@ const SimulationComponent = () => {
     // module. A pthreads module cannot initialize on the browser main thread
     // (its thread-pool handshake blocks on Atomics.wait, forbidden off a
     // Worker), so it runs inside a Web Worker. The proxy owns that worker and
-    // exposes a wasm-module-shaped bridge (getModule) plus the LammpsWeb
-    // interface; the store and modifier/render pipeline keep reading data
-    // through the usual heap-pointer path, now backed by the streamed bridge
-    // heap instead of a real main-thread module.
+    // is the store's LammpsWeb: the modifier/render pipeline reads the typed
+    // arrays of its latest streamed frame, and engine-FS writes are forwarded
+    // to the worker as commands.
     Promise.resolve()
       .then(async () => {
         const proxy = new LammpsWorkerProxy();
@@ -253,7 +250,6 @@ const SimulationComponent = () => {
           text: "",
           progress: 0.6,
         });
-        setWasm(proxy.getModule());
         setLammps(proxy);
         setSyncFrequency(1);
         setStatus(undefined);
@@ -270,7 +266,7 @@ const SimulationComponent = () => {
           description: message,
         });
       });
-  }, [onPrint, setLammps, setStatus, setEngineError, notify]);
+  }, [lammps, onPrint, setLammps, setStatus, setEngineError, notify]);
   return <></>;
 };
 export default SimulationComponent;

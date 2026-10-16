@@ -1,7 +1,7 @@
 import { LammpsWeb } from "../types";
 import { Particles, Bonds } from "omovi";
 import { Compute, Fix, Variable } from "../types";
-import { AtomifyWasmModule } from "../wasm/types";
+import type { EngineFrame } from "../wasm/engineFrame";
 import { RenderModel } from "../store/render";
 
 type RenderState = Pick<
@@ -16,7 +16,8 @@ type RenderState = Pick<
 >;
 
 export type ModifierInput = {
-  wasm: AtomifyWasmModule;
+  /** The engine's latest streamed step; modifiers read its arrays in place. */
+  frame: EngineFrame;
   lammps: LammpsWeb;
   renderState: RenderState;
   hasSynchronized: boolean;

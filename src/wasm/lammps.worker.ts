@@ -13,16 +13,17 @@ import {
  * thread-pool handshake blocks on Atomics.wait, forbidden off a Worker), so the
  * module is created and driven entirely here, inside a Worker, where pthreads
  * and SharedArrayBuffer work. This worker owns the wasm module and the
- * LammpsAdapter; it streams particle/box snapshots (copied out of the heap
- * inside the asyncify-safe step callback) to the main thread, which renders
- * them with omovi.
+ * LammpsAdapter; it streams each synced step as an EngineFrame (typed arrays
+ * copied out of the heap inside the asyncify-safe step callback) to the main
+ * thread, which renders it with omovi.
  */
 import { LammpsAdapter } from "./lammpsAdapter";
 import { setPausedFlag } from "./wasmInstance";
-import type { AtomifyWasmModule } from "./types";
+import { frameTransferables, type EngineFrame } from "./engineFrame";
 import type { WorkerCommand, WorkerEvent } from "./workerMessages";
 import type {
   LAMMPSWeb as NativeLammps,
+  LammpsModule,
   ParticleSnapshot,
   BondSnapshot,
   BoxSnapshot,
@@ -31,7 +32,7 @@ import type {
 
 const ctx = self as unknown as DedicatedWorkerGlobalScope;
 
-let module: AtomifyWasmModule | undefined;
+let module: LammpsModule | undefined;
 let native: NativeLammps | undefined;
 let adapter: LammpsAdapter | undefined;
 // True once a run has been started in this worker. Kokkos is initialized once
@@ -149,10 +150,11 @@ function mkdirp(path: string) {
 }
 
 /**
- * Read the current particle + box state out of the wasm heap and stream it to
- * the main thread. Runs synchronously inside the adapter's step listener, the
- * only window where touching the (otherwise asyncify-suspended) module is safe.
- * Every array is copied into a fresh transferable buffer.
+ * Read the current step out of the wasm heap and stream it to the main thread
+ * as an EngineFrame. Runs synchronously inside the adapter's step listener,
+ * the only window where touching the (otherwise asyncify-suspended) module is
+ * safe. Every array is copied once into a fresh buffer, and every buffer is
+ * transferred, so the main thread reads them in place.
  */
 function streamStep() {
   if (!module || !native) return;
@@ -208,51 +210,32 @@ function streamStep() {
         groups: { names: [], masks: new Uint32Array(0) },
       };
 
-  const transfer: Transferable[] = [
-    positions.buffer,
-    types.buffer,
-    ids.buffer,
-    bondFirst.buffer,
-    bondSecond.buffer,
-    boxMatrix.buffer,
-    origin.buffer,
-  ];
-  if (perAtom) transfer.push(perAtom.values);
-  if (radii) transfer.push(radii.buffer);
-  transfer.push(groups.masks.buffer);
-
-  post(
-    {
-      type: "step",
-      step: native.getCurrentStep(),
-      count,
-      positions: positions.buffer,
-      types: types.buffer,
-      ids: ids.buffer,
-      bondCount,
-      bondFirst: bondFirst.buffer,
-      bondSecond: bondSecond.buffer,
-      boxMatrix: boxMatrix.buffer,
-      origin: origin.buffer,
-      dimension: box.dimension,
-      unitStyle: adapter?.getUnitStyle(),
-      runMode: native.getRunMode(),
-      runStepsDone: native.getRunStepsDone(),
-      runStepsTotal: native.getRunStepsTotal(),
-      modifiers,
-      groups: {
-        names: groups.names,
-        masks: groups.masks.buffer as ArrayBuffer,
-      },
-      perAtom,
-      radii: radii ? (radii.buffer as ArrayBuffer) : null,
-      memoryUsage: native.getMemoryUsage(),
-      timestepsPerSecond: native.getThermo("spcpu"),
-      cpuRemain: native.getThermo("cpuremain"),
-      walls: native.getWalls(),
-    },
-    transfer,
-  );
+  const frame: EngineFrame = {
+    step: native.getCurrentStep(),
+    count,
+    positions,
+    types,
+    ids,
+    radii,
+    bondCount,
+    bondFirst,
+    bondSecond,
+    boxMatrix,
+    origin,
+    dimension: box.dimension,
+    unitStyle: adapter?.getUnitStyle(),
+    runMode: native.getRunMode(),
+    runStepsDone: native.getRunStepsDone(),
+    runStepsTotal: native.getRunStepsTotal(),
+    modifiers,
+    groups,
+    perAtom,
+    memoryUsage: native.getMemoryUsage(),
+    timestepsPerSecond: native.getThermo("spcpu"),
+    cpuRemain: native.getThermo("cpuremain"),
+    walls: native.getWalls(),
+  };
+  post({ type: "step", frame }, frameTransferables(frame));
 }
 
 async function load() {
@@ -300,7 +283,7 @@ async function load() {
     print: printLine,
     printErr: printLine,
     mainScriptUrlOrBlob: blob,
-  })) as AtomifyWasmModule;
+  })) as LammpsModule;
   native = new module.LAMMPSWeb();
   adapter = new LammpsAdapter(module, native);
   // Start the Kokkos runtime once, here in the worker where the pthread
