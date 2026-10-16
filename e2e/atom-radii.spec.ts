@@ -26,9 +26,13 @@ test("sphere radii are streamed in native units and update during a run", async 
           const step = s.simulationStatus.timesteps;
           const p = s.render.particles;
           const radii = p.geometry.getAttribute("atomRadius");
+          // Particles sync every step but the status timestep only every
+          // uiUpdateFrequency steps, so the radii may be a few steps ahead.
+          // Recover the step the radius was synced at from d = 1 + step/1000.
+          const radiusStep = (2 * radii.getX(p.indices.indexOf(1)) - 1) * 1000;
           return (
-            Math.abs(radii.getX(p.indices.indexOf(1)) - (1 + step / 1000) / 2) <
-              0.0001 &&
+            Math.abs(radiusStep - Math.round(radiusStep)) < 0.2 &&
+            Math.round(radiusStep) >= step &&
             Math.abs(radii.getX(p.indices.indexOf(2)) - 1.5) < 0.0001 &&
             !Object.keys(s.simulationStatus.variables).some((name) =>
               name.startsWith("atomify_radius_flag_"),
