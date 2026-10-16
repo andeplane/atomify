@@ -30,6 +30,16 @@ describe("render store", () => {
       expect(state.visualizer).toBeUndefined();
       expect(state.particles).toBeUndefined();
       expect(state.bonds).toBeUndefined();
+      expect(state.panMode).toBe(false);
+    });
+  });
+
+  describe("setPanMode", () => {
+    it("switches left-drag between rotate and pan", () => {
+      store.getActions().setPanMode(true);
+      expect(store.getState().panMode).toBe(true);
+      store.getActions().setPanMode(false);
+      expect(store.getState().panMode).toBe(false);
     });
   });
 

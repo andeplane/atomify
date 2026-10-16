@@ -19,6 +19,7 @@ vi.mock("antd", () => ({ notification: { info: vi.fn() } }));
 
 const setSpeed = vi.fn();
 const setPaused = vi.fn();
+const setPanMode = vi.fn();
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -26,6 +27,7 @@ beforeEach(() => {
     app: { selectedMenu: "view" },
     simulation: { running: true, paused: true },
     settings: { simulation: { speed: 1 } },
+    render: { panMode: false },
   } as unknown as State<StoreModel>;
   const actions = {
     app: {},
@@ -33,6 +35,7 @@ beforeEach(() => {
     simulationStatus: {},
     simulation: { setPaused },
     settings: { setSimulation: setSpeed },
+    render: { setPanMode },
   } as unknown as Actions<StoreModel>;
   vi.mocked(useStoreState).mockImplementation((select) => select(state));
   vi.mocked(useStoreActions).mockImplementation((select) => select(actions));
@@ -91,5 +94,13 @@ describe("simulation keyboard shortcuts", () => {
     window.dispatchEvent(event);
     expect(setPaused).toHaveBeenCalledWith(false);
     expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("toggles left-drag pan mode with P, ignoring modified keys", () => {
+    render(<Simulation />);
+    fireEvent.keyDown(window, { key: "p", ctrlKey: true });
+    expect(setPanMode).not.toHaveBeenCalled();
+    fireEvent.keyDown(window, { key: "p" });
+    expect(setPanMode).toHaveBeenCalledWith(true);
   });
 });

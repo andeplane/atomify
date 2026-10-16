@@ -22,6 +22,7 @@ import {
   getSimulationBoxBounds,
 } from "../utils/boxGeometry";
 import { createWallGroup } from "../utils/wallGeometry";
+import { remapLeftDragToPan } from "../utils/leftDragPan";
 
 // Type guard for Visualizer with updateCameraPlanes method
 import { applyLighting } from "../utils/lighting";
@@ -125,6 +126,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const setVisualizer = useStoreActions(
     (actions) => actions.render.setVisualizer,
   );
+  const panMode = useStoreState((state) => state.render.panMode);
 
   const refreshParticleStyles = useStoreActions(
     (actions) => actions.render.setParticleStylesUpdated,
@@ -199,6 +201,16 @@ const View = ({ visible, pane = false }: ViewProps) => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedAtoms, handleClearSelection]);
+
+  // Pan mode (toggled with P): left-drag pans, for trackpads and browsers
+  // where right-drag is unavailable. Right-drag keeps panning either way.
+  useEffect(() => {
+    if (!panMode || !visualizer || !domElement.current) return;
+    return remapLeftDragToPan(
+      domElement.current,
+      visualizer.renderer.getRawRenderer().domElement,
+    );
+  }, [panMode, visualizer]);
 
   const disposeBoxGroup = useCallback(() => {
     if (boxGroupRef.current) {
@@ -606,6 +618,25 @@ const View = ({ visible, pane = false }: ViewProps) => {
                 setShowAnalyze(false);
               }}
             />
+          )}
+          {panMode && (
+            <div
+              data-testid="pan-mode-indicator"
+              style={{
+                position: "absolute",
+                bottom: 12,
+                left: 12,
+                zIndex: 1,
+                padding: "4px 10px",
+                borderRadius: 999,
+                background: "rgba(0, 0, 0, 0.55)",
+                color: "rgba(255, 255, 255, 0.85)",
+                fontSize: 12,
+                pointerEvents: "none",
+              }}
+            >
+              Pan mode · press P to rotate
+            </div>
           )}
           <SelectedAtomsInfo
             selectedAtoms={selectedAtoms}

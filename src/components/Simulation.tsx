@@ -33,6 +33,8 @@ const SimulationComponent = () => {
     (actions) => actions.simulation.addLammpsOutput,
   );
   const selectedMenu = useStoreState((state) => state.app.selectedMenu);
+  const panMode = useStoreState((state) => state.render.panMode);
+  const setPanMode = useStoreActions((actions) => actions.render.setPanMode);
   const setLammps = useStoreActions((actions) => actions.simulation.setLammps);
   const setEngineError = useStoreActions(
     (actions) => actions.app.setEngineError,
@@ -129,6 +131,10 @@ const SimulationComponent = () => {
           message: "Copied camera position and target to clipboard.",
         });
       }
+
+      if (ev.key === "p" || ev.key === "P") {
+        setPanMode(!panMode);
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -138,6 +144,8 @@ const SimulationComponent = () => {
     selectedMenu,
     paused,
     setPaused,
+    panMode,
+    setPanMode,
     setSimulationSettings,
     simulation,
     simulationSettings,
