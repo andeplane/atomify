@@ -55,8 +55,7 @@ export function linspace(from: number, to: number, count: number): number[] {
   if (n === 1) {
     return [from];
   }
-  return Array.from(
-    { length: n },
-    (_, i) => Number((from + ((to - from) * i) / (n - 1)).toPrecision(12)),
+  return Array.from({ length: n }, (_, i) =>
+    Number((from + ((to - from) * i) / (n - 1)).toPrecision(12)),
   );
 }

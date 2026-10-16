@@ -1,5 +1,4 @@
 import { action, Action } from "easy-peasy";
-import { Particles, Bonds, Visualizer } from "omovi";
 import { AtomType } from "../utils/atomtypes";
 import { track } from "../utils/metrics";
 
@@ -8,20 +7,18 @@ interface ParticleStyle {
   atomType: AtomType;
 }
 
+/**
+ * Render settings and styles. The visualizer and the rendered Particles and
+ * Bonds themselves live in the EngineRegistry (engine/EngineRegistry.ts).
+ */
 export interface RenderModel {
   particleStyles: AtomType[];
+  /** Colors and radii must be reapplied on the next frame. */
   particleStylesUpdated: boolean;
   bondRadius: number;
-  visualizer?: Visualizer;
   particleRadius: number;
-  particles?: Particles;
-  bonds?: Bonds;
   /** Left-drag pans instead of rotating the camera (toggled with P). */
   panMode: boolean;
-  /** Undefined releases the reference so a remounting View can recreate it. */
-  setVisualizer: Action<RenderModel, Visualizer | undefined>;
-  setParticles: Action<RenderModel, Particles>;
-  setBonds: Action<RenderModel, Bonds>;
   setBondRadius: Action<RenderModel, number>;
   setParticleRadius: Action<RenderModel, number>;
   setPanMode: Action<RenderModel, boolean>;
@@ -42,18 +39,8 @@ export const renderModel: RenderModel = {
     state.particleStyles = particleStyles;
     state.particleStylesUpdated = true;
   }),
-  setVisualizer: action((state, value: Visualizer | undefined) => {
-    state.visualizer = value;
-    state.particleStylesUpdated = true;
-  }),
-  setParticles: action((state, value: Particles) => {
-    state.particles = value;
-  }),
   setParticleStylesUpdated: action((state, value: boolean) => {
     state.particleStylesUpdated = value;
-  }),
-  setBonds: action((state, value: Bonds) => {
-    state.bonds = value;
   }),
   setBondRadius: action((state, value: number) => {
     track("Settings.Render.BondRadius", { value });
@@ -67,14 +54,6 @@ export const renderModel: RenderModel = {
     state.panMode = value;
   }),
   resetParticleStyles: action((state) => {
-    if (state.particles) {
-      state.particles.count = 0;
-      state.particles.markNeedsUpdate();
-    }
-    if (state.bonds) {
-      state.bonds.count = 0;
-      state.bonds.markNeedsUpdate();
-    }
     state.particleStyles = [];
     state.particleStylesUpdated = true;
   }),

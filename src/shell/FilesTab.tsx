@@ -60,7 +60,7 @@ function kindOf(entry: FileStat): FileKind {
 const ICON_COLORS: Record<FileKind, string> = {
   folder: "var(--warn)",
   script: "var(--accent)",
-  notebook: "#E8735A",
+  notebook: "var(--notebook)",
   doc: "var(--text-3)",
 };
 

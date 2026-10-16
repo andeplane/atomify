@@ -7,7 +7,12 @@ html {
     /* Bottom-right corner */
     radial-gradient(circle at 100% 100%, rgb(41, 63, 86) 0%, transparent 60%),
     /* Base gradient blend */
-    linear-gradient(135deg, rgb(42, 44, 52) 0%, rgb(31, 36, 47) 50%, rgb(41, 63, 86) 100%);
+    linear-gradient(
+        135deg,
+        rgb(42, 44, 52) 0%,
+        rgb(31, 36, 47) 50%,
+        rgb(41, 63, 86) 100%
+      );
   min-height: 100%;
   position: relative;
 }
@@ -32,9 +37,9 @@ html::before {
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
@@ -43,8 +48,8 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
 }
 
 html,
@@ -52,108 +57,6 @@ body,
 #root,
 .App {
   height: 100%;
-}
-
-.wrapper {
-  max-width: 50rem;
-  margin: 1rem auto;
-  padding: 0.2rem 1rem;
-
-  border: 2px solid #444;
-  background: rgba(#444, 0.2);
-}
-
-.pen_info {
-  margin: 1rem 0;
-  padding: 0 1rem;
-  border: 2px solid #60a7dc;
-  border-radius: 0.4rem;
-  background: rgba(#60a7dc, 0.5);
-}
-
-.dropzone {
-  box-sizing: border-box;
-  display: none;
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  left: 0;
-  top: 0;
-  z-index: 99999;
-
-  background: rgba(#60a7dc, 0.8);
-  border: 11px dashed #60a7dc;
-}
-
-/* Liquid Glass Sidebar - optimized */
-.ant-layout-sider {
-  background: rgba(41, 40, 45, 0.3) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.2);
-  position: relative;
-  overflow: hidden;
-  contain: layout style paint;
-}
-
-.ant-layout-sider::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.15) 0%,
-    transparent 50%
-  );
-  pointer-events: none;
-  opacity: 0.6;
-  z-index: 0;
-  transform: translateZ(0);
-}
-
-.ant-menu-dark {
-  background: transparent !important;
-}
-
-/* Remove padding/margin/borders from ant-menu-sub that make items look smaller */
-.ant-menu-sub,
-.ant-menu-sub.ant-menu-inline {
-  padding: 0 !important;
-  margin: 0 !important;
-  border: none !important;
-  background: transparent !important;
-}
-
-.ant-menu-item {
-  margin: 4px 8px !important;
-  width: calc(100% - 16px) !important;
-  border-radius: 8px;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  background: transparent !important;
-  position: relative;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.ant-menu-dark .ant-menu-item-selected {
-  background: linear-gradient(135deg, rgb(73, 107, 187), rgb(100, 173, 230)) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #fff !important;
-  font-weight: 600;
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
-}
-
-.ant-menu-item:hover:not(.ant-menu-item-selected) {
-  background-color: rgba(255, 255, 255, 0.05) !important;
-  transform: translateX(4px);
 }
 
 .site-layout .site-layout-background {
@@ -181,26 +84,6 @@ body,
   font-size: var(--ant-font-size-heading-2);
 }
 
-.console-modal .ant-modal-footer {
-  background-color: #1e1e1e !important;
-}
-
-.settingsbutton {
-  position: fixed !important;
-  bottom: 0;
-  right: 0;
-  margin-right: 20px;
-  margin-bottom: 20px;
-}
-
-.analyzebutton {
-  position: fixed !important;
-  bottom: 0;
-  right: 0;
-  margin-right: 70px;
-  margin-bottom: 20px;
-}
-
 /* Liquid Glass Overlay Components - optimized */
 .simulationsummary {
   position: fixed !important;
@@ -215,7 +98,9 @@ body,
   right: 10px;
   color: #fff;
   opacity: 1;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
   z-index: 1000;
@@ -266,26 +151,6 @@ body,
   padding: 0;
 }
 
-.show-more-container {
-  text-align: right;
-  margin-top: 8px;
-}
-
-.show-more-button {
-  padding: 0 !important;
-  color: #fff !important;
-  text-decoration: underline;
-  font-size: 12px;
-}
-
-.simulation-summary-minimize-button {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 10;
-  pointer-events: auto;
-}
-
 .simulation-summary-minimize-button {
   position: absolute;
   top: 8px;
@@ -313,7 +178,6 @@ body,
   z-index: 1;
 }
 
-
 .selected-atoms-info {
   position: absolute;
   background: rgba(42, 41, 47, 0.6);
@@ -327,7 +191,9 @@ body,
   left: 20px;
   color: #fff;
   z-index: 1000;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   contain: layout style paint;
 }
@@ -362,7 +228,9 @@ body,
   left: 20px;
   color: #fff;
   z-index: 1000;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   contain: layout style paint;
   font-family: monospace;
@@ -393,30 +261,6 @@ body,
 
 .color-legend-settings-icon:hover {
   opacity: 1;
-}
-
-.ant-layout-sider-children {
-  height: 100%;
-  overflow: auto;
-  position: relative;
-  z-index: 1;
-}
-
-.sider-collapse-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 48px;
-  cursor: pointer;
-  color: rgba(255, 255, 255, 0.65);
-  background: rgba(31, 31, 31, 0.5);
-  transition: all 0.2s;
-  font-size: 16px;
-}
-
-.sider-collapse-trigger:hover {
-  color: #fff;
-  background: rgba(31, 31, 31, 0.8);
 }
 
 /* Dygraph dark theme styling */
@@ -480,7 +324,9 @@ body,
   -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 16px;
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2), 0 8px 32px rgba(0, 0, 0, 0.1);
+  box-shadow:
+    inset 0 0 20px rgba(0, 0, 0, 0.2),
+    0 8px 32px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
   padding: 16px;
@@ -507,16 +353,6 @@ body,
 .liquid-glass-container > * {
   position: relative;
   z-index: 1;
-}
-
-/* Glass effect for Edit container - optimized */
-.edit-container-glass {
-  background: rgba(42, 41, 47, 0.2);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  border-radius: 8px;
-  overflow: hidden;
-  contain: layout style paint;
 }
 
 /* Make tables transparent to show glass effect */

@@ -10,7 +10,7 @@ import {
 async function cameraTarget(page: Page): Promise<number[]> {
   return page.evaluate(async () => {
     const path = "/atomify/src/store/index.ts";
-    const v = (await import(path)).default.getState().render.visualizer;
+    const v = (await import(path)).engine.visualizer;
     const t = v.getCameraTarget();
     return [t.x, t.y, t.z];
   });

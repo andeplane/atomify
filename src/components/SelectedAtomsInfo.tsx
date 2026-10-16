@@ -2,7 +2,7 @@ import { UNIT_SYSTEMS } from "../utils/units";
 import { Button } from "antd";
 import { Particles } from "omovi";
 import { useMemo, useState, useEffect, useRef } from "react";
-import { Data1D, PlotData } from "../types";
+import { Data1D } from "../types";
 import Figure from "./Figure";
 import { useStoreState } from "../hooks";
 

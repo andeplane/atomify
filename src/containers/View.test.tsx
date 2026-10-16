@@ -3,12 +3,17 @@ import { render, screen, act, fireEvent } from "@testing-library/react";
 import type { ReactNode, CSSProperties } from "react";
 import type { State, Actions } from "easy-peasy";
 import View from "./View";
-import { useStoreState, useStoreActions } from "../hooks";
+import {
+  useEngine,
+  useEngineState,
+  useStoreState,
+  useStoreActions,
+} from "../hooks";
 import * as THREE from "three";
 import { Visualizer, type ParticleClickEvent } from "omovi";
 import type { StoreModel } from "../store/model";
 import type { Compute, Fix, Variable, Wall } from "../types";
-import type Modifier from "../modifiers/modifier";
+import type { EngineObjects, EngineRegistry } from "../engine/EngineRegistry";
 
 vi.mock("../rendering/particleAttributes", () => ({
   installParticleAttributes: vi.fn(),
@@ -25,10 +30,13 @@ vi.mock("omovi", () => ({
   Bonds: vi.fn(),
 }));
 
-// Mock hooks: allows flexible per-test control of store state and actions
+// Mock hooks: allows flexible per-test control of store state, actions and
+// the engine registry's live objects
 vi.mock("../hooks", () => ({
   useStoreState: vi.fn(),
   useStoreActions: vi.fn(),
+  useEngine: vi.fn(),
+  useEngineState: vi.fn(),
 }));
 
 // Mock THREE.js: prevents canvas rendering errors in jsdom
@@ -145,11 +153,19 @@ vi.mock("antd", () => {
 // --- Shared mutable state (updated in beforeEach; closures capture by reference) ---
 let mockState: ReturnType<typeof createDefaultMockState>;
 let mockActions: ReturnType<typeof createDefaultMockActions>;
+let mockEngine: ReturnType<typeof createDefaultMockEngine>;
 
 describe("View", () => {
   beforeEach(() => {
     mockState = createDefaultMockState();
     mockActions = createDefaultMockActions();
+    mockEngine = createDefaultMockEngine();
+    vi.mocked(useEngine).mockImplementation(
+      () => mockEngine as unknown as EngineRegistry,
+    );
+    vi.mocked(useEngineState).mockImplementation((selector) =>
+      selector(mockEngine as unknown as EngineObjects),
+    );
 
     vi.mocked(useStoreState).mockImplementation((selector) =>
       selector(mockState as unknown as State<StoreModel>),
@@ -164,12 +180,12 @@ describe("View", () => {
   });
 
   // ---------------------------------------------------------------------------
-  // P0: Auto-clear selection on simulation change
+  // P0: Auto-clear selection when a new run is loaded
   // ---------------------------------------------------------------------------
-  describe("P0: Auto-clear selection on simulation change", () => {
+  describe("P0: Auto-clear selection when a new run is loaded", () => {
     it("should call clearSelection on initial mount", () => {
       // Arrange
-      const mockVisualizer = mockState.render.visualizer!;
+      const mockVisualizer = mockEngine.visualizer!;
 
       // Act
       render(<View visible={true} />);
@@ -178,16 +194,16 @@ describe("View", () => {
       expect(mockVisualizer.clearSelection).toHaveBeenCalled();
     });
 
-    it("should call clearSelection again when simulation value changes", () => {
-      // Arrange: start with no simulation
-      mockState.simulation.simulation = null;
-      const mockVisualizer = mockState.render.visualizer!;
+    it("should call clearSelection again when a run is loaded", () => {
+      // Arrange: start with no loaded run
+      mockState.simulation.loadedWorkdir = undefined;
+      const mockVisualizer = mockEngine.visualizer!;
       const { rerender } = render(<View visible={true} />);
 
       const callsAfterMount = mockVisualizer.clearSelection.mock.calls.length;
 
-      // Act: change simulation to a new value
-      mockState.simulation.simulation = { id: "sim1" };
+      // Act: load a run
+      mockState.simulation.loadedWorkdir = "proj/runs/run-001";
       vi.mocked(useStoreState).mockImplementation((selector) =>
         selector(mockState as unknown as State<StoreModel>),
       );
@@ -199,17 +215,17 @@ describe("View", () => {
       );
     });
 
-    it("should call clearSelection when simulation changes from one to another", () => {
-      // Arrange: start with sim1
-      mockState.simulation.simulation = { id: "sim1" };
-      const mockVisualizer = mockState.render.visualizer!;
+    it("should call clearSelection when the loaded run changes", () => {
+      // Arrange: start with run-001
+      mockState.simulation.loadedWorkdir = "proj/runs/run-001";
+      const mockVisualizer = mockEngine.visualizer!;
       const { rerender } = render(<View visible={true} />);
 
       const callsAfterFirstRender =
         mockVisualizer.clearSelection.mock.calls.length;
 
-      // Act: switch to sim2
-      mockState.simulation.simulation = { id: "sim2" };
+      // Act: switch to run-002
+      mockState.simulation.loadedWorkdir = "proj/runs/run-002";
       vi.mocked(useStoreState).mockImplementation((selector) =>
         selector(mockState as unknown as State<StoreModel>),
       );
@@ -228,7 +244,7 @@ describe("View", () => {
   describe("P1: Escape key behavior", () => {
     it("should NOT call clearSelection when Escape is pressed with no atoms selected", () => {
       // Arrange
-      const mockVisualizer = mockState.render.visualizer!;
+      const mockVisualizer = mockEngine.visualizer!;
       render(<View visible={true} />);
 
       const callsAfterMount = mockVisualizer.clearSelection.mock.calls.length;
@@ -248,8 +264,7 @@ describe("View", () => {
       // Arrange: provide null visualizer so the component creates one,
       // capturing the onParticleClick callback to simulate a selection.
       let capturedOnParticleClick:
-        | ((event: ParticleClickEvent) => void)
-        | undefined;
+        ((event: ParticleClickEvent) => void) | undefined;
       const mockVisualizerInstance = createMockVisualizerInstance();
 
       // Use a regular function (not arrow) so it can be called with `new`
@@ -258,12 +273,12 @@ describe("View", () => {
         options?: ConstructorParameters<typeof Visualizer>[0],
       ) {
         capturedOnParticleClick = options?.onParticleClick;
-        // Update mockState immediately to prevent infinite re-creation loop
-        mockState.render.visualizer = mockVisualizerInstance;
+        // Register it immediately to prevent an infinite re-creation loop
+        mockEngine.visualizer = mockVisualizerInstance;
         return mockVisualizerInstance as unknown as Visualizer;
       });
 
-      mockState.render.visualizer = null;
+      mockEngine.visualizer = null;
 
       render(<View visible={true} />);
 
@@ -300,8 +315,8 @@ describe("View", () => {
   // ---------------------------------------------------------------------------
   describe("P1: No simulation modal", () => {
     it("should NOT show the no-simulation modal in pane mode (run detail)", () => {
-      // Arrange: simulation is null (would normally trigger the modal)
-      mockState.simulation.simulation = null;
+      // Arrange: no run loaded (would normally trigger the modal)
+      mockState.simulation.loadedWorkdir = undefined;
 
       // Act
       render(<View visible={true} pane />);
@@ -312,9 +327,9 @@ describe("View", () => {
       ).not.toBeInTheDocument();
     });
 
-    it("should show the no-simulation modal when simulation is null", () => {
+    it("should show the no-simulation modal when no run is loaded", () => {
       // Arrange
-      mockState.simulation.simulation = null;
+      mockState.simulation.loadedWorkdir = undefined;
 
       // Act
       render(<View visible={true} />);
@@ -323,9 +338,9 @@ describe("View", () => {
       expect(screen.getByTestId("no-simulation-modal")).toBeInTheDocument();
     });
 
-    it("should NOT show the modal when simulation exists", () => {
+    it("should NOT show the modal when a run is loaded", () => {
       // Arrange
-      mockState.simulation.simulation = { id: "sim1" };
+      mockState.simulation.loadedWorkdir = "proj/runs/run-001";
 
       // Act
       render(<View visible={true} />);
@@ -412,7 +427,7 @@ describe("View", () => {
   describe("P2: visualizer.idle toggled by visible prop", () => {
     it("should set visualizer.idle=false when visible=true", () => {
       // Arrange
-      const mockVisualizer = mockState.render.visualizer!;
+      const mockVisualizer = mockEngine.visualizer!;
       mockVisualizer.idle = true;
 
       // Act
@@ -424,7 +439,7 @@ describe("View", () => {
 
     it("should set visualizer.idle=true when visible=false", () => {
       // Arrange
-      const mockVisualizer = mockState.render.visualizer!;
+      const mockVisualizer = mockEngine.visualizer!;
       mockVisualizer.idle = false;
 
       // Act
@@ -436,7 +451,7 @@ describe("View", () => {
 
     it("should update visualizer.idle when visible prop changes", () => {
       // Arrange
-      const mockVisualizer = mockState.render.visualizer!;
+      const mockVisualizer = mockEngine.visualizer!;
       const { rerender } = render(<View visible={true} />);
       expect(mockVisualizer.idle).toBe(false);
 
@@ -489,15 +504,9 @@ function createDefaultMockState() {
       cameraPosition: undefined,
       cameraTarget: undefined,
       running: false,
-      simulation: undefined as { id: string } | null | undefined,
+      loadedWorkdir: undefined as string | undefined,
     },
-    render: {
-      particles: undefined as unknown,
-      bonds: undefined as unknown,
-      visualizer: createMockVisualizerInstance() as ReturnType<
-        typeof createMockVisualizerInstance
-      > | null,
-    },
+    render: { panMode: false },
     settings: {
       render: {
         ssao: false,
@@ -509,9 +518,6 @@ function createDefaultMockState() {
         showSimulationBox: false,
         showWalls: false,
       },
-    },
-    processing: {
-      postTimestepModifiers: [] as Modifier[],
     },
     simulationStatus: {
       runTotalTimesteps: 0,
@@ -533,16 +539,28 @@ function createDefaultMockActions() {
     processing: { runPostTimestepRendering: vi.fn() },
     render: {
       setParticleStylesUpdated: vi.fn(),
-      // Mirrors the real action: updates mockState so subsequent renders
-      // see the newly created visualizer and don't re-trigger creation.
-      setVisualizer: vi.fn(
-        (v: ReturnType<typeof createMockVisualizerInstance>) => {
-          mockState.render.visualizer = v;
-        },
-      ),
     },
     settings: {
       setRender: vi.fn(),
     },
+  };
+}
+
+function createDefaultMockEngine() {
+  return {
+    particles: undefined as unknown,
+    bonds: undefined as unknown,
+    visualizer: createMockVisualizerInstance() as ReturnType<
+      typeof createMockVisualizerInstance
+    > | null,
+    colorModifier: undefined,
+    modifiers: [],
+    // Mirrors the real registry: subsequent renders see the newly created
+    // visualizer and don't re-trigger creation.
+    setVisualizer: vi.fn(
+      (v: ReturnType<typeof createMockVisualizerInstance> | undefined) => {
+        mockEngine.visualizer = v ?? null;
+      },
+    ),
   };
 }

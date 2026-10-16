@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Wall } from "../types";
-import { extractBasisVectors, getSimulationBoxBounds, isTriclinicBox } from "./boxGeometry";
+import { getSimulationBoxBounds, isTriclinicBox } from "./boxGeometry";
 
 // Constants for wall rendering
 const WALL_OPACITY = 0.04;
@@ -9,7 +9,7 @@ const MIN_THICKNESS_2D = 0.1; // Minimum thickness for 2D walls (along z-axis fo
 
 /**
  * Creates a mesh for a single wall in 3D or 2D.
- * 
+ *
  * @param wall - Wall data (which face, position, etc.)
  * @param cellMatrix - THREE.Matrix3 representing the simulation box
  * @param origin - THREE.Vector3 representing the box origin
@@ -22,7 +22,6 @@ export function createWallMesh(
   origin: THREE.Vector3,
   dimension: number,
 ): THREE.Mesh {
-  const { a, b, c } = extractBasisVectors(cellMatrix);
   const boxBounds = getSimulationBoxBounds(cellMatrix, origin);
 
   // Determine which axis this wall is on
@@ -41,7 +40,7 @@ export function createWallMesh(
   if (dimension === 2) {
     // 2D: Create a thin plane with minimum thickness along z-axis for visibility
     // For 2D, we view from the side, so walls need some thickness along z-axis to be visible
-    
+
     if (wallDim === 0) {
       // X wall: plane in YZ, with minimum width along X for visibility
       geometry = new THREE.PlaneGeometry(ySize, MIN_THICKNESS_2D);
@@ -74,12 +73,12 @@ export function createWallMesh(
     // 3D: Create infinitely thin planes (no thickness) to avoid transparency accumulation
     // Position at the exact wall boundary
     // Use quaternions for proper orientation (avoid gimbal lock with Euler angles)
-    
+
     if (wallDim === 0) {
       // X wall: plane in YZ plane, facing along X axis
       geometry = new THREE.PlaneGeometry(ySize, zSize);
       position = new THREE.Vector3(
-        wall.position,  // Exact position at boundary
+        wall.position, // Exact position at boundary
         boxBounds.min.y + ySize / 2,
         boxBounds.min.z + zSize / 2,
       );
@@ -89,7 +88,7 @@ export function createWallMesh(
       geometry = new THREE.PlaneGeometry(xSize, zSize);
       position = new THREE.Vector3(
         boxBounds.min.x + xSize / 2,
-        wall.position,  // Exact position at boundary
+        wall.position, // Exact position at boundary
         boxBounds.min.z + zSize / 2,
       );
       rotation = undefined; // Will use quaternion instead
@@ -99,7 +98,7 @@ export function createWallMesh(
       position = new THREE.Vector3(
         boxBounds.min.x + xSize / 2,
         boxBounds.min.y + ySize / 2,
-        wall.position,  // Exact position at boundary
+        wall.position, // Exact position at boundary
       );
       rotation = undefined; // Will use quaternion instead
     }
@@ -115,32 +114,35 @@ export function createWallMesh(
 
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.copy(position);
-  
+
   // Set rotation: use quaternions for 3D (avoid gimbal lock), Euler for 2D
   if (dimension === 3) {
     // Use quaternions for proper plane orientation
     const wallDim = Math.floor(wall.which / 2);
     const wallSide = wall.which % 2;
     const defaultNormal = new THREE.Vector3(0, 0, 1); // PlaneGeometry default normal
-    
+
     let targetNormal: THREE.Vector3;
     if (wallDim === 0) {
       // X wall: face along X axis
-      targetNormal = wallSide === 0 
-        ? new THREE.Vector3(1, 0, 0)  // XLO: face +X (inward)
-        : new THREE.Vector3(-1, 0, 0); // XHI: face -X (inward)
+      targetNormal =
+        wallSide === 0
+          ? new THREE.Vector3(1, 0, 0) // XLO: face +X (inward)
+          : new THREE.Vector3(-1, 0, 0); // XHI: face -X (inward)
     } else if (wallDim === 1) {
       // Y wall: face along Y axis
-      targetNormal = wallSide === 0
-        ? new THREE.Vector3(0, 1, 0)  // YLO: face +Y (inward)
-        : new THREE.Vector3(0, -1, 0); // YHI: face -Y (inward)
+      targetNormal =
+        wallSide === 0
+          ? new THREE.Vector3(0, 1, 0) // YLO: face +Y (inward)
+          : new THREE.Vector3(0, -1, 0); // YHI: face -Y (inward)
     } else {
       // Z wall: face along Z axis
-      targetNormal = wallSide === 0
-        ? new THREE.Vector3(0, 0, 1)  // ZLO: face +Z (inward)
-        : new THREE.Vector3(0, 0, -1); // ZHI: face -Z (inward)
+      targetNormal =
+        wallSide === 0
+          ? new THREE.Vector3(0, 0, 1) // ZLO: face +Z (inward)
+          : new THREE.Vector3(0, 0, -1); // ZHI: face -Z (inward)
     }
-    
+
     mesh.quaternion.setFromUnitVectors(defaultNormal, targetNormal);
   } else if (dimension === 2 && rotation !== undefined) {
     // 2D: use Euler angles
@@ -152,10 +154,10 @@ export function createWallMesh(
 
 /**
  * Creates a group containing meshes for all walls.
- * 
+ *
  * Note: Walls are not rendered for triclinic boxes because fix wall uses
  * axis-aligned planes which don't align with triclinic box faces.
- * 
+ *
  * @param walls - Array of wall data
  * @param cellMatrix - THREE.Matrix3 representing the simulation box
  * @param origin - THREE.Vector3 representing the box origin
