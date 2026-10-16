@@ -3,7 +3,7 @@
  * edits the SliceModifier (normal, slab position and width, invert).
  */
 
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import type * as THREE from "three";
 import { useEngine } from "../engine/EngineContext";
 import { useStoreActions, useStoreState } from "../hooks";
@@ -39,6 +39,40 @@ export function boxRangeAlong(
   return max > min ? [min, max] : [min - 1, max + 1];
 }
 
+type Span = { left: number; right: number };
+
+/**
+ * Which anchor edge a popover of `width` should line up with so it stays
+ * inside `bounds`: left (extends right) when it fits, else right (extends
+ * left), else whichever side has more room.
+ */
+export function choosePopoverAlign(
+  anchor: Span,
+  bounds: Span,
+  width: number,
+): "left" | "right" {
+  if (anchor.left + width <= bounds.right) return "left";
+  if (anchor.right - width >= bounds.left) return "right";
+  return bounds.right - anchor.left >= anchor.right - bounds.left
+    ? "left"
+    : "right";
+}
+
+/** Horizontal extent of the nearest ancestor that clips overflow. */
+function clipBounds(element: HTMLElement): Span {
+  const viewport = { left: 0, right: document.documentElement.clientWidth };
+  for (let el = element.parentElement; el; el = el.parentElement) {
+    if (getComputedStyle(el).overflowX !== "visible") {
+      const rect = el.getBoundingClientRect();
+      return {
+        left: Math.max(rect.left, viewport.left),
+        right: Math.min(rect.right, viewport.right),
+      };
+    }
+  }
+  return viewport;
+}
+
 const rowStyle = {
   display: "flex",
   alignItems: "center",
@@ -56,6 +90,27 @@ const SliceControls = () => {
   const sliceModifier = useEngine().modifiers.find(
     (modifier): modifier is SliceModifier => modifier instanceof SliceModifier,
   );
+  const sliceActive = sliceModifier?.active;
+  // Line the popover up with whichever button edge keeps it inside the
+  // clipping column: the button can sit at the right end of the header or,
+  // when the header wraps, at the left edge. Measured before paint on open
+  // and on toggling, since the "Slice on" label can re-wrap the header.
+  const anchorRef = useRef<HTMLSpanElement | null>(null);
+  const [align, setAlign] = useState<"left" | "right">("left");
+  useLayoutEffect(() => {
+    const anchor = anchorRef.current;
+    const popover = anchor?.querySelector<HTMLElement>(
+      '[data-testid="slice-popover"]',
+    );
+    if (!open || !anchor || !popover) return;
+    setAlign(
+      choosePopoverAlign(
+        anchor.getBoundingClientRect(),
+        clipBounds(anchor),
+        popover.offsetWidth,
+      ),
+    );
+  }, [open, sliceActive]);
   const box = useStoreState((state) => state.simulationStatus.box);
   const origo = useStoreState((state) => state.simulationStatus.origo);
   const refreshRendering = useStoreActions(
@@ -104,7 +159,10 @@ const SliceControls = () => {
   };
 
   return (
-    <span style={{ position: "relative", display: "inline-flex" }}>
+    <span
+      ref={anchorRef}
+      style={{ position: "relative", display: "inline-flex" }}
+    >
       <GhostButton
         data-testid="slice-atoms"
         aria-expanded={open}
@@ -121,7 +179,7 @@ const SliceControls = () => {
         open={open}
         onClose={close}
         minWidth={264}
-        align="left"
+        align={align}
         testId="slice-popover"
       >
         <div
