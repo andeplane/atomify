@@ -16,6 +16,65 @@ import { GhostButton, Popover, SectionLabel } from "./ui";
 
 const AXES = ["x", "y", "z"] as const;
 
+/** The draft as a copy count, or undefined while it is not a valid one. */
+const parseCount = (draft: string): number | undefined => {
+  const value = Number(draft);
+  return draft.trim() !== "" &&
+    Number.isInteger(value) &&
+    value >= 1 &&
+    value <= MAX_IMAGES_PER_AXIS
+    ? value
+    : undefined;
+};
+
+/**
+ * One axis' count. Keeps the typed text as a draft so clearing the field
+ * mid-edit doesn't snap it to 1; only a valid count is committed, and on
+ * blur or Enter an unfinished draft reverts to the current count.
+ */
+const AxisInput = ({
+  label,
+  value,
+  onCommit,
+}: {
+  label: string;
+  value: number;
+  onCommit: (value: number) => void;
+}) => {
+  const [draft, setDraft] = useState(String(value));
+  const [shown, setShown] = useState(value);
+  if (shown !== value) {
+    setShown(value);
+    setDraft(String(value));
+  }
+
+  const finish = () => {
+    if (parseCount(draft) === undefined) setDraft(String(value));
+  };
+
+  return (
+    <input
+      className="shell-input"
+      aria-label={`Images along ${label}`}
+      type="number"
+      min={1}
+      max={MAX_IMAGES_PER_AXIS}
+      step={1}
+      value={draft}
+      onChange={(e) => {
+        setDraft(e.target.value);
+        const next = parseCount(e.target.value);
+        if (next !== undefined && next !== value) onCommit(next);
+      }}
+      onBlur={finish}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") finish();
+      }}
+      style={{ width: 64, padding: "8px 10px" }}
+    />
+  );
+};
+
 const PeriodicImagesControl = ({ live }: { live: boolean }) => {
   const modifier = useEngine().modifiers.find(
     (m): m is SyncParticlesModifier => m instanceof SyncParticlesModifier,
@@ -35,10 +94,7 @@ const PeriodicImagesControl = ({ live }: { live: boolean }) => {
 
   const setAxis = (axis: number, value: number) => {
     const next = [...counts] as ImageCounts;
-    next[axis] = Math.min(
-      MAX_IMAGES_PER_AXIS,
-      Math.max(1, Math.floor(value) || 1),
-    );
+    next[axis] = value;
     setCounts(next);
     modifier.periodicImages = next;
     // A live run pushes particles to the view; a finished one needs the full
@@ -81,16 +137,10 @@ const PeriodicImagesControl = ({ live }: { live: boolean }) => {
                 }}
               >
                 {label}
-                <input
-                  className="shell-input"
-                  aria-label={`Images along ${label}`}
-                  type="number"
-                  min={1}
-                  max={MAX_IMAGES_PER_AXIS}
-                  step={1}
+                <AxisInput
+                  label={label}
                   value={counts[axis]}
-                  onChange={(e) => setAxis(axis, Number(e.target.value))}
-                  style={{ width: 64, padding: "8px 10px" }}
+                  onCommit={(value) => setAxis(axis, value)}
                 />
               </label>
             ))}
