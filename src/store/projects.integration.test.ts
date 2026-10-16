@@ -150,12 +150,10 @@ describe("projects store integration", () => {
       const engine = createFakeEngine();
       const start = vi.spyOn(engine.lammps, "start");
       const { store, libraryStorage } = await createTestStore(engine);
-      await store
-        .getActions()
-        .projects.createProject({
-          displayName: "Continue",
-          files: [{ fileName: "in.lmp", content: SCRIPT }],
-        });
+      await store.getActions().projects.createProject({
+        displayName: "Continue",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
       await store.getActions().projects.startRuns([runRequest()]);
       expect(start).toHaveBeenCalledTimes(1);
       for (const continueFrom of [
@@ -179,12 +177,10 @@ describe("projects store integration", () => {
       const engine = createFakeEngine();
       const start = vi.spyOn(engine.lammps, "start");
       const { store, libraryStorage } = await createTestStore(engine);
-      await store
-        .getActions()
-        .projects.createProject({
-          displayName: "Continue",
-          files: [{ fileName: "in.lmp", content: SCRIPT }],
-        });
+      await store.getActions().projects.createProject({
+        displayName: "Continue",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
       await store.getActions().projects.startRuns([runRequest()]);
       const dir = activeDirName(store);
       const parent = await readRunMeta(libraryStorage, dir, "run-001");
@@ -1040,6 +1036,93 @@ describe("projects store integration", () => {
       await store.getActions().projects.startRuns([runRequest()]);
       expect(byName("Simulation.Start")[0]).toMatchObject({
         simulationId: copyDirName,
+      });
+    });
+  });
+
+  describe("pre-#400 duplicates on openProject (#403)", () => {
+    it("rewrites a stale example source to duplicate so runs stop reporting the exampleId", async () => {
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
+      // As duplicateProject wrote it before #400: the original's source.
+      const stale = await libraryStorage.createProject({
+        displayName: "Water vapor (copy)",
+        source: { type: "example", exampleId: "watervapor" },
+        inputScript: "in.lmp",
+      });
+      await libraryStorage.write(stale.dirName, "in.lmp", SCRIPT);
+
+      await store.getActions().projects.openProject({ dirName: stale.dirName });
+
+      const onDisk = await readJson<ProjectMeta>(
+        libraryStorage,
+        stale.dirName,
+        PROJECT_META_PATH,
+      );
+      expect(onDisk.source).toEqual({ type: "duplicate" });
+      expect(store.getState().projects.active?.meta.source).toEqual({
+        type: "duplicate",
+      });
+
+      vi.mocked(track).mockClear();
+      await store.getActions().projects.startRuns([runRequest()]);
+      expect(byName("Run.Start")[0]).toMatchObject({ exampleId: undefined });
+      expect(byName("Run.Finish")[0]).toMatchObject({ exampleId: undefined });
+      expect(byName("Simulation.Start")[0]).toMatchObject({
+        simulationId: stale.dirName,
+      });
+    });
+
+    it("leaves genuine example projects alone, including renamed ones", async () => {
+      const { store, libraryStorage } =
+        await createTestStore(createFakeEngine());
+      const example = await libraryStorage.createProject({
+        displayName: "Water vapor",
+        source: { type: "example", exampleId: "watervapor" },
+      });
+      await libraryStorage.updateProjectMeta(example.dirName, {
+        displayName: "My water run",
+      });
+
+      await store.getActions().projects.openProject({
+        dirName: example.dirName,
+      });
+
+      const onDisk = await readJson<ProjectMeta>(
+        libraryStorage,
+        example.dirName,
+        PROJECT_META_PATH,
+      );
+      expect(onDisk.source).toEqual({
+        type: "example",
+        exampleId: "watervapor",
+      });
+      expect(store.getState().projects.active?.meta.source).toEqual({
+        type: "example",
+        exampleId: "watervapor",
+      });
+    });
+
+    it("does not touch quick projects", async () => {
+      const { store, scratchStorage } =
+        await createTestStore(createFakeEngine());
+      const quick = await scratchStorage.createProject({
+        displayName: "Water vapor (copy)",
+        source: { type: "example", exampleId: "watervapor" },
+      });
+
+      await store
+        .getActions()
+        .projects.openProject({ dirName: quick.dirName, quick: true });
+
+      const onDisk = await readJson<ProjectMeta>(
+        scratchStorage,
+        quick.dirName,
+        PROJECT_META_PATH,
+      );
+      expect(onDisk.source).toEqual({
+        type: "example",
+        exampleId: "watervapor",
       });
     });
   });

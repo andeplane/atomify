@@ -129,6 +129,22 @@ export function isScriptFile(fileName: string): boolean {
   return SCRIPT_FILE.test(fileName);
 }
 
+const COPY_DIR_NAME = /-copy(-\d+)?$/;
+
+/**
+ * A duplicate made before #400, which copied the original's example source
+ * and so reports the original's exampleId to metrics on every run (#403).
+ * Recognized by duplicateProject's naming ("<name> (copy)" ->
+ * "<slug>-copy[-N]"); a genuine example's dirName is slug(displayName) and
+ * often differs from its exampleId, so that comparison cannot be used.
+ */
+export function isStaleExampleCopy(meta: ProjectMeta): boolean {
+  return (
+    meta.source?.type === "example" &&
+    (meta.displayName.endsWith("(copy)") || COPY_DIR_NAME.test(meta.dirName))
+  );
+}
+
 // Debounced editor saves live outside the (immer) store: content buffers and
 // timers are not state. flushPendingSaves is awaited before every snapshot so
 // what runs is always what is recorded (ADR-001 §8).
@@ -425,10 +441,16 @@ export const projectsModel: ProjectsModel = {
     async (actions, { dirName, quick = false, tab }, helpers) => {
       const storage = storageFor(helpers.injections, quick);
       const metas = await storage.listProjects();
-      const meta = metas.find((m) => m.dirName === dirName);
+      let meta = metas.find((m) => m.dirName === dirName);
       if (!meta) {
         actions.setNotice(`Project ${dirName} was not found.`);
         return;
+      }
+      if (!quick && isStaleExampleCopy(meta)) {
+        // One-time migration: rewritten on disk, so the next open is a no-op.
+        meta = await storage.updateProjectMeta(dirName, {
+          source: { type: "duplicate" },
+        });
       }
       const owned = new Set(
         helpers.getState().activeRun
