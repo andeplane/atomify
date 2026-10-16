@@ -153,33 +153,18 @@ Install packages with NPM
 
 `npm install`
 
-### Compile LAMMPS (Optional: if you don't need to modify LAMMPS installation)
-
-Ensure that `em++` is in your path.
-
-```
-cd cpp
-python build.py
-cd ..
-```
+The LAMMPS engine is not built in this repo: it ships prebuilt from the [lammps.js](https://www.npmjs.com/package/lammps.js) npm package, installed by `npm install`.
 
 ### Install JupyterLite (Optional: if you need Jupyter notebooks when running locally)
 
-Create an empty Python environment (Python 3.12 is recommended)
-Install packages
+With Python 3 available (3.12 is recommended), run
 
 ```
-pip install -r jupyterlite/requirements.txt
+make jupyter
 ```
 
-Build JupyterLite
-
-```
-jupyter lite build --contents jupyterlite/content --output-dir public/jupyter
-node scripts/patch-jupyterlite-sw.mjs
-```
-
-The second command patches the JupyterLite service worker to inject the
+This creates a virtualenv in `.venv-jupyterlite`, builds the site into
+`public/jupyter`, and patches the JupyterLite service worker to inject the
 COOP/COEP headers the cross-origin-isolated app requires (the deploy
 workflow does the same). If a deployed service worker ever misbehaves,
 visiting https://andeplane.github.io/atomify/?sw-reset unregisters
