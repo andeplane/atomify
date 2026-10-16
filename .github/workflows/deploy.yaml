@@ -27,6 +27,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Check starter notebook template
+        run: python scripts/check_notebook_template.py
       - name: Build JupyterLite site
         run: make jupyter
       - name: Run Typecheck
