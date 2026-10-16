@@ -41,7 +41,7 @@ Atomify pins the same JupyterLite versions (`jupyterlite-core==0.8.0`,
 `jupyterlite-pyodide-kernel==0.8.1`), so the pieces port — but review
 established the port is **not** turnkey; §3 states the real supply chain.
 
-With ADR-001, projects and runs live *in* the JupyterLite contents store.
+With ADR-001, projects and runs live _in_ the JupyterLite contents store.
 This ADR decides the notebook experience on top of that.
 
 ## Decision
@@ -124,7 +124,7 @@ today: PyPI 404s, and the npm tarball excludes `python/`):
   locally (none exists today; `public/jupyter` is CI-only).
 
 **Capability boundary** (stated honestly): the kernel client loads only
-the *serial* or *KOKKOS* wasm variants (MOLECULE package set + KOKKOS);
+the _serial_ or _KOKKOS_ wasm variants (MOLECULE package set + KOKKOS);
 the app's engine is the full-package `lammps-atomify` build. Projects
 using packages outside that set (ReaxFF, KSPACE/water, Vashishta/silica…)
 run in the app but **error in the kernel** until an upstream

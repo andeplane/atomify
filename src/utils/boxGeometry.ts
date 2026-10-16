@@ -233,7 +233,7 @@ export function isTriclinicBox(cellMatrix: THREE.Matrix3): boolean {
 
 /**
  * Checks if the simulation box is orthogonal.
- * 
+ *
  * @param cellMatrix - THREE.Matrix3 representing the simulation box
  * @returns true if the box is orthogonal, false otherwise
  */

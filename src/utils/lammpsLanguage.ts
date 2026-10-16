@@ -1398,4 +1398,3 @@ export function registerLammpsLanguage(monaco: MonacoInstance): void {
   monaco.languages.register({ id: "lammps" });
   monaco.languages.setMonarchTokensProvider("lammps", lammpsTokensProvider);
 }
-
