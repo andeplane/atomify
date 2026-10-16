@@ -11,6 +11,7 @@ import {
 } from "../utils/kokkos";
 import * as THREE from "three";
 import ColorModifier from "../modifiers/colormodifier";
+import SliceModifier from "../modifiers/slicemodifier";
 import Modifier from "../modifiers/modifier";
 import { SimulationFile } from "./app";
 import {
@@ -517,6 +518,13 @@ export const simulationModel: SimulationModel = {
       ) as ColorModifier | undefined;
       if (colorModifier) {
         colorModifier.computeName = undefined;
+      }
+      // The slab is in absolute coordinates; a new box may not contain it.
+      const sliceModifier = postTimestepModifiers.find(
+        (modifier: Modifier) => modifier instanceof SliceModifier,
+      );
+      if (sliceModifier) {
+        sliceModifier.active = false;
       }
 
       (getStoreActions() as Actions<StoreModel>).render.resetParticleStyles();

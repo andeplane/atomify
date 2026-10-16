@@ -3,6 +3,7 @@ import Modifier from "../modifiers/modifier";
 import SyncParticlesModifier from "../modifiers/syncparticlesmodifier";
 import SyncBondsModifier from "../modifiers/syncbondsmodifier";
 import ColorModifier from "../modifiers/colormodifier";
+import SliceModifier from "../modifiers/slicemodifier";
 import SyncComputesModifier from "../modifiers/synccomputesmodifier";
 import { ModifierInput, ModifierOutput } from "../modifiers/types";
 import { LammpsWeb, Wall } from "../types";
@@ -159,6 +160,11 @@ export const processingModel: ProcessingModel = {
       name: "Colors",
       active: true,
     }),
+    // After Particles/Bonds/Colors: it hides atoms those just restyled.
+    new SliceModifier({
+      name: "Slice",
+      active: false,
+    }),
     new SyncComputesModifier({
       name: "Computes",
       active: true,
@@ -257,13 +263,14 @@ export const processingModel: ProcessingModel = {
       const { modifierInput, modifierOutput, allActions, particles, bonds } =
         getModifierContext(getStoreState, getStoreActions);
 
-      // Only run rendering-related modifiers (Particles, Bonds, Colors)
+      // Only run rendering-related modifiers (Particles, Bonds, Colors, Slice)
       const renderingModifiers =
         getStoreState().processing.postTimestepModifiers.filter(
           (modifier: Modifier) =>
             modifier instanceof SyncParticlesModifier ||
             modifier instanceof SyncBondsModifier ||
-            modifier instanceof ColorModifier,
+            modifier instanceof ColorModifier ||
+            modifier instanceof SliceModifier,
         ) as Modifier[];
 
       renderingModifiers.forEach((modifier: Modifier) =>

@@ -11,6 +11,7 @@ import { useStoreActions, useStoreState } from "../hooks";
 import View from "../containers/View";
 import type { FileStat } from "../storage";
 import RunAnalysis from "./RunAnalysis";
+import SliceControls from "./SliceControls";
 import { useShellUI } from "./ShellContext";
 import { formatBytes, formatDuration, runNumber } from "./format";
 import {
@@ -406,6 +407,7 @@ const RunDetail = ({ runId }: { runId: string }) => {
               Color atoms
             </GhostButton>
           )}
+          {(live || viewStructure) && <SliceControls />}
           {meta?.continuationOf && (
             <Chip>Continued from #{runNumber(meta.continuationOf)}</Chip>
           )}
