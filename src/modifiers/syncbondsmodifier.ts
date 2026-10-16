@@ -18,11 +18,12 @@ class SyncBondsModifier extends Modifier {
       return;
     }
 
-    const numBonds = input.lammps.computeBonds();
+    const frame = input.frame;
+    const numBonds = frame.bondCount;
     const bondRadius = input.renderState.bondRadius;
     let newBonds = output.bonds;
     if (!newBonds || newBonds.capacity < numBonds) {
-      let newCapacity = numBonds;
+      const newCapacity = numBonds;
       if (newBonds) {
         newBonds.dispose();
       }
@@ -41,18 +42,8 @@ class SyncBondsModifier extends Modifier {
       return newBonds;
     }
 
-    const bonds1Ptr = input.lammps.getBondsPosition1Pointer() / 4;
-    const bonds2Ptr = input.lammps.getBondsPosition2Pointer() / 4;
-    const positions1Subarray = input.wasm.HEAPF32.subarray(
-      bonds1Ptr,
-      bonds1Ptr + 3 * numBonds,
-    ) as Float32Array;
-    const positions2Subarray = input.wasm.HEAPF32.subarray(
-      bonds2Ptr,
-      bonds2Ptr + 3 * numBonds,
-    ) as Float32Array;
-    newBonds.positions1.set(positions1Subarray);
-    newBonds.positions2.set(positions2Subarray);
+    newBonds.positions1.set(frame.bondFirst.subarray(0, 3 * numBonds));
+    newBonds.positions2.set(frame.bondSecond.subarray(0, 3 * numBonds));
 
     newBonds.count = numBonds;
     if (newBonds.mesh) {

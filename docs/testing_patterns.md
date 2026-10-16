@@ -31,7 +31,7 @@ Using `vi.fn().mockReturnValue()` creates type-unsafe mocks that can become brit
 This pattern is preferred when the mock behavior is consistent across tests or can be defined upfront:
 
 ```typescript
-describe('useSimulationData', () => {
+describe("useSimulationData", () => {
   let mockContext: SimulationContextType;
 
   beforeEach(() => {
@@ -54,7 +54,7 @@ describe('useSimulationData', () => {
 Use this pattern when you need to reconfigure mock behavior per test:
 
 ```typescript
-describe('useSimulationData', () => {
+describe("useSimulationData", () => {
   let mockContext: SimulationContextType;
 
   beforeEach(() => {
@@ -72,7 +72,7 @@ describe('useSimulationData', () => {
     vi.mocked(mockContext.getSimulationState).mockReturnValue(simulationState);
   });
 
-  it('should handle running simulation state', () => {
+  it("should handle running simulation state", () => {
     // Reconfigure mock for this specific test
     vi.mocked(mockContext.getSimulationState).mockReturnValue({
       isRunning: true,
@@ -95,7 +95,7 @@ Prefer context injection over vi.mock when possible. When vi.mock is necessary, 
 
 ```typescript
 // Preferred: Context injection
-describe('useSimulationData', () => {
+describe("useSimulationData", () => {
   let mockContext: SimulationContextType;
 
   beforeEach(() => {
@@ -109,12 +109,12 @@ describe('useSimulationData', () => {
 });
 
 // When necessary: Type-safe vi.mock for utilities
-vi.mock(import('../utils/metrics'), () => ({
+vi.mock(import("../utils/metrics"), () => ({
   trackEvent: vi.fn(),
 }));
 
 // Type-safe with async import for partial mocking
-vi.mock(import('../utils/AnalyzeNotebook'), async (importOriginal) => {
+vi.mock(import("../utils/AnalyzeNotebook"), async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -187,9 +187,9 @@ Async operations like data fetching or state updates need proper handling in tes
 Use `waitFor` from `@testing-library/react` for async assertions:
 
 ```typescript
-import { waitFor } from '@testing-library/react';
+import { waitFor } from "@testing-library/react";
 
-it('should load simulation data', async () => {
+it("should load simulation data", async () => {
   // Arrange
   const mockFetchSimulation = vi.fn().mockResolvedValue({
     atoms: 1000,
@@ -221,7 +221,7 @@ Tests without clear structure are hard to read and maintain.
 Use explicit Arrange-Act-Assert comments and structure for tests that are more than ~10-15 statements.
 
 ```typescript
-it('should not start simulation if WASM is not loaded', () => {
+it("should not start simulation if WASM is not loaded", () => {
   // Arrange
   vi.mocked(mockContext.getWasmStatus).mockReturnValue({
     isLoaded: false,
@@ -232,7 +232,7 @@ it('should not start simulation if WASM is not loaded', () => {
   const { result } = renderHook(() => useSimulationControl(), {
     wrapper,
   });
-  
+
   act(() => {
     result.current.startSimulation();
   });
@@ -260,11 +260,11 @@ it('should start simulation when button is clicked', async () => {
   // Arrange
   const mockStartSimulation = vi.fn();
   render(<SimulationControls onStart={mockStartSimulation} />);
-  
+
   // Act
   const startButton = screen.getByRole('button', { name: /start/i });
   await userEvent.click(startButton);
-  
+
   // Assert
   expect(mockStartSimulation).toHaveBeenCalledTimes(1);
 });
@@ -273,10 +273,10 @@ it('should update input value', () => {
   // Arrange
   render(<SimulationSettings />);
   const input = screen.getByLabelText(/timestep/i);
-  
+
   // Act
   fireEvent.change(input, { target: { value: '0.001' } });
-  
+
   // Assert
   expect(input).toHaveValue('0.001');
 });
@@ -293,7 +293,7 @@ Complex dependencies make tests hard to set up and maintain, and common setup co
 Use consistent `beforeEach` setup to isolate common setup for all tests:
 
 ```typescript
-describe('SimulationController', () => {
+describe("SimulationController", () => {
   let controller: SimulationController;
   let mockLammps: MockLammpsInterface;
   let mockStore: MockStoreInterface;
@@ -313,7 +313,7 @@ describe('SimulationController', () => {
     controller = new SimulationController(mockLammps, mockStore);
   });
 
-  it('should initialize with correct state', () => {
+  it("should initialize with correct state", () => {
     expect(controller.isRunning).toBe(false);
     expect(mockLammps.run).not.toHaveBeenCalled();
   });
@@ -331,9 +331,9 @@ Async state changes can lead to flaky tests when assertions run before state upd
 Use `waitFor` for assertions that depend on async state changes:
 
 ```typescript
-import { waitFor, renderHook } from '@testing-library/react';
+import { waitFor, renderHook } from "@testing-library/react";
 
-it('should load simulation data asynchronously', async () => {
+it("should load simulation data asynchronously", async () => {
   // Arrange
   const mockFetch = vi.fn().mockResolvedValue({ atoms: 1000 });
   const { result } = renderHook(() => useSimulationLoader(mockFetch));
@@ -373,7 +373,7 @@ function createMockWindow(overrides: Partial<Window> = {}): Window {
 }
 // Good: Partial interface implementation
 const mockWindow: Partial<Window> = {
-  location: 'https://example.test/',
+  location: "https://example.test/",
 };
 const window = mockWindow as Window;
 ```
@@ -439,7 +439,7 @@ Mock browser APIs in `setupTests.ts` or individual test files:
 
 ```typescript
 // In src/setupTests.ts - for global mocks
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, "matchMedia", {
   writable: true,
   value: (query: string) => ({
     matches: false,
@@ -454,17 +454,17 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // In individual test files - for test-specific mocks
-describe('Component using localStorage', () => {
+describe("Component using localStorage", () => {
   let mockLocalStorage: Record<string, string>;
 
   beforeEach(() => {
     mockLocalStorage = {};
-    
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation((key) => {
+
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation((key) => {
       return mockLocalStorage[key] || null;
     });
-    
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key, value) => {
+
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation((key, value) => {
       mockLocalStorage[key] = value;
     });
   });
@@ -486,7 +486,7 @@ Large test files become hard to maintain and reusable mock creation logic gets d
 Extract helper functions to the bottom of test files for better organization:
 
 ```typescript
-describe('SimulationEngine', () => {
+describe("SimulationEngine", () => {
   let engine: SimulationEngine;
   let mockLammps: LammpsInterface;
 
@@ -501,7 +501,7 @@ describe('SimulationEngine', () => {
     engine = new SimulationEngine(mockLammps, config);
   });
 
-  it('should run simulation with correct parameters', async () => {
+  it("should run simulation with correct parameters", async () => {
     // Arrange
     const steps = 1000;
     vi.mocked(mockLammps.step).mockResolvedValue({ timestep: steps });
@@ -525,11 +525,13 @@ function createMockLammps(): LammpsInterface {
   };
 }
 
-function createMockConfig(overrides?: Partial<SimulationConfig>): SimulationConfig {
+function createMockConfig(
+  overrides?: Partial<SimulationConfig>,
+): SimulationConfig {
   return {
     timestep: 0.001,
     temperature: 300,
-    ensemble: 'NVE',
+    ensemble: "NVE",
     ...overrides,
   };
 }
@@ -556,7 +558,7 @@ Testing code that interacts with WebAssembly modules requires special handling s
 Mock the WASM interface and focus on testing the JavaScript integration layer:
 
 ```typescript
-describe('LammpsWrapper', () => {
+describe("LammpsWrapper", () => {
   let mockWasm: MockLammpsWasm;
   let wrapper: LammpsWrapper;
 
@@ -575,19 +577,19 @@ describe('LammpsWrapper', () => {
     wrapper = new LammpsWrapper(mockWasm);
   });
 
-  it('should call WASM function with correct parameters', () => {
+  it("should call WASM function with correct parameters", () => {
     // Arrange
-    const command = 'run 1000';
+    const command = "run 1000";
 
     // Act
     wrapper.executeCommand(command);
 
     // Assert
     expect(mockWasm.ccall).toHaveBeenCalledWith(
-      'lammps_command',
-      'number',
-      ['string'],
-      [command]
+      "lammps_command",
+      "number",
+      ["string"],
+      [command],
     );
   });
 });
@@ -614,17 +616,17 @@ Consider creating a `__mocks__` directory when mock data is reused across multip
 
 ```typescript
 // Before: Large inline mock data repeated in multiple tests
-it('should process simulation', () => {
+it("should process simulation", () => {
   const simulation = {
-    id: 'sim-1',
-    name: 'Test Simulation',
+    id: "sim-1",
+    name: "Test Simulation",
     atoms: Array.from({ length: 1000 }, (_, i) => ({
       id: i,
       type: 1,
       position: [0, 0, 0],
       velocity: [0, 0, 0],
     })),
-    config: { /* ... */ },
+    config: {/* ... */},
   };
   // ... test
 });
@@ -632,11 +634,11 @@ it('should process simulation', () => {
 // After: Extract to __mocks__
 // In src/__mocks__/simulation.ts
 export function createMockSimulation(
-  overrides?: Partial<Simulation>
+  overrides?: Partial<Simulation>,
 ): Simulation {
   return {
-    id: 'sim-1',
-    name: 'Test Simulation',
+    id: "sim-1",
+    name: "Test Simulation",
     atoms: createMockAtoms(1000),
     config: createMockConfig(),
     ...overrides,
@@ -644,10 +646,10 @@ export function createMockSimulation(
 }
 
 // In test file
-import { createMockSimulation } from '../__mocks__/simulation';
+import { createMockSimulation } from "../__mocks__/simulation";
 
-it('should process simulation', () => {
-  const simulation = createMockSimulation({ name: 'Custom Sim' });
+it("should process simulation", () => {
+  const simulation = createMockSimulation({ name: "Custom Sim" });
   // ... test
 });
 ```
@@ -664,14 +666,14 @@ Use direct imports from React instead of importing the global React namespace:
 
 ```typescript
 // Good: Direct imports
-import { useState, useEffect, type ComponentType, type ReactNode } from 'react';
+import { useState, useEffect, type ComponentType, type ReactNode } from "react";
 
 // Use in code
 let wrapper: ComponentType<{ children: ReactNode }>;
 const [count, setCount] = useState(0);
 
 // Avoid: Global React import
-import React from 'react';
+import React from "react";
 
 let wrapper: React.ComponentType<{ children: React.ReactNode }>;
 const [count, setCount] = React.useState(0);

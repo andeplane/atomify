@@ -10,6 +10,7 @@ import { useStoreActions, useStoreState } from "../../hooks";
 import { track } from "../../utils/metrics";
 import { useShellUI, type SettingsTab } from "../ShellContext";
 import { formatBytes } from "../format";
+import { shellPalettes } from "../tokens";
 import { CheckIcon, TrashIcon } from "../icons";
 import { ColorDot, ModalShell, MONO, ToggleSwitch } from "../ui";
 
@@ -153,7 +154,7 @@ const SettingsModal = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#fff",
+            color: "var(--on-accent)",
           }}
         >
           {on && <CheckIcon size={11} strokeWidth={3.5} />}
@@ -235,8 +236,8 @@ const SettingsModal = ({
                     width: "100%",
                     height: 44,
                     borderRadius: 8,
-                    background: "#0B0D12",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    background: shellPalettes.dark.bg,
+                    border: `1px solid ${shellPalettes.dark.swatchBorder}`,
                     display: "block",
                   }}
                 />
@@ -260,8 +261,8 @@ const SettingsModal = ({
                     width: "100%",
                     height: 44,
                     borderRadius: 8,
-                    background: "#F3F5F9",
-                    border: "1px solid rgba(0,0,0,0.08)",
+                    background: shellPalettes.light.bg,
+                    border: `1px solid ${shellPalettes.light.swatchBorder}`,
                     display: "block",
                   }}
                 />
@@ -279,7 +280,7 @@ const SettingsModal = ({
             <div
               style={{
                 padding: "12px 14px",
-                borderRadius: 10,
+                borderRadius: "var(--radius)",
                 background: "var(--surface-2)",
                 border: "1px solid var(--border)",
                 fontSize: 12,
@@ -433,7 +434,7 @@ const SettingsModal = ({
             <div
               style={{
                 height: 6,
-                borderRadius: 999,
+                borderRadius: "var(--radius-pill)",
                 background: "var(--border-strong)",
                 overflow: "hidden",
                 marginBottom: 16,
@@ -443,7 +444,7 @@ const SettingsModal = ({
                 style={{
                   width: `${usagePercent}%`,
                   height: "100%",
-                  borderRadius: 999,
+                  borderRadius: "var(--radius-pill)",
                   background: "var(--accent)",
                 }}
               />

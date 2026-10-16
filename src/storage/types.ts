@@ -59,11 +59,7 @@ export interface NewProjectMeta {
 }
 
 export type RunStatus =
-  | "running"
-  | "completed"
-  | "failed"
-  | "canceled"
-  | "interrupted";
+  "running" | "completed" | "failed" | "canceled" | "interrupted";
 
 /** Contents of `<dirName>/runs/<runId>/.atomify/run.json`. */
 export interface RunMeta {

@@ -95,6 +95,7 @@ export function validateRelativePath(path: string): void {
 }
 
 const CHUNK = 0x8000;
+const utf8 = new TextEncoder();
 
 export function bytesToBase64(bytes: Uint8Array): string {
   let binary = "";
@@ -167,7 +168,12 @@ export function buildFileRecord(
     format,
     mimetype,
     content: stored,
-    size: content.length,
+    // UTF-8 bytes of what is stored, as BrowserStorageDrive.save computes
+    // it (@jupyterlite/services 0.8: text -> encode(content), json ->
+    // encode(JSON.stringify(content))) — not UTF-16 string length.
+    size: utf8.encode(
+      format === "json" ? JSON.stringify(stored) : (stored as string),
+    ).length,
     writable: true,
     type,
   };

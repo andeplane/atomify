@@ -79,13 +79,25 @@ export const PlusIcon = ({ size = 15 }: IconProps) =>
   stroke(size, <path d="M12 5v14M5 12h14" />, 2);
 
 export const PlayIcon = ({ size = 13 }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden
+  >
     <path d="M7 4.5v15a1 1 0 0 0 1.5.87l12-7.5a1 1 0 0 0 0-1.74l-12-7.5A1 1 0 0 0 7 4.5Z" />
   </svg>
 );
 
 export const StopIcon = ({ size = 11 }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden
+  >
     <rect x="5" y="5" width="14" height="14" rx="2.5" />
   </svg>
 );
@@ -226,7 +238,10 @@ export const TargetIcon = ({ size = 14 }: IconProps) =>
     </>,
   );
 
-export const CheckIcon = ({ size = 14, strokeWidth = 2.6 }: IconProps & { strokeWidth?: number }) =>
+export const CheckIcon = ({
+  size = 14,
+  strokeWidth = 2.6,
+}: IconProps & { strokeWidth?: number }) =>
   stroke(size, <path d="M20 6 9 17l-5-5" />, strokeWidth);
 
 export const XIcon = ({ size = 18 }: IconProps) =>
@@ -252,21 +267,19 @@ export const BackIcon = ({ size = 14 }: IconProps) =>
   stroke(size, <path d="m15 18-6-6 6-6" />, 2);
 
 export const ExpandIcon = ({ size = 15 }: IconProps) =>
-  stroke(
-    size,
-    <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />,
-    2,
-  );
+  stroke(size, <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />, 2);
 
 export const CompressIcon = ({ size = 15 }: IconProps) =>
-  stroke(
-    size,
-    <path d="M20 10h-6V4M4 14h6v6M14 10l7-7M10 14l-7 7" />,
-    2,
-  );
+  stroke(size, <path d="M20 10h-6V4M4 14h6v6M14 10l7-7M10 14l-7 7" />, 2);
 
 export const DotsIcon = ({ size = 16 }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    aria-hidden
+  >
     <circle cx="5" cy="12" r="1.7" />
     <circle cx="12" cy="12" r="1.7" />
     <circle cx="19" cy="12" r="1.7" />
