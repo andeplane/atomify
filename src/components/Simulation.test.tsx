@@ -26,6 +26,7 @@ vi.mock("../shell/ShellContext", () => ({
 
 const setSpeed = vi.fn();
 const setPaused = vi.fn();
+const setPanMode = vi.fn();
 const setSyncFrequency = vi.fn();
 
 let state: State<StoreModel>;
@@ -37,6 +38,7 @@ beforeEach(() => {
     app: { liveViewportVisible: true },
     simulation: { running: true },
     settings: { simulation: { speed: 1 } },
+    render: { panMode: false },
   } as unknown as State<StoreModel>;
   // An engine is already registered (and paused), so the component doesn't
   // spawn a worker.
@@ -53,6 +55,7 @@ beforeEach(() => {
     simulationStatus: {},
     simulation: { setPaused },
     settings: { setSimulation: setSpeed },
+    render: { setPanMode },
   } as unknown as Actions<StoreModel>;
   vi.mocked(useStoreState).mockImplementation((select) => select(state));
   vi.mocked(useStoreActions).mockImplementation((select) => select(actions));
@@ -118,6 +121,23 @@ describe("simulation keyboard shortcuts", () => {
     window.dispatchEvent(event);
     expect(setPaused).toHaveBeenCalledWith(false);
     expect(event.defaultPrevented).toBe(true);
+  });
+
+  it("toggles left-drag pan mode with P, ignoring modified keys", () => {
+    render(<Simulation />);
+    fireEvent.keyDown(window, { key: "p", ctrlKey: true });
+    expect(setPanMode).not.toHaveBeenCalled();
+    fireEvent.keyDown(window, { key: "p" });
+    expect(setPanMode).toHaveBeenCalledWith(true);
+  });
+
+  it("turns pan mode off once the live viewport is no longer visible", () => {
+    (state.render as { panMode: boolean }).panMode = true;
+    const { rerender } = render(<Simulation />);
+    expect(setPanMode).not.toHaveBeenCalled();
+    (state.app as { liveViewportVisible: boolean }).liveViewportVisible = false;
+    rerender(<Simulation />);
+    expect(setPanMode).toHaveBeenCalledWith(false);
   });
 
   it("ignores shortcuts while the live viewport is not visible", () => {
