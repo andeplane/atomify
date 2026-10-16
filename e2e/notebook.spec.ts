@@ -14,7 +14,7 @@ const JUPYTER_BUILT = existsSync(
   join(__dirname, "..", "public", "jupyter", "lab", "index.html"),
 );
 
-test("notebook iframe targets the project's analysis notebook", async ({
+test("notebook iframe targets the project's analysis notebook @smoke", async ({
   page,
 }) => {
   test.skip(

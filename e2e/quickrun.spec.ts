@@ -11,7 +11,9 @@ import { gotoApp, RUN_TIMEOUT, waitForEngine } from "./helpers";
 const EXAMPLE_ID = "2D-lj-fluid";
 const EXAMPLE_TITLE = "2D Lennard Jones fluid";
 
-test("quick run an example, then save it as a project", async ({ page }) => {
+test("quick run an example, then save it as a project @smoke", async ({
+  page,
+}) => {
   await test.step("quick run from the example library", async () => {
     await gotoApp(page);
     await page.getByTestId("nav-examples").click();
