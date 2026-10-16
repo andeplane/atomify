@@ -100,26 +100,13 @@ describe("Figure", () => {
   const createMockLMPModifier = (): LMPModifier => ({
     getName: vi.fn(() => "mock-name"),
     getType: vi.fn(() => 61),
-    getPerAtomData: vi.fn(() => 0),
     getIsPerAtom: vi.fn(() => false),
     hasScalarData: vi.fn(() => false),
     getClearPerSync: vi.fn(() => false),
     getScalarValue: vi.fn(() => 0),
-    sync: vi.fn(),
     getXLabel: vi.fn(() => "Time"),
     getYLabel: vi.fn(() => "Value"),
-    getData1DNames: vi.fn(() => ({
-      get: vi.fn(),
-      size: vi.fn(() => 0),
-      delete: vi.fn(),
-    })),
-    getData1D: vi.fn(() => ({
-      get: vi.fn(),
-      size: vi.fn(() => 0),
-      delete: vi.fn(),
-    })),
-    execute: vi.fn(() => true),
-    delete: vi.fn(),
+    getData1D: vi.fn(() => []),
   });
 
   const createMockCompute = (overrides?: Partial<Compute>): Compute => {

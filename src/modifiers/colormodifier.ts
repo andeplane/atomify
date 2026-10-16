@@ -1,6 +1,7 @@
 import { GROUP_LABEL_PREFIX } from "../utils/lammpsGroups";
 import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
+import { perAtomValues } from "../wasm/engineFrame";
 import colormap from "colormap";
 import { AtomType } from "../utils/atomtypes";
 import * as THREE from "three";
@@ -181,22 +182,19 @@ class ColorModifier extends Modifier {
       alpha: 1,
     });
     const computes = input.computes;
-    const compute = this.computeName ? computes[this.computeName] : undefined;
-    if (!compute || !compute.isPerAtom) {
+    const computeName = this.computeName;
+    const compute = computeName ? computes[computeName] : undefined;
+    if (!computeName || !compute || !compute.isPerAtom) {
       this.runByType(input, output);
       return;
     }
 
-    const didCompute = compute.lmpCompute.execute();
-    if (!didCompute) {
-      return;
-    }
-    compute.lmpCompute.sync();
-    const perAtomDataPtr = compute.lmpCompute.getPerAtomData() / 8;
-    const perAtomArray = input.wasm.HEAPF64.subarray(
-      perAtomDataPtr,
-      perAtomDataPtr + particles.count,
-    ) as Float64Array;
+    // Group membership or the streamed per-atom values from the latest frame;
+    // empty until the worker has streamed a newly selected compute.
+    const perAtomArray = perAtomValues(input.frame, computeName).subarray(
+      0,
+      particles.count,
+    );
 
     // Reset global min/max if requested
     if (this.resetMinMax) {
@@ -265,7 +263,7 @@ class ColorModifier extends Modifier {
     const particles = output.particles;
     const particleStyles = input.renderState.particleStyles;
     const visualizer = input.renderState.visualizer;
-    const nativeRadii = input.lammps.getParticleRadii?.();
+    const nativeRadii = input.frame.radii;
 
     for (let i = 0; i < particles.count; i++) {
       const realIndex = particles.indices[i];
@@ -289,8 +287,8 @@ class ColorModifier extends Modifier {
   };
 
   run = (input: ModifierInput, output: ModifierOutput) => {
-    // Ask the backend to stream (or stop streaming) per-atom values for the
-    // selected compute. No-op on backends that read per-atom data directly.
+    // Ask the engine to stream (or stop streaming) per-atom values for the
+    // selected compute in its frames.
     const target = this.computeName ?? null;
     if (target !== this.lastRequestedCompute) {
       this.lastRequestedCompute = target;

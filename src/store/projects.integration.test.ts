@@ -3,8 +3,8 @@
  *
  * These tests build the REAL store (full model composition) on REAL
  * in-memory project storage. Only the engine boundary is faked: a
- * LammpsWeb whose runFile resolves immediately (or on demand) and a
- * minimal wasm module for the FS writes the simulation model performs.
+ * LammpsWeb whose runFile resolves immediately (or on demand) and whose
+ * engine-FS writes land in an in-memory map the tests can inspect.
  * Every scenario asserts against the actual storage contents — the
  * persisted project.json / run.json / snapshots — not just store state.
  */
@@ -41,9 +41,8 @@ import {
   type ProjectStorage,
   type RunMeta,
 } from "../storage";
-import { getWasm, setWasm } from "../wasm/wasmInstance";
-import type { AtomifyWasmModule } from "../wasm/types";
-import type { LammpsWeb, LMPModifier, Wall } from "../types";
+import { emptyEngineFrame } from "../wasm/engineFrame";
+import type { LammpsWeb, LMPModifier } from "../types";
 
 const SCRIPT = "units lj\nrun 100\n";
 const FAKE_LOG = "fake LAMMPS log output";
@@ -298,9 +297,8 @@ describe("projects store integration", () => {
         .projects.startRuns([runRequest({ useKokkos: true, threads: 4 })]);
 
       // The script the engine ran carries the injected opt-in marker…
-      const ranScript = getWasm().FS.readFile(
+      const ranScript = engine.readFile(
         `/${dirName}/${RUNS_DIR}/run-001/in.lmp`,
-        { encoding: "utf8" },
       );
       expect(ranScript.startsWith("suffix kk")).toBe(true);
       expect(ranScript).toContain("units lj");
@@ -325,9 +323,8 @@ describe("projects store integration", () => {
 
       // No opt-in marker injected; syncFilesWasm applied the serial-styles
       // preprocessing (suffix off) for the always-on `-sf kk` module.
-      const ranScript = getWasm().FS.readFile(
+      const ranScript = engine.readFile(
         `/${dirName}/${RUNS_DIR}/run-001/in.lmp`,
-        { encoding: "utf8" },
       );
       expect(ranScript.startsWith("suffix off")).toBe(true);
       expect(ranScript).not.toContain("suffix kk");
@@ -1231,6 +1228,8 @@ interface FakeEngine {
   resolveRun: () => void;
   /** Value returned by getErrorMessage after runFile settles. */
   setErrorMessage: (message: string) => void;
+  /** Text of a file the store wrote into the engine FS (throws if absent). */
+  readFile: (path: string) => string;
 }
 
 interface FakeEngineOptions {
@@ -1246,23 +1245,16 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
   ];
   const runFilePaths: string[] = [];
   const pendingRuns: (() => void)[] = [];
+  // The engine FS as the worker would hold it: only what the store wrote.
+  const files = new Map<string, string | Uint8Array>();
   let errorMessage = "";
 
-  const emptyStringArray = () => ({
-    get: () => "",
-    size: () => 0,
-    delete: () => {},
-  });
   const noModifier = (): LMPModifier => {
     throw new Error("LMP modifiers are not exercised by these tests");
   };
-  const emptyWalls = () => ({
-    get: (): Wall => ({ which: 0, style: 0, position: 0, cutoff: 0 }),
-    size: () => 0,
-    delete: () => {},
-  });
 
   const lammps: LammpsWeb = {
+    latestFrame: emptyEngineFrame(),
     getNumAtoms: () => 100,
     setSyncFrequency: () => {},
     setBuildNeighborlist: () => {},
@@ -1278,14 +1270,11 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
     getCPURemain: () => 0,
     getWhichFlag: () => 0,
     getCompute: noModifier,
-    getComputeNames: emptyStringArray,
+    getComputeNames: () => [],
     getFix: noModifier,
-    getFixNames: emptyStringArray,
+    getFixNames: () => [],
     getVariable: noModifier,
-    getVariableNames: emptyStringArray,
-    syncComputes: () => {},
-    syncFixes: () => {},
-    syncVariables: () => {},
+    getVariableNames: () => [],
     snapshotWorkdir: async () => ({
       files: outputs.map((file) => ({
         path: file.path,
@@ -1294,15 +1283,12 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
       skipped: [],
     }),
     getMemoryUsage: () => 0,
-    getPositionsPointer: () => 0,
-    getIdPointer: () => 0,
-    getTypePointer: () => 0,
-    getCellMatrixPointer: () => 0,
-    getOrigoPointer: () => 0,
-    getBondsPosition1Pointer: () => 0,
-    getBondsPosition2Pointer: () => 0,
     getExceptionMessage: (address: number) => `exception at ${address}`,
-    step: () => {},
+    writeFile: (path, data) => {
+      files.set(path, data);
+    },
+    mkdir: () => {},
+    chdir: () => {},
     stop: () => true,
     start: () => true,
     cancel: () => {},
@@ -1314,10 +1300,6 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
       }
       return new Promise<void>((resolve) => pendingRuns.push(resolve));
     },
-    computeBonds: () => 0,
-    computeParticles: () => 0,
-    getDimension: () => 3,
-    getWalls: emptyWalls,
   };
 
   return {
@@ -1333,57 +1315,14 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
     setErrorMessage: (message: string) => {
       errorMessage = message;
     },
-  };
-}
-
-/** A minimal wasm module: only the FS + heaps the simulation model touches. */
-function createFakeWasm(): AtomifyWasmModule {
-  const files = new Map<string, string | Uint8Array>();
-  const dirs = new Set<string>(["/"]);
-  const fs: AtomifyWasmModule["FS"] = {
-    mkdir: (path) => {
-      dirs.add(path);
-    },
-    rmdir: (path) => {
-      dirs.delete(path);
-    },
-    chdir: () => {},
-    cwd: () => "/",
-    writeFile: (path, data) => {
-      files.set(path, data);
-    },
-    unlink: (path) => {
-      files.delete(path);
-    },
-    readFile: (path) => {
+    readFile: (path: string) => {
       const data = files.get(path);
       if (data === undefined) {
         throw new Error(`No such fake file: ${path}`);
       }
       return typeof data === "string" ? data : new TextDecoder().decode(data);
     },
-    readdir: () => [],
-    analyzePath: (path) => ({
-      exists: dirs.has(path) || files.has(path),
-      isRoot: path === "/",
-      path,
-      name: path.slice(path.lastIndexOf("/") + 1),
-      error: 0,
-    }),
-    stat: () => ({ size: 0, mode: 0, mtime: new Date() }),
-    isDir: () => false,
-    isFile: () => true,
   };
-  // LAMMPSWeb/ScalarType (the embind class handles) are never touched by the
-  // store models; Partial + cast per docs/testing_patterns.md §9.
-  const wasm: Partial<AtomifyWasmModule> = {
-    HEAPF32: new Float32Array(1024),
-    HEAPF64: new Float64Array(64),
-    HEAP32: new Int32Array(1024),
-    HEAP64: new BigInt64Array(16),
-    FS: fs,
-  };
-  return wasm as AtomifyWasmModule;
 }
 
 /** Memory KV that refuses matching writes like a full IndexedDB once `full`. */
@@ -1420,10 +1359,9 @@ async function createTestStore(
   // setup dispatches below (it does, once earlier tests have populated
   // sessionStorage).
   await store.persist.resolveRehydration();
-  setWasm(createFakeWasm());
   // The omovi/three post-timestep render pipeline is not under test here;
   // clearing the modifiers (via the real action) keeps completed-run
-  // processing to plain engine getters.
+  // processing to plain engine getters and the (empty) latest frame.
   store.getActions().processing.setPostTimestepModifiers([]);
   store.getActions().simulation.setLammps(engine.lammps);
   return { store, libraryStorage, scratchStorage };

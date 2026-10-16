@@ -23,7 +23,8 @@ class SyncParticlesModifier extends Modifier {
       return;
     }
 
-    const numParticles = input.lammps.computeParticles();
+    const frame = input.frame;
+    const numParticles = frame.count;
     let newParticles = output.particles;
     if (!newParticles || newParticles.capacity < numParticles) {
       let newCapacity = numParticles;
@@ -42,25 +43,12 @@ class SyncParticlesModifier extends Modifier {
       }
     }
 
-    const positionsPtr = input.lammps.getPositionsPointer() / 4;
-    const typePtr = input.lammps.getTypePointer() / 4;
-    const idPtr = input.lammps.getIdPointer() / 4;
-    const positionsSubarray = input.wasm.HEAPF32.subarray(
-      positionsPtr,
-      positionsPtr + 3 * numParticles,
-    ) as Float32Array;
-    const typeSubarray = input.wasm.HEAP32.subarray(
-      typePtr,
-      typePtr + numParticles,
-    ) as Int32Array;
-    const idSubarray = input.wasm.HEAP32.subarray(
-      idPtr,
-      idPtr + numParticles,
-    ) as Int32Array;
-
-    newParticles.positions.set(positionsSubarray);
-    newParticles.types.set(typeSubarray);
-    newParticles.indices.set(idSubarray);
+    // ids are persistent LAMMPS atom tags, paired index-by-index with
+    // positions/types (the engine may reorder atoms between steps).
+    const ids = frame.ids.subarray(0, numParticles);
+    newParticles.positions.set(frame.positions.subarray(0, 3 * numParticles));
+    newParticles.types.set(frame.types.subarray(0, numParticles));
+    newParticles.indices.set(ids);
     if (newParticles.count !== numParticles) {
       output.colorsDirty = true;
     }
@@ -78,11 +66,11 @@ class SyncParticlesModifier extends Modifier {
       geometry.getAttribute("particlePosition").needsUpdate = true;
       geometry.getAttribute("particleIndex").needsUpdate = true;
     }
-    const radii = input.lammps.getParticleRadii?.();
+    const radii = frame.radii;
     if (radii && input.renderState.visualizer) {
       for (let i = 0; i < numParticles; i++) {
         input.renderState.visualizer.setRadius(
-          idSubarray[i],
+          ids[i],
           radii[i] * input.renderState.particleRadius,
         );
       }

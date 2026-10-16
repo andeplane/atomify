@@ -39,7 +39,6 @@ import {
 } from "../storage";
 import { projectAnalysisNotebook } from "../utils/AnalyzeNotebook";
 import { injectKokkosOptIn } from "../utils/kokkos";
-import { getWasm } from "../wasm/wasmInstance";
 import { track } from "../utils/metrics";
 
 export interface StoreInjections {
@@ -1379,10 +1378,7 @@ export const projectsModel: ProjectsModel = {
       if (!continuation)
         await storeActions.simulation.newSimulation(simulation);
       for (const file of continuation ? [] : binaryFiles) {
-        getWasm().FS.writeFile(
-          `/${simulation.id}/${file.fileName}`,
-          file.bytes,
-        );
+        lammps.writeFile(`/${simulation.id}/${file.fileName}`, file.bytes);
       }
       const result = (await storeActions.simulation.run(
         continuation ? { continuationSteps: continuation.steps } : undefined,

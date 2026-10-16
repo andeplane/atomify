@@ -1,38 +1,16 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
-  getWasm,
-  getWasmOrNull,
-  setWasm,
   getCancel,
   setCancel,
   getSyncFrequency,
   setSyncFrequency,
 } from "./wasmInstance";
-import { AtomifyWasmModule } from "./types";
 
 // Reset module state between tests by re-importing
 // Since module state persists, we use dynamic import + vi.resetModules
 // But simpler: just test the public API sequentially
 
 describe("wasmInstance", () => {
-  describe("wasm module", () => {
-    it("setWasm + getWasm round-trips the module", () => {
-      const mockModule: Partial<AtomifyWasmModule> = {
-        FS: {} as AtomifyWasmModule["FS"],
-      };
-      setWasm(mockModule as AtomifyWasmModule);
-      expect(getWasm()).toBe(mockModule);
-    });
-
-    it("getWasmOrNull returns the module after setWasm", () => {
-      const mockModule: Partial<AtomifyWasmModule> = {
-        FS: {} as AtomifyWasmModule["FS"],
-      };
-      setWasm(mockModule as AtomifyWasmModule);
-      expect(getWasmOrNull()).toBe(mockModule);
-    });
-  });
-
   describe("cancel flag", () => {
     beforeEach(() => {
       setCancel(false);

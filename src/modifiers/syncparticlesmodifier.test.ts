@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import SyncParticlesModifier from "./syncparticlesmodifier";
 import type { ModifierInput, ModifierOutput } from "./types";
+import { emptyEngineFrame } from "../wasm/engineFrame";
 
 vi.mock("omovi", () => ({
   Particles: class {
@@ -22,33 +23,21 @@ vi.mock("omovi", () => ({
 
 describe("persistent LAMMPS atom tags", () => {
   it("keeps sparse tags paired with positions and types after engine reordering", () => {
-    const heap = new ArrayBuffer(256);
-    const floats = new Float32Array(heap);
-    const ints = new Int32Array(heap);
-    const input = {
-      wasm: { HEAPF32: floats, HEAP32: ints },
-      lammps: {
-        computeParticles: () => 3,
-        getPositionsPointer: () => 0,
-        getTypePointer: () => 64,
-        getIdPointer: () => 96,
-      },
-    } as unknown as ModifierInput;
+    const input = { lammps: {} } as unknown as ModifierInput;
     const output = {} as ModifierOutput;
     const modifier = new SyncParticlesModifier({
       name: "Particles",
       active: true,
     });
     const sync = (atoms: { id: number; type: number; x: number }[]) => {
-      floats.set(atoms.flatMap((a) => [a.x, 0, 0]));
-      ints.set(
-        atoms.map((a) => a.type),
-        64 / 4,
-      );
-      ints.set(
-        atoms.map((a) => a.id),
-        96 / 4,
-      );
+      // Each streamed step is a fresh frame, like the worker sends.
+      input.frame = {
+        ...emptyEngineFrame(),
+        count: atoms.length,
+        positions: new Float32Array(atoms.flatMap((a) => [a.x, 0, 0])),
+        types: new Int32Array(atoms.map((a) => a.type)),
+        ids: new Int32Array(atoms.map((a) => a.id)),
+      };
       modifier.run(input, output);
       return Array.from(output.particles!.indices).map((id, index) => ({
         id,

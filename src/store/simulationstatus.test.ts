@@ -269,15 +269,12 @@ function createMockLMPModifier(): Partial<import("../types").LMPModifier> {
   return {
     getName: vi.fn(() => "mock"),
     getType: vi.fn(() => ModifierType.ComputeOther),
-    getPerAtomData: vi.fn(() => 0),
     getIsPerAtom: vi.fn(() => false),
     hasScalarData: vi.fn(() => false),
     getClearPerSync: vi.fn(() => false),
     getScalarValue: vi.fn(() => 0),
-    sync: vi.fn(),
     getXLabel: vi.fn(() => ""),
     getYLabel: vi.fn(() => ""),
-    delete: vi.fn(),
   };
 }
 

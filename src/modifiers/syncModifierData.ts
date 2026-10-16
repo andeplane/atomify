@@ -1,5 +1,4 @@
 import { LMPModifier, ModifierData } from "../types";
-import { AtomifyWasmModule } from "../wasm/types";
 
 type ModifierKey = "lmpCompute" | "lmpFix" | "lmpVariable";
 
@@ -27,20 +26,19 @@ export function createModifierEntry<K extends ModifierKey>(
 }
 
 /**
- * Refreshes an existing ModifierData entry from its LMPModifier and, when
- * requested, copies new 1D data points into entry.data1D. Shared by
- * SyncComputesModifier / SyncFixesModifier / SyncVariablesModifier, which
- * differ only in which LAMMPS accessors they call before/around this.
+ * Refreshes an existing ModifierData entry from its LMPModifier (a view over
+ * the latest engine frame) and, when requested, copies new 1D data points
+ * into entry.data1D. Shared by SyncComputesModifier / SyncFixesModifier /
+ * SyncVariablesModifier, which differ only in which LAMMPS accessors they
+ * call before/around this.
  */
 export function syncModifierEntry<K extends ModifierKey>(
   entry: ModifierData<K>,
   key: K,
-  wasm: AtomifyWasmModule,
   everything: boolean,
   options: { refreshHasScalarData?: boolean } = {},
 ): void {
   const lmp = entry[key] as LMPModifier;
-  lmp.sync();
   entry.xLabel = lmp.getXLabel();
   entry.yLabel = lmp.getYLabel();
   entry.scalarValue = lmp.getScalarValue();
@@ -48,13 +46,10 @@ export function syncModifierEntry<K extends ModifierKey>(
     entry.hasScalarData = lmp.hasScalarData();
   }
 
-  // Get data1DNamesWrapper and extract size, then delete immediately
-  const data1DNamesWrapper = lmp.getData1DNames();
-  entry.hasData1D = data1DNamesWrapper.size() > 0;
-  const data1DNamesSize = data1DNamesWrapper.size();
-  data1DNamesWrapper.delete(); // Delete WASM wrapper to prevent memory leak
+  const series = lmp.getData1D();
+  entry.hasData1D = series.length > 0;
 
-  if (data1DNamesSize === 0) {
+  if (series.length === 0) {
     return;
   }
 
@@ -83,38 +78,19 @@ export function syncModifierEntry<K extends ModifierKey>(
     entry.data1D.labels.push("x");
   }
 
-  // Get data1DVector once before the loop for better performance
-  const data1DVector = lmp.getData1D();
-
-  for (let j = 0; j < data1DNamesSize; j++) {
-    const lmpData = data1DVector.get(j);
+  for (let j = 0; j < series.length; j++) {
+    const { label, x: xValues, y: yValues } = series[j];
 
     if (entry.data1D.labels.length - 1 === j) {
       // Add missing labels
-      entry.data1D.labels.push(lmpData.getLabel());
+      entry.data1D.labels.push(label);
     }
 
-    const xValuesPointer = lmpData.getXValuesPointer() / 4;
-    const yValuesPointer = lmpData.getYValuesPointer() / 4;
-    const xValues = wasm.HEAPF32.subarray(
-      xValuesPointer,
-      xValuesPointer + lmpData.getNumPoints(),
-    ) as Float32Array;
-    const yValues = wasm.HEAPF32.subarray(
-      yValuesPointer,
-      yValuesPointer + lmpData.getNumPoints(),
-    ) as Float32Array;
     for (let k = lengthBeforeWeStart; k < xValues.length; k++) {
       if (j === 0) {
         entry.data1D.data.push([xValues[k]]);
       }
       entry.data1D.data[k].push(yValues[k]);
     }
-
-    // Delete the Data1D copy to prevent memory leak
-    lmpData.delete();
   }
-
-  // Delete the vector wrapper after the loop to prevent memory leak
-  data1DVector.delete();
 }

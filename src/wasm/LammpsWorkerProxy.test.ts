@@ -84,7 +84,7 @@ describe("LammpsWorkerProxy worker crash handling", () => {
       "The simulation engine crashed: boom",
     );
     proxy.runCommand("run 10");
-    proxy.getModule().FS.writeFile("/sim/x", "data");
+    proxy.writeFile("/sim/x", "data");
     expect(proxy.start()).toBe(false);
     expect(worker.posted.length).toBe(before);
     expect(proxy.getIsRunning()).toBe(false);
