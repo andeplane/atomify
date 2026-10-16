@@ -547,6 +547,7 @@ function createDefaultMockState() {
       running: false,
       loadedWorkdir: undefined as string | undefined,
     },
+    render: { panMode: false },
     settings: {
       render: {
         ssao: false,

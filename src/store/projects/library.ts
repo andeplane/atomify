@@ -8,7 +8,12 @@ import { thunk } from "easy-peasy";
 import { listRuns, reconcileRuns, RUNS_DIR } from "../../storage";
 import { projectAnalysisNotebook } from "../../utils/AnalyzeNotebook";
 import { track } from "../../utils/metrics";
-import { copyTree, isScriptFile, storageFor } from "./helpers";
+import {
+  copyTree,
+  isScriptFile,
+  isStaleExampleCopy,
+  storageFor,
+} from "./helpers";
 import type { ProjectsModel } from "./types";
 
 export const libraryThunks: Pick<
@@ -31,10 +36,21 @@ export const libraryThunks: Pick<
     async (actions, { dirName, quick = false, tab }, helpers) => {
       const storage = storageFor(helpers.injections, quick);
       const metas = await storage.listProjects();
-      const meta = metas.find((m) => m.dirName === dirName);
+      let meta = metas.find((m) => m.dirName === dirName);
       if (!meta) {
         actions.setNotice(`Project ${dirName} was not found.`);
         return;
+      }
+      if (!quick && isStaleExampleCopy(meta)) {
+        // One-time migration: rewritten on disk, so the next open is a no-op.
+        // Only metrics depend on it, so a failed write must not block opening.
+        try {
+          meta = await storage.updateProjectMeta(dirName, {
+            source: { type: "duplicate" },
+          });
+        } catch (error) {
+          console.warn("Could not migrate stale example source", error);
+        }
       }
       const owned = new Set(
         helpers.getState().activeRun
