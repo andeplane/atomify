@@ -14,6 +14,7 @@
     "vite.config.ts",
     "vitest.config.mts",
     "playwright.config.ts",
-    "playwright.safari.config.ts"
+    "playwright.safari.config.ts",
+    "playwright.smoke.config.ts"
   ]
 }
