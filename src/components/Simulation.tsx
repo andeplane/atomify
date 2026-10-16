@@ -247,7 +247,7 @@ const SimulationComponent = () => {
         // Any in-flight run has already been failed by the proxy.
         proxy.onCrash((message) => {
           setEngineError(`${message}. Reload the page to restart the engine.`);
-          notification.error({
+          notify.error({
             message: "The simulation engine crashed",
             description: "Reload the page to restart the engine.",
           });
