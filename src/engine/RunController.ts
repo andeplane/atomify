@@ -2,7 +2,7 @@
  * The run pipeline: the one path from a claimed project run to the LAMMPS
  * engine and back.
  *
- * The projects layer (store/projects.ts) owns what comes before a run touches
+ * The projects layer (store/projects/) owns what comes before a run touches
  * the engine — the queue, the run directory, its snapshot and the initial
  * run.json (ADR-001 §5) — and what comes after: the resident run that can be
  * continued, and queue advancement. A RunController owns everything between:
