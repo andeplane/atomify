@@ -1,15 +1,14 @@
-import { action, thunk, Action, Thunk, State, Actions } from "easy-peasy";
+import { thunk, Thunk, State, Actions } from "easy-peasy";
 import Modifier from "../modifiers/modifier";
 import SyncParticlesModifier from "../modifiers/syncparticlesmodifier";
 import SyncBondsModifier from "../modifiers/syncbondsmodifier";
 import ColorModifier from "../modifiers/colormodifier";
-import SyncComputesModifier from "../modifiers/synccomputesmodifier";
 import { ModifierInput, ModifierOutput } from "../modifiers/types";
 import { Wall } from "../types";
 import * as THREE from "three";
-import SyncFixesModifier from "../modifiers/syncfixesmodifier";
-import SyncVariablesModifier from "../modifiers/syncvariablesmodifier";
+import type { EngineRegistry } from "../engine/EngineRegistry";
 import { StoreModel } from "./model";
+import type { StoreInjections } from "./projects";
 import type { SimulationStatusData } from "./simulationstatus";
 
 const getSimulationBox = (
@@ -74,26 +73,36 @@ const getSimulationOrigo = (
 const getModifierContext = (
   getStoreState: () => State<StoreModel>,
   getStoreActions: () => Actions<StoreModel>,
+  engine: EngineRegistry,
 ) => {
-  const lammps = getStoreState().simulation.lammps;
+  const lammps = engine.lammps;
   if (!lammps) {
     throw new Error("Lammps instance is not initialized");
   }
   // One frame for the whole pass, so every modifier sees the same step.
   const frame = lammps.latestFrame;
-  const renderState = getStoreState().render;
   const computes = getStoreState().simulationStatus.computes;
   const fixes = getStoreState().simulationStatus.fixes;
   const variables = getStoreState().simulationStatus.variables;
   const hasSynchronized = getStoreState().simulationStatus.hasSynchronized;
-  const particles = renderState.particles;
-  const bonds = renderState.bonds;
+  const { particleStyles, particleStylesUpdated, bondRadius, particleRadius } =
+    getStoreState().render;
+  const { visualizer, particles, bonds } = engine;
   const allActions = getStoreActions();
 
   const modifierInput: ModifierInput = {
     frame,
     lammps,
-    renderState,
+    // The store's render settings with the registry's live render objects.
+    renderState: {
+      particleStyles,
+      particleStylesUpdated,
+      bondRadius,
+      particleRadius,
+      visualizer,
+      particles,
+      bonds,
+    },
     variables,
     computes,
     fixes,
@@ -103,7 +112,7 @@ const getModifierContext = (
   const modifierOutput: ModifierOutput = {
     particles,
     bonds,
-    colorsDirty: getStoreState().render.particleStylesUpdated,
+    colorsDirty: particleStylesUpdated,
     computes: {},
     fixes: {},
     variables: {},
@@ -120,48 +129,28 @@ const getModifierContext = (
   };
 };
 
+/**
+ * The post-timestep pipeline over the EngineRegistry's modifiers (the
+ * registry comes in as the store's `engine` injection). The modifier
+ * instances, particles and bonds are the registry's; the store receives the
+ * status snapshot.
+ */
 export interface ProcessingModel {
-  postTimestepModifiers: Modifier[];
-  setPostTimestepModifiers: Action<ProcessingModel, Modifier[]>;
-  runPostTimestep: Thunk<ProcessingModel, boolean, undefined, StoreModel>;
-  runPostTimestepRendering: Thunk<ProcessingModel, void, undefined, StoreModel>;
+  runPostTimestep: Thunk<ProcessingModel, boolean, StoreInjections, StoreModel>;
+  runPostTimestepRendering: Thunk<
+    ProcessingModel,
+    void,
+    StoreInjections,
+    StoreModel
+  >;
 }
 
 export const processingModel: ProcessingModel = {
-  postTimestepModifiers: [
-    new SyncParticlesModifier({
-      name: "Particles",
-      active: true,
-    }),
-    new SyncBondsModifier({
-      name: "Bonds",
-      active: true,
-    }),
-    new ColorModifier({
-      name: "Colors",
-      active: true,
-    }),
-    new SyncComputesModifier({
-      name: "Computes",
-      active: true,
-    }),
-    new SyncFixesModifier({
-      name: "Fixes",
-      active: true,
-    }),
-    new SyncVariablesModifier({
-      name: "Variables",
-      active: true,
-    }),
-  ],
-  setPostTimestepModifiers: action((state, value: Modifier[]) => {
-    state.postTimestepModifiers = value;
-  }),
   runPostTimestep: thunk(
     async (
       actions,
       everything: boolean,
-      { getStoreState, getStoreActions },
+      { getStoreState, getStoreActions, injections: { engine } },
     ) => {
       const {
         modifierInput,
@@ -171,9 +160,9 @@ export const processingModel: ProcessingModel = {
         bonds,
         lammps,
         frame,
-      } = getModifierContext(getStoreState, getStoreActions);
+      } = getModifierContext(getStoreState, getStoreActions, engine);
 
-      getStoreState().processing.postTimestepModifiers.forEach((modifier) =>
+      engine.modifiers.forEach((modifier) =>
         modifier.run(modifierInput, modifierOutput, true),
       );
       allActions.render.setParticleStylesUpdated(false);
@@ -183,10 +172,10 @@ export const processingModel: ProcessingModel = {
           modifierOutput.particles &&
           modifierOutput.particles !== particles
         ) {
-          allActions.render.setParticles(modifierOutput.particles);
+          engine.setParticles(modifierOutput.particles);
         }
         if (modifierOutput.bonds && modifierOutput.bonds !== bonds) {
-          allActions.render.setBonds(modifierOutput.bonds);
+          engine.setBonds(modifierOutput.bonds);
         }
       }
 
@@ -228,18 +217,21 @@ export const processingModel: ProcessingModel = {
     },
   ),
   runPostTimestepRendering: thunk(
-    async (actions, payload: void, { getStoreState, getStoreActions }) => {
+    async (
+      actions,
+      payload: void,
+      { getStoreState, getStoreActions, injections: { engine } },
+    ) => {
       const { modifierInput, modifierOutput, allActions, particles, bonds } =
-        getModifierContext(getStoreState, getStoreActions);
+        getModifierContext(getStoreState, getStoreActions, engine);
 
       // Only run rendering-related modifiers (Particles, Bonds, Colors)
-      const renderingModifiers =
-        getStoreState().processing.postTimestepModifiers.filter(
-          (modifier: Modifier) =>
-            modifier instanceof SyncParticlesModifier ||
-            modifier instanceof SyncBondsModifier ||
-            modifier instanceof ColorModifier,
-        ) as Modifier[];
+      const renderingModifiers = engine.modifiers.filter(
+        (modifier: Modifier) =>
+          modifier instanceof SyncParticlesModifier ||
+          modifier instanceof SyncBondsModifier ||
+          modifier instanceof ColorModifier,
+      );
 
       renderingModifiers.forEach((modifier: Modifier) =>
         modifier.run(modifierInput, modifierOutput, true),
@@ -252,10 +244,10 @@ export const processingModel: ProcessingModel = {
           modifierOutput.particles &&
           modifierOutput.particles !== particles
         ) {
-          allActions.render.setParticles(modifierOutput.particles);
+          engine.setParticles(modifierOutput.particles);
         }
         if (modifierOutput.bonds && modifierOutput.bonds !== bonds) {
-          allActions.render.setBonds(modifierOutput.bonds);
+          engine.setBonds(modifierOutput.bonds);
         }
       }
     },

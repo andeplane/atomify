@@ -4,13 +4,14 @@ import { processingModel } from "./processing";
 import { simulationStatusModel } from "./simulationstatus";
 import type { StoreModel } from "./model";
 import { emptyEngineFrame, type EngineFrame } from "../wasm/engineFrame";
+import { EngineRegistry } from "../engine/EngineRegistry";
+import type { LammpsWeb } from "../types";
 
 // Row-major triclinic cell matrix and origin, as the engine streams them.
 const BOX = [3, 0.5, 0.2, 0, 4, 0.7, 0, 0, 5];
 const ORIGIN = [1, 2, 3];
 
-// A class instance, like the real proxy: easy-peasy stores it by reference
-// instead of copying it as nested model state.
+// Stands in for the proxy registered in the EngineRegistry.
 class FakeEngine {
   latestFrame: EngineFrame = {
     ...emptyEngineFrame(),
@@ -33,13 +34,18 @@ class FakeEngine {
 
 function fixture() {
   const lammps = new FakeEngine();
-  const store = createStore({
-    simulationStatus: simulationStatusModel,
-    processing: { ...processingModel, postTimestepModifiers: [] },
-    simulation: { lammps },
-    app: { liveViewportVisible: false },
-    render: { setParticleStylesUpdated: action(() => {}) },
-  } as unknown as StoreModel);
+  // No modifiers: only the status snapshot is under test.
+  const engine = new EngineRegistry([]);
+  engine.setLammps(lammps as unknown as LammpsWeb);
+  const store = createStore(
+    {
+      simulationStatus: simulationStatusModel,
+      processing: processingModel,
+      app: { liveViewportVisible: false },
+      render: { setParticleStylesUpdated: action(() => {}) },
+    } as unknown as StoreModel,
+    { injections: { engine } },
+  );
   /** Stream a new step, the way the proxy replaces its latest frame. */
   const stream = (overrides: Partial<EngineFrame>) => {
     lammps.latestFrame = { ...lammps.latestFrame, ...overrides };

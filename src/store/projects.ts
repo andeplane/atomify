@@ -41,6 +41,7 @@ import {
   validateRelativePath,
   writeRunMeta,
 } from "../storage";
+import type { EngineRegistry } from "../engine/EngineRegistry";
 import { projectAnalysisNotebook } from "../utils/AnalyzeNotebook";
 import { track } from "../utils/metrics";
 
@@ -51,6 +52,8 @@ export interface StoreInjections {
   libraryStorage: ProjectStorage;
   /** Scratch space for quick runs and embeds — never visible to Jupyter. */
   scratchStorage: ProjectStorage;
+  /** The live engine, renderer and modifier objects (outside the store). */
+  engine: EngineRegistry;
 }
 
 export type ProjectTab = "files" | "runs" | "notebook";
@@ -1075,7 +1078,7 @@ export const projectsModel: ProjectsModel = {
     });
 
     const storage = storageFor(injections, request.quick);
-    const lammps = (getStoreState() as State<StoreModel>).simulation.lammps;
+    const lammps = injections.engine.lammps;
     if (!lammps) {
       actions.setNotice("The simulation engine is still loading.");
       actions.setRunQueue([]);
@@ -1218,7 +1221,7 @@ export const projectsModel: ProjectsModel = {
         ?.displayName ?? request.dirName;
     const outcome = await new RunController(
       lammps,
-      createStoreRunHost(getStoreState, getStoreActions),
+      createStoreRunHost(getStoreState, getStoreActions, injections.engine),
     ).execute({
       storage,
       dirName: request.dirName,

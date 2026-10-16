@@ -19,12 +19,15 @@ vi.mock("../utils/metrics", () => ({
 
 import { simulationModel, type SimulationModel } from "./simulation";
 import type { LammpsWeb } from "../types";
+import { EngineRegistry } from "../engine/EngineRegistry";
 
 describe("simulation store — pure actions", () => {
   let store: Store<SimulationModel>;
+  let engine: EngineRegistry;
 
   beforeEach(() => {
-    store = createStore(simulationModel);
+    engine = new EngineRegistry([]);
+    store = createStore(simulationModel, { injections: { engine } });
   });
 
   describe("addLammpsOutput", () => {
@@ -100,7 +103,7 @@ describe("simulation store — pure actions", () => {
   describe("setPaused", () => {
     it("forwards to the engine proxy, which owns run control", () => {
       const setPaused = vi.fn();
-      store.getActions().setLammps({ setPaused } as unknown as LammpsWeb);
+      engine.setLammps({ setPaused } as unknown as LammpsWeb);
 
       store.getActions().setPaused(true);
       store.getActions().setPaused(false);
@@ -165,7 +168,6 @@ describe("simulation store — pure actions", () => {
       expect(state.running).toBe(false);
       expect(state.lammpsOutput).toEqual([]);
       expect(state.loadedWorkdir).toBeUndefined();
-      expect(state.lammps).toBeUndefined();
       expect(state.lastError).toBeUndefined();
       expect(state.lastWarning).toBeUndefined();
     });

@@ -1,6 +1,6 @@
 import { Modal, Table, Slider } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { useStoreState, useStoreActions } from "../hooks";
+import { useEngineState, useStoreState, useStoreActions } from "../hooks";
 import { useCallback } from "react";
 
 interface SettingsType {
@@ -14,7 +14,7 @@ const SyncBondsSettings = ({ onClose }: { onClose: () => void }) => {
   const setBondRadius = useStoreActions(
     (actions) => actions.render.setBondRadius,
   );
-  const bonds = useStoreState((state) => state.render.bonds);
+  const bonds = useEngineState((objects) => objects.bonds);
 
   const onBondRadiusChanged = useCallback(
     (value: number) => {

@@ -15,8 +15,9 @@ export interface SimulationFile {
 export interface AppModel {
   /**
    * True while the shell shows the live run-detail screen (the 3D viewport of
-   * the running simulation). Particles/bonds are only streamed into the render
-   * model, and viewport keyboard shortcuts only fire, while this is set.
+   * the running simulation). New Particles/Bonds are only registered for the
+   * renderer (EngineRegistry), and viewport keyboard shortcuts only fire,
+   * while this is set.
    * Driven by Shell.tsx (ADR-003).
    */
   liveViewportVisible: boolean;

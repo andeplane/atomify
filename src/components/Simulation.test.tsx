@@ -1,13 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render } from "@testing-library/react";
 import Simulation from "./Simulation";
-import { useStoreActions, useStoreState } from "../hooks";
+import {
+  useEngine,
+  useEngineState,
+  useStoreActions,
+  useStoreState,
+} from "../hooks";
 import type { Actions, State } from "easy-peasy";
 import type { StoreModel } from "../store/model";
+import type { EngineObjects, EngineRegistry } from "../engine/EngineRegistry";
 
 vi.mock("../hooks", () => ({
   useStoreActions: vi.fn(),
   useStoreState: vi.fn(),
+  useEngine: vi.fn(),
+  useEngineState: vi.fn(),
 }));
 vi.mock("../wasm/LammpsWorkerProxy", () => ({ LammpsWorkerProxy: vi.fn() }));
 vi.mock("../utils/metrics", () => ({ track: vi.fn(), time_event: vi.fn() }));
@@ -21,25 +29,24 @@ const setPaused = vi.fn();
 const setSyncFrequency = vi.fn();
 
 let state: State<StoreModel>;
+let objects: EngineObjects;
 
 beforeEach(() => {
   vi.clearAllMocks();
   state = {
     app: { liveViewportVisible: true },
-    // An engine is already loaded (and paused), so the component doesn't
-    // spawn a worker.
-    simulation: {
-      running: true,
-      lammps: { isPaused: () => true, setSyncFrequency },
-    },
+    simulation: { running: true },
     settings: { simulation: { speed: 1 } },
-    render: {
-      visualizer: {
-        getCameraPosition: () => ({ x: 1, y: 2, z: 3 }),
-        getCameraTarget: () => ({ x: 0, y: 0, z: 0.25 }),
-      },
-    },
   } as unknown as State<StoreModel>;
+  // An engine is already registered (and paused), so the component doesn't
+  // spawn a worker.
+  objects = {
+    lammps: { isPaused: () => true, setSyncFrequency },
+    visualizer: {
+      getCameraPosition: () => ({ x: 1, y: 2, z: 3 }),
+      getCameraTarget: () => ({ x: 0, y: 0, z: 0.25 }),
+    },
+  } as unknown as EngineObjects;
   const actions = {
     app: {},
     processing: {},
@@ -49,6 +56,10 @@ beforeEach(() => {
   } as unknown as Actions<StoreModel>;
   vi.mocked(useStoreState).mockImplementation((select) => select(state));
   vi.mocked(useStoreActions).mockImplementation((select) => select(actions));
+  vi.mocked(useEngine).mockReturnValue({
+    setLammps: vi.fn(),
+  } as unknown as EngineRegistry);
+  vi.mocked(useEngineState).mockImplementation((select) => select(objects));
 });
 
 describe("simulation keyboard shortcuts", () => {
@@ -118,7 +129,7 @@ describe("simulation keyboard shortcuts", () => {
     expect(setPaused).not.toHaveBeenCalled();
   });
 
-  it("copies the camera from the store's visualizer and toasts via notify", () => {
+  it("copies the camera from the registered visualizer and toasts via notify", () => {
     const writeText = vi.fn();
     Object.defineProperty(navigator, "clipboard", {
       value: { writeText },

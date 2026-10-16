@@ -1,4 +1,4 @@
-import { useStoreState, useStoreActions } from "../hooks";
+import { useEngine, useStoreState, useStoreActions } from "../hooks";
 import { SettingOutlined, MinusOutlined } from "@ant-design/icons";
 import { Table, Row, Col, Button, Slider, Checkbox } from "antd";
 import type { ColumnsType } from "antd/es/table";
@@ -9,7 +9,6 @@ import Modifier from "../modifiers/modifier";
 import SyncBondsSettings from "../modifiers/SyncBondsSettings";
 import SyncParticlesSettings from "../modifiers/SyncParticlesSettings";
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
-import ColorModifier from "../modifiers/colormodifier";
 import Figure from "../components/Figure";
 import { track } from "../utils/metrics";
 
@@ -46,12 +45,9 @@ const SimulationSummaryContent = ({
   const simulationSettings = useStoreState(
     (state) => state.settings.simulation,
   );
-  const modifiers = useStoreState(
-    (state) => state.processing.postTimestepModifiers,
-  );
-  const colorModifier = modifiers.find(
-    (modifier) => modifier instanceof ColorModifier,
-  ) as ColorModifier | undefined;
+  const engine = useEngine();
+  const modifiers = engine.modifiers;
+  const colorModifier = engine.colorModifier;
   const selectedModifiers = modifiers
     .filter((m) => m.active)
     .map((m) => m.name);

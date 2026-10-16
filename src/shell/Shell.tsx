@@ -7,7 +7,12 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, ConfigProvider, notification } from "antd";
-import { useStore, useStoreActions, useStoreState } from "../hooks";
+import {
+  useEngineState,
+  useStore,
+  useStoreActions,
+  useStoreState,
+} from "../hooks";
 import { useExamples, type Example } from "../hooks/useExamples";
 import { useSimulationNotifications } from "../hooks/useSimulationNotifications";
 import Simulation from "../components/Simulation";
@@ -46,7 +51,7 @@ const Shell = () => {
   const active = useStoreState((state) => state.projects.active);
   const activeRun = useStoreState((state) => state.projects.activeRun);
   const notice = useStoreState((state) => state.projects.notice);
-  const lammps = useStoreState((state) => state.simulation.lammps);
+  const lammps = useEngineState((objects) => objects.lammps);
   // Set when the engine failed to load or its worker crashed mid-session.
   const engineError = useStoreState((state) => state.app.engineError);
 
@@ -242,7 +247,7 @@ const Shell = () => {
   }, [activeRun, openProject, setScreen, store, notify]);
 
   // --- Particle streaming gate --------------------------------------------------
-  // The processing pipeline only pushes particles into the render model while
+  // The processing pipeline only hands new particles to the renderer while
   // the live run-detail screen (the viewport) is visible; this also enables
   // the viewport keyboard shortcuts there.
   const liveDetailVisible =

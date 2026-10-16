@@ -1,17 +1,19 @@
 /**
  * The store's side of the run pipeline: a RunHost (engine/RunController.ts)
- * over the easy-peasy store, built by the projects model for every run.
+ * over the easy-peasy store and the app's EngineRegistry, built by the
+ * projects model for every run.
  */
 
 import type { Actions, State } from "easy-peasy";
+import type { EngineRegistry } from "../engine/EngineRegistry";
 import type { RunHost } from "../engine/RunController";
-import ColorModifier from "../modifiers/colormodifier";
 import type { StoreModel } from "./model";
 import { getFullLammpsOutput } from "./simulation";
 
 export function createStoreRunHost(
   getState: () => State<StoreModel>,
   getActions: () => Actions<StoreModel>,
+  engine: EngineRegistry,
 ): RunHost {
   // The processing thunks are async; a rejection (e.g. the engine gone) must
   // surface in the console, not as an unhandled rejection.
@@ -27,12 +29,11 @@ export function createStoreRunHost(
       actions.simulation.resetLammpsOutput();
       actions.simulation.setLoadedWorkdir(workdirId);
       // A per-atom coloring belongs to the previous run's computes.
-      const colorModifier = getState().processing.postTimestepModifiers.find(
-        (modifier) => modifier instanceof ColorModifier,
-      ) as ColorModifier | undefined;
+      const colorModifier = engine.colorModifier;
       if (colorModifier) {
         colorModifier.computeName = undefined;
       }
+      engine.clearGeometry();
       actions.render.resetParticleStyles();
     },
     applyAtomifyCommands(script) {
