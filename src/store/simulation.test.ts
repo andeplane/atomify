@@ -17,11 +17,7 @@ vi.mock("../utils/metrics", () => ({
   time_event: vi.fn(),
 }));
 
-import {
-  simulationModel,
-  type SimulationModel,
-  type Simulation,
-} from "./simulation";
+import { simulationModel, type SimulationModel } from "./simulation";
 import type { LammpsWeb } from "../types";
 
 describe("simulation store — pure actions", () => {
@@ -117,70 +113,18 @@ describe("simulation store — pure actions", () => {
     });
   });
 
-  describe("setShowConsole", () => {
-    it("sets showConsole to true", () => {
-      store.getActions().setShowConsole(true);
+  describe("setLoadedWorkdir", () => {
+    it("records the engine workdir of the loaded run", () => {
+      store.getActions().setLoadedWorkdir("proj/runs/run-001");
 
-      expect(store.getState().showConsole).toBe(true);
+      expect(store.getState().loadedWorkdir).toBe("proj/runs/run-001");
     });
 
-    it("sets showConsole to false", () => {
-      store.getActions().setShowConsole(true);
-      store.getActions().setShowConsole(false);
+    it("replaces a previously loaded run", () => {
+      store.getActions().setLoadedWorkdir("proj/runs/run-001");
+      store.getActions().setLoadedWorkdir("proj/runs/run-002");
 
-      expect(store.getState().showConsole).toBe(false);
-    });
-  });
-
-  describe("setSimulation", () => {
-    it("sets the simulation object", () => {
-      const simulation = createMockSimulation();
-
-      store.getActions().setSimulation(simulation);
-
-      expect(store.getState().simulation).toEqual(simulation);
-    });
-
-    it("replaces a previously set simulation", () => {
-      store.getActions().setSimulation(createMockSimulation({ id: "first" }));
-      const second = createMockSimulation({ id: "second" });
-
-      store.getActions().setSimulation(second);
-
-      expect(store.getState().simulation?.id).toBe("second");
-    });
-  });
-
-  describe("setFiles", () => {
-    it("sets the files array", () => {
-      store.getActions().setFiles(["file1.lmp", "file2.lmp"]);
-
-      expect(store.getState().files).toEqual(["file1.lmp", "file2.lmp"]);
-    });
-
-    it("replaces previously set files", () => {
-      store.getActions().setFiles(["old.lmp"]);
-      store.getActions().setFiles(["new.lmp"]);
-
-      expect(store.getState().files).toEqual(["new.lmp"]);
-    });
-
-    it("can set an empty array", () => {
-      store.getActions().setFiles(["something"]);
-      store.getActions().setFiles([]);
-
-      expect(store.getState().files).toEqual([]);
-    });
-  });
-
-  describe("reset", () => {
-    it("clears files and lammps", () => {
-      store.getActions().setFiles(["a.lmp", "b.lmp"]);
-
-      store.getActions().reset(undefined);
-
-      expect(store.getState().files).toEqual([]);
-      expect(store.getState().lammps).toBeUndefined();
+      expect(store.getState().loadedWorkdir).toBe("proj/runs/run-002");
     });
   });
 
@@ -219,28 +163,11 @@ describe("simulation store — pure actions", () => {
       const state = store.getState();
 
       expect(state.running).toBe(false);
-      expect(state.showConsole).toBe(false);
-      expect(state.files).toEqual([]);
       expect(state.lammpsOutput).toEqual([]);
-      expect(state.simulation).toBeUndefined();
+      expect(state.loadedWorkdir).toBeUndefined();
       expect(state.lammps).toBeUndefined();
       expect(state.lastError).toBeUndefined();
       expect(state.lastWarning).toBeUndefined();
     });
   });
 });
-
-// Helper functions
-
-function createMockSimulation(overrides?: Partial<Simulation>): Simulation {
-  // One local id keeps id and metricsId consistent when tests override id.
-  const id = overrides?.id ?? "test-sim";
-  return {
-    id,
-    metricsId: id,
-    files: [{ fileName: "in.lmp", content: "run 100" }],
-    inputScript: "in.lmp",
-    start: true,
-    ...overrides,
-  };
-}

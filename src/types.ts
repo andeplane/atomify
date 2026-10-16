@@ -10,6 +10,11 @@ export type LammpsWeb = {
    * box, computes/fixes/variables. Replaced (never mutated) on every step.
    */
   readonly latestFrame: EngineFrame;
+  /**
+   * Called synchronously once per delivered frame, after latestFrame was
+   * replaced; undefined removes it. The run pipeline (RunController) owns it.
+   */
+  setStepListener: (listener: (() => void) | undefined) => void;
   getNumAtoms: () => number;
   setSyncFrequency: (every: number) => void;
   setBuildNeighborlist: (buildNeighborlist: boolean) => void;

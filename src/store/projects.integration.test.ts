@@ -321,7 +321,7 @@ describe("projects store integration", () => {
 
       await store.getActions().projects.startRuns([runRequest()]);
 
-      // No opt-in marker injected; syncFilesWasm applied the serial-styles
+      // No opt-in marker injected; the run pipeline applied the serial-styles
       // preprocessing (suffix off) for the always-on `-sf kk` module.
       const ranScript = engine.readFile(
         `/${dirName}/${RUNS_DIR}/run-001/in.lmp`,
@@ -1255,6 +1255,7 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
 
   const lammps: LammpsWeb = {
     latestFrame: emptyEngineFrame(),
+    setStepListener: () => {},
     getNumAtoms: () => 100,
     setSyncFrequency: () => {},
     setBuildNeighborlist: () => {},

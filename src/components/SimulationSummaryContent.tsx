@@ -55,7 +55,9 @@ const SimulationSummaryContent = ({
   const selectedModifiers = modifiers
     .filter((m) => m.active)
     .map((m) => m.name);
-  const simulation = useStoreState((state) => state.simulation.simulation);
+  const loadedWorkdir = useStoreState(
+    (state) => state.simulation.loadedWorkdir,
+  );
   const runType = useStoreState((state) => state.simulationStatus.runType);
   const numAtoms = useStoreState((state) => state.simulationStatus.numAtoms);
   const numBonds = useStoreState((state) => state.simulationStatus.numBonds);
@@ -327,7 +329,7 @@ const SimulationSummaryContent = ({
   ];
 
   const simulationStatusData: SimulationSummaryType[] = useMemo(() => {
-    if (!simulation) {
+    if (!loadedWorkdir) {
       return [];
     }
     return [
@@ -383,7 +385,7 @@ const SimulationSummaryContent = ({
       },
     ];
   }, [
-    simulation,
+    loadedWorkdir,
     runType,
     timesteps,
     numAtoms,
@@ -407,7 +409,7 @@ const SimulationSummaryContent = ({
         dataSource={modifiers}
         pagination={{ hideOnSinglePage: true }}
       />
-      {simulation && (
+      {loadedWorkdir && (
         <>
           <Table
             title={() => <b>Summary</b>}
