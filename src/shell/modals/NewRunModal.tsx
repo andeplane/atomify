@@ -21,7 +21,7 @@ import {
   defaultThreadCount,
   type VarDrafts,
 } from "../runPlan";
-import { InfoIcon, ScriptIcon } from "../icons";
+import { ScriptIcon } from "../icons";
 import {
   GhostButton,
   ModalShell,
@@ -29,7 +29,8 @@ import {
   PrimaryButton,
   ToggleSwitch,
 } from "../ui";
-import { formatBytes } from "../format";
+import NewRunParameterRow from "./NewRunParameterRow";
+import NewRunScriptChooser from "./NewRunScriptChooser";
 
 interface NewRunModalProps {
   open: boolean;
@@ -48,9 +49,6 @@ const NewRunModal = ({
   const active = useStoreState((state) => state.projects.active);
   const lammps = useEngineState((objects) => objects.lammps);
   const readFile = useStoreActions((actions) => actions.projects.readFile);
-  const setInputScript = useStoreActions(
-    (actions) => actions.projects.setInputScript,
-  );
   const startRuns = useStoreActions((actions) => actions.projects.startRuns);
 
   const [choosing, setChoosing] = useState(initialChoosing);
@@ -165,19 +163,6 @@ const NewRunModal = ({
     onClose();
   };
 
-  const numberInputStyle = (width: number) => ({
-    width,
-    padding: "7px 9px",
-    borderRadius: 8,
-    border: "1px solid var(--border)",
-    background: "var(--surface-2)",
-    color: "var(--text)",
-    fontSize: 12.5,
-    fontFamily: MONO,
-    outline: "none",
-    textAlign: "center" as const,
-  });
-
   return (
     <ModalShell
       open={open}
@@ -187,114 +172,13 @@ const NewRunModal = ({
     >
       <div style={{ padding: "18px 24px 24px" }}>
         {choosing ? (
-          <>
-            <div
-              style={{
-                display: "flex",
-                gap: 10,
-                alignItems: "flex-start",
-                padding: "11px 14px",
-                borderRadius: 10,
-                background: "var(--accent-soft)",
-                border: "1px solid var(--accent-line)",
-                fontSize: 13,
-                color: "var(--text)",
-                lineHeight: 1.5,
-                marginBottom: 16,
-              }}
-            >
-              <span
-                style={{
-                  color: "var(--accent)",
-                  flexShrink: 0,
-                  marginTop: 2,
-                  display: "flex",
-                }}
-              >
-                <InfoIcon />
-              </span>
-              {scripts.length === 0
-                ? "This project has no LAMMPS scripts yet. Add or upload an input script from the Files tab first."
-                : "This project has no input script yet. Choose which script LAMMPS should run — you can change it any time from Files."}
-            </div>
-            {scripts.map((script) => {
-              const selected = script.path === inputScript;
-              return (
-                <div
-                  key={script.path}
-                  data-testid={`script-choice-${script.path}`}
-                  onClick={() => {
-                    void setInputScript(script.path);
-                    setChoosing(false);
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "11px 14px",
-                    borderRadius: 11,
-                    cursor: "pointer",
-                    marginBottom: 8,
-                    border: `1.5px solid ${selected ? "var(--accent)" : "var(--border)"}`,
-                    background: selected
-                      ? "var(--accent-soft)"
-                      : "var(--surface-2)",
-                  }}
-                >
-                  <span
-                    style={{
-                      width: 15,
-                      height: 15,
-                      borderRadius: "50%",
-                      border: selected
-                        ? "5px solid var(--accent)"
-                        : "1.5px solid var(--border-strong)",
-                      flexShrink: 0,
-                      boxSizing: "border-box",
-                    }}
-                  />
-                  <span
-                    style={{
-                      flex: 1,
-                      fontFamily: MONO,
-                      fontSize: 13,
-                      fontWeight: 600,
-                      color: "var(--text)",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {script.path}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: 12,
-                      color: "var(--text-3)",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {formatBytes(script.size)}
-                  </span>
-                </div>
-              );
-            })}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: 10,
-                marginTop: 12,
-              }}
-            >
-              {scripts.length === 0 && (
-                <PrimaryButton data-testid="go-to-files" onClick={onGoToFiles}>
-                  Go to Files
-                </PrimaryButton>
-              )}
-              <GhostButton onClick={onClose}>Cancel</GhostButton>
-            </div>
-          </>
+          <NewRunScriptChooser
+            scripts={scripts}
+            inputScript={inputScript}
+            setChoosing={setChoosing}
+            onClose={onClose}
+            onGoToFiles={onGoToFiles}
+          />
         ) : (
           <>
             <label
@@ -434,129 +318,13 @@ const NewRunModal = ({
               if (!draft) {
                 return null;
               }
-              const sweeping = draft.mode === "sweep";
               return (
-                <div
+                <NewRunParameterRow
                   key={variable.name}
-                  data-testid={`var-row-${variable.name}`}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "10px 0",
-                    borderBottom: "1px solid var(--border)",
-                  }}
-                >
-                  <div style={{ width: 104, flexShrink: 0 }}>
-                    <div
-                      style={{
-                        fontFamily: MONO,
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: "var(--text)",
-                      }}
-                    >
-                      {variable.name}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "var(--text-3)",
-                        marginTop: 2,
-                      }}
-                    >
-                      {variable.label ? `${variable.label} — ` : ""}line{" "}
-                      {variable.line}
-                    </div>
-                  </div>
-                  <div
-                    style={{
-                      flex: 1,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    {!sweeping ? (
-                      <input
-                        value={draft.value}
-                        data-testid={`var-value-${variable.name}`}
-                        onChange={(event) =>
-                          updateDraft(variable.name, {
-                            value: event.target.value,
-                          })
-                        }
-                        style={numberInputStyle(76)}
-                      />
-                    ) : (
-                      <>
-                        <input
-                          value={draft.from}
-                          data-testid={`var-from-${variable.name}`}
-                          onChange={(event) =>
-                            updateDraft(variable.name, {
-                              from: event.target.value,
-                            })
-                          }
-                          style={numberInputStyle(62)}
-                        />
-                        <span style={{ color: "var(--text-3)", fontSize: 12 }}>
-                          to
-                        </span>
-                        <input
-                          value={draft.to}
-                          data-testid={`var-to-${variable.name}`}
-                          onChange={(event) =>
-                            updateDraft(variable.name, {
-                              to: event.target.value,
-                            })
-                          }
-                          style={numberInputStyle(62)}
-                        />
-                        <span style={{ color: "var(--text-3)", fontSize: 12 }}>
-                          in
-                        </span>
-                        <input
-                          value={draft.steps}
-                          data-testid={`var-steps-${variable.name}`}
-                          onChange={(event) =>
-                            updateDraft(variable.name, {
-                              steps: event.target.value,
-                            })
-                          }
-                          style={numberInputStyle(46)}
-                        />
-                        <span style={{ color: "var(--text-3)", fontSize: 12 }}>
-                          runs
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <button
-                    onClick={() =>
-                      updateDraft(variable.name, {
-                        mode: sweeping ? "fixed" : "sweep",
-                      })
-                    }
-                    data-testid={`sweep-toggle-${variable.name}`}
-                    className="shell-danger-hover"
-                    style={{
-                      padding: "5px 12px",
-                      borderRadius: 999,
-                      border: "none",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      fontSize: 11.5,
-                      fontWeight: 700,
-                      flexShrink: 0,
-                      background: sweeping ? "var(--accent)" : "var(--chip)",
-                      color: sweeping ? "#fff" : "var(--text-2)",
-                    }}
-                  >
-                    Sweep
-                  </button>
-                </div>
+                  variable={variable}
+                  draft={draft}
+                  updateDraft={updateDraft}
+                />
               );
             })}
 
