@@ -19,8 +19,7 @@ jobs:
       # npm ci must come before the JupyterLite build: `make jupyter`
       # copies node_modules/lammps.js/dist into public/jupyter/lammps.
       # (make jupyter also applies the COOP/COEP service-worker patch via
-      # scripts/jupyter_coi_patch.py, superseding main's standalone
-      # patch-jupyterlite-sw.mjs step.)
+      # scripts/jupyter_coi_patch.py.)
       - name: Install Packages
         run: npm ci
       - name: Check lammps.js wheel version
@@ -40,7 +39,7 @@ jobs:
       - name: Run ESLint
         run: npm run lint
       - name: Build app
-        run: npm run predeploy
+        run: npm run build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
