@@ -11,6 +11,7 @@ import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSummary";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
 import ColorLegend from "../components/ColorLegend";
+import ScaleBar from "../components/ScaleBar";
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
@@ -22,6 +23,8 @@ import {
   getSimulationBoxBounds,
 } from "../utils/boxGeometry";
 import { createWallGroup } from "../utils/wallGeometry";
+import { orthographicUnitsPerPixel } from "../utils/scaleBar";
+import { UNIT_SYSTEMS } from "../utils/units";
 
 // Type guard for Visualizer with updateCameraPlanes method
 import { applyLighting } from "../utils/lighting";
@@ -160,6 +163,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const variables = useStoreState((state) => state.simulationStatus.variables);
   const dimension = useStoreState((state) => state.simulationStatus.dimension);
   const walls = useStoreState((state) => state.simulationStatus.walls);
+  const unitStyle = useStoreState((state) => state.simulationStatus.unitStyle);
   const boxGroupRef = useRef<THREE.Group | null>(null);
   const wallGroupRef = useRef<THREE.Group | null>(null);
 
@@ -178,6 +182,17 @@ const View = ({ visible, pane = false }: ViewProps) => {
     if (variables[name]) return "variable";
     return undefined;
   };
+
+  const getScaleBarUnitsPerPixel = useCallback(() => {
+    if (!visualizer?.isOrthographic() || !domElement.current) {
+      return undefined;
+    }
+    // omovi has no public getter for the active camera.
+    const camera = visualizer["camera"];
+    return camera instanceof THREE.OrthographicCamera
+      ? orthographicUnitsPerPixel(camera, domElement.current.clientHeight)
+      : undefined;
+  }, [visualizer]);
 
   const handleClearSelection = useCallback(() => {
     setSelectedAtoms(new Set());
@@ -623,6 +638,14 @@ const View = ({ visible, pane = false }: ViewProps) => {
               onSettingsClick={() => setShowColorSettings(true)}
             />
           )}
+          {visualizer &&
+            renderSettings.showScaleBar &&
+            renderSettings.orthographic && (
+              <ScaleBar
+                getUnitsPerPixel={getScaleBarUnitsPerPixel}
+                unit={unitStyle && UNIT_SYSTEMS[unitStyle].length}
+              />
+            )}
         </Wrapper>
       </div>
       {showNoSimulationModal && (

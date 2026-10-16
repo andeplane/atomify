@@ -12,6 +12,8 @@ export interface RenderSettings {
   showSimulationBox: boolean;
   showWalls: boolean;
   orthographic: boolean;
+  /** Only drawn with the orthographic camera, where a length scale is exact. */
+  showScaleBar: boolean;
 }
 
 const RENDER_SETTINGS_STORAGE_KEY = "atomify_render_settings";
@@ -94,6 +96,7 @@ const defaultRenderSettings: RenderSettings = {
   showSimulationBox: true,
   showWalls: true,
   orthographic: false,
+  showScaleBar: false,
 };
 
 // Load settings from localStorage on initialization
