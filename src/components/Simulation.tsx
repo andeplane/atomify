@@ -1,26 +1,24 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useStoreActions, useStoreState } from "../hooks";
+import {
+  useEngine,
+  useEngineState,
+  useStoreActions,
+  useStoreState,
+} from "../hooks";
 // The atomify wasm build is a multithreaded KOKKOS/pthreads module that must
 // run inside a Web Worker (it cannot initialize on the main thread). It is
 // owned by LammpsWorkerProxy, which spawns the worker (lammps.worker.ts) and
-// bridges its streamed particle/box data back into the store's usual
-// heap-pointer path. See src/wasm/LammpsWorkerProxy.ts.
+// keeps the latest streamed frame; the run pipeline (RunController) feeds
+// each run's frames into the modifier/render pipeline. The proxy is
+// registered in the EngineRegistry, not the store.
+// See src/wasm/LammpsWorkerProxy.ts.
 import { LammpsWorkerProxy } from "../wasm/LammpsWorkerProxy";
-import { notification } from "antd";
+import { useShellUI } from "../shell/ShellContext";
 import { time_event, track } from "../utils/metrics";
-import {
-  getWasmOrNull,
-  setWasm,
-  getSyncFrequency,
-  setSyncFrequency,
-  setPausedFlag,
-} from "../wasm/wasmInstance";
 
 const SimulationComponent = () => {
-  const wasm = getWasmOrNull();
-  const lammps = useStoreState((state) => state.simulation.lammps);
-  const simulation = useStoreState((state) => state.simulation.simulation);
-  const paused = useStoreState((state) => state.simulation.paused);
+  const engine = useEngine();
+  const lammps = useEngineState((objects) => objects.lammps);
   const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
   const simulationSettings = useStoreState(
     (state) => state.settings.simulation,
@@ -32,23 +30,17 @@ const SimulationComponent = () => {
   const addLammpsOutput = useStoreActions(
     (actions) => actions.simulation.addLammpsOutput,
   );
-  const selectedMenu = useStoreState((state) => state.app.selectedMenu);
-  const setLammps = useStoreActions((actions) => actions.simulation.setLammps);
+  const liveViewportVisible = useStoreState(
+    (state) => state.app.liveViewportVisible,
+  );
+  const visualizer = useEngineState((objects) => objects.visualizer);
+  // Hook-based toasts: antd's static notification functions don't render
+  // under React 19 (see ShellContext.tsx). Mounted inside ShellUIContext.
+  const { notify } = useShellUI();
   const setEngineError = useStoreActions(
     (actions) => actions.app.setEngineError,
   );
   const setStatus = useStoreActions((actions) => actions.app.setStatus);
-  const runPostTimestep = useStoreActions(
-    (actions) => actions.processing.runPostTimestep,
-  );
-  const runPostTimestepRendering = useStoreActions(
-    (actions) => actions.processing.runPostTimestepRendering,
-  );
-  const setHasSynchronized = useStoreActions(
-    (actions) => actions.simulationStatus.setHasSynchronized,
-  );
-  const renderCycleCounter = useRef(0);
-  const proxyRef = useRef<LammpsWorkerProxy>(undefined);
   const loadStartedRef = useRef(false);
 
   const onPrint = useCallback(
@@ -79,7 +71,7 @@ const SimulationComponent = () => {
             )),
       );
       if (
-        selectedMenu !== "view" ||
+        !liveViewportVisible ||
         interacting ||
         ev.defaultPrevented ||
         ev.isComposing ||
@@ -109,23 +101,24 @@ const SimulationComponent = () => {
         const value: number =
           syncFrequencyMap[ev.key as keyof typeof syncFrequencyMap];
         setSimulationSettings({ ...simulationSettings, speed: value });
-        notification.info({
+        notify.info({
           message: `Setting simulation speed to ${value}.`,
         });
       }
 
       if (running && ev.key === " ") {
         ev.preventDefault();
-        setPaused(!paused);
+        // The engine proxy owns the paused state; toggle what it reports.
+        setPaused(!(lammps?.isPaused() ?? false));
       }
 
       if (ev.key === "c" && !ev.metaKey && !ev.ctrlKey) {
-        if (!window.visualizer) return;
-        const cameraPosition = window.visualizer.getCameraPosition();
-        const cameraTarget = window.visualizer.getCameraTarget();
+        if (!visualizer) return;
+        const cameraPosition = visualizer.getCameraPosition();
+        const cameraTarget = visualizer.getCameraTarget();
         const output = `#/camera position ${cameraPosition.x.toFixed(1)} ${cameraPosition.y.toFixed(1)} ${cameraPosition.z.toFixed(1)}\n#/camera target ${cameraTarget.x.toFixed(1)} ${cameraTarget.y.toFixed(1)} ${cameraTarget.z.toFixed(1)}`;
-        navigator.clipboard.writeText(output);
-        notification.info({
+        void navigator.clipboard.writeText(output);
+        notify.info({
           message: "Copied camera position and target to clipboard.",
         });
       }
@@ -135,62 +128,24 @@ const SimulationComponent = () => {
   }, [
     lammps,
     running,
-    selectedMenu,
-    paused,
+    liveViewportVisible,
+    visualizer,
+    notify,
     setPaused,
     setSimulationSettings,
-    simulation,
     simulationSettings,
   ]);
 
-  // Mirror the store's paused state into the flag the adapter's pause-wait
-  // loop reads between timesteps. The adapter lives in the worker, so the flag
-  // must be forwarded there via the proxy; the main-thread flag is kept in sync
-  // too for any code that reads it locally.
+  // The speed setting is how often the engine syncs (and streams a frame).
+  // The proxy owns the value and forwards changes to the worker.
   useEffect(() => {
-    setPausedFlag(paused);
-    proxyRef.current?.setPaused(paused);
-  }, [paused]);
+    lammps?.setSyncFrequency(simulationSettings.speed);
+  }, [lammps, simulationSettings.speed]);
 
   useEffect(() => {
-    // Runs synchronously once per synced timestep, while the wasm module is
-    // safe to touch (see LammpsAdapter.setStepListener). Pause and cancel are
-    // handled by the adapter itself via the wasmInstance flags; rendering
-    // still runs here on the pausing step so the display matches the state
-    // the simulation actually pauses at.
-    proxyRef.current?.setStepListener(() => {
-      if (lammps && wasm && simulation) {
-        setHasSynchronized(true);
-
-        // Always update 3D rendering (high frequency)
-        runPostTimestepRendering();
-
-        // Update UI state only every Nth cycle (low frequency)
-        renderCycleCounter.current += 1;
-        const uiUpdateFrequency = simulationSettings.uiUpdateFrequency || 15;
-        if (renderCycleCounter.current >= uiUpdateFrequency) {
-          renderCycleCounter.current = 0;
-          runPostTimestep(false);
-        }
-
-        const freq = getSyncFrequency();
-        if (freq !== undefined) {
-          lammps.setSyncFrequency(freq);
-        }
-      }
-    });
-  }, [
-    wasm,
-    lammps,
-    simulation,
-    runPostTimestep,
-    runPostTimestepRendering,
-    setHasSynchronized,
-    simulationSettings,
-  ]);
-
-  useEffect(() => {
-    if (getWasmOrNull() || loadStartedRef.current) {
+    // The registered engine outlives this component, so a remount doesn't
+    // spawn a second one; the ref covers the window before the load finishes.
+    if (lammps || loadStartedRef.current) {
       return;
     }
     loadStartedRef.current = true;
@@ -225,16 +180,25 @@ const SimulationComponent = () => {
     // module. A pthreads module cannot initialize on the browser main thread
     // (its thread-pool handshake blocks on Atomics.wait, forbidden off a
     // Worker), so it runs inside a Web Worker. The proxy owns that worker and
-    // exposes a wasm-module-shaped bridge (getModule) plus the LammpsWeb
-    // interface; the store and modifier/render pipeline keep reading data
-    // through the usual heap-pointer path, now backed by the streamed bridge
-    // heap instead of a real main-thread module.
+    // is the app's LammpsWeb: the modifier/render pipeline reads the typed
+    // arrays of its latest streamed frame, and engine-FS writes are forwarded
+    // to the worker as commands. The run pipeline (RunController) owns the
+    // proxy's step listener while a run streams.
     Promise.resolve()
       .then(async () => {
         const proxy = new LammpsWorkerProxy();
         proxy.onPrint(onPrint);
         proxy.onError((message) => onPrint(message));
-        proxyRef.current = proxy;
+        // A crashed worker can't be restarted in place: flag the engine as
+        // unavailable (sidebar chip, run buttons disabled) until a reload.
+        // Any in-flight run has already been failed by the proxy.
+        proxy.onCrash((message) => {
+          setEngineError(`${message}. Reload the page to restart the engine.`);
+          notify.error({
+            message: "The simulation engine crashed",
+            description: "Reload the page to restart the engine.",
+          });
+        });
         await proxy.load();
         return proxy;
       })
@@ -245,9 +209,7 @@ const SimulationComponent = () => {
           text: "",
           progress: 0.6,
         });
-        setWasm(proxy.getModule());
-        setLammps(proxy);
-        setSyncFrequency(1);
+        engine.setLammps(proxy);
         setStatus(undefined);
       })
       .catch((error: unknown) => {
@@ -257,12 +219,12 @@ const SimulationComponent = () => {
         setEngineError(message);
         onPrint(`Failed to load LAMMPS: ${message}`);
         setStatus(undefined);
-        notification.error({
+        notify.error({
           message: "Failed to load LAMMPS",
           description: message,
         });
       });
-  }, [onPrint, setLammps, setStatus, setEngineError]);
+  }, [engine, lammps, onPrint, setStatus, setEngineError, notify]);
   return <></>;
 };
 export default SimulationComponent;

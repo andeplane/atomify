@@ -16,7 +16,7 @@ import { BackIcon, CheckIcon, PlayIcon } from "./icons";
 import { Chip, MONO, PrimaryButton } from "./ui";
 
 // Same Monaco + LAMMPS language setup as the legacy Edit container.
-loader.init().then((monaco) => {
+void loader.init().then((monaco) => {
   registerLammpsLanguage(monaco);
 });
 

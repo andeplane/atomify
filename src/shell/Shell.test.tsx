@@ -22,6 +22,8 @@ vi.mock(import("../utils/metrics"), () => ({
 import Shell from "./Shell";
 import { storeModel, type StoreModel } from "../store/model";
 import type { StoreInjections } from "../store/projects";
+import { EngineRegistry } from "../engine/EngineRegistry";
+import { EngineContext } from "../engine/EngineContext";
 import { createMemoryProjectStorage, type ProjectStorage } from "../storage";
 
 const EXAMPLES_JSON = {
@@ -49,13 +51,18 @@ const EXAMPLES_JSON = {
 describe("Shell", () => {
   let store: Store<StoreModel>;
   let libraryStorage: ProjectStorage;
+  // No engine is registered: the Simulation component that loads it is
+  // stubbed, so the shell stays in its "engine loading" state.
+  let engine: EngineRegistry;
 
   beforeEach(() => {
     window.history.replaceState(null, "", "/");
     libraryStorage = createMemoryProjectStorage();
+    engine = new EngineRegistry();
     const injections: StoreInjections = {
       libraryStorage,
       scratchStorage: createMemoryProjectStorage(),
+      engine,
     };
     store = createStore(storeModel, { injections });
 
@@ -83,7 +90,9 @@ describe("Shell", () => {
   const renderShell = () =>
     render(
       <StoreProvider store={store}>
-        <Shell />
+        <EngineContext.Provider value={engine}>
+          <Shell />
+        </EngineContext.Provider>
       </StoreProvider>,
     );
 
@@ -191,16 +200,20 @@ describe("Shell", () => {
     });
 
     // Fresh session (new store over the same storage) restoring from the URL.
+    const secondEngine = new EngineRegistry();
     const secondStore = createStore(storeModel, {
       injections: {
         libraryStorage,
         scratchStorage: createMemoryProjectStorage(),
+        engine: secondEngine,
       },
     });
     window.history.replaceState(null, "", "/?project=demo&tab=files");
     render(
       <StoreProvider store={secondStore}>
-        <Shell />
+        <EngineContext.Provider value={secondEngine}>
+          <Shell />
+        </EngineContext.Provider>
       </StoreProvider>,
     );
 

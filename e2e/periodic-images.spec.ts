@@ -19,11 +19,14 @@ run 1000000
 const rendered = (page: Page) =>
   page.evaluate(async () => {
     const path = "/atomify/src/store/index.ts";
-    const s = (await import(path)).default.getState();
-    const p = s.render.particles;
+    const { default: store, engine } = await import(path);
+    const s = store.getState();
+    const p = engine.particles;
     const color = p?.geometry?.getAttribute("atomColor");
     const n = s.simulationStatus.numAtoms;
-    if (!color) return { count: 0, numAtoms: n, timesteps: 0 };
+    // The status box arrives with the first synced frame.
+    if (!color || !s.simulationStatus.box)
+      return { count: 0, numAtoms: n, timesteps: 0 };
     let imagesMatch = true;
     for (let i = n; i < p.count; i++) {
       const j = i % n;

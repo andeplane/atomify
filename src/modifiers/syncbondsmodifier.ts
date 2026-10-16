@@ -19,14 +19,15 @@ class SyncBondsModifier extends Modifier {
       return;
     }
 
-    const numBonds = input.lammps.computeBonds();
+    const frame = input.frame;
+    const numBonds = frame.bondCount;
     const shifts = output.imageShifts ?? [0, 0, 0];
     const numImages = shifts.length / 3;
     const numRendered = numBonds * numImages;
     const bondRadius = input.renderState.bondRadius;
     let newBonds = output.bonds;
     if (!newBonds || newBonds.capacity < numRendered) {
-      let newCapacity = numRendered;
+      const newCapacity = numRendered;
       if (newBonds) {
         newBonds.dispose();
       }
@@ -45,18 +46,8 @@ class SyncBondsModifier extends Modifier {
       return newBonds;
     }
 
-    const bonds1Ptr = input.lammps.getBondsPosition1Pointer() / 4;
-    const bonds2Ptr = input.lammps.getBondsPosition2Pointer() / 4;
-    const positions1Subarray = input.wasm.HEAPF32.subarray(
-      bonds1Ptr,
-      bonds1Ptr + 3 * numBonds,
-    ) as Float32Array;
-    const positions2Subarray = input.wasm.HEAPF32.subarray(
-      bonds2Ptr,
-      bonds2Ptr + 3 * numBonds,
-    ) as Float32Array;
-    newBonds.positions1.set(positions1Subarray);
-    newBonds.positions2.set(positions2Subarray);
+    newBonds.positions1.set(frame.bondFirst.subarray(0, 3 * numBonds));
+    newBonds.positions2.set(frame.bondSecond.subarray(0, 3 * numBonds));
     // Shift both ends by the same image translation as the particles.
     replicatePositions(newBonds.positions1, numBonds, shifts);
     replicatePositions(newBonds.positions2, numBonds, shifts);

@@ -9,3 +9,7 @@ export const { useStoreActions } = typedHooks;
 export const { useStoreDispatch } = typedHooks;
 export const { useStoreState } = typedHooks;
 export const { useStore } = typedHooks;
+
+// The live engine objects (proxy, visualizer, particles, modifiers) live in
+// the EngineRegistry, not the store.
+export { useEngine, useEngineState } from "../engine/EngineContext";

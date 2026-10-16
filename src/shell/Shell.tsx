@@ -7,14 +7,18 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, ConfigProvider, notification } from "antd";
-import { useStore, useStoreActions, useStoreState } from "../hooks";
+import {
+  useEngineState,
+  useStore,
+  useStoreActions,
+  useStoreState,
+} from "../hooks";
 import { useExamples, type Example } from "../hooks/useExamples";
 import { useSimulationNotifications } from "../hooks/useSimulationNotifications";
 import Simulation from "../components/Simulation";
 import { isScriptFile } from "../store/projects";
 import { scriptOptsIntoKokkos } from "../utils/kokkos";
 import { track } from "../utils/metrics";
-import { setCancel } from "../wasm/wasmInstance";
 import { shellThemeConfig } from "../theme";
 import { parseDeepLink, screenToSearch } from "./deepLink";
 import { defaultThreadCount } from "./runPlan";
@@ -47,7 +51,9 @@ const Shell = () => {
   const active = useStoreState((state) => state.projects.active);
   const activeRun = useStoreState((state) => state.projects.activeRun);
   const notice = useStoreState((state) => state.projects.notice);
-  const lammps = useStoreState((state) => state.simulation.lammps);
+  const lammps = useEngineState((objects) => objects.lammps);
+  // Set when the engine failed to load or its worker crashed mid-session.
+  const engineError = useStoreState((state) => state.app.engineError);
 
   const initialize = useStoreActions((actions) => actions.projects.initialize);
   const openProject = useStoreActions(
@@ -69,9 +75,8 @@ const Shell = () => {
   );
   const startRuns = useStoreActions((actions) => actions.projects.startRuns);
   const readFile = useStoreActions((actions) => actions.projects.readFile);
-  const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
-  const setSelectedMenu = useStoreActions(
-    (actions) => actions.app.setSelectedMenu,
+  const setLiveViewportVisible = useStoreActions(
+    (actions) => actions.app.setLiveViewportVisible,
   );
 
   const examples = useExamples();
@@ -242,9 +247,9 @@ const Shell = () => {
   }, [activeRun, openProject, setScreen, store, notify]);
 
   // --- Particle streaming gate --------------------------------------------------
-  // The processing pipeline only pushes particles into the render model when
-  // selectedMenu === "view" (legacy gate). The live run-detail screen IS the
-  // view now; this also enables the viewport keyboard shortcuts there.
+  // The processing pipeline only hands new particles to the renderer while
+  // the live run-detail screen (the viewport) is visible; this also enables
+  // the viewport keyboard shortcuts there.
   const liveDetailVisible =
     screen.name === "project" &&
     screen.tab === "runs" &&
@@ -252,8 +257,8 @@ const Shell = () => {
     activeRun?.runId === screen.runId &&
     activeRun?.dirName === screen.dirName;
   useEffect(() => {
-    setSelectedMenu(liveDetailVisible ? "view" : "shell");
-  }, [liveDetailVisible, setSelectedMenu]);
+    setLiveViewportVisible(liveDetailVisible);
+  }, [liveDetailVisible, setLiveViewportVisible]);
 
   // --- Run launcher ----------------------------------------------------------------
   const launch = useCallback(
@@ -337,15 +342,20 @@ const Shell = () => {
       runProject,
       runFile: (path) => launch(path, {}, "file"),
       runAgain: (inputScript, vars) => launch(inputScript, vars),
-      stopRun: () => {
-        // Same path as the legacy Stop menu item: unpause, then cancel.
-        setPaused(false);
-        setCancel(true);
-      },
-      engineReady: lammps !== undefined,
+      // The engine proxy owns run control; cancel also releases a paused run.
+      stopRun: () => lammps?.cancel(),
+      engineReady: lammps !== undefined && !engineError,
       examples,
     }),
-    [notify, quickRunExample, runProject, launch, setPaused, lammps, examples],
+    [
+      notify,
+      quickRunExample,
+      runProject,
+      launch,
+      lammps,
+      engineError,
+      examples,
+    ],
   );
 
   return (

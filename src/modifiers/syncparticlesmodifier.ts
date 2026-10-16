@@ -2,6 +2,7 @@ import { syncParticleAttributes } from "../rendering/particleAttributes";
 import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 import { Particles } from "omovi";
+import type { EngineFrame } from "../wasm/engineFrame";
 import {
   clampImageCounts,
   ImageCounts,
@@ -21,7 +22,7 @@ class SyncParticlesModifier extends Modifier {
   run = (
     input: ModifierInput,
     output: ModifierOutput,
-    everything: boolean = false,
+    _everything: boolean = false,
   ) => {
     if (!this.active) {
       if (output.particles) {
@@ -33,8 +34,9 @@ class SyncParticlesModifier extends Modifier {
       return;
     }
 
-    const numParticles = input.lammps.computeParticles();
-    const shifts = this.currentImageShifts(input, numParticles);
+    const frame = input.frame;
+    const numParticles = frame.count;
+    const shifts = this.currentImageShifts(frame, numParticles);
     output.imageShifts = shifts;
     const numImages = shifts.length / 3;
     const numRendered = numParticles * numImages;
@@ -56,25 +58,12 @@ class SyncParticlesModifier extends Modifier {
       }
     }
 
-    const positionsPtr = input.lammps.getPositionsPointer() / 4;
-    const typePtr = input.lammps.getTypePointer() / 4;
-    const idPtr = input.lammps.getIdPointer() / 4;
-    const positionsSubarray = input.wasm.HEAPF32.subarray(
-      positionsPtr,
-      positionsPtr + 3 * numParticles,
-    ) as Float32Array;
-    const typeSubarray = input.wasm.HEAP32.subarray(
-      typePtr,
-      typePtr + numParticles,
-    ) as Int32Array;
-    const idSubarray = input.wasm.HEAP32.subarray(
-      idPtr,
-      idPtr + numParticles,
-    ) as Int32Array;
-
-    newParticles.positions.set(positionsSubarray);
-    newParticles.types.set(typeSubarray);
-    newParticles.indices.set(idSubarray);
+    // ids are persistent LAMMPS atom tags, paired index-by-index with
+    // positions/types (the engine may reorder atoms between steps).
+    const ids = frame.ids.subarray(0, numParticles);
+    newParticles.positions.set(frame.positions.subarray(0, 3 * numParticles));
+    newParticles.types.set(frame.types.subarray(0, numParticles));
+    newParticles.indices.set(ids);
     if (numImages > 1) {
       // Images share their atom's ID, so styles set per ID apply to all.
       replicatePositions(newParticles.positions, numParticles, shifts);
@@ -98,26 +87,24 @@ class SyncParticlesModifier extends Modifier {
       geometry.getAttribute("particlePosition").needsUpdate = true;
       geometry.getAttribute("particleIndex").needsUpdate = true;
     }
-    const radii = input.lammps.getParticleRadii?.();
+    const radii = frame.radii;
     if (radii && input.renderState.visualizer) {
       for (let i = 0; i < numParticles; i++) {
         input.renderState.visualizer.setRadius(
-          idSubarray[i],
+          ids[i],
           radii[i] * input.renderState.particleRadius,
         );
       }
     }
   };
 
-  private currentImageShifts = (input: ModifierInput, numParticles: number) => {
+  private currentImageShifts = (frame: EngineFrame, numParticles: number) => {
     const counts = clampImageCounts(this.periodicImages, numParticles);
     if (counts[0] * counts[1] * counts[2] === 1) {
       return [0, 0, 0];
     }
-    // Row-major float32 cell matrix whose rows are the box vectors a, b, c.
-    const cellPtr = input.lammps.getCellMatrixPointer() / 4;
-    const cell = input.wasm.HEAPF32.subarray(cellPtr, cellPtr + 9);
-    return imageShifts(cell, counts);
+    // The frame's row-major cell matrix, whose rows are the box vectors a, b, c.
+    return imageShifts(frame.boxMatrix, counts);
   };
 }
 

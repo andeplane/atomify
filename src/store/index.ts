@@ -5,10 +5,19 @@ import {
   createIndexedDbProjectStorage,
   createMemoryProjectStorage,
 } from "../storage";
+import { EngineRegistry } from "../engine/EngineRegistry";
+
+/**
+ * The app's live engine objects (engine proxy, visualizer, particles, bonds,
+ * modifiers). The store's thunks get it as an injection and React through
+ * EngineContext (index.tsx); e2e specs read it from this module.
+ */
+export const engine = new EngineRegistry();
 
 const injections: StoreInjections = {
   libraryStorage: createIndexedDbProjectStorage(),
   scratchStorage: createMemoryProjectStorage(),
+  engine,
 };
 
 const store = createStore<StoreModel>(storeModel, { injections });

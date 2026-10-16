@@ -4,7 +4,7 @@
  */
 
 import { useState } from "react";
-import { useStoreActions, useStoreState } from "../hooks";
+import { useEngine, useStoreActions, useStoreState } from "../hooks";
 import SyncParticlesModifier from "../modifiers/syncparticlesmodifier";
 import {
   clampImageCounts,
@@ -17,10 +17,8 @@ import { GhostButton, Popover, SectionLabel } from "./ui";
 const AXES = ["x", "y", "z"] as const;
 
 const PeriodicImagesControl = ({ live }: { live: boolean }) => {
-  const modifier = useStoreState((state) =>
-    state.processing.postTimestepModifiers.find(
-      (m): m is SyncParticlesModifier => m instanceof SyncParticlesModifier,
-    ),
+  const modifier = useEngine().modifiers.find(
+    (m): m is SyncParticlesModifier => m instanceof SyncParticlesModifier,
   );
   const numAtoms = useStoreState((state) => state.simulationStatus.numAtoms);
   const refreshRendering = useStoreActions(

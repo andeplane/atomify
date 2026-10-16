@@ -3,8 +3,8 @@
  *
  * These tests build the REAL store (full model composition) on REAL
  * in-memory project storage. Only the engine boundary is faked: a
- * LammpsWeb whose runFile resolves immediately (or on demand) and a
- * minimal wasm module for the FS writes the simulation model performs.
+ * LammpsWeb whose runFile resolves immediately (or on demand) and whose
+ * engine-FS writes land in an in-memory map the tests can inspect.
  * Every scenario asserts against the actual storage contents — the
  * persisted project.json / run.json / snapshots — not just store state.
  */
@@ -23,8 +23,15 @@ vi.mock(import("../utils/metrics"), () => ({
 import { track } from "../utils/metrics";
 
 import { storeModel, type StoreModel } from "./model";
-import type { RunRequest, StoreInjections } from "./projects";
+import { EngineRegistry } from "../engine/EngineRegistry";
 import {
+  STORAGE_FULL_RUN_ERROR,
+  type RunRequest,
+  type StoreInjections,
+} from "./projects";
+import { MemoryStore } from "../storage/kv";
+import {
+  ContentsProjectStorage,
   createMemoryProjectStorage,
   PROJECT_META_PATH,
   readRunMeta,
@@ -35,9 +42,8 @@ import {
   type ProjectStorage,
   type RunMeta,
 } from "../storage";
-import { getWasm, setWasm } from "../wasm/wasmInstance";
-import type { AtomifyWasmModule } from "../wasm/types";
-import type { LammpsWeb, LMPModifier, Wall } from "../types";
+import { emptyEngineFrame } from "../wasm/engineFrame";
+import type { LammpsWeb, LMPModifier } from "../types";
 
 const SCRIPT = "units lj\nrun 100\n";
 const FAKE_LOG = "fake LAMMPS log output";
@@ -150,12 +156,10 @@ describe("projects store integration", () => {
       const engine = createFakeEngine();
       const start = vi.spyOn(engine.lammps, "start");
       const { store, libraryStorage } = await createTestStore(engine);
-      await store
-        .getActions()
-        .projects.createProject({
-          displayName: "Continue",
-          files: [{ fileName: "in.lmp", content: SCRIPT }],
-        });
+      await store.getActions().projects.createProject({
+        displayName: "Continue",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
       await store.getActions().projects.startRuns([runRequest()]);
       expect(start).toHaveBeenCalledTimes(1);
       for (const continueFrom of [
@@ -179,12 +183,10 @@ describe("projects store integration", () => {
       const engine = createFakeEngine();
       const start = vi.spyOn(engine.lammps, "start");
       const { store, libraryStorage } = await createTestStore(engine);
-      await store
-        .getActions()
-        .projects.createProject({
-          displayName: "Continue",
-          files: [{ fileName: "in.lmp", content: SCRIPT }],
-        });
+      await store.getActions().projects.createProject({
+        displayName: "Continue",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
       await store.getActions().projects.startRuns([runRequest()]);
       const dir = activeDirName(store);
       const parent = await readRunMeta(libraryStorage, dir, "run-001");
@@ -296,9 +298,8 @@ describe("projects store integration", () => {
         .projects.startRuns([runRequest({ useKokkos: true, threads: 4 })]);
 
       // The script the engine ran carries the injected opt-in marker…
-      const ranScript = getWasm().FS.readFile(
+      const ranScript = engine.readFile(
         `/${dirName}/${RUNS_DIR}/run-001/in.lmp`,
-        { encoding: "utf8" },
       );
       expect(ranScript.startsWith("suffix kk")).toBe(true);
       expect(ranScript).toContain("units lj");
@@ -321,11 +322,10 @@ describe("projects store integration", () => {
 
       await store.getActions().projects.startRuns([runRequest()]);
 
-      // No opt-in marker injected; syncFilesWasm applied the serial-styles
+      // No opt-in marker injected; the run pipeline applied the serial-styles
       // preprocessing (suffix off) for the always-on `-sf kk` module.
-      const ranScript = getWasm().FS.readFile(
+      const ranScript = engine.readFile(
         `/${dirName}/${RUNS_DIR}/run-001/in.lmp`,
-        { encoding: "utf8" },
       );
       expect(ranScript.startsWith("suffix off")).toBe(true);
       expect(ranScript).not.toContain("suffix kk");
@@ -506,6 +506,30 @@ describe("projects store integration", () => {
       expect(runMeta?.finishedAt).toBeTruthy();
       expect(store.getState().projects.activeRun).toBeUndefined();
     });
+
+    it("records a failed run when the engine worker crashes mid-run", async () => {
+      const engine = createFakeEngine();
+      // What LammpsWorkerProxy does after worker.onerror: the pending run
+      // and every later snapshot reject with the crash error.
+      const crash = new Error("The simulation engine crashed: Aborted(OOM)");
+      engine.lammps.runFile = () => Promise.reject(crash);
+      engine.lammps.snapshotWorkdir = () => Promise.reject(crash);
+      const { store, libraryStorage } = await createTestStore(engine);
+      await store.getActions().projects.createProject({
+        displayName: "Crashy",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const dirName = activeDirName(store);
+
+      await store.getActions().projects.startRuns([runRequest()]);
+
+      const runMeta = await readRunMeta(libraryStorage, dirName, "run-001");
+      expect(runMeta?.status).toBe("failed");
+      expect(runMeta?.error).toBe(crash.message);
+      expect(store.getState().simulation.running).toBe(false);
+      expect(store.getState().simulation.lastError).toBe(crash.message);
+      expect(store.getState().projects.activeRun).toBeUndefined();
+    });
   });
 
   describe("sweeps", () => {
@@ -584,6 +608,69 @@ describe("projects store integration", () => {
       expect(meta?.status).toBe("completed");
       expect(store.getState().projects.activeRun).toBeUndefined();
       expect(store.getState().projects.runQueue).toEqual([]);
+    });
+  });
+
+  describe("storage full", () => {
+    it("marks the run failed with a storage-full reason, keeps partial outputs, and stops the sweep", async () => {
+      const engine = createFakeEngine({
+        manual: true,
+        outputs: [
+          { path: "dump.first", content: "copied before the quota hit" },
+          { path: "log.lammps", content: FAKE_LOG },
+        ],
+      });
+      // The quota "fills up" mid-run: output writes after dump.first fail
+      // the way IndexedDB does; run.json still fits.
+      const files = new QuotaMemoryStore(
+        (key) =>
+          /\/runs\/run-\d+\//.test(key) &&
+          !key.endsWith("dump.first") &&
+          !key.endsWith(RUN_META_PATH),
+      );
+      const { store, libraryStorage } = await createTestStore(engine, {
+        libraryStorage: new ContentsProjectStorage(files, new MemoryStore()),
+      });
+      await store.getActions().projects.createProject({
+        displayName: "Big Outputs",
+        files: [{ fileName: "in.lmp", content: SCRIPT }],
+      });
+      const dirName = activeDirName(store);
+
+      const sweepPromise = store
+        .getActions()
+        .projects.startRuns([
+          runRequest({ vars: { T: 1 } }),
+          runRequest({ vars: { T: 2 } }),
+        ]);
+      await waitForCondition(
+        () => engine.runFilePaths.length === 1,
+        "first runFile call",
+      );
+      files.full = true;
+      engine.resolveRun();
+      await sweepPromise;
+
+      const meta = await readRunMeta(libraryStorage, dirName, "run-001");
+      expect(meta?.status).toBe("failed");
+      expect(meta?.error).toBe(STORAGE_FULL_RUN_ERROR);
+      // Partial outputs are kept, never silently dropped.
+      expect(
+        await libraryStorage.read(dirName, `${RUNS_DIR}/run-001/dump.first`),
+      ).toBe("copied before the quota hit");
+      expect(
+        await libraryStorage.stat(dirName, `${RUNS_DIR}/run-001/log.lammps`),
+      ).toBeNull();
+      // The warning names the project and where to free space.
+      const notice = store.getState().projects.notice;
+      expect(notice).toContain("Browser storage is full");
+      expect(notice).toContain('"Big Outputs"');
+      expect(notice).toContain("Settings > Storage");
+      // The rest of the sweep would hit the same wall: it is not started.
+      expect(engine.runFilePaths).toHaveLength(1);
+      expect(store.getState().projects.runQueue).toEqual([]);
+      expect(store.getState().projects.activeRun).toBeUndefined();
+      expect(store.getState().projects.residentRun).toBeUndefined();
     });
   });
 
@@ -1142,6 +1229,8 @@ interface FakeEngine {
   resolveRun: () => void;
   /** Value returned by getErrorMessage after runFile settles. */
   setErrorMessage: (message: string) => void;
+  /** Text of a file the store wrote into the engine FS (throws if absent). */
+  readFile: (path: string) => string;
 }
 
 interface FakeEngineOptions {
@@ -1157,23 +1246,17 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
   ];
   const runFilePaths: string[] = [];
   const pendingRuns: (() => void)[] = [];
+  // The engine FS as the worker would hold it: only what the store wrote.
+  const files = new Map<string, string | Uint8Array>();
   let errorMessage = "";
 
-  const emptyStringArray = () => ({
-    get: () => "",
-    size: () => 0,
-    delete: () => {},
-  });
   const noModifier = (): LMPModifier => {
     throw new Error("LMP modifiers are not exercised by these tests");
   };
-  const emptyWalls = () => ({
-    get: (): Wall => ({ which: 0, style: 0, position: 0, cutoff: 0 }),
-    size: () => 0,
-    delete: () => {},
-  });
 
   const lammps: LammpsWeb = {
+    latestFrame: emptyEngineFrame(),
+    setStepListener: () => {},
     getNumAtoms: () => 100,
     setSyncFrequency: () => {},
     setBuildNeighborlist: () => {},
@@ -1189,14 +1272,11 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
     getCPURemain: () => 0,
     getWhichFlag: () => 0,
     getCompute: noModifier,
-    getComputeNames: emptyStringArray,
+    getComputeNames: () => [],
     getFix: noModifier,
-    getFixNames: emptyStringArray,
+    getFixNames: () => [],
     getVariable: noModifier,
-    getVariableNames: emptyStringArray,
-    syncComputes: () => {},
-    syncFixes: () => {},
-    syncVariables: () => {},
+    getVariableNames: () => [],
     snapshotWorkdir: async () => ({
       files: outputs.map((file) => ({
         path: file.path,
@@ -1205,18 +1285,17 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
       skipped: [],
     }),
     getMemoryUsage: () => 0,
-    getPositionsPointer: () => 0,
-    getIdPointer: () => 0,
-    getTypePointer: () => 0,
-    getCellMatrixPointer: () => 0,
-    getOrigoPointer: () => 0,
-    getBondsPosition1Pointer: () => 0,
-    getBondsPosition2Pointer: () => 0,
     getExceptionMessage: (address: number) => `exception at ${address}`,
-    step: () => {},
+    writeFile: (path, data) => {
+      files.set(path, data);
+    },
+    mkdir: () => {},
+    chdir: () => {},
     stop: () => true,
     start: () => true,
     cancel: () => {},
+    setPaused: () => {},
+    isPaused: () => false,
     runCommand: () => {},
     runFile: (path: string) => {
       runFilePaths.push(path);
@@ -1225,10 +1304,6 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
       }
       return new Promise<void>((resolve) => pendingRuns.push(resolve));
     },
-    computeBonds: () => 0,
-    computeParticles: () => 0,
-    getDimension: () => 3,
-    getWalls: emptyWalls,
   };
 
   return {
@@ -1244,79 +1319,59 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
     setErrorMessage: (message: string) => {
       errorMessage = message;
     },
-  };
-}
-
-/** A minimal wasm module: only the FS + heaps the simulation model touches. */
-function createFakeWasm(): AtomifyWasmModule {
-  const files = new Map<string, string | Uint8Array>();
-  const dirs = new Set<string>(["/"]);
-  const fs: AtomifyWasmModule["FS"] = {
-    mkdir: (path) => {
-      dirs.add(path);
-    },
-    rmdir: (path) => {
-      dirs.delete(path);
-    },
-    chdir: () => {},
-    cwd: () => "/",
-    writeFile: (path, data) => {
-      files.set(path, data);
-    },
-    unlink: (path) => {
-      files.delete(path);
-    },
-    readFile: (path) => {
+    readFile: (path: string) => {
       const data = files.get(path);
       if (data === undefined) {
         throw new Error(`No such fake file: ${path}`);
       }
       return typeof data === "string" ? data : new TextDecoder().decode(data);
     },
-    readdir: () => [],
-    analyzePath: (path) => ({
-      exists: dirs.has(path) || files.has(path),
-      isRoot: path === "/",
-      path,
-      name: path.slice(path.lastIndexOf("/") + 1),
-      error: 0,
-    }),
-    stat: () => ({ size: 0, mode: 0, mtime: new Date() }),
-    isDir: () => false,
-    isFile: () => true,
   };
-  // LAMMPSWeb/ScalarType (the embind class handles) are never touched by the
-  // store models; Partial + cast per docs/testing_patterns.md §9.
-  const wasm: Partial<AtomifyWasmModule> = {
-    HEAPF32: new Float32Array(1024),
-    HEAPF64: new Float64Array(64),
-    HEAP32: new Int32Array(1024),
-    HEAP64: new BigInt64Array(16),
-    FS: fs,
-  };
-  return wasm as AtomifyWasmModule;
 }
 
-async function createTestStore(engine: FakeEngine): Promise<{
+/** Memory KV that refuses matching writes like a full IndexedDB once `full`. */
+class QuotaMemoryStore extends MemoryStore {
+  full = false;
+  constructor(private readonly refuses: (key: string) => boolean) {
+    super();
+  }
+  async setItem<T>(key: string, value: T): Promise<void> {
+    if (this.full && this.refuses(key)) {
+      throw new DOMException(
+        "The quota has been exceeded.",
+        "QuotaExceededError",
+      );
+    }
+    return super.setItem(key, value);
+  }
+}
+
+async function createTestStore(
+  engine: FakeEngine,
+  options: { libraryStorage?: ProjectStorage } = {},
+): Promise<{
   store: Store<StoreModel>;
   libraryStorage: ProjectStorage;
   scratchStorage: ProjectStorage;
 }> {
-  const libraryStorage = createMemoryProjectStorage();
+  const libraryStorage = options.libraryStorage ?? createMemoryProjectStorage();
   const scratchStorage = createMemoryProjectStorage();
-  const injections: StoreInjections = { libraryStorage, scratchStorage };
+  // The omovi/three post-timestep render pipeline is not under test here:
+  // no modifiers keeps completed-run processing to plain engine getters and
+  // the (empty) latest frame.
+  const registry = new EngineRegistry([]);
+  registry.setLammps(engine.lammps);
+  const injections: StoreInjections = {
+    libraryStorage,
+    scratchStorage,
+    engine: registry,
+  };
   const store = createStore(storeModel, { injections });
   // The settings branch is persist()-wrapped; rehydration is async and
   // REPLACES store state when it lands. Await it so it cannot clobber the
   // setup dispatches below (it does, once earlier tests have populated
   // sessionStorage).
   await store.persist.resolveRehydration();
-  setWasm(createFakeWasm());
-  // The omovi/three post-timestep render pipeline is not under test here;
-  // clearing the modifiers (via the real action) keeps completed-run
-  // processing to plain engine getters.
-  store.getActions().processing.setPostTimestepModifiers([]);
-  store.getActions().simulation.setLammps(engine.lammps);
   return { store, libraryStorage, scratchStorage };
 }
 
