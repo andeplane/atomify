@@ -225,7 +225,9 @@ const HomeScreen = () => {
 
   return (
     <div style={{ flex: 1, overflowY: "auto" }} data-testid="home-screen">
-      <div style={{ maxWidth: 1120, margin: "0 auto", padding: "44px 40px 64px" }}>
+      <div
+        style={{ maxWidth: 1120, margin: "0 auto", padding: "44px 40px 64px" }}
+      >
         <h1
           style={{
             margin: "0 0 6px",
@@ -320,11 +322,21 @@ const HomeScreen = () => {
                 >
                   Continue where you left off
                 </div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "var(--text)" }}>
+                <div
+                  style={{
+                    fontSize: 16,
+                    fontWeight: 700,
+                    color: "var(--text)",
+                  }}
+                >
                   {continueProject.displayName}
                 </div>
                 <div
-                  style={{ fontSize: 12.5, color: "var(--text-2)", marginTop: 3 }}
+                  style={{
+                    fontSize: 12.5,
+                    color: "var(--text-2)",
+                    marginTop: 3,
+                  }}
                 >
                   {continueRunning && runTotalTimesteps > 0
                     ? `${continueProject.inputScript ?? ""} · step ${runTimesteps.toLocaleString()} of ${runTotalTimesteps.toLocaleString()}`
@@ -345,14 +357,24 @@ const HomeScreen = () => {
                 gap: 8,
               }}
             >
-              <span style={{ fontSize: 15.5, fontWeight: 700, color: "var(--text)" }}>
+              <span
+                style={{
+                  fontSize: 15.5,
+                  fontWeight: 700,
+                  color: "var(--text)",
+                }}
+              >
                 Welcome to Atomify
               </span>
               <span
-                style={{ fontSize: 12.5, color: "var(--text-2)", lineHeight: 1.5 }}
+                style={{
+                  fontSize: 12.5,
+                  color: "var(--text-2)",
+                  lineHeight: 1.5,
+                }}
               >
-                Run LAMMPS molecular dynamics right here in your browser.
-                Create a project or quick-run an example to get started.
+                Run LAMMPS molecular dynamics right here in your browser. Create
+                a project or quick-run an example to get started.
               </span>
             </div>
           )}

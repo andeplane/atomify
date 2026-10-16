@@ -79,7 +79,9 @@ describe("ContentsProjectStorage", () => {
     });
 
     it("deletes recursively including checkpoints", async () => {
-      const { dirName } = await storage.createProject({ displayName: "Doomed" });
+      const { dirName } = await storage.createProject({
+        displayName: "Doomed",
+      });
       await storage.write(dirName, "in.script", "run 100");
       await checkpoints.setItem(`${dirName}/in.script`, [{ id: "0" }]);
 

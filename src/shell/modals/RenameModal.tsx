@@ -6,7 +6,13 @@
 import { useStoreActions, useStoreState } from "../../hooks";
 import { MONO, PromptModal } from "../ui";
 
-const RenameModal = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+const RenameModal = ({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) => {
   const active = useStoreState((state) => state.projects.active);
   const renameProject = useStoreActions(
     (actions) => actions.projects.renameProject,

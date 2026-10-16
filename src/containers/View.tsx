@@ -135,9 +135,6 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const styledVisualizer = useRef<Visualizer | null>(null);
 
   const renderSettings = useStoreState((state) => state.settings.render);
-  const setRenderSettings = useStoreActions(
-    (actions) => actions.settings.setRender,
-  );
   const domElement = useRef<HTMLDivElement | null>(null);
   const running = useStoreState((state) => state.simulation.running);
   const simulation = useStoreState((state) => state.simulation.simulation);
@@ -311,7 +308,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
           .then((supported) => {
             if (supported && domElement.current) {
               const vrButton = newVisualizer.enableXR();
-              vrButton && domElement.current.appendChild(vrButton);
+              if (vrButton) domElement.current.appendChild(vrButton);
             }
           })
           .catch((err) => {
