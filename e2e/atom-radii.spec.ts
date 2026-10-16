@@ -20,11 +20,12 @@ test("sphere radii are streamed in native units and update during a run", async 
       () =>
         page.evaluate(async () => {
           const path = "/atomify/src/store/index.ts";
-          const s = (await import(path)).default.getState();
-          const v = s.render.visualizer;
+          const { default: store, engine } = await import(path);
+          const s = store.getState();
+          const v = engine.visualizer;
           if (!v || s.simulationStatus.timesteps < 2) return false;
           const step = s.simulationStatus.timesteps;
-          const p = s.render.particles;
+          const p = engine.particles;
           const radii = p.geometry.getAttribute("atomRadius");
           // Particles sync every step but the status timestep only every
           // uiUpdateFrequency steps, so the radii may be a few steps ahead.

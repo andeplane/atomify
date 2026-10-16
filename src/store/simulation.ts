@@ -1,6 +1,6 @@
-import { action, Action, thunk, Thunk, Actions, State } from "easy-peasy";
+import { action, Action, thunk, Thunk, Actions } from "easy-peasy";
 import { StoreModel } from "./model";
-import { LammpsWeb } from "../types";
+import type { StoreInjections } from "./projects";
 import { AtomTypes, AtomType, hexToRgb } from "../utils/atomtypes";
 import * as THREE from "three";
 import {
@@ -40,17 +40,20 @@ export interface SimulationModel {
   addLammpsOutput: Action<SimulationModel, string>;
   /**
    * Pause or resume the active run. Run control lives on the engine proxy
-   * (LammpsWorkerProxy); this only forwards to it — read the state back with
-   * `lammps.isPaused()`.
+   * (LammpsWorkerProxy, in the EngineRegistry); this only forwards to it —
+   * read the state back with `lammps.isPaused()`.
    */
-  setPaused: Thunk<SimulationModel, boolean, unknown, StoreModel>;
+  setPaused: Thunk<SimulationModel, boolean, StoreInjections, StoreModel>;
   setCameraPosition: Action<SimulationModel, THREE.Vector3 | undefined>;
   setCameraTarget: Action<SimulationModel, THREE.Vector3 | undefined>;
   setLoadedWorkdir: Action<SimulationModel, string | undefined>;
   setRunning: Action<SimulationModel, boolean>;
-  setLammps: Action<SimulationModel, LammpsWeb>;
-  extractAndApplyAtomifyCommands: Thunk<SimulationModel, string>;
-  lammps?: LammpsWeb;
+  extractAndApplyAtomifyCommands: Thunk<
+    SimulationModel,
+    string,
+    StoreInjections,
+    StoreModel
+  >;
   lastError?: string;
   lastWarning?: string;
   setLastError: Action<SimulationModel, string | undefined>;
@@ -69,17 +72,14 @@ export const simulationModel: SimulationModel = {
     state.lammpsOutput = [...state.lammpsOutput, output].slice(-2000);
     fullLammpsOutput.push(output);
   }),
-  setPaused: thunk((_actions, paused: boolean, { getState }) => {
-    getState().lammps?.setPaused(paused);
+  setPaused: thunk((_actions, paused: boolean, { injections }) => {
+    injections.engine.lammps?.setPaused(paused);
   }),
   setCameraPosition: action((state, cameraPosition: THREE.Vector3) => {
     state.cameraPosition = cameraPosition;
   }),
   setCameraTarget: action((state, cameraTarget: THREE.Vector3) => {
     state.cameraTarget = cameraTarget;
-  }),
-  setLammps: action((state, lammps: LammpsWeb) => {
-    state.lammps = lammps;
   }),
   setLoadedWorkdir: action((state, workdirId: string | undefined) => {
     state.loadedWorkdir = workdirId;
@@ -88,20 +88,10 @@ export const simulationModel: SimulationModel = {
     state.running = running;
   }),
   extractAndApplyAtomifyCommands: thunk(
-    (
-      actions,
-      inputScript: string,
-      {
-        getStoreActions,
-        getStoreState,
-      }: {
-        getStoreActions: () => Actions<StoreModel>;
-        getStoreState: () => State<StoreModel>;
-      },
-    ) => {
+    (actions, inputScript: string, { getStoreActions, injections }) => {
       const lines = inputScript.split("\n");
 
-      const lammps = getStoreState().simulation.lammps;
+      const lammps = injections.engine.lammps;
       if (!lammps) {
         return;
       }

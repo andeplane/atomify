@@ -7,7 +7,7 @@
  */
 
 import { useEffect, useMemo, useState } from "react";
-import { useStoreActions, useStoreState } from "../../hooks";
+import { useEngineState, useStoreActions, useStoreState } from "../../hooks";
 import { isScriptFile } from "../../store/projects";
 import {
   parseScriptVariables,
@@ -46,7 +46,7 @@ const NewRunModal = ({
   onGoToFiles,
 }: NewRunModalProps) => {
   const active = useStoreState((state) => state.projects.active);
-  const lammps = useStoreState((state) => state.simulation.lammps);
+  const lammps = useEngineState((objects) => objects.lammps);
   const readFile = useStoreActions((actions) => actions.projects.readFile);
   const setInputScript = useStoreActions(
     (actions) => actions.projects.setInputScript,

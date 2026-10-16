@@ -6,7 +6,12 @@ import { applyAmbientOcclusion } from "../utils/ambientOcclusion";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Layout, Row, Col, Progress, Modal, Button } from "antd";
 
-import { useStoreState, useStoreActions } from "../hooks";
+import {
+  useEngine,
+  useEngineState,
+  useStoreState,
+  useStoreActions,
+} from "../hooks";
 import { Particles, Bonds, Visualizer, ParticleClickEvent } from "omovi";
 import ResponsiveSimulationSummary from "../components/ResponsiveSimulationSummary";
 import SelectedAtomsInfo from "../components/SelectedAtomsInfo";
@@ -14,7 +19,6 @@ import ColorLegend from "../components/ColorLegend";
 import ColorModifierSettings from "../modifiers/ColorModifierSettings";
 import styled from "styled-components";
 import { track } from "../utils/metrics";
-import ColorModifier from "../modifiers/colormodifier";
 import * as THREE from "three";
 import {
   createBoxGeometry,
@@ -46,7 +50,7 @@ interface ViewProps {
    * Pane mode (new shell's run detail): fill the parent container instead of
    * the viewport, hide the legacy header/summary overlays (the run detail has
    * its own status panel), suppress the no-simulation modal, and release the
-   * store's visualizer on unmount so a remount can recreate it.
+   * registered visualizer on unmount so a remount can recreate it.
    */
   pane?: boolean;
 }
@@ -119,12 +123,11 @@ const View = ({ visible, pane = false }: ViewProps) => {
     (state) => state.simulation.cameraPosition,
   );
   const cameraTarget = useStoreState((state) => state.simulation.cameraTarget);
-  const particles = useStoreState((state) => state.render.particles);
-  const bonds = useStoreState((state) => state.render.bonds);
-  const visualizer = useStoreState((state) => state.render.visualizer);
-  const setVisualizer = useStoreActions(
-    (actions) => actions.render.setVisualizer,
-  );
+  // The live render objects are the EngineRegistry's, not store state.
+  const engine = useEngine();
+  const particles = useEngineState((objects) => objects.particles);
+  const bonds = useEngineState((objects) => objects.bonds);
+  const visualizer = useEngineState((objects) => objects.visualizer);
 
   const refreshParticleStyles = useStoreActions(
     (actions) => actions.render.setParticleStylesUpdated,
@@ -151,9 +154,6 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const simulationOrigo = useStoreState(
     (state) => state.simulationStatus.origo,
   );
-  const postTimestepModifiers = useStoreState(
-    (state) => state.processing.postTimestepModifiers,
-  );
   const computes = useStoreState((state) => state.simulationStatus.computes);
   const fixes = useStoreState((state) => state.simulationStatus.fixes);
   const variables = useStoreState((state) => state.simulationStatus.variables);
@@ -163,9 +163,7 @@ const View = ({ visible, pane = false }: ViewProps) => {
   const wallGroupRef = useRef<THREE.Group | null>(null);
 
   // Get color modifier for legend display
-  const colorModifier = postTimestepModifiers.find(
-    (modifier) => modifier instanceof ColorModifier,
-  ) as ColorModifier | undefined;
+  const colorModifier = engine.colorModifier;
 
   // Determine the type of the computeName (compute, fix, or variable)
   const getModifierType = (
@@ -286,7 +284,9 @@ const View = ({ visible, pane = false }: ViewProps) => {
         },
       });
       installParticleAttributes(newVisualizer);
-      setVisualizer(newVisualizer);
+      engine.setVisualizer(newVisualizer);
+      // A new renderer has no colors or radii yet.
+      refreshParticleStyles(true);
       setLoading(false);
       newVisualizer.materials.particles.shininess = 50;
 
@@ -318,7 +318,14 @@ const View = ({ visible, pane = false }: ViewProps) => {
           });
       }
     }
-  }, [domElement, setVisualizer, visualizer, loading, renderSettings]);
+  }, [
+    domElement,
+    engine,
+    refreshParticleStyles,
+    visualizer,
+    loading,
+    renderSettings,
+  ]);
 
   useEffect(() => {
     if (visible && domElement.current) {
@@ -533,15 +540,15 @@ const View = ({ visible, pane = false }: ViewProps) => {
       if (visualizer) {
         visualizer.dispose();
         if (pane) {
-          // In the legacy shell View never unmounts, so the store keeping a
-          // reference was harmless. The run-detail pane mounts/unmounts per
+          // In the legacy shell View never unmounts, so the registry keeping
+          // a reference was harmless. The run-detail pane mounts/unmounts per
           // navigation: release the disposed instance so the next mount's
           // creation effect (guarded by `!visualizer`) builds a fresh one.
-          setVisualizer(undefined);
+          engine.setVisualizer(undefined);
         }
       }
     };
-  }, [visualizer, disposeBoxGroup, disposeWallGroup, pane, setVisualizer]);
+  }, [visualizer, disposeBoxGroup, disposeWallGroup, pane, engine]);
 
   const title = loadedWorkdir ?? "No simulation";
   const showNoSimulationModal =

@@ -55,9 +55,9 @@ test("runtime groups can color paused atoms and follow dynamic membership", asyn
   const colors = () =>
     page.evaluate(async () => {
       const path = "/atomify/src/store/index.ts";
-      const s = (await import(path)).default.getState(),
-        p = s.render.particles,
-        v = s.render.visualizer;
+      const { engine } = await import(path),
+        p = engine.particles,
+        v = engine.visualizer;
       const attr = p.geometry?.getAttribute("atomColor");
       return [1, 2]
         .map((id) => {

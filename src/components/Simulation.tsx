@@ -1,17 +1,24 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useStoreActions, useStoreState } from "../hooks";
+import {
+  useEngine,
+  useEngineState,
+  useStoreActions,
+  useStoreState,
+} from "../hooks";
 // The atomify wasm build is a multithreaded KOKKOS/pthreads module that must
 // run inside a Web Worker (it cannot initialize on the main thread). It is
 // owned by LammpsWorkerProxy, which spawns the worker (lammps.worker.ts) and
 // keeps the latest streamed frame; the run pipeline (RunController) feeds
-// each run's frames into the store's modifier/render pipeline.
+// each run's frames into the modifier/render pipeline. The proxy is
+// registered in the EngineRegistry, not the store.
 // See src/wasm/LammpsWorkerProxy.ts.
 import { LammpsWorkerProxy } from "../wasm/LammpsWorkerProxy";
 import { useShellUI } from "../shell/ShellContext";
 import { time_event, track } from "../utils/metrics";
 
 const SimulationComponent = () => {
-  const lammps = useStoreState((state) => state.simulation.lammps);
+  const engine = useEngine();
+  const lammps = useEngineState((objects) => objects.lammps);
   const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
   const simulationSettings = useStoreState(
     (state) => state.settings.simulation,
@@ -26,11 +33,10 @@ const SimulationComponent = () => {
   const liveViewportVisible = useStoreState(
     (state) => state.app.liveViewportVisible,
   );
-  const visualizer = useStoreState((state) => state.render.visualizer);
+  const visualizer = useEngineState((objects) => objects.visualizer);
   // Hook-based toasts: antd's static notification functions don't render
   // under React 19 (see ShellContext.tsx). Mounted inside ShellUIContext.
   const { notify } = useShellUI();
-  const setLammps = useStoreActions((actions) => actions.simulation.setLammps);
   const setEngineError = useStoreActions(
     (actions) => actions.app.setEngineError,
   );
@@ -137,8 +143,8 @@ const SimulationComponent = () => {
   }, [lammps, simulationSettings.speed]);
 
   useEffect(() => {
-    // The store's lammps outlives this component, so a remount doesn't spawn
-    // a second engine; the ref covers the window before the load finishes.
+    // The registered engine outlives this component, so a remount doesn't
+    // spawn a second one; the ref covers the window before the load finishes.
     if (lammps || loadStartedRef.current) {
       return;
     }
@@ -174,7 +180,7 @@ const SimulationComponent = () => {
     // module. A pthreads module cannot initialize on the browser main thread
     // (its thread-pool handshake blocks on Atomics.wait, forbidden off a
     // Worker), so it runs inside a Web Worker. The proxy owns that worker and
-    // is the store's LammpsWeb: the modifier/render pipeline reads the typed
+    // is the app's LammpsWeb: the modifier/render pipeline reads the typed
     // arrays of its latest streamed frame, and engine-FS writes are forwarded
     // to the worker as commands. The run pipeline (RunController) owns the
     // proxy's step listener while a run streams.
@@ -203,7 +209,7 @@ const SimulationComponent = () => {
           text: "",
           progress: 0.6,
         });
-        setLammps(proxy);
+        engine.setLammps(proxy);
         setStatus(undefined);
       })
       .catch((error: unknown) => {
@@ -218,7 +224,7 @@ const SimulationComponent = () => {
           description: message,
         });
       });
-  }, [lammps, onPrint, setLammps, setStatus, setEngineError, notify]);
+  }, [engine, lammps, onPrint, setStatus, setEngineError, notify]);
   return <></>;
 };
 export default SimulationComponent;

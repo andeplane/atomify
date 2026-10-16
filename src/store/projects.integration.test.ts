@@ -23,6 +23,7 @@ vi.mock(import("../utils/metrics"), () => ({
 import { track } from "../utils/metrics";
 
 import { storeModel, type StoreModel } from "./model";
+import { EngineRegistry } from "../engine/EngineRegistry";
 import {
   STORAGE_FULL_RUN_ERROR,
   type RunRequest,
@@ -1355,18 +1356,22 @@ async function createTestStore(
 }> {
   const libraryStorage = options.libraryStorage ?? createMemoryProjectStorage();
   const scratchStorage = createMemoryProjectStorage();
-  const injections: StoreInjections = { libraryStorage, scratchStorage };
+  // The omovi/three post-timestep render pipeline is not under test here:
+  // no modifiers keeps completed-run processing to plain engine getters and
+  // the (empty) latest frame.
+  const registry = new EngineRegistry([]);
+  registry.setLammps(engine.lammps);
+  const injections: StoreInjections = {
+    libraryStorage,
+    scratchStorage,
+    engine: registry,
+  };
   const store = createStore(storeModel, { injections });
   // The settings branch is persist()-wrapped; rehydration is async and
   // REPLACES store state when it lands. Await it so it cannot clobber the
   // setup dispatches below (it does, once earlier tests have populated
   // sessionStorage).
   await store.persist.resolveRehydration();
-  // The omovi/three post-timestep render pipeline is not under test here;
-  // clearing the modifiers (via the real action) keeps completed-run
-  // processing to plain engine getters and the (empty) latest frame.
-  store.getActions().processing.setPostTimestepModifiers([]);
-  store.getActions().simulation.setLammps(engine.lammps);
   return { store, libraryStorage, scratchStorage };
 }
 
