@@ -13,7 +13,6 @@ import type {
 } from "lammps.js";
 import { ModifierType } from "../types";
 import { KOKKOS_THREADS } from "../utils/kokkos";
-import { getCancel, setCancel, getPausedFlag } from "./wasmInstance";
 import type { EngineModifier, EnginePerAtom } from "./engineFrame";
 
 /**
@@ -118,7 +117,10 @@ export class LammpsAdapter {
   // sized at load (PTHREAD_POOL_SIZE 8). Kept at 4 so the New Run modal's
   // Multithreading toggle ("-k on t 4") matches what actually runs.
   private readonly kokkosThreads = KOKKOS_THREADS;
+  // Run control, set by the worker from LammpsWorkerProxy's commands (the
+  // proxy is its only owner) and read by onStep's between-step wait loop.
   private cancelRequested = false;
+  private paused = false;
   private lastError = "";
   private stepListener?: () => void;
   // Single-shot resolver for the active runFile promise. Cancellation resolves
@@ -188,8 +190,7 @@ export class LammpsAdapter {
 
     // Safe synchronous window: if a stop was requested, gracefully halt the
     // active run here rather than rejecting later (which would throw in wasm).
-    if (this.cancelRequested || getCancel()) {
-      setCancel(false);
+    if (this.cancelRequested) {
       this.cancelRequested = false;
       this.lastError = CANCEL_MESSAGE;
       this.requestGracefulStop();
@@ -200,11 +201,11 @@ export class LammpsAdapter {
       const wait = () => {
         // A stop pressed while paused: unblock so the next (safe, synchronous)
         // step can issue the graceful stop; leave the cancel flag set for it.
-        if (this.cancelRequested || getCancel()) {
+        if (this.cancelRequested) {
           resolve();
           return;
         }
-        if (getPausedFlag()) {
+        if (this.paused) {
           setTimeout(wait, PAUSE_POLL_MS);
           return;
         }
@@ -271,8 +272,15 @@ export class LammpsAdapter {
     return true;
   }
 
+  /** Stop the active run at its next synced step (unpausing it first). */
   cancel() {
     this.cancelRequested = true;
+    this.paused = false;
+  }
+
+  /** Hold (or release) the run in the between-step wait loop. */
+  setPaused(paused: boolean) {
+    this.paused = paused;
   }
 
   /**
@@ -311,12 +319,12 @@ export class LammpsAdapter {
    * routes stop-button aborts away from the error path.
    */
   runFile(path: string): Promise<void> {
+    // Every run starts unpaused, and a stop press that landed after the
+    // previous run's last synced step must not abort this one.
     this.lastError = "";
     this.cancelRequested = false;
+    this.paused = false;
     this.runFinished = false;
-    // A stop press that landed after the previous run's last synced step
-    // leaves the global cancel flag set; don't let it abort this run.
-    setCancel(false);
 
     // Definitions survive LAMMPS clear and evaluate against the current atom
     // style. Define them before execution: commands are forbidden mid-run.

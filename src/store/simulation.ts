@@ -179,7 +179,6 @@ export function getFullLammpsOutput(): readonly string[] {
 
 export interface SimulationModel {
   running: boolean;
-  paused: boolean;
   showConsole: boolean;
   simulation?: Simulation;
   files: string[];
@@ -189,7 +188,12 @@ export interface SimulationModel {
   resetLammpsOutput: Action<SimulationModel, void>;
   addLammpsOutput: Action<SimulationModel, string>;
   setShowConsole: Action<SimulationModel, boolean>;
-  setPaused: Action<SimulationModel, boolean>;
+  /**
+   * Pause or resume the active run. Run control lives on the engine proxy
+   * (LammpsWorkerProxy); this only forwards to it — read the state back with
+   * `lammps.isPaused()`.
+   */
+  setPaused: Thunk<SimulationModel, boolean, unknown, StoreModel>;
   setCameraPosition: Action<SimulationModel, THREE.Vector3 | undefined>;
   setCameraTarget: Action<SimulationModel, THREE.Vector3 | undefined>;
   setSimulation: Action<SimulationModel, Simulation>;
@@ -218,7 +222,6 @@ export interface SimulationModel {
 
 export const simulationModel: SimulationModel = {
   running: false,
-  paused: false,
   showConsole: false,
   files: [],
   lammpsOutput: [],
@@ -234,8 +237,8 @@ export const simulationModel: SimulationModel = {
   setShowConsole: action((state, showConsole: boolean) => {
     state.showConsole = showConsole;
   }),
-  setPaused: action((state, value: boolean) => {
-    state.paused = value;
+  setPaused: thunk((_actions, paused: boolean, { getState }) => {
+    getState().lammps?.setPaused(paused);
   }),
   setCameraPosition: action((state, cameraPosition: THREE.Vector3) => {
     state.cameraPosition = cameraPosition;
@@ -418,8 +421,8 @@ export const simulationModel: SimulationModel = {
         return;
       }
 
+      // runFile starts the run unpaused (the proxy owns run control).
       if (continuation === undefined) lammps.start();
-      actions.setPaused(false);
       actions.setRunning(true);
       // simulationId is the curated example id or the project dir name —
       // the Mixpanel dashboard breaks simulations down by it.
@@ -480,7 +483,6 @@ export const simulationModel: SimulationModel = {
         durationSeconds,
         Object.keys(computes),
       );
-      actions.setPaused(false);
 
       const stopReason = handleRunResult({
         errorMessage,

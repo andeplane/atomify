@@ -8,16 +8,10 @@ import { useStoreActions, useStoreState } from "../hooks";
 import { LammpsWorkerProxy } from "../wasm/LammpsWorkerProxy";
 import { useShellUI } from "../shell/ShellContext";
 import { time_event, track } from "../utils/metrics";
-import {
-  getSyncFrequency,
-  setSyncFrequency,
-  setPausedFlag,
-} from "../wasm/wasmInstance";
 
 const SimulationComponent = () => {
   const lammps = useStoreState((state) => state.simulation.lammps);
   const simulation = useStoreState((state) => state.simulation.simulation);
-  const paused = useStoreState((state) => state.simulation.paused);
   const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
   const simulationSettings = useStoreState(
     (state) => state.settings.simulation,
@@ -119,7 +113,8 @@ const SimulationComponent = () => {
 
       if (running && ev.key === " ") {
         ev.preventDefault();
-        setPaused(!paused);
+        // The engine proxy owns the paused state; toggle what it reports.
+        setPaused(!(lammps?.isPaused() ?? false));
       }
 
       if (ev.key === "c" && !ev.metaKey && !ev.ctrlKey) {
@@ -141,28 +136,23 @@ const SimulationComponent = () => {
     liveViewportVisible,
     visualizer,
     notify,
-    paused,
     setPaused,
     setSimulationSettings,
     simulation,
     simulationSettings,
   ]);
 
-  // Mirror the store's paused state into the flag the adapter's pause-wait
-  // loop reads between timesteps. The adapter lives in the worker, so the flag
-  // must be forwarded there via the proxy; the main-thread flag is kept in sync
-  // too for any code that reads it locally.
+  // The speed setting is how often the engine syncs (and streams a frame).
+  // The proxy owns the value and forwards changes to the worker.
   useEffect(() => {
-    setPausedFlag(paused);
-    proxyRef.current?.setPaused(paused);
-  }, [paused]);
+    lammps?.setSyncFrequency(simulationSettings.speed);
+  }, [lammps, simulationSettings.speed]);
 
   useEffect(() => {
-    // Runs synchronously once per synced timestep, while the wasm module is
-    // safe to touch (see LammpsAdapter.setStepListener). Pause and cancel are
-    // handled by the adapter itself via the wasmInstance flags; rendering
-    // still runs here on the pausing step so the display matches the state
-    // the simulation actually pauses at.
+    // Runs synchronously once per frame the engine delivers. Pause and cancel
+    // are run control on the proxy, applied by the worker's adapter between
+    // steps; the frame of the step a run pauses at is still delivered, so the
+    // display matches the state the simulation actually pauses at.
     proxyRef.current?.setStepListener(() => {
       if (lammps && simulation) {
         setHasSynchronized(true);
@@ -176,11 +166,6 @@ const SimulationComponent = () => {
         if (renderCycleCounter.current >= uiUpdateFrequency) {
           renderCycleCounter.current = 0;
           runPostTimestep(false);
-        }
-
-        const freq = getSyncFrequency();
-        if (freq !== undefined) {
-          lammps.setSyncFrequency(freq);
         }
       }
     });
@@ -261,7 +246,6 @@ const SimulationComponent = () => {
           progress: 0.6,
         });
         setLammps(proxy);
-        setSyncFrequency(1);
         setStatus(undefined);
       })
       .catch((error: unknown) => {

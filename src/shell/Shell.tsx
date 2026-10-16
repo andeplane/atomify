@@ -14,7 +14,6 @@ import Simulation from "../components/Simulation";
 import { isScriptFile } from "../store/projects";
 import { scriptOptsIntoKokkos } from "../utils/kokkos";
 import { track } from "../utils/metrics";
-import { setCancel } from "../wasm/wasmInstance";
 import { shellThemeConfig } from "../theme";
 import { parseDeepLink, screenToSearch } from "./deepLink";
 import { defaultThreadCount } from "./runPlan";
@@ -71,7 +70,6 @@ const Shell = () => {
   );
   const startRuns = useStoreActions((actions) => actions.projects.startRuns);
   const readFile = useStoreActions((actions) => actions.projects.readFile);
-  const setPaused = useStoreActions((actions) => actions.simulation.setPaused);
   const setLiveViewportVisible = useStoreActions(
     (actions) => actions.app.setLiveViewportVisible,
   );
@@ -339,11 +337,8 @@ const Shell = () => {
       runProject,
       runFile: (path) => launch(path, {}, "file"),
       runAgain: (inputScript, vars) => launch(inputScript, vars),
-      stopRun: () => {
-        // Same path as the legacy Stop menu item: unpause, then cancel.
-        setPaused(false);
-        setCancel(true);
-      },
+      // The engine proxy owns run control; cancel also releases a paused run.
+      stopRun: () => lammps?.cancel(),
       engineReady: lammps !== undefined && !engineError,
       examples,
     }),
@@ -352,7 +347,6 @@ const Shell = () => {
       quickRunExample,
       runProject,
       launch,
-      setPaused,
       lammps,
       engineError,
       examples,

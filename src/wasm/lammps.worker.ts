@@ -18,9 +18,14 @@ import {
  * thread, which renders it with omovi.
  */
 import { LammpsAdapter } from "./lammpsAdapter";
-import { setPausedFlag } from "./wasmInstance";
 import { frameTransferables, type EngineFrame } from "./engineFrame";
-import type { WorkerCommand, WorkerEvent } from "./workerMessages";
+import { FrameGate } from "./frameGate";
+import {
+  LAMMPS_JS_VERSION,
+  WORKER_PROTOCOL_VERSION,
+  type WorkerCommand,
+  type WorkerEvent,
+} from "./workerMessages";
 import type {
   LAMMPSWeb as NativeLammps,
   LammpsModule,
@@ -45,6 +50,20 @@ let perAtomTarget: { category: ModifierCategory; name: string } | null = null;
 function post(event: WorkerEvent, transfer?: Transferable[]) {
   ctx.postMessage(event, transfer ?? []);
 }
+
+function postReady() {
+  post({
+    type: "ready",
+    protocolVersion: WORKER_PROTOCOL_VERSION,
+    engineVersion: LAMMPS_JS_VERSION,
+  });
+}
+
+// At most one streamed frame is unacknowledged by the main thread; frames
+// synced meanwhile are skipped (only the latest is kept, see frameGate.ts).
+const frames = new FrameGate((frame) =>
+  post({ type: "step", frame }, frameTransferables(frame)),
+);
 
 // Commands that call into compiled wasm must NOT run while a run is active:
 // between step callbacks the module is asyncify-suspended (emscripten_sleep),
@@ -155,8 +174,13 @@ function mkdirp(path: string) {
  * the only window where touching the (otherwise asyncify-suspended) module is
  * safe. Every array is copied once into a fresh buffer, and every buffer is
  * transferred, so the main thread reads them in place.
+ *
+ * The frame is built even when the gate will skip it: the heap can only be
+ * read here, and the parked frame is what reaches the screen if the run then
+ * pauses or stops before another sync. `force` posts it regardless of an
+ * unacked frame (the final frame at run end).
  */
-function streamStep() {
+function streamStep(force = false) {
   if (!module || !native) return;
   // Safe window: the wasm is not suspended here. Apply any commands that
   // arrived (deferred) while it was.
@@ -235,12 +259,12 @@ function streamStep() {
     cpuRemain: native.getThermo("cpuremain"),
     walls: native.getWalls(),
   };
-  post({ type: "step", frame }, frameTransferables(frame));
+  frames.offer(frame, force);
 }
 
 async function load() {
   if (module) {
-    post({ type: "ready" });
+    postReady();
     return;
   }
   const printLine = (...args: unknown[]) => {
@@ -291,7 +315,7 @@ async function load() {
   // per-simulation acceleration is decided by the script (see utils/kokkos.ts).
   adapter.start();
   adapter.setStepListener(streamStep);
-  post({ type: "ready" });
+  postReady();
 }
 
 ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
@@ -339,7 +363,9 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
             await adapter.runFile(cmd.path);
             // run 0 does not invoke the per-step callback. Capture the final
             // initialized structure now, after WASM has finished unwinding.
-            if (!adapter.getErrorMessage()) streamStep();
+            // Forced past the frame gate: the store reads this frame right
+            // after runFinished, which must not wait on an ack.
+            if (!adapter.getErrorMessage()) streamStep(true);
           }
         } catch (error) {
           runError = error instanceof Error ? error.message : String(error);
@@ -349,6 +375,9 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
           // Run is over (wasm no longer suspended): apply commands that
           // arrived after the last step callback.
           flushDeferredNativeCalls();
+          // A stopped or failed run streams no final frame; deliver the last
+          // synced one if the gate skipped it, so it lands before runFinished.
+          frames.flush();
           post({
             type: "runFinished",
             requestId,
@@ -365,8 +394,12 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
         adapter?.cancel();
         break;
       case "pause":
-        // The adapter's between-step wait loop reads this worker-local flag.
-        setPausedFlag(cmd.paused);
+        // Read by the adapter's between-step wait loop; plain JS state, so
+        // safe to apply while the module is suspended.
+        adapter?.setPaused(cmd.paused);
+        break;
+      case "frameAck":
+        frames.ack();
         break;
       case "setSyncFrequency":
         callNativeSafely(() => adapter?.setSyncFrequency(cmd.every));

@@ -22,6 +22,7 @@ import {
   type SimulationModel,
   type Simulation,
 } from "./simulation";
+import type { LammpsWeb } from "../types";
 
 describe("simulation store — pure actions", () => {
   let store: Store<SimulationModel>;
@@ -101,17 +102,18 @@ describe("simulation store — pure actions", () => {
   });
 
   describe("setPaused", () => {
-    it("sets paused to true", () => {
-      store.getActions().setPaused(true);
+    it("forwards to the engine proxy, which owns run control", () => {
+      const setPaused = vi.fn();
+      store.getActions().setLammps({ setPaused } as unknown as LammpsWeb);
 
-      expect(store.getState().paused).toBe(true);
-    });
-
-    it("sets paused to false", () => {
       store.getActions().setPaused(true);
       store.getActions().setPaused(false);
 
-      expect(store.getState().paused).toBe(false);
+      expect(setPaused.mock.calls).toEqual([[true], [false]]);
+    });
+
+    it("is a no-op before the engine has loaded", () => {
+      expect(() => store.getActions().setPaused(true)).not.toThrow();
     });
   });
 
@@ -217,7 +219,6 @@ describe("simulation store — pure actions", () => {
       const state = store.getState();
 
       expect(state.running).toBe(false);
-      expect(state.paused).toBe(false);
       expect(state.showConsole).toBe(false);
       expect(state.files).toEqual([]);
       expect(state.lammpsOutput).toEqual([]);

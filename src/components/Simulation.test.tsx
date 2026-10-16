@@ -10,9 +10,6 @@ vi.mock("../hooks", () => ({
   useStoreState: vi.fn(),
 }));
 vi.mock("../wasm/LammpsWorkerProxy", () => ({ LammpsWorkerProxy: vi.fn() }));
-vi.mock("../wasm/wasmInstance", () => ({
-  setPausedFlag: vi.fn(),
-}));
 vi.mock("../utils/metrics", () => ({ track: vi.fn(), time_event: vi.fn() }));
 const { notifyInfo } = vi.hoisted(() => ({ notifyInfo: vi.fn() }));
 vi.mock("../shell/ShellContext", () => ({
@@ -21,6 +18,7 @@ vi.mock("../shell/ShellContext", () => ({
 
 const setSpeed = vi.fn();
 const setPaused = vi.fn();
+const setSyncFrequency = vi.fn();
 
 let state: State<StoreModel>;
 
@@ -28,8 +26,12 @@ beforeEach(() => {
   vi.clearAllMocks();
   state = {
     app: { liveViewportVisible: true },
-    // An engine is already loaded, so the component doesn't spawn a worker.
-    simulation: { running: true, paused: true, lammps: {} },
+    // An engine is already loaded (and paused), so the component doesn't
+    // spawn a worker.
+    simulation: {
+      running: true,
+      lammps: { isPaused: () => true, setSyncFrequency },
+    },
     settings: { simulation: { speed: 1 } },
     render: {
       visualizer: {
@@ -130,5 +132,15 @@ describe("simulation keyboard shortcuts", () => {
     expect(notifyInfo).toHaveBeenCalledWith({
       message: "Copied camera position and target to clipboard.",
     });
+  });
+});
+
+describe("simulation run control", () => {
+  it("forwards the speed setting to the engine proxy as its sync frequency", () => {
+    const { rerender } = render(<Simulation />);
+    expect(setSyncFrequency).toHaveBeenLastCalledWith(1);
+    (state.settings.simulation as { speed: number }).speed = 20;
+    rerender(<Simulation />);
+    expect(setSyncFrequency).toHaveBeenLastCalledWith(20);
   });
 });

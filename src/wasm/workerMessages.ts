@@ -13,6 +13,23 @@
 
 import type { ModifierCategory } from "lammps.js";
 import type { EngineFrame } from "./engineFrame";
+import { dependencies } from "../../package.json";
+
+/**
+ * Version of this message protocol. The worker reports it in its `ready`
+ * event and the proxy refuses to drive a worker that speaks another version
+ * (e.g. a stale worker script cached from a different deploy). Bump it on
+ * any incompatible change to WorkerCommand / WorkerEvent.
+ */
+export const WORKER_PROTOCOL_VERSION = 2;
+
+/**
+ * The lammps.js release the app is built against (pinned exactly in
+ * package.json). The worker reports it in `ready` alongside the protocol
+ * version; both sides read this one constant, so a mismatch means the worker
+ * script and the page come from different builds.
+ */
+export const LAMMPS_JS_VERSION: string = dependencies["lammps.js"];
 
 /** Commands sent from the main thread to the worker. */
 export type WorkerCommand =
@@ -26,12 +43,17 @@ export type WorkerCommand =
   // Reset per-run flags before a run. Kokkos itself is started once at load.
   | { type: "start" }
   | { type: "runFile"; requestId: number; path: string }
+  // Run control. LammpsWorkerProxy is its only owner: it keeps the cancel /
+  // paused / sync-frequency state and forwards each change here, and the
+  // worker's LammpsAdapter applies it in its between-step wait loop. A cancel
+  // ends the active run (and unpauses it).
   | { type: "cancel" }
-  // Pause/resume the run. The worker owns the LammpsAdapter whose between-step
-  // wait loop reads the (worker-local) paused flag, so pausing must be sent as
-  // a command — setting the main thread's flag alone does nothing.
   | { type: "pause"; paused: boolean }
   | { type: "setSyncFrequency"; every: number }
+  // Frame backpressure: the main thread has consumed a streamed `step` frame.
+  // The worker posts no new frame while one is unacknowledged (see
+  // frameGate.ts).
+  | { type: "frameAck" }
   | { type: "setBuildNeighborlist"; build: boolean }
   | { type: "setBondDistance"; type1: number; type2: number; distance: number }
   | { type: "clearBondDistances" }
@@ -76,7 +98,9 @@ export interface WorkdirFile {
 
 /** Events sent from the worker to the main thread. */
 export type WorkerEvent =
-  | { type: "ready" }
+  // The module is loaded. Carries the worker's protocol and lammps.js versions
+  // so the proxy can refuse a worker from another build.
+  | { type: "ready"; protocolVersion: number; engineVersion: string }
   | WorkerStepData
   | { type: "printed"; text: string }
   | { type: "error"; message: string }
