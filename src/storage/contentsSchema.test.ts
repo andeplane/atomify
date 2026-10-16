@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   base64ToBytes,
+  buildFileRecord,
   bytesToBase64,
   bytesToWriteContent,
   classifyPath,
@@ -56,6 +57,28 @@ describe("base64 round-trip", () => {
     const decoded = base64ToBytes(bytesToBase64(bytes));
     expect(decoded.length).toBe(bytes.length);
     expect(decoded[decoded.length - 1]).toBe(42);
+  });
+});
+
+describe("buildFileRecord size", () => {
+  // BrowserStorageDrive.save (@jupyterlite/services 0.8) sizes records in
+  // UTF-8 bytes of the stored content; the app's records must agree.
+  it("counts UTF-8 bytes for text, not UTF-16 code units", () => {
+    expect(buildFileRecord("p/notes.txt", "Å ø 😀").size).toBe(
+      new TextEncoder().encode("Å ø 😀").length,
+    );
+  });
+
+  it("counts the compact JSON encoding for parsed json records", () => {
+    const pretty = JSON.stringify({ name: "Ångström", n: [1, 2] }, null, 2);
+    const record = buildFileRecord("p/.atomify/project.json", pretty);
+    expect(record.size).toBe(
+      new TextEncoder().encode('{"name":"Ångström","n":[1,2]}').length,
+    );
+  });
+
+  it("counts decoded bytes for binary records", () => {
+    expect(buildFileRecord("p/frame.png", new Uint8Array(10)).size).toBe(10);
   });
 });
 
