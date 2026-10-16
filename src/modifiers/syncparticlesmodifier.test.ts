@@ -60,3 +60,47 @@ describe("persistent LAMMPS atom tags", () => {
     expect(Array.from(output.particles!.indices)).not.toEqual([0, 1, 2]);
   });
 });
+
+describe("periodic images", () => {
+  it("appends shifted copies that keep each atom's tag and type", () => {
+    // Arrange: two atoms in a triclinic cell (rows a, b, c).
+    const input = {
+      lammps: {},
+      frame: {
+        ...emptyEngineFrame(),
+        count: 2,
+        positions: new Float32Array([1, 2, 3, 4, 5, 6]),
+        types: new Int32Array([1, 2]),
+        ids: new Int32Array([42, 7]),
+        boxMatrix: new Float32Array([10, 0, 0, 2, 20, 0, 3, 4, 30]),
+      },
+    } as unknown as ModifierInput;
+    const output = {} as ModifierOutput;
+    const modifier = new SyncParticlesModifier({
+      name: "Particles",
+      active: true,
+    });
+    modifier.periodicImages = [1, 2, 1];
+
+    // Act
+    modifier.run(input, output);
+
+    // Assert
+    const particles = output.particles!;
+    expect(particles.count).toBe(4);
+    expect(Array.from(particles.indices.subarray(0, 4))).toEqual([
+      42, 7, 42, 7,
+    ]);
+    expect(Array.from(particles.types.subarray(0, 4))).toEqual([1, 2, 1, 2]);
+    expect(Array.from(particles.positions.subarray(6, 12))).toEqual([
+      3, 22, 3, 6, 25, 6,
+    ]);
+    expect(output.imageShifts).toEqual([0, 0, 0, 2, 20, 0]);
+
+    // Back to 1×1×1 renders only the real atoms again.
+    modifier.periodicImages = [1, 1, 1];
+    modifier.run(input, output);
+    expect(output.particles!.count).toBe(2);
+    expect(output.imageShifts).toEqual([0, 0, 0]);
+  });
+});

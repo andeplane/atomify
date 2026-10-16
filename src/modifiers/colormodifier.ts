@@ -5,6 +5,7 @@ import { perAtomValues } from "../wasm/engineFrame";
 import colormap from "colormap";
 import { AtomType } from "../utils/atomtypes";
 import * as THREE from "three";
+import { realParticleCount } from "./periodicImages";
 
 const defaultAtomTypes: AtomType[] = [
   {
@@ -193,7 +194,7 @@ class ColorModifier extends Modifier {
     // empty until the worker has streamed a newly selected compute.
     const perAtomArray = perAtomValues(input.frame, computeName).subarray(
       0,
-      particles.count,
+      realParticleCount(particles.count, output.imageShifts),
     );
 
     // Reset global min/max if requested
@@ -265,7 +266,10 @@ class ColorModifier extends Modifier {
     const visualizer = input.renderState.visualizer;
     const nativeRadii = input.frame.radii;
 
-    for (let i = 0; i < particles.count; i++) {
+    // Periodic images share their atom's ID, so styling the real particles
+    // styles every image too.
+    const count = realParticleCount(particles.count, output.imageShifts);
+    for (let i = 0; i < count; i++) {
       const realIndex = particles.indices[i];
       const type = particles.types[i];
       let atomType = particleStyles[type];

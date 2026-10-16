@@ -2,8 +2,19 @@ import { syncParticleAttributes } from "../rendering/particleAttributes";
 import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 import { Particles } from "omovi";
+import type { EngineFrame } from "../wasm/engineFrame";
+import {
+  clampImageCounts,
+  ImageCounts,
+  imageShifts,
+  replicatePositions,
+  replicateValues,
+} from "./periodicImages";
 
 class SyncParticlesModifier extends Modifier {
+  /** Periodic images per axis (visual only); 1×1×1 draws the box once. */
+  public periodicImages: ImageCounts = [1, 1, 1];
+
   constructor({ name, active }: ModifierProps) {
     super({ name, active });
   }
@@ -25,11 +36,15 @@ class SyncParticlesModifier extends Modifier {
 
     const frame = input.frame;
     const numParticles = frame.count;
+    const shifts = this.currentImageShifts(frame, numParticles);
+    output.imageShifts = shifts;
+    const numImages = shifts.length / 3;
+    const numRendered = numParticles * numImages;
     let newParticles = output.particles;
-    if (!newParticles || newParticles.capacity < numParticles) {
-      let newCapacity = numParticles;
+    if (!newParticles || newParticles.capacity < numRendered) {
+      let newCapacity = numRendered;
       if (newParticles) {
-        newCapacity = Math.max(numParticles, 2 * newParticles.capacity);
+        newCapacity = Math.max(numRendered, 2 * newParticles.capacity);
         newParticles.dispose();
       }
 
@@ -37,7 +52,7 @@ class SyncParticlesModifier extends Modifier {
       output.particles = newParticles;
       output.colorsDirty = true;
     } else {
-      if (numParticles !== newParticles.count) {
+      if (numRendered !== newParticles.count) {
         // Need to update colors and radius
         output.colorsDirty = true;
       }
@@ -49,13 +64,19 @@ class SyncParticlesModifier extends Modifier {
     newParticles.positions.set(frame.positions.subarray(0, 3 * numParticles));
     newParticles.types.set(frame.types.subarray(0, numParticles));
     newParticles.indices.set(ids);
-    if (newParticles.count !== numParticles) {
+    if (numImages > 1) {
+      // Images share their atom's ID, so styles set per ID apply to all.
+      replicatePositions(newParticles.positions, numParticles, shifts);
+      replicateValues(newParticles.types, numParticles, numImages);
+      replicateValues(newParticles.indices, numParticles, numImages);
+    }
+    if (newParticles.count !== numRendered) {
       output.colorsDirty = true;
     }
-    newParticles.count = numParticles;
+    newParticles.count = numRendered;
 
     if (newParticles.mesh) {
-      newParticles.mesh.count = numParticles;
+      newParticles.mesh.count = numRendered;
     }
 
     syncParticleAttributes(input.renderState?.visualizer, newParticles);
@@ -75,6 +96,15 @@ class SyncParticlesModifier extends Modifier {
         );
       }
     }
+  };
+
+  private currentImageShifts = (frame: EngineFrame, numParticles: number) => {
+    const counts = clampImageCounts(this.periodicImages, numParticles);
+    if (counts[0] * counts[1] * counts[2] === 1) {
+      return [0, 0, 0];
+    }
+    // The frame's row-major cell matrix, whose rows are the box vectors a, b, c.
+    return imageShifts(frame.boxMatrix, counts);
   };
 }
 
