@@ -1,9 +1,14 @@
 import { GROUP_LABEL_PREFIX } from "../utils/lammpsGroups";
 import { LammpsWeb, LMPModifier, ModifierType } from "../types";
 import type { ModifierCategory } from "lammps.js";
-import { getCancel, setCancel } from "./wasmInstance";
 import { emptyEngineFrame, type EngineFrame } from "./engineFrame";
-import type { WorkerCommand, WorkerEvent, WorkdirFile } from "./workerMessages";
+import {
+  LAMMPS_JS_VERSION,
+  WORKER_PROTOCOL_VERSION,
+  type WorkerCommand,
+  type WorkerEvent,
+  type WorkdirFile,
+} from "./workerMessages";
 
 /** One file from a workdir snapshot, as delivered to callers. */
 export interface WorkdirSnapshotFile {
@@ -28,6 +33,12 @@ export interface WorkdirSnapshot {
  * {@link LammpsWeb} interface the store holds as `lammps`: `latestFrame` for
  * the modifier/render pipeline, status getters backed by that frame, and
  * explicit commands (run control, worker-FS writes) forwarded to the worker.
+ *
+ * It is the single owner of run control: cancel, pause/resume and the sync
+ * frequency are state here, changed only through its methods and forwarded
+ * to the worker as commands. It also acks every frame it consumes, which is
+ * what lets the worker hold back new frames while one is unread
+ * (backpressure, see frameGate.ts).
  */
 
 const CANCEL_MESSAGE = "Atomify::canceled";
@@ -52,6 +63,10 @@ export class LammpsWorkerProxy implements LammpsWeb {
   // --- Run state, refreshed from worker runFinished / error events ---
   private cRunning = false;
   private cError = "";
+
+  // --- Run control: owned here, mirrored into the worker's adapter ---
+  // Matches the adapter's defaults (unpaused, sync every step) until changed.
+  private paused = false;
   private syncFrequency = 1;
 
   private nextRequestId = 1;
@@ -62,7 +77,10 @@ export class LammpsWorkerProxy implements LammpsWeb {
   // undeliverable message). The worker cannot be recovered in place, so every
   // later call fails fast instead of waiting on a reply that will never come.
   private crashError?: Error;
+  private resolveLoad?: () => void;
   private rejectLoad?: (error: Error) => void;
+  // lammps.js version the worker reported in its (accepted) `ready` event.
+  private workerEngineVersion?: string;
 
   private readyPromise?: Promise<void>;
   private stepListener?: () => void;
@@ -98,17 +116,23 @@ export class LammpsWorkerProxy implements LammpsWeb {
   /**
    * The worker died: fail everything waiting on it, surface the message
    * through the usual onError path (console output), and notify the crash
-   * listener so the app can tell the user to reload.
+   * listener so the app can tell the user to reload. `message` overrides the
+   * generic "crashed" wording (e.g. for a version mismatch).
    */
-  private handleCrash(detail: string) {
+  private handleCrash(
+    detail: string,
+    message = `The simulation engine crashed: ${detail}`,
+  ) {
     if (this.crashError) return;
-    const error = new Error(`The simulation engine crashed: ${detail}`);
+    const error = new Error(message);
     this.crashError = error;
     this.cRunning = false;
+    this.paused = false;
     this.cError = error.message;
     console.error("LAMMPS worker crashed:", detail);
-    this.rejectLoad?.(error);
-    this.rejectLoad = undefined;
+    const rejectLoad = this.rejectLoad;
+    this.resolveLoad = this.rejectLoad = undefined;
+    rejectLoad?.(error);
     const runs = [...this.pendingRuns.values()];
     const snapshots = [...this.pendingSnapshots.values()];
     this.pendingRuns.clear();
@@ -125,34 +149,72 @@ export class LammpsWorkerProxy implements LammpsWeb {
     return this.crashError !== undefined;
   }
 
+  /** lammps.js version of the loaded worker; undefined until it is ready. */
+  get engineVersion(): string | undefined {
+    return this.workerEngineVersion;
+  }
+
+  /**
+   * Protocol handshake: accept the worker only if it speaks this build's
+   * message protocol and runs this build's lammps.js. A mismatch (a worker
+   * script from another deploy) is fatal and goes down the crash path, so
+   * load() rejects and the user is told to reload.
+   */
+  private handleReady(event: Extract<WorkerEvent, { type: "ready" }>) {
+    const { protocolVersion, engineVersion } = event;
+    if (
+      protocolVersion !== WORKER_PROTOCOL_VERSION ||
+      engineVersion !== LAMMPS_JS_VERSION
+    ) {
+      const worker = `protocol ${protocolVersion ?? "unknown"}, lammps.js ${engineVersion ?? "unknown"}`;
+      const expected = `protocol ${WORKER_PROTOCOL_VERSION}, lammps.js ${LAMMPS_JS_VERSION}`;
+      this.handleCrash(
+        `version mismatch (worker: ${worker}; expected: ${expected})`,
+        `The simulation engine does not match this version of Atomify (engine: ${worker}; expected: ${expected})`,
+      );
+      return;
+    }
+    this.workerEngineVersion = engineVersion;
+    const resolveLoad = this.resolveLoad;
+    this.resolveLoad = this.rejectLoad = undefined;
+    resolveLoad?.();
+  }
+
   private handleEvent(event: WorkerEvent) {
     switch (event.type) {
       case "ready":
+        this.handleReady(event);
         break;
       case "step":
         this.frame = event.frame;
-        // A stop press sets the main-thread cancel flag; forward it to the
-        // worker's adapter, which owns the run's abort logic.
-        if (getCancel()) {
-          setCancel(false);
-          this.send({ type: "cancel" });
-        }
         try {
           this.stepListener?.();
         } catch (error) {
           console.error("Step listener failed:", error);
         }
+        // Consumed: the worker may post its next frame. Acked here rather
+        // than from rendering, so a hidden viewport or a missing or failing
+        // listener can never hold the stream back.
+        this.send({ type: "frameAck" });
         break;
       case "printed":
         this.printListener?.(event.text);
         break;
-      case "error":
+      case "error": {
         this.cError = event.message;
         this.errorListener?.(event.message);
         console.error("LAMMPS worker error:", event.message);
+        // A failure during load() posts `error` instead of `ready`; reject
+        // so the caller can show it, rather than hanging forever at
+        // "Downloading LAMMPS…".
+        const rejectLoad = this.rejectLoad;
+        this.resolveLoad = this.rejectLoad = undefined;
+        rejectLoad?.(new Error(event.message));
         break;
+      }
       case "runFinished": {
         this.cRunning = false;
+        this.paused = false;
         this.cError = event.error;
         const pending = this.pendingRuns.get(event.requestId);
         if (pending) {
@@ -188,22 +250,10 @@ export class LammpsWorkerProxy implements LammpsWeb {
           reject(this.crashError);
           return;
         }
+        // Settled by handleReady (after the version handshake), by a load
+        // `error` event, or by handleCrash.
+        this.resolveLoad = resolve;
         this.rejectLoad = reject;
-        const onMessage = (ev: MessageEvent<WorkerEvent>) => {
-          if (ev.data.type === "ready") {
-            this.worker.removeEventListener("message", onMessage);
-            this.rejectLoad = undefined;
-            resolve();
-          } else if (ev.data.type === "error") {
-            // A failure during load() posts `error` instead of `ready`; reject
-            // so the caller can show it, rather than hanging forever at
-            // "Downloading LAMMPS…".
-            this.worker.removeEventListener("message", onMessage);
-            this.rejectLoad = undefined;
-            reject(new Error(ev.data.message));
-          }
-        };
-        this.worker.addEventListener("message", onMessage);
         this.send({ type: "load" });
       });
     }
@@ -227,8 +277,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
   }
 
   /**
-   * Runs synchronously once per streamed timestep, after `latestFrame` has
-   * been replaced — the main-thread analogue of the adapter's step listener.
+   * Runs synchronously once per delivered frame, after `latestFrame` has been
+   * replaced — the main-thread analogue of the adapter's step listener. Steps
+   * the worker skipped under backpressure never reach it.
    */
   setStepListener(listener: (() => void) | undefined) {
     this.stepListener = listener;
@@ -265,27 +316,53 @@ export class LammpsWorkerProxy implements LammpsWeb {
     if (this.crashError) return false;
     this.cRunning = true;
     this.cError = "";
-    setCancel(false);
     this.send({ type: "start" });
     return true;
   }
 
   stop(): boolean {
-    this.send({ type: "cancel" });
+    this.cancel();
     return true;
   }
 
+  // --- LammpsWeb: run control -------------------------------------------
+
+  /**
+   * Stop the active run at its next synced step; a paused run is released so
+   * it can reach that step. The run then settles with the Atomify::canceled
+   * marker. Ignored when nothing is running, so a late press can't leak into
+   * the next run.
+   */
   cancel() {
+    if (!this.cRunning) return;
+    this.paused = false;
     this.send({ type: "cancel" });
   }
 
   /**
-   * Forward the paused state to the worker, whose LammpsAdapter owns the
-   * between-step wait loop. Setting the main thread's paused flag alone has no
-   * effect because the adapter runs in the worker with its own flag.
+   * Hold (or release) the run between synced steps. The worker's adapter
+   * waits in its between-step loop while paused; the frame of the step it
+   * pauses at is still delivered.
    */
   setPaused(paused: boolean) {
+    if (paused === this.paused) return;
+    this.paused = paused;
     this.send({ type: "pause", paused });
+  }
+
+  isPaused(): boolean {
+    return this.paused;
+  }
+
+  /** Sync (and stream a frame) every `every` timesteps. */
+  setSyncFrequency(every: number) {
+    if (every <= 0 || every === this.syncFrequency) return;
+    this.syncFrequency = every;
+    this.send({ type: "setSyncFrequency", every });
+  }
+
+  getSyncFrequency(): number {
+    return this.syncFrequency;
   }
 
   runCommand(command: string) {
@@ -297,6 +374,9 @@ export class LammpsWorkerProxy implements LammpsWeb {
     const requestId = this.nextRequestId++;
     this.cRunning = true;
     this.cError = "";
+    // Every run starts unpaused; the worker's adapter resets itself the same
+    // way when it receives runFile.
+    this.paused = false;
     return new Promise<void>((resolve, reject) => {
       this.pendingRuns.set(requestId, { resolve, reject });
       this.send({ type: "runFile", requestId, path });
@@ -333,12 +413,6 @@ export class LammpsWorkerProxy implements LammpsWeb {
       });
       this.send({ type: "snapshotWorkdir", requestId, dir, maxBytes });
     });
-  }
-
-  setSyncFrequency(every: number) {
-    if (every <= 0 || every === this.syncFrequency) return;
-    this.syncFrequency = every;
-    this.send({ type: "setSyncFrequency", every });
   }
 
   // --- LammpsWeb: status (backed by the latest frame) -------------------

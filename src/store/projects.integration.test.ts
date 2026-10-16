@@ -1292,6 +1292,8 @@ function createFakeEngine(options: FakeEngineOptions = {}): FakeEngine {
     stop: () => true,
     start: () => true,
     cancel: () => {},
+    setPaused: () => {},
+    isPaused: () => false,
     runCommand: () => {},
     runFile: (path: string) => {
       runFilePaths.push(path);

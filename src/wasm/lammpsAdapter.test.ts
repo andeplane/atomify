@@ -131,3 +131,52 @@ describe("LammpsAdapter.snapshotModifiers", () => {
     expect(perAtom!.values.buffer).not.toBe(heapF64.buffer);
   });
 });
+
+describe("LammpsAdapter run control", () => {
+  const setup = () => {
+    let onStep: () => Promise<void> = () => Promise.resolve();
+    const native: Partial<NativeLammps> = {
+      setAsyncStepCallback: vi.fn((callback: () => Promise<void>) => {
+        onStep = callback;
+      }) as unknown as NativeLammps["setAsyncStepCallback"],
+      stop: vi.fn(),
+      getLastErrorMessage: vi.fn(() => ""),
+    };
+    const adapter = new LammpsAdapter(
+      {} as LammpsModule,
+      native as NativeLammps,
+    );
+    return { adapter, native, step: () => onStep() };
+  };
+  const settled = (promise: Promise<void>) => {
+    let done = false;
+    void promise.then(() => (done = true));
+    return () => done;
+  };
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  it("holds the step while paused and releases it on resume", async () => {
+    const { adapter, step } = setup();
+    adapter.setPaused(true);
+    const released = settled(step());
+    await wait(150);
+    expect(released()).toBe(false);
+
+    adapter.setPaused(false);
+    await wait(150);
+    expect(released()).toBe(true);
+  });
+
+  it("cancel releases a paused step and stops the run at the next one", async () => {
+    const { adapter, native, step } = setup();
+    adapter.setPaused(true);
+    const paused = step();
+    adapter.cancel();
+    await paused;
+    expect(native.stop).not.toHaveBeenCalled();
+
+    await step();
+    expect(native.stop).toHaveBeenCalledTimes(1);
+    expect(adapter.getErrorMessage()).toBe("Atomify::canceled");
+  });
+});

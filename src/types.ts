@@ -64,7 +64,11 @@ export type LammpsWeb = {
 
   stop: () => boolean;
   start: () => boolean;
+  // Run control. The proxy is its only owner: these methods are the one way
+  // to stop, pause or resume a run (see LammpsWorkerProxy).
   cancel: () => void;
+  setPaused: (paused: boolean) => void;
+  isPaused: () => boolean;
   runCommand: (command: string) => void;
   /** Never rejects; run failures are surfaced through getErrorMessage. */
   runFile: (path: string) => Promise<void>;
