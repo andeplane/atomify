@@ -65,7 +65,7 @@
     "@types/node": "^26.2.0",
     "@types/uuid": "^11.0.0",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
-    "@vitejs/plugin-react": "^6.0.5",
+    "@vitejs/plugin-react": "^6.1.2",
     "@vitest/ui": "^4.1.10",
     "eslint": "^9.39.5",
     "eslint-plugin-react-hooks": "^7.1.1",
