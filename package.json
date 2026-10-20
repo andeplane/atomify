@@ -38,6 +38,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
+    "test:examples": "vitest run --config vitest.examples.config.mts",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:smoke": "playwright test -c playwright.smoke.config.ts",
