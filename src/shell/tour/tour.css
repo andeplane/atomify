@@ -1,0 +1,180 @@
+/* driver.js popover themed with the shell tokens (light + dark). */
+
+.driver-popover.atomify-tour {
+  background: var(--surface-elevated);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
+  box-shadow: var(--shadow-modal);
+  font-family: var(--font-sans);
+  padding: 18px 18px 14px;
+  max-width: 340px;
+  min-width: 280px;
+}
+
+.driver-popover.atomify-tour .driver-popover-title {
+  font-family: var(--font-sans);
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  padding-right: 22px;
+}
+
+.driver-popover.atomify-tour .driver-popover-description {
+  font-family: var(--font-sans);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+.driver-popover.atomify-tour .driver-popover-description b {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.driver-popover.atomify-tour .driver-popover-description code {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: var(--chip);
+  color: var(--text);
+}
+
+.driver-popover.atomify-tour .driver-popover-close-btn {
+  color: var(--text-3);
+}
+
+.driver-popover.atomify-tour .driver-popover-close-btn:hover,
+.driver-popover.atomify-tour .driver-popover-close-btn:focus-visible {
+  color: var(--text);
+}
+
+.driver-popover.atomify-tour .driver-popover-progress-text {
+  color: var(--text-3);
+  font-size: 12px;
+  font-family: var(--font-sans);
+}
+
+.driver-popover.atomify-tour .driver-popover-footer {
+  margin-top: 14px;
+}
+
+.driver-popover.atomify-tour .driver-popover-footer-btn {
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-shadow: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-2);
+}
+
+.driver-popover.atomify-tour .driver-popover-footer-btn:hover,
+.driver-popover.atomify-tour .driver-popover-footer-btn:focus {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.driver-popover.atomify-tour .driver-popover-prev-btn {
+  border-color: transparent;
+}
+
+.driver-popover.atomify-tour .driver-popover-next-btn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+.driver-popover.atomify-tour .driver-popover-next-btn:hover,
+.driver-popover.atomify-tour .driver-popover-next-btn:focus {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: var(--on-accent);
+}
+
+.driver-popover.atomify-tour .driver-popover-arrow-side-left {
+  border-left-color: var(--surface-elevated);
+}
+.driver-popover.atomify-tour .driver-popover-arrow-side-right {
+  border-right-color: var(--surface-elevated);
+}
+.driver-popover.atomify-tour .driver-popover-arrow-side-top {
+  border-top-color: var(--surface-elevated);
+}
+.driver-popover.atomify-tour .driver-popover-arrow-side-bottom {
+  border-bottom-color: var(--surface-elevated);
+}
+
+/* Floating bar shown while the tour waits for the user (no spotlight). */
+.atomify-tour-bar {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  /* Above the shell's dialogs (z-index 2000). */
+  z-index: 2100;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(560px, calc(100vw - 32px));
+  padding: 9px 10px 9px 14px;
+  border-radius: 12px;
+  background: var(--surface-elevated);
+  border: 1px solid var(--accent-line);
+  box-shadow: var(--shadow-modal);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.4;
+  animation: atomify-tour-bar-in 0.2s ease;
+}
+
+.atomify-tour-bar--top {
+  bottom: auto;
+  top: 8px;
+}
+
+@keyframes atomify-tour-bar-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+.atomify-tour-bar-label {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.atomify-tour-bar-end {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: transparent;
+  color: var(--text-2);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.atomify-tour-bar-end:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}

@@ -41,7 +41,7 @@ test("a script with computes but no run completes as a structure view", async ({
     NO_RUN_RDF_SCRIPT,
   );
   await waitForEngine(page);
-  await page.getByTestId("editor-save-and-run").click();
+  await page.getByTestId("run-simulation").click();
   await waitRunCompleted(page);
   await expect(page.getByTestId("status-pill-failed")).toHaveCount(0);
   // The final snapshot still captured the initialized structure.
