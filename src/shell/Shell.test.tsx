@@ -119,6 +119,32 @@ describe("Shell", () => {
     expect(localStorage.getItem("atomify_theme")).toBe("light");
   });
 
+  it("shows the author credit and an About dialog with source, author and help links", async () => {
+    renderShell();
+    const credit = await screen.findByTestId("sidebar-credit");
+    expect(credit).toHaveTextContent("Made by Anders Hafreager");
+    expect(credit).toHaveAttribute("href", "https://andeplane.github.io");
+
+    await userEvent.click(screen.getByTestId("sidebar-about"));
+    expect(await screen.findByTestId("about-modal")).toBeInTheDocument();
+    expect(screen.getByTestId("about-source")).toHaveAttribute(
+      "href",
+      "https://github.com/andeplane/atomify",
+    );
+    expect(screen.getByTestId("about-author")).toHaveAttribute(
+      "href",
+      "https://andeplane.github.io",
+    );
+    expect(screen.getByTestId("about-issues")).toHaveAttribute(
+      "href",
+      "https://github.com/andeplane/atomify/issues",
+    );
+    expect(screen.getByTestId("about-email")).toHaveAttribute(
+      "href",
+      "mailto:andershaf@gmail.com",
+    );
+  });
+
   it("collapses the sidebar to an icon rail and persists the choice", async () => {
     renderShell();
 

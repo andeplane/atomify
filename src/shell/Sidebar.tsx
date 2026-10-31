@@ -17,11 +17,13 @@ import {
   ChevronRightIcon,
   GridIcon,
   HomeIcon,
+  InfoIcon,
   MoonIcon,
   PlusIcon,
   SlidersIcon,
   SunIcon,
 } from "./icons";
+import AboutModal, { AUTHOR_NAME, AUTHOR_URL } from "./modals/AboutModal";
 import { ColorDot, PulseDot } from "./ui";
 
 /** Persisted collapse choice — the rail should survive reloads. */
@@ -92,6 +94,7 @@ const Sidebar = () => {
     (actions) => actions.projects.openProject,
   );
   const ui = useShellUI();
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -405,6 +408,44 @@ const Sidebar = () => {
 
       <div
         style={{
+          padding: collapsed ? "0 10px 8px" : "0 12px 8px",
+          display: "flex",
+          flexDirection: "column",
+          gap: 2,
+        }}
+      >
+        <NavButton
+          active={false}
+          collapsed={collapsed}
+          onClick={() => {
+            track("About.Open");
+            setAboutOpen(true);
+          }}
+          icon={<InfoIcon size={16} />}
+          label="About"
+          testId="sidebar-about"
+        />
+        {!collapsed && (
+          <a
+            href={AUTHOR_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="sidebar-credit"
+            className="shell-hoverable-text"
+            style={{
+              padding: "2px 12px 0",
+              fontSize: 11.5,
+              color: "var(--text-3)",
+              textDecoration: "none",
+            }}
+          >
+            Made by {AUTHOR_NAME}
+          </a>
+        )}
+      </div>
+
+      <div
+        style={{
           padding: collapsed ? "12px 10px" : 12,
           borderTop: "1px solid var(--border)",
           display: "flex",
@@ -489,6 +530,7 @@ const Sidebar = () => {
           {!collapsed && "Settings"}
         </button>
       </div>
+      <AboutModal open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </aside>
   );
 };
