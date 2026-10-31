@@ -116,7 +116,9 @@ export const libraryThunks: Pick<
       files.push({ fileName: file.fileName, content: content ?? "" });
     }
 
-    const scripts = files.filter((f) => isScriptFile(f.fileName));
+    const scripts = files.filter((f) =>
+      isScriptFile(f.fileName, payload.inputScript),
+    );
     const inputScript =
       payload.inputScript ??
       (scripts.length === 1 ? scripts[0].fileName : undefined);

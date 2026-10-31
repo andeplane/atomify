@@ -185,6 +185,35 @@ describe("Shell", () => {
     );
   });
 
+  it("lists examples in the sidebar below the projects", async () => {
+    renderShell();
+
+    const row = await screen.findByTestId("sidebar-example-diffusion");
+    expect(screen.getByTestId("sidebar-examples-list")).toContainElement(row);
+    expect(row).toHaveTextContent("Diffusion");
+    // Projects come first, examples below.
+    expect(
+      screen
+        .getByTestId("sidebar-projects-section")
+        .compareDocumentPosition(screen.getByTestId("sidebar-examples")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    // Quick run waits for the engine, which never loads in these tests.
+    expect(
+      screen.getByTestId("sidebar-example-quick-diffusion"),
+    ).toBeDisabled();
+
+    await userEvent.click(screen.getByTestId("sidebar-example-use-diffusion"));
+    expect(screen.getByTestId("new-project-modal")).toBeInTheDocument();
+  });
+
+  it("hides the sidebar examples list when collapsed", async () => {
+    renderShell();
+    await screen.findByTestId("sidebar-example-diffusion");
+    await userEvent.click(screen.getByTestId("sidebar-collapse"));
+    expect(screen.queryByTestId("sidebar-examples")).not.toBeInTheDocument();
+  });
+
   it("creates a blank project from the modal and opens its workspace", async () => {
     renderShell();
 
@@ -216,6 +245,37 @@ describe("Shell", () => {
     await waitFor(() =>
       expect(window.location.search).toBe("?project=silica-study&tab=files"),
     );
+  });
+
+  it("keeps the notebook iframe alive across tab switches", async () => {
+    await store.getActions().projects.createProject({
+      displayName: "Notebook keep",
+      files: [{ fileName: "in.demo", content: "units lj\n" }],
+    });
+    renderShell();
+    await userEvent.click(
+      await screen.findByTestId("sidebar-project-notebook-keep"),
+    );
+
+    await userEvent.click(await screen.findByTestId("tab-notebook"));
+    const iframe = await screen.findByTestId("notebook-iframe");
+    expect(iframe.getAttribute("src")).toMatch(
+      /jupyter\/lab\/index\.html\?path=notebook-keep%2F/,
+    );
+    expect(screen.getByTestId("notebook-tab")).toBeVisible();
+
+    // Leaving the tab hides the iframe but keeps the same element mounted.
+    await userEvent.click(screen.getByTestId("tab-files"));
+    await waitFor(() =>
+      expect(screen.getByTestId("notebook-tab")).not.toBeVisible(),
+    );
+    expect(screen.getByTestId("notebook-iframe")).toBe(iframe);
+
+    await userEvent.click(screen.getByTestId("tab-notebook"));
+    await waitFor(() =>
+      expect(screen.getByTestId("notebook-tab")).toBeVisible(),
+    );
+    expect(screen.getByTestId("notebook-iframe")).toBe(iframe);
   });
 
   it("restores a project from a deep link", async () => {

@@ -40,8 +40,7 @@ const EditorScreen = ({ filePath }: { filePath: string }) => {
 
   const readOnly = filePath.startsWith("runs/");
   const snapshotRun = readOnly ? filePath.split("/")[1] : undefined;
-  const fileName = filePath.slice(filePath.lastIndexOf("/") + 1);
-  const isScript = isScriptFile(fileName);
+  const isScript = isScriptFile(filePath, active?.meta.inputScript);
 
   useEffect(() => {
     let mounted = true;

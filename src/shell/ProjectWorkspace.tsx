@@ -15,7 +15,6 @@ import FilesTab from "./FilesTab";
 import EditorScreen from "./EditorScreen";
 import RunsTab from "./RunsTab";
 import RunDetail from "./RunDetail";
-import NotebookTab from "./NotebookTab";
 import { ChevronDownIcon, DotsIcon, InfoIcon, PlayIcon } from "./icons";
 import { MenuDivider, MenuItem, MONO, Popover, RunningPill } from "./ui";
 
@@ -135,9 +134,7 @@ const ProjectWorkspace = ({
       <RunDetail runId={screen.runId} />
     ) : screen.tab === "runs" ? (
       <RunsTab />
-    ) : (
-      <NotebookTab />
-    );
+    ) : null; // Notebook: rendered by the Shell so it survives tab switches.
 
   return (
     <>

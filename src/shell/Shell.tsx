@@ -29,6 +29,7 @@ import Sidebar from "./Sidebar";
 import HomeScreen from "./HomeScreen";
 import ExamplesScreen from "./ExamplesScreen";
 import ProjectWorkspace from "./ProjectWorkspace";
+import NotebookTab from "./NotebookTab";
 import NewRunModal from "./modals/NewRunModal";
 import NewProjectModal from "./modals/NewProjectModal";
 import SettingsModal from "./modals/SettingsModal";
@@ -315,7 +316,9 @@ const Shell = () => {
       return;
     }
     const scripts = current.files.filter(
-      (file) => file.type !== "directory" && isScriptFile(file.path),
+      (file) =>
+        file.type !== "directory" &&
+        isScriptFile(file.path, current.meta.inputScript),
     );
     let input = current.meta.inputScript;
     if (input && !scripts.some((script) => script.path === input)) {
@@ -419,6 +422,8 @@ const Shell = () => {
             {screen.name === "home" && <HomeScreen />}
             {screen.name === "examples" && <ExamplesScreen />}
             {screen.name === "project" && <ProjectWorkspace screen={screen} />}
+            {/* Kept mounted across tabs/screens so JupyterLite never reloads. */}
+            <NotebookTab />
           </main>
         </div>
 

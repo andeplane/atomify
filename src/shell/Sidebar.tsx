@@ -1,6 +1,7 @@
 /**
  * Global sidebar (ADR-003 §2): Home, Example library, the PROJECTS list with
- * color dots + running pulse, New project, and a footer with the theme
+ * color dots + running pulse, New project, a scrollable EXAMPLES list (click
+ * to use as a project, play to quick-run), and a footer with the theme
  * toggle, Settings, and the engine-loading chip (loading never blocks
  * browsing — ADR-003 §6). Collapsible to a narrow icon rail (persisted) so
  * the simulation gets the horizontal room.
@@ -16,6 +17,7 @@ import {
   AtomLogo,
   ChevronRightIcon,
   CompassIcon,
+  PlayIcon,
   GridIcon,
   HomeIcon,
   InfoIcon,
@@ -26,6 +28,7 @@ import {
 } from "./icons";
 import AboutModal, { AUTHOR_NAME, AUTHOR_URL } from "./modals/AboutModal";
 import { ColorDot, PulseDot } from "./ui";
+import type { Example } from "../hooks/useExamples";
 
 /** Persisted collapse choice — the rail should survive reloads. */
 const SIDEBAR_COLLAPSED_KEY = "atomify_sidebar_collapsed";
@@ -78,6 +81,111 @@ const NavButton = ({
   </button>
 );
 
+const sectionLabelStyle: CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.07em",
+  color: "var(--text-3)",
+};
+
+/**
+ * One row of the sidebar examples list: thumbnail + title opens the
+ * "use as project" flow; the play button quick-runs it.
+ */
+const SidebarExample = ({ example }: { example: Example }) => {
+  const ui = useShellUI();
+  return (
+    <div
+      className="shell-hoverable"
+      data-testid={`sidebar-example-${example.id}`}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 4,
+        borderRadius: 9,
+        paddingRight: 4,
+      }}
+    >
+      <button
+        onClick={() => {
+          track("Sidebar.Example.UseAsProject", { exampleId: example.id });
+          ui.useExampleAsProject(example);
+        }}
+        title={`Use “${example.title}” as a project`}
+        data-testid={`sidebar-example-use-${example.id}`}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          flex: 1,
+          minWidth: 0,
+          padding: "5px 0 5px 8px",
+          border: "none",
+          background: "transparent",
+          color: "var(--text-2)",
+          fontWeight: 500,
+          fontSize: 13,
+          fontFamily: "inherit",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        <span
+          aria-hidden="true"
+          style={{
+            width: 32,
+            height: 24,
+            flexShrink: 0,
+            borderRadius: 5,
+            background: "var(--viewport)",
+            backgroundImage: example.imageUrl
+              ? `url("${example.imageUrl}")`
+              : undefined,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            border: "1px solid var(--border)",
+          }}
+        />
+        <span
+          style={{
+            flex: 1,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {example.title}
+        </span>
+      </button>
+      <button
+        onClick={() => ui.quickRunExample(example)}
+        disabled={!ui.engineReady}
+        title={ui.engineReady ? "Quick run" : "Engine loading…"}
+        aria-label={`Quick run ${example.title}`}
+        data-testid={`sidebar-example-quick-${example.id}`}
+        className="shell-hoverable-text"
+        style={{
+          width: 24,
+          height: 24,
+          flexShrink: 0,
+          borderRadius: 6,
+          border: "none",
+          background: "transparent",
+          color: "var(--text-3)",
+          cursor: ui.engineReady ? "pointer" : "not-allowed",
+          opacity: ui.engineReady ? 1 : 0.5,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <PlayIcon size={10} />
+      </button>
+    </div>
+  );
+};
+
 const Sidebar = () => {
   const screen = useStoreState((state) => state.projects.screen);
   const projects = useStoreState((state) => state.projects.projects);
@@ -96,6 +204,7 @@ const Sidebar = () => {
   );
   const ui = useShellUI();
   const [aboutOpen, setAboutOpen] = useState(false);
+  const examples = ui.examples.examples;
 
   const [collapsed, setCollapsed] = useState(() => {
     try {
@@ -104,6 +213,8 @@ const Sidebar = () => {
       return false;
     }
   });
+  // The icon rail has no room for a list; "Example library" still links there.
+  const showExamples = !collapsed;
   const toggleCollapsed = () =>
     setCollapsed((previous) => {
       const next = !previous;
@@ -210,153 +321,198 @@ const Sidebar = () => {
       <nav
         style={{
           flex: 1,
-          overflowY: "auto",
-          overflowX: "hidden",
-          padding: collapsed ? "0 10px 16px" : "0 12px 16px",
+          minHeight: 0,
           display: "flex",
           flexDirection: "column",
-          gap: 2,
         }}
       >
-        <NavButton
-          active={screen.name === "home"}
-          collapsed={collapsed}
-          onClick={() => setScreen({ name: "home" })}
-          icon={<HomeIcon />}
-          label="Home"
-          testId="nav-home"
-        />
-        <NavButton
-          active={screen.name === "examples"}
-          collapsed={collapsed}
-          onClick={() => setScreen({ name: "examples" })}
-          icon={<GridIcon />}
-          label="Example library"
-          testId="nav-examples"
-        />
-
+        {/* Nav + projects: natural height, scrolls only when space is tight. */}
         <div
+          data-testid="sidebar-projects-section"
           style={{
+            flex: showExamples ? "0 1 auto" : "1 1 auto",
+            minHeight: 0,
+            overflowY: "auto",
+            overflowX: "hidden",
+            padding: collapsed ? "0 10px 16px" : "0 12px 12px",
             display: "flex",
-            alignItems: "center",
-            justifyContent: collapsed ? "center" : "space-between",
-            padding: collapsed ? "16px 0 5px" : "18px 12px 7px",
+            flexDirection: "column",
+            gap: 2,
           }}
         >
-          {!collapsed && (
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.07em",
-                color: "var(--text-3)",
-              }}
-            >
-              Projects
-            </span>
-          )}
-          <button
-            onClick={() => ui.openNewProject()}
-            title="New project"
-            data-testid="sidebar-new-project-plus"
-            className="shell-hoverable shell-hoverable-text"
+          <NavButton
+            active={screen.name === "home"}
+            collapsed={collapsed}
+            onClick={() => setScreen({ name: "home" })}
+            icon={<HomeIcon />}
+            label="Home"
+            testId="nav-home"
+          />
+          <NavButton
+            active={screen.name === "examples"}
+            collapsed={collapsed}
+            onClick={() => setScreen({ name: "examples" })}
+            icon={<GridIcon />}
+            label="Example library"
+            testId="nav-examples"
+          />
+
+          <div
             style={{
-              width: 22,
-              height: 22,
-              borderRadius: 6,
-              border: "none",
-              background: "transparent",
-              color: "var(--text-3)",
-              cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              justifyContent: collapsed ? "center" : "space-between",
+              padding: collapsed ? "16px 0 5px" : "18px 12px 7px",
             }}
           >
-            <PlusIcon />
-          </button>
-        </div>
-
-        {projects.map((project) => {
-          const active =
-            screen.name === "project" && screen.dirName === project.dirName;
-          const running = activeRun?.dirName === project.dirName;
-          return (
+            {!collapsed && <span style={sectionLabelStyle}>Projects</span>}
             <button
-              key={project.dirName}
-              onClick={() => openProject({ dirName: project.dirName })}
-              data-testid={`sidebar-project-${project.dirName}`}
-              title={collapsed ? project.displayName : undefined}
-              className={active ? undefined : "shell-hoverable"}
+              onClick={() => ui.openNewProject()}
+              title="New project"
+              data-testid="sidebar-new-project-plus"
+              className="shell-hoverable shell-hoverable-text"
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 6,
+                border: "none",
+                background: "transparent",
+                color: "var(--text-3)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <PlusIcon />
+            </button>
+          </div>
+
+          {projects.map((project) => {
+            const active =
+              screen.name === "project" && screen.dirName === project.dirName;
+            const running = activeRun?.dirName === project.dirName;
+            return (
+              <button
+                key={project.dirName}
+                onClick={() => openProject({ dirName: project.dirName })}
+                data-testid={`sidebar-project-${project.dirName}`}
+                title={collapsed ? project.displayName : undefined}
+                className={active ? undefined : "shell-hoverable"}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: collapsed ? "center" : "flex-start",
+                  gap: collapsed ? 0 : 10,
+                  width: "100%",
+                  padding: collapsed ? "9px 0" : "7px 12px",
+                  borderRadius: 9,
+                  border: "none",
+                  cursor: "pointer",
+                  background: active ? "var(--accent-soft)" : "transparent",
+                  color: active ? "var(--text)" : "var(--text-2)",
+                  fontWeight: active ? 700 : 500,
+                  fontSize: 13.5,
+                  fontFamily: "inherit",
+                  position: "relative",
+                }}
+              >
+                <ColorDot color={project.color} />
+                {!collapsed && (
+                  <span
+                    style={{
+                      flex: 1,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      textAlign: "left",
+                    }}
+                  >
+                    {project.displayName}
+                  </span>
+                )}
+                {running &&
+                  (collapsed ? (
+                    <span style={{ position: "absolute", top: 4, right: 8 }}>
+                      <PulseDot size={5} />
+                    </span>
+                  ) : (
+                    <PulseDot />
+                  ))}
+              </button>
+            );
+          })}
+
+          {!collapsed && (
+            <button
+              onClick={() => ui.openNewProject()}
+              data-testid="sidebar-new-project"
+              className="shell-dashed-hover"
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: collapsed ? "center" : "flex-start",
-                gap: collapsed ? 0 : 10,
-                width: "100%",
-                padding: collapsed ? "9px 0" : "7px 12px",
-                borderRadius: 9,
-                border: "none",
-                cursor: "pointer",
-                background: active ? "var(--accent-soft)" : "transparent",
-                color: active ? "var(--text)" : "var(--text-2)",
-                fontWeight: active ? 700 : 500,
-                fontSize: 13.5,
+                gap: 10,
+                padding: "8px 12px",
+                borderRadius: "var(--radius)",
+                border: "1px dashed var(--border-strong)",
+                background: "transparent",
+                color: "var(--text-3)",
+                fontWeight: 600,
+                fontSize: 13,
                 fontFamily: "inherit",
-                position: "relative",
+                cursor: "pointer",
+                marginTop: 6,
               }}
             >
-              <ColorDot color={project.color} />
-              {!collapsed && (
-                <span
-                  style={{
-                    flex: 1,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    textAlign: "left",
-                  }}
-                >
-                  {project.displayName}
-                </span>
-              )}
-              {running &&
-                (collapsed ? (
-                  <span style={{ position: "absolute", top: 4, right: 8 }}>
-                    <PulseDot size={5} />
-                  </span>
-                ) : (
-                  <PulseDot />
-                ))}
+              <PlusIcon />
+              New project
             </button>
-          );
-        })}
+          )}
+        </div>
 
-        {!collapsed && (
-          <button
-            onClick={() => ui.openNewProject()}
-            data-testid="sidebar-new-project"
-            className="shell-dashed-hover"
+        {showExamples && (
+          <div
+            data-testid="sidebar-examples"
             style={{
+              flex: "1 1 0",
+              minHeight: 140,
               display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "8px 12px",
-              borderRadius: "var(--radius)",
-              border: "1px dashed var(--border-strong)",
-              background: "transparent",
-              color: "var(--text-3)",
-              fontWeight: 600,
-              fontSize: 13,
-              fontFamily: "inherit",
-              cursor: "pointer",
-              marginTop: 6,
+              flexDirection: "column",
+              borderTop: "1px solid var(--border)",
             }}
           >
-            <PlusIcon />
-            New project
-          </button>
+            <div style={{ padding: "14px 24px 7px" }}>
+              <span style={sectionLabelStyle}>Examples</span>
+            </div>
+            <div
+              data-testid="sidebar-examples-list"
+              style={{
+                flex: 1,
+                minHeight: 0,
+                overflowY: "auto",
+                overflowX: "hidden",
+                padding: "0 12px 12px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 1,
+              }}
+            >
+              {examples.map((example) => (
+                <SidebarExample key={example.id} example={example} />
+              ))}
+              {examples.length === 0 && ui.examples.loading && (
+                <span
+                  style={{
+                    padding: "6px 12px",
+                    fontSize: 12.5,
+                    color: "var(--text-3)",
+                  }}
+                >
+                  Loading examples…
+                </span>
+              )}
+            </div>
+          </div>
         )}
       </nav>
 

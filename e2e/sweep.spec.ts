@@ -2,12 +2,14 @@
  * Variable sweep: sweep T over two values from the New Run modal, watch
  * both runs execute sequentially, verify the runs list shows both rows with
  * their vars under a shared sweep header, and verify the persisted
- * run.json vars straight from IndexedDB.
+ * run.json vars and each run's log.lammps (the engine really used the
+ * override, not the script's own value) straight from IndexedDB.
  */
 
 import { test, expect } from "@playwright/test";
 import {
   createFastLjProject,
+  FAST_LJ_SCRIPT,
   gotoApp,
   readContentsRecord,
   RUN_TIMEOUT,
@@ -25,7 +27,13 @@ test("sweep T over two values runs sequentially and records vars", async ({
 }) => {
   await test.step("create a project with a parameterized script", async () => {
     await gotoApp(page);
-    await createFastLjProject(page, "Sweep study", "sweep-study");
+    await createFastLjProject(
+      page,
+      "Sweep study",
+      "sweep-study",
+      "in.melt",
+      `${FAST_LJ_SCRIPT}print "SWEEP_T=\${T}"\n`,
+    );
     await page.getByTestId("editor-back").click();
   });
 
@@ -100,5 +108,21 @@ test("sweep T over two values runs sequentially and records vars", async ({
     expect(meta2.vars).toEqual({ T: 2 });
     expect(meta1.sweepId).toBeTruthy();
     expect(meta1.sweepId).toBe(meta2.sweepId);
+  });
+
+  await test.step("each run's log shows the swept value, not the script's", async () => {
+    for (const [runId, value] of [
+      ["run-001", "1"],
+      ["run-002", "2"],
+    ]) {
+      const record = await readContentsRecord(
+        page,
+        `sweep-study/runs/${runId}/log.lammps`,
+      );
+      expect(record).not.toBeNull();
+      const log = String(record!.content);
+      expect(log).toMatch(new RegExp(`^SWEEP_T=${value}$`, "m"));
+      expect(log).not.toContain("SWEEP_T=1.44");
+    }
   });
 });
