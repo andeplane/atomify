@@ -61,26 +61,22 @@ describe("prepareVarsScript", () => {
     expect(writeFile).not.toHaveBeenCalled();
   });
 
-  it("writes the vars and wrapper files into the workdir and runs the wrapper", () => {
+  it("writes a copy with the definition lines rewritten and runs it", () => {
     const result = prepareVarsScript(
       {
         workdirId: "p/runs/run-001",
         inputScript: "in.lmp",
         vars: { temp: 300, pressure: 1 },
       },
-      "run 1000\n",
+      "variable temp equal 1.44\nvariable pressure equal 0.5\nrun 1000\n",
       { writeFile },
     );
 
     expect(result).toBe("_wrapper_in.lmp");
     expect(writeFile.mock.calls).toEqual([
       [
-        "/p/runs/run-001/_vars_in.lmp",
-        "variable temp equal 300\nvariable pressure equal 1\n\n",
-      ],
-      [
         "/p/runs/run-001/_wrapper_in.lmp",
-        "variable temp equal 300\nvariable pressure equal 1\n\nrun 1000\n",
+        "variable temp equal 300\nvariable pressure equal 1\nrun 1000\n",
       ],
     ]);
   });
@@ -194,7 +190,7 @@ describe("RunController", () => {
     );
     expect(engine.read(`${workdir}/in.lmp`)).toContain("suffix off");
     expect(engine.read(`${workdir}/_wrapper_in.lmp`)).toMatch(
-      /^variable T equal 2\n\nsuffix off/,
+      /^variable T equal 2\nsuffix off/,
     );
     expect(host.beginFreshRun).toHaveBeenCalledWith(
       runWorkdirId("proj", "run-001"),
