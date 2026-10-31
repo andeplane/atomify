@@ -295,7 +295,7 @@ const ProjectWorkspace = ({
                   }}
                 >
                   <PlayIcon />
-                  Run simulation
+                  Save &amp; run simulation
                 </button>
               </Tooltip>
               <button
@@ -325,7 +325,7 @@ const ProjectWorkspace = ({
                 testId="run-menu"
               >
                 <MenuItem
-                  label="Run simulation"
+                  label="Save & run simulation"
                   hint="uses current variable values"
                   testId="run-menu-run"
                   onClick={() => {

@@ -15,6 +15,7 @@ import { useShellUI } from "./ShellContext";
 import {
   AtomLogo,
   ChevronRightIcon,
+  CompassIcon,
   GridIcon,
   HomeIcon,
   InfoIcon,
@@ -424,6 +425,17 @@ const Sidebar = () => {
           icon={<InfoIcon size={16} />}
           label="About"
           testId="sidebar-about"
+        />
+        <NavButton
+          active={false}
+          collapsed={collapsed}
+          onClick={() => {
+            track("Tour.Replay");
+            ui.startTour();
+          }}
+          icon={<CompassIcon size={16} />}
+          label="Take the tour"
+          testId="sidebar-tour"
         />
         {!collapsed && (
           <a

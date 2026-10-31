@@ -41,7 +41,7 @@ test("run a simulation end-to-end and inspect the recorded run @smoke", async ({
 
   await test.step("run the simulation and watch live progress", async () => {
     await waitForEngine(page);
-    await page.getByTestId("editor-save-and-run").click();
+    await page.getByTestId("run-simulation").click();
     // The store navigates to the live run detail screen.
     await expect(page.getByTestId("run-detail")).toBeVisible({
       timeout: 30_000,
@@ -124,8 +124,9 @@ test("run a simulation end-to-end and inspect the recorded run @smoke", async ({
     await expect(page.getByTestId("editor-snapshot-banner")).toContainText(
       "Read-only — snapshot of run #001",
     );
-    // Read-only files have no autosave indicator and no Save & run.
+    // Read-only files have no autosave indicator and no Save button.
     await expect(page.getByTestId("editor-save-state")).toHaveCount(0);
+    await expect(page.getByTestId("editor-save")).toHaveCount(0);
   });
 
   await test.step("run detail after reload is never blank", async () => {
