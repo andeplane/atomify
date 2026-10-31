@@ -103,8 +103,10 @@ export function buildRunPlan(
 }
 
 /**
- * Preview of the equivalent LAMMPS invocation. Shows only the -var flags
- * that will actually be passed (overrides + sweeps).
+ * Command-line-style summary of the run: the input script plus a `-var`
+ * entry per changed variable (overrides + sweeps). Illustrative only — no
+ * flags are passed; overrides rewrite the definition line in the run's copy
+ * of the script (applyVariableOverrides).
  */
 export function buildCommandPreview(
   inputScript: string | undefined,
