@@ -247,6 +247,37 @@ describe("Shell", () => {
     );
   });
 
+  it("keeps the notebook iframe alive across tab switches", async () => {
+    await store.getActions().projects.createProject({
+      displayName: "Notebook keep",
+      files: [{ fileName: "in.demo", content: "units lj\n" }],
+    });
+    renderShell();
+    await userEvent.click(
+      await screen.findByTestId("sidebar-project-notebook-keep"),
+    );
+
+    await userEvent.click(await screen.findByTestId("tab-notebook"));
+    const iframe = await screen.findByTestId("notebook-iframe");
+    expect(iframe.getAttribute("src")).toMatch(
+      /jupyter\/lab\/index\.html\?path=notebook-keep%2F/,
+    );
+    expect(screen.getByTestId("notebook-tab")).toBeVisible();
+
+    // Leaving the tab hides the iframe but keeps the same element mounted.
+    await userEvent.click(screen.getByTestId("tab-files"));
+    await waitFor(() =>
+      expect(screen.getByTestId("notebook-tab")).not.toBeVisible(),
+    );
+    expect(screen.getByTestId("notebook-iframe")).toBe(iframe);
+
+    await userEvent.click(screen.getByTestId("tab-notebook"));
+    await waitFor(() =>
+      expect(screen.getByTestId("notebook-tab")).toBeVisible(),
+    );
+    expect(screen.getByTestId("notebook-iframe")).toBe(iframe);
+  });
+
   it("restores a project from a deep link", async () => {
     // Seed the library through a first store session.
     await store.getActions().projects.createProject({
