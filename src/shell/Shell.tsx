@@ -29,6 +29,7 @@ import Sidebar from "./Sidebar";
 import HomeScreen from "./HomeScreen";
 import ExamplesScreen from "./ExamplesScreen";
 import ProjectWorkspace from "./ProjectWorkspace";
+import NotebookTab from "./NotebookTab";
 import NewRunModal from "./modals/NewRunModal";
 import NewProjectModal from "./modals/NewProjectModal";
 import SettingsModal from "./modals/SettingsModal";
@@ -388,6 +389,8 @@ const Shell = () => {
             {screen.name === "home" && <HomeScreen />}
             {screen.name === "examples" && <ExamplesScreen />}
             {screen.name === "project" && <ProjectWorkspace screen={screen} />}
+            {/* Kept mounted across tabs/screens so JupyterLite never reloads. */}
+            <NotebookTab />
           </main>
         </div>
 
