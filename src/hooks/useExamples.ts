@@ -32,36 +32,76 @@ export interface ExamplesData {
 
 const DEFAULT_EXAMPLES_URL = "examples/examples.json";
 
+/**
+ * Resolves the paths in an examples.json against where it was loaded from.
+ * `baseUrl` is optional: relative paths resolve against the examples.json
+ * URL itself, so a fork or a local server works without editing it. A
+ * relative `baseUrl` keeps its historical meaning (relative to the app, as
+ * the bundled examples use it), and absolute URLs are left untouched.
+ */
+export function exampleUrlResolver(
+  examplesUrl: string,
+  baseUrl: string | undefined,
+  documentUrl: string = window.location.href,
+): (path: string) => string {
+  const examplesHref = new URL(examplesUrl, documentUrl).href;
+  const base = baseUrl
+    ? new URL(baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`, documentUrl).href
+    : examplesHref;
+  return (path: string) => new URL(path, base).href;
+}
+
+/** Turns a raw examples.json document into fully resolved examples. */
+export function resolveExamples(
+  data: { baseUrl?: string; examples?: Example[] },
+  examplesUrl: string,
+  documentUrl?: string,
+): Example[] {
+  const resolve = exampleUrlResolver(examplesUrl, data.baseUrl, documentUrl);
+  return (data.examples ?? []).map((example) => {
+    const files = (example.files ?? []).map((file) =>
+      file.url ? { ...file, url: resolve(file.url) } : { ...file },
+    );
+    // `analysisScript` names the notebook to open. When it is one of the
+    // listed files it is just a name; otherwise it is a path to fetch.
+    const analysisScript =
+      example.analysisScript &&
+      !files.some((file) => file.fileName === example.analysisScript)
+        ? resolve(example.analysisScript)
+        : example.analysisScript;
+    return {
+      ...example,
+      files,
+      analysisScript,
+      imageUrl: example.imageUrl ? resolve(example.imageUrl) : "",
+    };
+  });
+}
+
 async function fetchExamples(examplesUrl: string): Promise<{
   title: string;
   description: string;
   examples: Example[];
 }> {
-  let response = await fetch(examplesUrl, { cache: "no-store" });
+  const response = await fetch(examplesUrl, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
   const data = await response.json();
-  const baseUrl: string = data["baseUrl"];
   const title: string = data["title"] || "Examples";
 
   let description = "";
-  const descriptionsUrl = `${baseUrl}/${data["descriptionFile"]}`;
-  response = await fetch(descriptionsUrl);
-  if (response.status !== 404) {
-    description = await response.text();
+  if (data["descriptionFile"]) {
+    const resolve = exampleUrlResolver(examplesUrl, data["baseUrl"]);
+    const descriptionResponse = await fetch(resolve(data["descriptionFile"]), {
+      cache: "no-store",
+    });
+    if (descriptionResponse.ok) {
+      description = await descriptionResponse.text();
+    }
   }
 
-  const examples: Example[] = data["examples"];
-  examples.forEach((example) => {
-    example.imageUrl = `${baseUrl}/${example.imageUrl}`;
-    if (example.analysisScript) {
-      example.analysisScript = `${baseUrl}/${example.analysisScript}`;
-    }
-    example.files.forEach((file) => {
-      if (file.url) {
-        file.url = `${baseUrl}/${file.url}`;
-      }
-    });
-  });
-
+  const examples = resolveExamples(data, examplesUrl);
   track("Examples.Fetch", { examplesUrl });
   return { title, description, examples };
 }
