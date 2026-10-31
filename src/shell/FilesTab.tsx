@@ -44,14 +44,14 @@ import ViewDataModal from "./modals/ViewDataModal";
 
 type FileKind = "folder" | "script" | "notebook" | "doc";
 
-function kindOf(entry: FileStat): FileKind {
+function kindOf(entry: FileStat, inputScript?: string): FileKind {
   if (entry.type === "directory") {
     return "folder";
   }
   if (entry.type === "notebook" || entry.path.endsWith(".ipynb")) {
     return "notebook";
   }
-  if (isScriptFile(entry.path)) {
+  if (isScriptFile(entry.path, inputScript)) {
     return "script";
   }
   return "doc";
@@ -137,7 +137,7 @@ const FilesTab = () => {
   const meta = active.meta;
 
   const openEntry = (entry: FileStat) => {
-    const kind = kindOf(entry);
+    const kind = kindOf(entry, meta.inputScript);
     if (entry.path === "runs") {
       setScreen({ name: "project", dirName: meta.dirName, tab: "runs" });
       return;
@@ -318,7 +318,7 @@ const FilesTab = () => {
           </div>
 
           {entries.map((entry) => {
-            const kind = kindOf(entry);
+            const kind = kindOf(entry, meta.inputScript);
             const isRunsFolder = entry.path === "runs";
             const isInput = entry.path === meta.inputScript;
             const isScript = kind === "script";

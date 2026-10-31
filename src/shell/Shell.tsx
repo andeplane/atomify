@@ -287,7 +287,9 @@ const Shell = () => {
       return;
     }
     const scripts = current.files.filter(
-      (file) => file.type !== "directory" && isScriptFile(file.path),
+      (file) =>
+        file.type !== "directory" &&
+        isScriptFile(file.path, current.meta.inputScript),
     );
     let input = current.meta.inputScript;
     if (input && !scripts.some((script) => script.path === input)) {
