@@ -273,11 +273,9 @@ const NewRunModal = ({
                 variable
               </span>{" "}
               set to a plain number in the input script appears here (derived
-              expressions recompute automatically). Overrides are passed as{" "}
-              <span style={{ fontFamily: MONO, color: "var(--text-2)" }}>
-                -var
-              </span>{" "}
-              flags — the script itself never changes. To add or remove one,{" "}
+              expressions recompute automatically). An override replaces the
+              variable&apos;s definition line in the copy of the script each run
+              executes — your script itself never changes. To add or remove one,{" "}
               <span
                 onClick={onGoToFiles}
                 style={{
