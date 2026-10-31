@@ -8,7 +8,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createStore, StoreProvider, type Store } from "easy-peasy";
 
-import NewProjectModal from "./NewProjectModal";
+import NewProjectModal, { exampleProjectFiles } from "./NewProjectModal";
 import { ShellUIContext, type ShellUI } from "../ShellContext";
 import type { Example } from "../../hooks/useExamples";
 import { storeModel, type StoreModel } from "../../store/model";
@@ -119,5 +119,33 @@ describe("NewProjectModal example picker", () => {
     expect(
       screen.getByTestId("np-example-card-diffusion").style.border,
     ).toContain("var(--border)");
+  });
+});
+
+describe("exampleProjectFiles", () => {
+  it("does not fetch a listed notebook twice (examples-template 404)", () => {
+    const files = exampleProjectFiles({
+      ...makeExample("msd", "MSD", []),
+      analysisScript: "msd.ipynb",
+      files: [
+        { fileName: "msd.in", url: "https://raw.test/msd/msd.in" },
+        { fileName: "msd.ipynb", url: "https://raw.test/msd/msd.ipynb" },
+      ],
+    });
+    expect(files.map((f) => f.url)).toEqual([
+      "https://raw.test/msd/msd.in",
+      "https://raw.test/msd/msd.ipynb",
+    ]);
+  });
+
+  it("adds an analysis notebook that lives outside the file list", () => {
+    const files = exampleProjectFiles({
+      ...makeExample("msd", "MSD", []),
+      analysisScript: "https://raw.test/msd/analysis.ipynb",
+    });
+    expect(files.at(-1)).toEqual({
+      fileName: "analysis.ipynb",
+      url: "https://raw.test/msd/analysis.ipynb",
+    });
   });
 });
