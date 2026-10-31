@@ -21,6 +21,8 @@ export default tseslint.config(
       "test-results",
       "playwright-report",
       ".claude",
+      "help/node_modules",
+      "help/.vitepress/cache",
     ],
   },
   js.configs.recommended,

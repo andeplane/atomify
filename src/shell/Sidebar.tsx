@@ -18,6 +18,7 @@ import {
   ChevronRightIcon,
   PlayIcon,
   GridIcon,
+  HelpIcon,
   HomeIcon,
   InfoIcon,
   MoonIcon,
@@ -25,6 +26,7 @@ import {
   SlidersIcon,
   SunIcon,
 } from "./icons";
+import { HELP_URL } from "./helpUrl";
 import AboutModal, { AUTHOR_NAME, AUTHOR_URL } from "./modals/AboutModal";
 import { ColorDot, PulseDot } from "./ui";
 import type { Example } from "../hooks/useExamples";
@@ -184,6 +186,39 @@ const SidebarExample = ({ example }: { example: Example }) => {
     </div>
   );
 };
+/**
+ * A NavButton look-alike that is a real link, so it opens in a new tab and
+ * middle-click / "copy link" work as users expect.
+ */
+const NavLink = ({
+  href,
+  collapsed,
+  onClick,
+  icon,
+  label,
+  testId,
+}: {
+  href: string;
+  collapsed: boolean;
+  onClick?: () => void;
+  icon: ReactNode;
+  label: string;
+  testId?: string;
+}) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    onClick={onClick}
+    data-testid={testId}
+    title={collapsed ? label : "Opens the documentation in a new tab"}
+    className="shell-hoverable"
+    style={{ ...navButtonStyle(false, collapsed), textDecoration: "none" }}
+  >
+    {icon}
+    {!collapsed && label}
+  </a>
+);
 
 const Sidebar = () => {
   const screen = useStoreState((state) => state.projects.screen);
@@ -570,6 +605,14 @@ const Sidebar = () => {
           gap: 2,
         }}
       >
+        <NavLink
+          href={HELP_URL}
+          collapsed={collapsed}
+          onClick={() => track("Help.Open")}
+          icon={<HelpIcon size={16} />}
+          label="Help"
+          testId="sidebar-help"
+        />
         <NavButton
           active={false}
           collapsed={collapsed}
