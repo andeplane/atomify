@@ -61,9 +61,10 @@ const NewRunModal = ({
   const scripts = useMemo(
     () =>
       (active?.files ?? []).filter(
-        (file) => file.type !== "directory" && isScriptFile(file.path),
+        (file) =>
+          file.type !== "directory" && isScriptFile(file.path, inputScript),
       ),
-    [active?.files],
+    [active?.files, inputScript],
   );
 
   useEffect(() => {
