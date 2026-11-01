@@ -5,6 +5,7 @@
 
 import type { ReactNode } from "react";
 import { ExternalIcon } from "../icons";
+import { HELP_URL } from "../helpUrl";
 import { ModalShell } from "../ui";
 
 export const SOURCE_URL = "https://github.com/andeplane/atomify";
@@ -106,6 +107,9 @@ const AboutModal = ({
         </ExternalLink>
       </Row>
       <Row label="Get help">
+        <ExternalLink href={HELP_URL} testId="about-docs">
+          Read the documentation and tutorials
+        </ExternalLink>
         <ExternalLink href={ISSUES_URL} testId="about-issues">
           Report a bug or ask a question on GitHub
         </ExternalLink>

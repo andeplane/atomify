@@ -308,6 +308,16 @@ export const InfoIcon = ({ size = 15 }: IconProps) =>
     2,
   );
 
+export const HelpIcon = ({ size = 15 }: IconProps) =>
+  stroke(
+    size,
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.5 9.2a2.6 2.6 0 0 1 5 1c0 1.8-2.5 2.3-2.5 3.8M12 17h.01" />
+    </>,
+    2,
+  );
+
 export const CompassIcon = ({ size = 15 }: IconProps) =>
   stroke(
     size,

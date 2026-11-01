@@ -19,6 +19,8 @@ export default defineConfig({
       "**/.claude/**",
       // Playwright specs (run via `npm run e2e`), not vitest tests.
       "e2e/**",
+      // Help site screenshot walk (Playwright).
+      "help/**",
     ],
     environmentOptions: {
       jsdom: {
