@@ -23,6 +23,7 @@ export default tseslint.config(
       ".claude",
       "help/node_modules",
       "help/.vitepress/cache",
+      "help/test-results",
     ],
   },
   js.configs.recommended,

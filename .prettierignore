@@ -18,3 +18,4 @@ playwright-report
 # Help site (VitePress) cache and build output
 help/.vitepress/cache
 help/.vitepress/dist
+help/test-results
