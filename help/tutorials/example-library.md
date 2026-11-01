@@ -62,7 +62,7 @@ Add `?examplesUrl=` and the address of your `examples.json` to the Atomify link.
 https://andeplane.github.io/atomify/?examplesUrl=https%3A%2F%2Fyou.github.io%2Fphysics101%2Fexamples.json
 ```
 
-Open it. The **Example library** now shows your examples under your title, the sidebar's **Examples** list shows them too, and **Quick-run an example** on Home runs your first one.
+Open it. The **Example library** now shows your examples under your title, Home shows them under **Start from an example**, and **Quick-run an example** on Home runs your first one.
 
 ## 5. Share the link
 

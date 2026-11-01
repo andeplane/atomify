@@ -8,7 +8,7 @@ import { data as examples } from "./examples.data";
 
 # Bundled examples
 
-Atomify ships with {{ examples.length }} examples. Open any of them from the **Example library**, the sidebar's **Examples** list, or **New project → From example**. This table is generated from the app's own example list, so it is always current.
+Atomify ships with {{ examples.length }} examples. Open any of them from the **Example library**, Home, or **New project → From example**. This table is generated from the app's own example list, so it is always current.
 
 - **Multithreaded**: the script uses `suffix kk` and runs on 4 threads ([Multithreading](/guide/multithreading)).
 - **Notebook**: the example ships its own analysis notebook.

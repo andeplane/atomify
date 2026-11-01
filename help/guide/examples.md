@@ -5,8 +5,7 @@ Atomify comes with more than 50 ready-to-run examples, from simple Lennard-Jones
 ## Find examples
 
 - **Example library** in the sidebar shows every example as a card with a picture and description.
-- The sidebar's **Examples** list shows every example by name.
-- Home shows four of them under **Start from an example**.
+- Home shows up to 16 of them (a 4×4 grid) under **Start from an example**.
 - **New project → From example** has a search box that filters by title, description and keyword.
 
 ![The Example library](/screenshots/example-library.webp)

@@ -27,7 +27,7 @@ The folder name is the project name in lowercase, with accents removed and anyth
 
 ### Other ways to start a project
 
-- **Use as project** on any example (Home, Example library, or click an example in the sidebar's **Examples** list).
+- **Use as project** on any example (Home or the Example library).
 - **Save as project** on a [quick run](/guide/quick-runs).
 
 ## Open a project

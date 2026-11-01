@@ -12,7 +12,7 @@ For example:
 https://andeplane.github.io/atomify/?examplesUrl=https%3A%2F%2Fyou.github.io%2Fphysics101%2Fexamples.json
 ```
 
-The **Example library**, the sidebar's **Examples** list, the examples on Home and **Quick-run an example** then use that library, and the library's `title` becomes the heading. The parameter stays in the address as you move around the app, so the link can be bookmarked and shared.
+The **Example library**, the examples on Home and **Quick-run an example** then use that library, and the library's `title` becomes the heading. The parameter stays in the address as you move around the app, so the link can be bookmarked and shared.
 
 ## Requirements
 

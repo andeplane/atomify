@@ -8,7 +8,6 @@ Any of these:
 
 - **Quick-run an example** on Home (runs the first example in the library).
 - The ▶ button on an example card on Home or in the **Example library**.
-- The ▶ button next to an example in the sidebar's **Examples** list.
 
 The buttons are disabled until the engine has loaded.
 
