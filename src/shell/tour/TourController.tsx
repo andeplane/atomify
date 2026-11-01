@@ -21,6 +21,8 @@ import {
 } from "./tourSteps";
 
 const TICK_MS = 250;
+/** Room a popover needs under its target (px). */
+const POPOVER_ROOM = 240;
 
 const exists = (selector: string) => document.querySelector(selector) !== null;
 
@@ -116,13 +118,36 @@ const TourController = ({ onEnd }: { onEnd: () => void }) => {
     }
     const shown = shownRef.current;
     if (shown && shown.id === step.id && shown.element === element) {
-      // Same step and node: follow layout changes (panels growing, etc.).
-      const rect = element?.getBoundingClientRect();
-      const key = rect
-        ? `${rect.x},${rect.y},${rect.width},${rect.height}`
-        : "";
+      // Same step and node: follow layout changes (projects and example
+      // cards loading in above the target, panels growing, etc.).
+      // driver.js ignores refresh() while its highlight animation runs and
+      // places the popover mid-animation, so a layout shift during that
+      // window leaves the popover behind. Wait for the animation to end,
+      // then re-place whenever the target's box differs from the last place.
+      if (drv.getState("__transitionCallback")) {
+        return;
+      }
+      if (!element) {
+        return;
+      }
+      const rect = element.getBoundingClientRect();
+      const key = `${Math.round(rect.x)},${Math.round(rect.y)},${Math.round(rect.width)},${Math.round(rect.height)}`;
       if (key !== rectRef.current) {
+        const firstPlacement = rectRef.current === "";
         rectRef.current = key;
+        // Once per step: if the target sits off screen, or so low that a
+        // popover meant to go under it can't fit, scroll it to the middle. Later on,
+        // leave the user's scrolling alone.
+        if (
+          firstPlacement &&
+          (rect.top < 0 ||
+            rect.bottom > window.innerHeight ||
+            (step.side === "bottom" &&
+              rect.bottom > window.innerHeight - POPOVER_ROOM)) &&
+          rect.height < window.innerHeight / 2
+        ) {
+          element.scrollIntoView({ block: "center" });
+        }
         drv.refresh();
       }
       return;
