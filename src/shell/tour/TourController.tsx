@@ -116,13 +116,31 @@ const TourController = ({ onEnd }: { onEnd: () => void }) => {
     }
     const shown = shownRef.current;
     if (shown && shown.id === step.id && shown.element === element) {
-      // Same step and node: follow layout changes (panels growing, etc.).
-      const rect = element?.getBoundingClientRect();
-      const key = rect
-        ? `${rect.x},${rect.y},${rect.width},${rect.height}`
-        : "";
+      // Same step and node: follow layout changes (projects and example
+      // cards loading in above the target, panels growing, etc.).
+      // driver.js ignores refresh() while its highlight animation runs and
+      // places the popover mid-animation, so a layout shift during that
+      // window leaves the popover behind. Wait for the animation to end,
+      // then re-place whenever the target's box differs from the last place.
+      if (drv.getState("__transitionCallback")) {
+        return;
+      }
+      if (!element) {
+        return;
+      }
+      const rect = element.getBoundingClientRect();
+      const key = `${Math.round(rect.x)},${Math.round(rect.y)},${Math.round(rect.width)},${Math.round(rect.height)}`;
       if (key !== rectRef.current) {
+        const firstPlacement = rectRef.current === "";
         rectRef.current = key;
+        // Bring a target the shift pushed off screen back into view once;
+        // later on, leave the user's scrolling alone.
+        if (
+          firstPlacement &&
+          (rect.bottom > window.innerHeight || rect.top < 0)
+        ) {
+          element.scrollIntoView({ block: "center" });
+        }
         drv.refresh();
       }
       return;
