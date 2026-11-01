@@ -58,7 +58,7 @@
     ]
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.5",
+    "@eslint/js": "^10.0.1",
     "@jupyterlab/nbformat": "^4.6.3",
     "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^6.9.1",
