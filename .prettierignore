@@ -15,3 +15,7 @@ pypi
 test-results
 playwright-report
 .claude
+# Help site (VitePress) cache and build output
+help/.vitepress/cache
+help/.vitepress/dist
+help/test-results

@@ -143,6 +143,20 @@ describe("Shell", () => {
       "href",
       "mailto:andershaf@gmail.com",
     );
+    expect(screen.getByTestId("about-docs")).toHaveAttribute(
+      "href",
+      `${import.meta.env.BASE_URL}help/`,
+    );
+  });
+
+  it("has a Help link that opens the documentation in a new tab", () => {
+    renderShell();
+    const help = screen.getByTestId("sidebar-help");
+    expect(help).toHaveTextContent("Help");
+    expect(help.tagName).toBe("A");
+    expect(help).toHaveAttribute("href", `${import.meta.env.BASE_URL}help/`);
+    expect(help).toHaveAttribute("target", "_blank");
+    expect(help).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("collapses the sidebar to an icon rail and persists the choice", async () => {

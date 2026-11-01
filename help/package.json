@@ -1,0 +1,14 @@
+{
+  "name": "atomify-help",
+  "private": true,
+  "description": "Atomify user documentation (published at /atomify/help/)",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4"
+  }
+}

@@ -17,6 +17,7 @@ import {
   ChevronRightIcon,
   CompassIcon,
   GridIcon,
+  HelpIcon,
   HomeIcon,
   InfoIcon,
   MoonIcon,
@@ -24,6 +25,7 @@ import {
   SlidersIcon,
   SunIcon,
 } from "./icons";
+import { HELP_URL } from "./helpUrl";
 import AboutModal, { AUTHOR_NAME, AUTHOR_URL } from "./modals/AboutModal";
 import { ColorDot, PulseDot } from "./ui";
 
@@ -76,6 +78,48 @@ const NavButton = ({
     {icon}
     {!collapsed && label}
   </button>
+);
+
+const sectionLabelStyle: CSSProperties = {
+  fontSize: 11,
+  fontWeight: 700,
+  textTransform: "uppercase",
+  letterSpacing: "0.07em",
+  color: "var(--text-3)",
+};
+
+/**
+ * A NavButton look-alike that is a real link, so it opens in a new tab and
+ * middle-click / "copy link" work as users expect.
+ */
+const NavLink = ({
+  href,
+  collapsed,
+  onClick,
+  icon,
+  label,
+  testId,
+}: {
+  href: string;
+  collapsed: boolean;
+  onClick?: () => void;
+  icon: ReactNode;
+  label: string;
+  testId?: string;
+}) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    onClick={onClick}
+    data-testid={testId}
+    title={collapsed ? label : "Opens the documentation in a new tab"}
+    className="shell-hoverable"
+    style={{ ...navButtonStyle(false, collapsed), textDecoration: "none" }}
+  >
+    {icon}
+    {!collapsed && label}
+  </a>
 );
 
 const Sidebar = () => {
@@ -210,154 +254,153 @@ const Sidebar = () => {
       <nav
         style={{
           flex: 1,
-          overflowY: "auto",
-          overflowX: "hidden",
-          padding: collapsed ? "0 10px 16px" : "0 12px 16px",
+          minHeight: 0,
           display: "flex",
           flexDirection: "column",
-          gap: 2,
         }}
       >
-        <NavButton
-          active={screen.name === "home"}
-          collapsed={collapsed}
-          onClick={() => setScreen({ name: "home" })}
-          icon={<HomeIcon />}
-          label="Home"
-          testId="nav-home"
-        />
-        <NavButton
-          active={screen.name === "examples"}
-          collapsed={collapsed}
-          onClick={() => setScreen({ name: "examples" })}
-          icon={<GridIcon />}
-          label="Example library"
-          testId="nav-examples"
-        />
-
         <div
+          data-testid="sidebar-projects-section"
           style={{
+            flex: "1 1 auto",
+            minHeight: 0,
+            overflowY: "auto",
+            overflowX: "hidden",
+            padding: collapsed ? "0 10px 16px" : "0 12px 12px",
             display: "flex",
-            alignItems: "center",
-            justifyContent: collapsed ? "center" : "space-between",
-            padding: collapsed ? "16px 0 5px" : "18px 12px 7px",
+            flexDirection: "column",
+            gap: 2,
           }}
         >
-          {!collapsed && (
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.07em",
-                color: "var(--text-3)",
-              }}
-            >
-              Projects
-            </span>
-          )}
-          <button
-            onClick={() => ui.openNewProject()}
-            title="New project"
-            data-testid="sidebar-new-project-plus"
-            className="shell-hoverable shell-hoverable-text"
+          <NavButton
+            active={screen.name === "home"}
+            collapsed={collapsed}
+            onClick={() => setScreen({ name: "home" })}
+            icon={<HomeIcon />}
+            label="Home"
+            testId="nav-home"
+          />
+          <NavButton
+            active={screen.name === "examples"}
+            collapsed={collapsed}
+            onClick={() => setScreen({ name: "examples" })}
+            icon={<GridIcon />}
+            label="Example library"
+            testId="nav-examples"
+          />
+
+          <div
             style={{
-              width: 22,
-              height: 22,
-              borderRadius: 6,
-              border: "none",
-              background: "transparent",
-              color: "var(--text-3)",
-              cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
+              justifyContent: collapsed ? "center" : "space-between",
+              padding: collapsed ? "16px 0 5px" : "18px 12px 7px",
             }}
           >
-            <PlusIcon />
-          </button>
-        </div>
-
-        {projects.map((project) => {
-          const active =
-            screen.name === "project" && screen.dirName === project.dirName;
-          const running = activeRun?.dirName === project.dirName;
-          return (
+            {!collapsed && <span style={sectionLabelStyle}>Projects</span>}
             <button
-              key={project.dirName}
-              onClick={() => openProject({ dirName: project.dirName })}
-              data-testid={`sidebar-project-${project.dirName}`}
-              title={collapsed ? project.displayName : undefined}
-              className={active ? undefined : "shell-hoverable"}
+              onClick={() => ui.openNewProject()}
+              title="New project"
+              data-testid="sidebar-new-project-plus"
+              className="shell-hoverable shell-hoverable-text"
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: 6,
+                border: "none",
+                background: "transparent",
+                color: "var(--text-3)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <PlusIcon />
+            </button>
+          </div>
+
+          {projects.map((project) => {
+            const active =
+              screen.name === "project" && screen.dirName === project.dirName;
+            const running = activeRun?.dirName === project.dirName;
+            return (
+              <button
+                key={project.dirName}
+                onClick={() => openProject({ dirName: project.dirName })}
+                data-testid={`sidebar-project-${project.dirName}`}
+                title={collapsed ? project.displayName : undefined}
+                className={active ? undefined : "shell-hoverable"}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: collapsed ? "center" : "flex-start",
+                  gap: collapsed ? 0 : 10,
+                  width: "100%",
+                  padding: collapsed ? "9px 0" : "7px 12px",
+                  borderRadius: 9,
+                  border: "none",
+                  cursor: "pointer",
+                  background: active ? "var(--accent-soft)" : "transparent",
+                  color: active ? "var(--text)" : "var(--text-2)",
+                  fontWeight: active ? 700 : 500,
+                  fontSize: 13.5,
+                  fontFamily: "inherit",
+                  position: "relative",
+                }}
+              >
+                <ColorDot color={project.color} />
+                {!collapsed && (
+                  <span
+                    style={{
+                      flex: 1,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                      textAlign: "left",
+                    }}
+                  >
+                    {project.displayName}
+                  </span>
+                )}
+                {running &&
+                  (collapsed ? (
+                    <span style={{ position: "absolute", top: 4, right: 8 }}>
+                      <PulseDot size={5} />
+                    </span>
+                  ) : (
+                    <PulseDot />
+                  ))}
+              </button>
+            );
+          })}
+
+          {!collapsed && (
+            <button
+              onClick={() => ui.openNewProject()}
+              data-testid="sidebar-new-project"
+              className="shell-dashed-hover"
               style={{
                 display: "flex",
                 alignItems: "center",
-                justifyContent: collapsed ? "center" : "flex-start",
-                gap: collapsed ? 0 : 10,
-                width: "100%",
-                padding: collapsed ? "9px 0" : "7px 12px",
-                borderRadius: 9,
-                border: "none",
-                cursor: "pointer",
-                background: active ? "var(--accent-soft)" : "transparent",
-                color: active ? "var(--text)" : "var(--text-2)",
-                fontWeight: active ? 700 : 500,
-                fontSize: 13.5,
+                gap: 10,
+                padding: "8px 12px",
+                borderRadius: "var(--radius)",
+                border: "1px dashed var(--border-strong)",
+                background: "transparent",
+                color: "var(--text-3)",
+                fontWeight: 600,
+                fontSize: 13,
                 fontFamily: "inherit",
-                position: "relative",
+                cursor: "pointer",
+                marginTop: 6,
               }}
             >
-              <ColorDot color={project.color} />
-              {!collapsed && (
-                <span
-                  style={{
-                    flex: 1,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    textAlign: "left",
-                  }}
-                >
-                  {project.displayName}
-                </span>
-              )}
-              {running &&
-                (collapsed ? (
-                  <span style={{ position: "absolute", top: 4, right: 8 }}>
-                    <PulseDot size={5} />
-                  </span>
-                ) : (
-                  <PulseDot />
-                ))}
+              <PlusIcon />
+              New project
             </button>
-          );
-        })}
-
-        {!collapsed && (
-          <button
-            onClick={() => ui.openNewProject()}
-            data-testid="sidebar-new-project"
-            className="shell-dashed-hover"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "8px 12px",
-              borderRadius: "var(--radius)",
-              border: "1px dashed var(--border-strong)",
-              background: "transparent",
-              color: "var(--text-3)",
-              fontWeight: 600,
-              fontSize: 13,
-              fontFamily: "inherit",
-              cursor: "pointer",
-              marginTop: 6,
-            }}
-          >
-            <PlusIcon />
-            New project
-          </button>
-        )}
+          )}
+        </div>
       </nav>
 
       {!ui.engineReady && (
@@ -415,6 +458,14 @@ const Sidebar = () => {
           gap: 2,
         }}
       >
+        <NavLink
+          href={HELP_URL}
+          collapsed={collapsed}
+          onClick={() => track("Help.Open")}
+          icon={<HelpIcon size={16} />}
+          label="Help"
+          testId="sidebar-help"
+        />
         <NavButton
           active={false}
           collapsed={collapsed}
