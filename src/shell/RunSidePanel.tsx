@@ -156,47 +156,49 @@ const RunSidePanel = ({
 
       {live && (
         <>
-          <div
-            style={{
-              padding: "10px 18px 4px",
-              fontSize: 12,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              color: "var(--text-3)",
-            }}
-          >
-            Simulation speed
-          </div>
-          <div style={{ padding: "6px 18px 4px" }}>
+          <div data-tour="simulation-speed">
             <div
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                fontSize: 12.5,
-                color: "var(--text-2)",
-                marginBottom: 7,
+                padding: "10px 18px 4px",
+                fontSize: 12,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                color: "var(--text-3)",
               }}
             >
-              <span>Speed</span>
-              <span style={{ color: "var(--text)", fontWeight: 600 }}>
-                {simulationSettings.speed}
-              </span>
+              Simulation speed
             </div>
-            <input
-              type="range"
-              min={1}
-              max={200}
-              data-testid="speed-slider"
-              value={simulationSettings.speed}
-              onChange={(event) =>
-                setSimulationSettings({
-                  ...simulationSettings,
-                  speed: Number(event.target.value),
-                })
-              }
-              style={{ width: "100%" }}
-            />
+            <div style={{ padding: "6px 18px 4px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: 12.5,
+                  color: "var(--text-2)",
+                  marginBottom: 7,
+                }}
+              >
+                <span>Speed</span>
+                <span style={{ color: "var(--text)", fontWeight: 600 }}>
+                  {simulationSettings.speed}
+                </span>
+              </div>
+              <input
+                type="range"
+                min={1}
+                max={200}
+                data-testid="speed-slider"
+                value={simulationSettings.speed}
+                onChange={(event) =>
+                  setSimulationSettings({
+                    ...simulationSettings,
+                    speed: Number(event.target.value),
+                  })
+                }
+                style={{ width: "100%" }}
+              />
+            </div>
           </div>
           {/* Live computes/fixes/variables with real-time figures. Finished
                 runs have no live data — outputs and the log are the record. */}
