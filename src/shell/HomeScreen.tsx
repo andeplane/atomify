@@ -18,6 +18,9 @@ import { PlayIcon, PlusIcon } from "./icons";
 
 export const LAST_PROJECT_KEY = "atomify_last_project";
 
+/** Home shows a 4×4 grid of examples; the library has the rest. */
+const HOME_EXAMPLE_COUNT = 16;
+
 const HomeScreen = () => {
   const projects = useStoreState((state) => state.projects.projects);
   const activeRun = useStoreState((state) => state.projects.activeRun);
@@ -339,13 +342,14 @@ const HomeScreen = () => {
           </a>
         </div>
         <div
+          data-testid="home-examples"
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
             gap: 16,
           }}
         >
-          {ui.examples.examples.slice(0, 4).map((example) => (
+          {ui.examples.examples.slice(0, HOME_EXAMPLE_COUNT).map((example) => (
             <ExampleCard key={example.id} example={example} />
           ))}
         </div>
