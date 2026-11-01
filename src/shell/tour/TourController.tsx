@@ -21,6 +21,8 @@ import {
 } from "./tourSteps";
 
 const TICK_MS = 250;
+/** Room a popover needs under its target (px). */
+const POPOVER_ROOM = 240;
 
 const exists = (selector: string) => document.querySelector(selector) !== null;
 
@@ -133,11 +135,16 @@ const TourController = ({ onEnd }: { onEnd: () => void }) => {
       if (key !== rectRef.current) {
         const firstPlacement = rectRef.current === "";
         rectRef.current = key;
-        // Bring a target the shift pushed off screen back into view once;
-        // later on, leave the user's scrolling alone.
+        // Once per step: if the target sits off screen, or so low that a
+        // popover meant to go under it can't fit, scroll it to the middle. Later on,
+        // leave the user's scrolling alone.
         if (
           firstPlacement &&
-          (rect.bottom > window.innerHeight || rect.top < 0)
+          (rect.top < 0 ||
+            rect.bottom > window.innerHeight ||
+            (step.side === "bottom" &&
+              rect.bottom > window.innerHeight - POPOVER_ROOM)) &&
+          rect.height < window.innerHeight / 2
         ) {
           element.scrollIntoView({ block: "center" });
         }

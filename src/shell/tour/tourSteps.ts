@@ -76,7 +76,8 @@ export const TOUR_STEPS: TourStep[] = [
     target: () =>
       '[data-testid="home-screen"] [data-testid^="use-example-"], ' +
       '[data-testid="examples-screen"] [data-testid^="library-use-"]',
-    side: "bottom",
+    // Above: the example cards often sit at the bottom of the screen.
+    side: "top",
     done: (ctx) => ctx.newProjectOpen || ctx.screen === "project",
     hint: "Click Use as project on an example on the Home screen.",
   },

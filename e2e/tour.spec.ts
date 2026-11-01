@@ -36,10 +36,21 @@ test("the tour guides from an example to the project's input script", async ({
     .poll(async () => {
       const button = await useExample.boundingBox();
       const popover = await page.locator(".driver-popover").boundingBox();
-      // Placed below the button, a few pixels from its bottom edge.
-      return button && popover
-        ? Math.abs(popover.y - (button.y + button.height)) < 40
-        : false;
+      if (!button || !popover) {
+        return false;
+      }
+      // The popover sits right next to the button (its arrow touches it).
+      const dx = Math.max(
+        0,
+        button.x - (popover.x + popover.width),
+        popover.x - (button.x + button.width),
+      );
+      const dy = Math.max(
+        0,
+        button.y - (popover.y + popover.height),
+        popover.y - (button.y + button.height),
+      );
+      return Math.hypot(dx, dy) < 40;
     })
     .toBe(true);
   await useExample.click();
