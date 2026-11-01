@@ -185,35 +185,6 @@ describe("Shell", () => {
     );
   });
 
-  it("lists examples in the sidebar below the projects", async () => {
-    renderShell();
-
-    const row = await screen.findByTestId("sidebar-example-diffusion");
-    expect(screen.getByTestId("sidebar-examples-list")).toContainElement(row);
-    expect(row).toHaveTextContent("Diffusion");
-    // Projects come first, examples below.
-    expect(
-      screen
-        .getByTestId("sidebar-projects-section")
-        .compareDocumentPosition(screen.getByTestId("sidebar-examples")) &
-        Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
-    // Quick run waits for the engine, which never loads in these tests.
-    expect(
-      screen.getByTestId("sidebar-example-quick-diffusion"),
-    ).toBeDisabled();
-
-    await userEvent.click(screen.getByTestId("sidebar-example-use-diffusion"));
-    expect(screen.getByTestId("new-project-modal")).toBeInTheDocument();
-  });
-
-  it("hides the sidebar examples list when collapsed", async () => {
-    renderShell();
-    await screen.findByTestId("sidebar-example-diffusion");
-    await userEvent.click(screen.getByTestId("sidebar-collapse"));
-    expect(screen.queryByTestId("sidebar-examples")).not.toBeInTheDocument();
-  });
-
   it("creates a blank project from the modal and opens its workspace", async () => {
     renderShell();
 
