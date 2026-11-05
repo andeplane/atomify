@@ -15,7 +15,6 @@ import FilesTab from "./FilesTab";
 import EditorScreen from "./EditorScreen";
 import RunsTab from "./RunsTab";
 import RunDetail from "./RunDetail";
-import NotebookTab from "./NotebookTab";
 import { ChevronDownIcon, DotsIcon, InfoIcon, PlayIcon } from "./icons";
 import { MenuDivider, MenuItem, MONO, Popover, RunningPill } from "./ui";
 
@@ -135,9 +134,7 @@ const ProjectWorkspace = ({
       <RunDetail runId={screen.runId} />
     ) : screen.tab === "runs" ? (
       <RunsTab />
-    ) : (
-      <NotebookTab />
-    );
+    ) : null; // Notebook: rendered by the Shell so it survives tab switches.
 
   return (
     <>
@@ -183,7 +180,7 @@ const ProjectWorkspace = ({
                 borderRadius: 7,
                 border: "none",
                 background: "var(--accent)",
-                color: "#fff",
+                color: "var(--on-accent)",
                 fontWeight: 700,
                 fontSize: 12,
                 cursor: "pointer",
@@ -285,7 +282,7 @@ const ProjectWorkspace = ({
                     borderRadius: "10px 0 0 10px",
                     border: "none",
                     background: "var(--accent)",
-                    color: "#fff",
+                    color: "var(--on-accent)",
                     fontWeight: 700,
                     fontSize: 13,
                     cursor:
@@ -295,7 +292,7 @@ const ProjectWorkspace = ({
                   }}
                 >
                   <PlayIcon />
-                  Run simulation
+                  Save &amp; run simulation
                 </button>
               </Tooltip>
               <button
@@ -310,9 +307,9 @@ const ProjectWorkspace = ({
                   width: 30,
                   borderRadius: "0 10px 10px 0",
                   border: "none",
-                  borderLeft: "1px solid rgba(255,255,255,0.28)",
+                  borderLeft: "1px solid var(--on-accent-divider)",
                   background: "var(--accent)",
-                  color: "#fff",
+                  color: "var(--on-accent)",
                   cursor: "pointer",
                 }}
               >
@@ -325,7 +322,7 @@ const ProjectWorkspace = ({
                 testId="run-menu"
               >
                 <MenuItem
-                  label="Run simulation"
+                  label="Save & run simulation"
                   hint="uses current variable values"
                   testId="run-menu-run"
                   onClick={() => {
@@ -363,7 +360,7 @@ const ProjectWorkspace = ({
                   style={{
                     width: 36,
                     height: 36,
-                    borderRadius: 10,
+                    borderRadius: "var(--radius)",
                     border: "1px solid var(--border-strong)",
                     background: "transparent",
                     color: "var(--text-2)",
@@ -444,7 +441,7 @@ const ProjectWorkspace = ({
                 <span
                   style={{
                     padding: "1px 7px",
-                    borderRadius: 999,
+                    borderRadius: "var(--radius-pill)",
                     background: "var(--chip)",
                     color: "var(--text-3)",
                     fontSize: 11,

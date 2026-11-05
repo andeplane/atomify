@@ -16,11 +16,7 @@ class SyncVariablesModifier extends Modifier {
       return;
     }
 
-    input.lammps.syncVariables();
-    const variableNames = input.lammps.getVariableNames();
-
-    for (let i = 0; i < variableNames.size(); i++) {
-      const name = variableNames.get(i);
+    for (const name of input.lammps.getVariableNames()) {
       let variable = input.variables[name];
       if (variable == null) {
         variable = createModifierEntry(
@@ -29,7 +25,7 @@ class SyncVariablesModifier extends Modifier {
         );
       }
 
-      syncModifierEntry(variable, "lmpVariable", input.wasm, everything, {
+      syncModifierEntry(variable, "lmpVariable", everything, {
         refreshHasScalarData: true,
       });
       output.variables[name] = variable;

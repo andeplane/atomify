@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import Modifier, { ModifierProps } from "./modifier";
+import Modifier from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 
 describe("Modifier", () => {
@@ -24,12 +24,10 @@ describe("Modifier", () => {
       const modifier = new Modifier({ name: "Base", active: true });
 
       expect(() =>
-        modifier.run(
-          {} as ModifierInput,
-          {} as ModifierOutput,
-        ),
-      ).toThrow("Modifier.run() is not implemented. Subclasses must override run().");
+        modifier.run({} as ModifierInput, {} as ModifierOutput),
+      ).toThrow(
+        "Modifier.run() is not implemented. Subclasses must override run().",
+      );
     });
   });
-
 });

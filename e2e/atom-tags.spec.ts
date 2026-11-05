@@ -20,8 +20,8 @@ test("real engine tags remain attached to atoms when LAMMPS sorts its arrays", a
       () =>
         page.evaluate(async () => {
           const modulePath = "/atomify/src/store/index.ts";
-          const store = (await import(modulePath)).default;
-          const particles = store.getState().render.particles as
+          const { engine } = await import(modulePath);
+          const particles = engine.particles as
             | {
                 count: number;
                 indices: Float32Array;

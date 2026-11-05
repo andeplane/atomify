@@ -56,7 +56,7 @@ for (const [style, data] of [
     const readStyles = () =>
       page.evaluate(async () => {
         const path = "/atomify/src/store/index.ts";
-        const p = (await import(path)).default.getState().render.particles;
+        const p = (await import(path)).engine.particles;
         return {
           radius: Array.from(p.geometry.getAttribute("atomRadius").array),
           color: Array.from(p.geometry.getAttribute("atomColor").array),

@@ -7,42 +7,25 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import type {
   LAMMPSWeb as NativeLammps,
-  ParticleSnapshot,
-  BondSnapshot,
+  LammpsModule,
   ModifierCategory,
-  ModifierInfo,
   ModifierSnapshot,
 } from "lammps.js";
-import {
-  LammpsWeb,
-  LMPModifier,
-  LMPData1D,
-  ModifierType,
-  Wall,
-} from "../types";
+import { ModifierType } from "../types";
 import { KOKKOS_THREADS } from "../utils/kokkos";
-import { AtomifyWasmModule } from "./types";
-import { getCancel, setCancel, getPausedFlag } from "./wasmInstance";
-import type { WorkerModifierData, WorkerPerAtomData } from "./workerMessages";
+import type { EngineModifier, EnginePerAtom } from "./engineFrame";
 
 /**
- * Adapts the lammps.js native LAMMPSWeb API to the LammpsWeb interface the
- * rest of Atomify consumes. Data still flows through raw heap views: lammps.js
- * snapshots carry BufferView { ptr, length, ... } into the wasm heap, and the
- * pointer getters below hand those to the existing HEAPF32/HEAP32 subarray
- * readers in the modifiers.
+ * Drives the lammps.js native LAMMPSWeb inside the engine worker: the run
+ * lifecycle (start/reset/runFile/cancel), the async step callback, and
+ * copying compute/fix/variable data out of the wasm heap into the typed
+ * arrays of each streamed EngineFrame. Only the worker uses it; the main
+ * thread talks to LammpsWorkerProxy.
  */
 
 export const SYNC_FIX_ID = "atomify_sync";
 const CANCEL_MESSAGE = "Atomify::canceled";
 const PAUSE_POLL_MS = 100;
-
-/** Wrap a plain array in the CPPArray shape Atomify's embind-era code reads. */
-const cppArray = <T>(items: T[]) => ({
-  get: (index: number): T => items[index],
-  size: () => items.length,
-  delete: () => {},
-});
 
 const COMPUTE_TYPES: Record<string, ModifierType> = {
   pressure: ModifierType.ComputePressure,
@@ -95,74 +78,8 @@ const yieldToEventLoop = (() => {
     });
 })();
 
-/**
- * Presents one lammps.js modifier (compute/fix/variable) through Atomify's
- * LMPModifier interface. Data is fetched lazily from the native side; the
- * embind-era delete() methods are no-ops since everything here is plain JS.
- */
-class ModifierAdapter implements LMPModifier {
-  private snapshot: ModifierSnapshot | null = null;
-
-  constructor(
-    private readonly native: NativeLammps,
-    private readonly category: ModifierCategory,
-    private readonly name: string,
-    private info: {
-      style: string;
-      isPerAtom: boolean;
-      hasScalar: boolean;
-      clearPerSync: boolean;
-      xLabel: string;
-      yLabel: string;
-    },
-  ) {}
-
-  getName = () => this.name;
-  getType = () => modifierType(this.category, this.info.style);
-  getIsPerAtom = () => this.snapshot?.isPerAtom ?? this.info.isPerAtom;
-  hasScalarData = () => this.snapshot?.hasScalar ?? this.info.hasScalar;
-  getClearPerSync = () => this.snapshot?.clearPerSync ?? this.info.clearPerSync;
-  getScalarValue = () => this.snapshot?.scalar ?? 0;
-  getXLabel = () => this.snapshot?.xLabel ?? this.info.xLabel;
-  getYLabel = () => this.snapshot?.yLabel ?? this.info.yLabel;
-
-  // The native syncModifier both invokes the underlying compute (respecting
-  // LAMMPS' invocation rules) and refreshes scalar/series data, so execute()
-  // has nothing separate to do.
-  execute = () => true;
-
-  sync = () => {
-    // A modifier LAMMPS cannot invoke yet (never-initialized compute) throws;
-    // keep the last snapshot rather than surfacing it as a run failure.
-    try {
-      this.snapshot = this.native.syncModifier(this.category, this.name);
-    } catch {
-      /* no data yet */
-    }
-  };
-
-  getData1DNames = () =>
-    cppArray((this.snapshot?.series ?? []).map((series) => series.name));
-
-  getData1D = () =>
-    cppArray<LMPData1D>(
-      (this.snapshot?.series ?? []).map((series) => ({
-        getLabel: () => series.label,
-        getXValuesPointer: () => series.x.ptr,
-        getYValuesPointer: () => series.y.ptr,
-        getNumPoints: () => series.x.length,
-        delete: () => {},
-      })),
-    );
-
-  getPerAtomData = () =>
-    this.native.getModifierPerAtom(this.category, this.name).ptr;
-
-  delete = () => {};
-}
-
-export class LammpsAdapter implements LammpsWeb {
-  private readonly module: AtomifyWasmModule;
+export class LammpsAdapter {
+  private readonly module: LammpsModule;
   private readonly native: NativeLammps;
 
   private unitStyle?: UnitStyle;
@@ -194,18 +111,16 @@ export class LammpsAdapter implements LammpsWeb {
       .join("");
   }
 
-  private particleSnapshot?: ParticleSnapshot;
-  private bondSnapshot?: BondSnapshot;
-  // Refreshed once per sync cycle in syncComputes; modifierNames/makeModifier
-  // read it instead of crossing the wasm boundary per call.
-  private modifierInfos: ModifierInfo[] | null = null;
   private syncFrequency = 1;
   // KOKKOS threads for the constant startup args. Fixed for the session:
   // Kokkos::initialize is one-shot per wasm module and the pthread pool is
   // sized at load (PTHREAD_POOL_SIZE 8). Kept at 4 so the New Run modal's
   // Multithreading toggle ("-k on t 4") matches what actually runs.
   private readonly kokkosThreads = KOKKOS_THREADS;
+  // Run control, set by the worker from LammpsWorkerProxy's commands (the
+  // proxy is its only owner) and read by onStep's between-step wait loop.
   private cancelRequested = false;
+  private paused = false;
   private lastError = "";
   private stepListener?: () => void;
   // Single-shot resolver for the active runFile promise. Cancellation resolves
@@ -214,7 +129,7 @@ export class LammpsAdapter implements LammpsWeb {
   private runFinishResolve: (() => void) | null = null;
   private runFinished = true;
 
-  constructor(module: AtomifyWasmModule, native: NativeLammps) {
+  constructor(module: LammpsModule, native: NativeLammps) {
     this.module = module;
     this.native = native;
     this.installStepCallback();
@@ -275,8 +190,7 @@ export class LammpsAdapter implements LammpsWeb {
 
     // Safe synchronous window: if a stop was requested, gracefully halt the
     // active run here rather than rejecting later (which would throw in wasm).
-    if (this.cancelRequested || getCancel()) {
-      setCancel(false);
+    if (this.cancelRequested) {
       this.cancelRequested = false;
       this.lastError = CANCEL_MESSAGE;
       this.requestGracefulStop();
@@ -287,11 +201,11 @@ export class LammpsAdapter implements LammpsWeb {
       const wait = () => {
         // A stop pressed while paused: unblock so the next (safe, synchronous)
         // step can issue the graceful stop; leave the cancel flag set for it.
-        if (this.cancelRequested || getCancel()) {
+        if (this.cancelRequested) {
           resolve();
           return;
         }
-        if (getPausedFlag()) {
+        if (this.paused) {
           setTimeout(wait, PAUSE_POLL_MS);
           return;
         }
@@ -358,17 +272,15 @@ export class LammpsAdapter implements LammpsWeb {
     return true;
   }
 
-  stop(): boolean {
-    this.native.stop();
-    return true;
-  }
-
-  step() {
-    this.native.advance(1, false, false);
-  }
-
+  /** Stop the active run at its next synced step (unpausing it first). */
   cancel() {
     this.cancelRequested = true;
+    this.paused = false;
+  }
+
+  /** Hold (or release) the run in the between-step wait loop. */
+  setPaused(paused: boolean) {
+    this.paused = paused;
   }
 
   /**
@@ -392,9 +304,6 @@ export class LammpsAdapter implements LammpsWeb {
     // persistent wrapper and survives, so it must NOT be re-registered here —
     // doing so traps the next run with a "function signature mismatch".
     this.start();
-    this.particleSnapshot = undefined;
-    this.bondSnapshot = undefined;
-    this.modifierInfos = null;
     this.lastError = "";
     this.cancelRequested = false;
   }
@@ -405,17 +314,17 @@ export class LammpsAdapter implements LammpsWeb {
 
   /**
    * Never rejects: run failures (including cancellation) are stored and
-   * surfaced through getErrorMessage, which the run thunk checks after
+   * surfaced through getErrorMessage, which the run pipeline checks after
    * awaiting — rethrowing here would lose the Atomify::canceled marker that
    * routes stop-button aborts away from the error path.
    */
   runFile(path: string): Promise<void> {
+    // Every run starts unpaused, and a stop press that landed after the
+    // previous run's last synced step must not abort this one.
     this.lastError = "";
     this.cancelRequested = false;
+    this.paused = false;
     this.runFinished = false;
-    // A stop press that landed after the previous run's last synced step
-    // leaves the global cancel flag set; don't let it abort this run.
-    setCancel(false);
 
     // Definitions survive LAMMPS clear and evaluate against the current atom
     // style. Define them before execution: commands are forbidden mid-run.
@@ -458,68 +367,11 @@ export class LammpsAdapter implements LammpsWeb {
     this.native.setAsyncStepFrequency(SYNC_FIX_ID, every);
   }
 
-  getIsRunning(): boolean {
-    return this.native.getIsRunning();
-  }
-
-  getTimesteps(): number {
-    return this.native.getCurrentStep();
-  }
-
-  getNumAtoms(): number {
-    if (this.particleSnapshot) {
-      return this.particleSnapshot.count;
-    }
-    return this.native.isReady() ? this.native.syncParticlesWrapped().count : 0;
-  }
-
   getErrorMessage(): string {
     return this.lastError || this.native.getLastErrorMessage();
   }
 
-  getExceptionMessage(_address: number): string {
-    return this.getErrorMessage() || "Unknown LAMMPS error";
-  }
-
-  getLastCommand(): string {
-    return this.native.getLastInputLine();
-  }
-
-  // --- Particles ---
-
-  computeParticles(): number {
-    this.particleSnapshot = this.native.syncParticlesWrapped();
-    return this.particleSnapshot.count;
-  }
-
-  getPositionsPointer(): number {
-    return this.particleSnapshot?.positions.ptr ?? 0;
-  }
-
-  getTypePointer(): number {
-    return this.particleSnapshot?.types.ptr ?? 0;
-  }
-
-  // lammps.js reads lammps_extract_atom(..., "id"), the LAMMPS atom tag
-  // array. These are persistent IDs, not offsets in the sorted atom arrays.
-  getIdPointer(): number {
-    return this.particleSnapshot?.ids.ptr ?? 0;
-  }
-
   // --- Bonds (topology + distance-derived from the neighborlist) ---
-
-  computeBonds(): number {
-    this.bondSnapshot = this.native.syncBondsWrapped();
-    return this.bondSnapshot.count;
-  }
-
-  getBondsPosition1Pointer(): number {
-    return this.bondSnapshot?.first.ptr ?? 0;
-  }
-
-  getBondsPosition2Pointer(): number {
-    return this.bondSnapshot?.second.ptr ?? 0;
-  }
 
   setBondDistance(type1: number, type2: number, distance: number) {
     this.native.setBondDistance(type1, type2, distance);
@@ -533,114 +385,8 @@ export class LammpsAdapter implements LammpsWeb {
     this.native.setBuildNeighborlist(buildNeighborlist);
   }
 
-  // --- Simulation box (float32 views, unlike the old wasm's float64) ---
-
-  getCellMatrixPointer(): number {
-    return this.native.syncSimulationBox().matrix.ptr;
-  }
-
-  getOrigoPointer(): number {
-    return this.native.syncSimulationBox().origin.ptr;
-  }
-
-  getDimension(): number {
-    return this.native.syncSimulationBox().dimension;
-  }
-
-  getWalls() {
-    return cppArray<Wall>(this.native.getWalls());
-  }
-
-  // --- Run status / metrics ---
-
-  getWhichFlag(): number {
-    return this.native.getRunMode();
-  }
-
-  getRunTimesteps(): number {
-    return this.native.getRunStepsDone();
-  }
-
-  getRunTotalTimesteps(): number {
-    return this.native.getRunStepsTotal();
-  }
-
-  getTimestepsPerSecond(): number {
-    return this.native.getThermo("spcpu");
-  }
-
-  getCPURemain(): number {
-    return this.native.getThermo("cpuremain");
-  }
-
-  getMemoryUsage(): number {
-    return this.native.getMemoryUsage();
-  }
-
   // --- Computes / fixes / variables ---
 
-  syncComputes() {
-    this.native.syncModifiers();
-    this.modifierInfos = this.native.listModifiers();
-  }
-
-  syncFixes() {
-    // syncComputes already refreshed the shared registry this cycle.
-  }
-
-  syncVariables() {
-    // syncComputes already refreshed the shared registry this cycle.
-  }
-
-  private listModifiers(): ModifierInfo[] {
-    if (!this.modifierInfos) {
-      this.modifierInfos = this.native.listModifiers();
-    }
-    return this.modifierInfos;
-  }
-
-  private modifierNames(category: ModifierCategory) {
-    return cppArray(
-      this.listModifiers()
-        .filter((info) => info.category === category)
-        .map((info) => info.name),
-    );
-  }
-
-  private makeModifier(category: ModifierCategory, name: string): LMPModifier {
-    const info = this.listModifiers().find(
-      (entry) => entry.category === category && entry.name === name,
-    );
-    return new ModifierAdapter(this.native, category, name, {
-      style: info?.style ?? "",
-      isPerAtom: info?.isPerAtom ?? false,
-      hasScalar: info?.hasScalar ?? false,
-      clearPerSync: info?.clearPerSync ?? false,
-      xLabel: info?.xLabel ?? "Time",
-      yLabel: info?.yLabel ?? "Value",
-    });
-  }
-
-  getComputeNames() {
-    return this.modifierNames("compute");
-  }
-
-  getFixNames() {
-    return this.modifierNames("fix");
-  }
-
-  getVariableNames() {
-    return this.modifierNames("variable");
-  }
-
-  /**
-   * Snapshot every tracked compute/fix/variable — invoking each and copying
-   * its scalar and 1D series out of the wasm heap — plus, when a per-atom
-   * coloring target is set, that compute's per-atom float64 values. Used by
-   * the worker to stream analysis + coloring data to the main thread, where
-   * the proxy replays it through lightweight LMPModifier-shaped objects.
-   * Must run in the synchronous step window (touches the heap).
-   */
   /**
    * Invoke and sync one modifier, treating a LAMMPS error as "no data yet".
    *
@@ -664,12 +410,20 @@ export class LammpsAdapter implements LammpsWeb {
     }
   }
 
+  /**
+   * Snapshot every tracked compute/fix/variable — invoking each and copying
+   * its scalar and 1D series out of the wasm heap — plus, when a per-atom
+   * coloring target is set, that compute's per-atom float64 values. Used by
+   * the worker to fill each streamed EngineFrame; every array is a fresh copy
+   * the worker can transfer. Must run in the synchronous step window
+   * (touches the heap).
+   */
   snapshotModifiers(
     perAtomTarget: { category: ModifierCategory; name: string } | null,
     particleCount: number,
   ): {
-    modifiers: WorkerModifierData[];
-    perAtom: WorkerPerAtomData | null;
+    modifiers: EngineModifier[];
+    perAtom: EnginePerAtom | null;
     radii: Float32Array | null;
     groups: { names: string[]; masks: Uint32Array };
   } {
@@ -690,9 +444,8 @@ export class LammpsAdapter implements LammpsWeb {
         i.name !== this.radiusName &&
         !i.name.startsWith(this.groupPrefix),
     );
-    this.modifierInfos = infos;
 
-    const modifiers: WorkerModifierData[] = infos.map((info) => {
+    const modifiers: EngineModifier[] = infos.map((info) => {
       const snap = this.trySyncModifier(info.category, info.name);
       const series = (snap?.series ?? []).map((s) => {
         const xBase = s.x.ptr / 4;
@@ -700,10 +453,10 @@ export class LammpsAdapter implements LammpsWeb {
         return {
           name: s.name,
           label: s.label,
-          x: Array.from(
+          x: new Float32Array(
             this.module.HEAPF32.subarray(xBase, xBase + s.x.length),
           ),
-          y: Array.from(
+          y: new Float32Array(
             this.module.HEAPF32.subarray(yBase, yBase + s.y.length),
           ),
         };
@@ -749,7 +502,7 @@ export class LammpsAdapter implements LammpsWeb {
         series: [],
       });
     }
-    let perAtom: WorkerPerAtomData | null = null;
+    let perAtom: EnginePerAtom | null = null;
     if (perAtomTarget) {
       const info = infos.find(
         (i) =>
@@ -762,13 +515,12 @@ export class LammpsAdapter implements LammpsWeb {
           perAtomTarget.name,
         );
         const base = view.ptr / 8;
-        const values = new Float64Array(
-          this.module.HEAPF64.subarray(base, base + view.length),
-        );
         perAtom = {
           category: perAtomTarget.category,
           name: perAtomTarget.name,
-          values: values.buffer,
+          values: new Float64Array(
+            this.module.HEAPF64.subarray(base, base + view.length),
+          ),
         };
       }
     }
@@ -793,17 +545,5 @@ export class LammpsAdapter implements LammpsWeb {
       for (let i = 0; i < particleCount; i++) if (values[i]) masks[i] |= flag;
     }
     return { modifiers, perAtom, radii, groups: { names, masks } };
-  }
-
-  getCompute(name: string): LMPModifier {
-    return this.makeModifier("compute", name);
-  }
-
-  getFix(name: string): LMPModifier {
-    return this.makeModifier("fix", name);
-  }
-
-  getVariable(name: string): LMPModifier {
-    return this.makeModifier("variable", name);
   }
 }

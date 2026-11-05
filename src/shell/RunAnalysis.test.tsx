@@ -26,6 +26,7 @@ vi.mock("dygraphs", () => {
 import RunAnalysis from "./RunAnalysis";
 import { storeModel, type StoreModel } from "../store/model";
 import type { StoreInjections } from "../store/projects";
+import { EngineRegistry } from "../engine/EngineRegistry";
 import { createMemoryProjectStorage } from "../storage";
 import type { Compute, Fix, Variable } from "../types";
 import { ModifierType } from "../types";
@@ -59,6 +60,7 @@ describe("RunAnalysis", () => {
     const injections: StoreInjections = {
       libraryStorage: createMemoryProjectStorage(),
       scratchStorage: createMemoryProjectStorage(),
+      engine: new EngineRegistry(),
     };
     store = createStore(storeModel, { injections });
   });

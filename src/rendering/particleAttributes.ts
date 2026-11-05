@@ -9,12 +9,17 @@ type Color = { r: number; g: number; b: number };
 type Style = { color: Color; radius: number };
 type AttributeState = {
   styles: Map<number, Style>;
+  // First instance slot per ID; nextSlot chains further instances of the
+  // same ID (periodic images), ending in -1.
   slots: Map<number, number>;
+  nextSlot?: Int32Array;
   particles?: Particles;
   ids?: Float32Array;
   count?: number;
   color?: InstancedBufferAttribute;
   radius?: InstancedBufferAttribute;
+  /** Per-slot hide flags (1 = drawn with zero radius); unset = none hidden. */
+  hidden?: Uint8Array;
 };
 const states = new WeakMap<Visualizer, AttributeState>();
 const patchedMaterials = new WeakSet<object>();
@@ -32,7 +37,7 @@ function replaceRequired(
 }
 
 /** omovi 0.25 uses the same radius expression for drawing and GPU picking. */
-export function useRadiusAttribute(source: string): string {
+export function applyRadiusAttribute(source: string): string {
   return replaceRequired(
     replaceRequired(
       source,
@@ -62,7 +67,7 @@ export function installParticleAttributes(visualizer: Visualizer): void {
     const originalCompile = material.onBeforeCompile;
     material.onBeforeCompile = (shader, renderer) => {
       originalCompile.call(material, shader, renderer);
-      shader.vertexShader = useRadiusAttribute(shader.vertexShader);
+      shader.vertexShader = applyRadiusAttribute(shader.vertexShader);
       shader.vertexShader =
         "attribute vec3 atomColor;\nvarying vec3 vAtomColor;\n" +
         replaceRequired(
@@ -87,7 +92,7 @@ export function installParticleAttributes(visualizer: Visualizer): void {
     material.customProgramCacheKey = () => "atomify-particle-attributes-v1";
     patchedMaterials.add(material);
   }
-  picking.vertexShader = useRadiusAttribute(picking.vertexShader);
+  picking.vertexShader = applyRadiusAttribute(picking.vertexShader);
   material.needsUpdate = true;
   picking.needsUpdate = true;
   const state: AttributeState = { styles: new Map(), slots: new Map() };
@@ -102,18 +107,20 @@ export function installParticleAttributes(visualizer: Visualizer): void {
   };
   visualizer.setColor = (id, color) => {
     styleFor(id).color = color;
-    const slot = state.slots.get(id);
-    if (slot !== undefined && state.color) {
-      state.color.setXYZ(slot, color.r / 255, color.g / 255, color.b / 255);
+    let slot = state.slots.get(id) ?? -1;
+    if (slot >= 0 && state.color) {
+      for (; slot >= 0; slot = state.nextSlot![slot])
+        state.color.setXYZ(slot, color.r / 255, color.g / 255, color.b / 255);
       state.color.needsUpdate = true;
     }
     visualizer.forceRender = true;
   };
   visualizer.setRadius = (id, radius) => {
     styleFor(id).radius = radius;
-    const slot = state.slots.get(id);
-    if (slot !== undefined && state.radius) {
-      state.radius.setX(slot, radius);
+    let slot = state.slots.get(id) ?? -1;
+    if (slot >= 0 && state.radius) {
+      for (; slot >= 0; slot = state.nextSlot![slot])
+        state.radius.setX(slot, state.hidden?.[slot] ? 0 : radius);
       state.radius.needsUpdate = true;
     }
     visualizer.forceRender = true;
@@ -130,6 +137,7 @@ export function syncParticleAttributes(
   if (state.particles !== particles) {
     state.particles = particles;
     state.ids = new Float32Array(particles.capacity);
+    state.nextSlot = new Int32Array(particles.capacity);
     state.count = -1;
     state.color = new InstancedBufferAttribute(
       new Float32Array(particles.capacity * 3),
@@ -152,9 +160,13 @@ export function syncParticleAttributes(
     return;
   state.ids!.set(particles.indices.subarray(0, particles.count));
   state.count = particles.count;
+  // Every radius is rewritten below, so earlier hide flags no longer apply.
+  state.hidden = undefined;
   state.slots.clear();
-  for (let i = 0; i < particles.count; i++) {
+  // Walk backwards so each ID's chain starts at its lowest slot.
+  for (let i = particles.count - 1; i >= 0; i--) {
     const id = particles.indices[i];
+    state.nextSlot![i] = state.slots.get(id) ?? -1;
     state.slots.set(id, i);
     const style = state.styles.get(id);
     const color = style?.color ?? { r: 255, g: 255, b: 255 };
@@ -166,4 +178,41 @@ export function syncParticleAttributes(
     if (!state.slots.has(id)) state.styles.delete(id);
   state.color!.needsUpdate = true;
   state.radius!.needsUpdate = true;
+}
+
+/**
+ * Hide instances by drawing them with zero radius, so whole atoms disappear
+ * from both drawing and GPU picking while IDs and slots stay untouched.
+ * `hidden[i]` follows the particles' array order; pass undefined to show all.
+ * Call after syncParticleAttributes for the same frame.
+ */
+export function setHiddenParticles(
+  visualizer: Visualizer | undefined,
+  particles: Particles,
+  hidden: Uint8Array | undefined,
+): void {
+  const state = visualizer ? states.get(visualizer) : undefined;
+  if (!visualizer || !state || state.particles !== particles || !state.radius)
+    return;
+  const previous = state.hidden;
+  if (!hidden && !previous) return;
+  let changed = false;
+  for (let i = 0; i < particles.count; i++) {
+    const hide = hidden ? hidden[i] : 0;
+    if (hide === (previous ? previous[i] : 0)) continue;
+    const radius = state.styles.get(particles.indices[i])?.radius ?? 0.33;
+    state.radius.setX(i, hide ? 0 : radius);
+    changed = true;
+  }
+  if (hidden) {
+    const flags = previous ?? new Uint8Array(particles.capacity);
+    flags.set(hidden.subarray(0, particles.count));
+    state.hidden = flags;
+  } else {
+    state.hidden = undefined;
+  }
+  if (changed) {
+    state.radius.needsUpdate = true;
+    visualizer.forceRender = true;
+  }
 }

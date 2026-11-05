@@ -16,11 +16,7 @@ class SyncComputesModifier extends Modifier {
       return;
     }
 
-    input.lammps.syncComputes();
-    const computeNames = input.lammps.getComputeNames();
-
-    for (let i = 0; i < computeNames.size(); i++) {
-      const name = computeNames.get(i);
+    for (const name of input.lammps.getComputeNames()) {
       let compute = input.computes[name];
 
       if (compute == null) {
@@ -30,9 +26,7 @@ class SyncComputesModifier extends Modifier {
         );
       }
 
-      if (compute.lmpCompute.execute()) {
-        syncModifierEntry(compute, "lmpCompute", input.wasm, everything);
-      }
+      syncModifierEntry(compute, "lmpCompute", everything);
       output.computes[name] = compute;
     }
   };

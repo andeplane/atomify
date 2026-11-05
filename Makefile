@@ -13,6 +13,9 @@ help: ## Show this help
 frontend-install: ## Install frontend dependencies
 	cd . && npm install
 
+frontend-ci-install: ## Install frontend dependencies exactly from package-lock.json (CI)
+	cd . && npm ci
+
 frontend-start: ## Start frontend development server
 	cd . && npm start
 
@@ -28,8 +31,9 @@ frontend-test-run: ## Run frontend tests once (CI mode)
 frontend-typecheck: ## Run TypeScript type checking
 	cd . && npm run typecheck
 
-frontend-lint: ## Run frontend linter (prettier)
+frontend-lint: ## Run frontend linters (prettier, eslint)
 	cd . && npx prettier --check .
+	cd . && npm run lint
 
 frontend-lint-fix: ## Fix frontend linting issues
 	cd . && npx prettier --write .
@@ -69,7 +73,7 @@ install: frontend-install ## Install all dependencies
 
 ## CI / QUALITY
 
-ci-frontend: frontend-install frontend-typecheck frontend-lint frontend-test-run ## Run all frontend CI checks
+ci-frontend: frontend-ci-install frontend-typecheck frontend-lint frontend-test-run ## Run all frontend CI checks
 
 ci: ci-frontend ## Run all CI checks
 

@@ -21,13 +21,11 @@ test("continuation preserves engine state and parent results, and the full seque
 }) => {
   await gotoApp(page);
   await createBlankProject(page, "Continue test", "continue-test");
-  await page
-    .getByTestId("upload-input")
-    .setInputFiles({
-      name: "in.move",
-      mimeType: "text/plain",
-      buffer: Buffer.from(script),
-    });
+  await page.getByTestId("upload-input").setInputFiles({
+    name: "in.move",
+    mimeType: "text/plain",
+    buffer: Buffer.from(script),
+  });
   await waitForEngine(page);
   await page.getByTestId("run-file-in.move").click();
   await expect(page.getByTestId("continue-run")).toBeVisible({
@@ -39,12 +37,10 @@ test("continuation preserves engine state and parent results, and the full seque
     const output = await store
       .getActions()
       .projects.readFile("runs/run-001/trajectory.dump");
-    await store
-      .getActions()
-      .projects.writeFile({
-        path: "in.move",
-        content: "invalid working-tree edit\n",
-      });
+    await store.getActions().projects.writeFile({
+      path: "in.move",
+      content: "invalid working-tree edit\n",
+    });
     return output;
   });
   await page.getByTestId("continue-run").click();
@@ -74,9 +70,9 @@ test("continuation preserves engine state and parent results, and the full seque
     .toEqual({ status: "completed", step: 30, parent: "run-001", start: 10 });
   const after = await page.evaluate(async () => {
     const path = "/atomify/src/store/index.ts";
-    const store = (await import(path)).default;
+    const { default: store, engine } = await import(path);
     return {
-      x: store.getState().render.particles.positions[0],
+      x: engine.particles.positions[0],
       parent: await store
         .getActions()
         .projects.readFile("runs/run-001/trajectory.dump"),
@@ -97,14 +93,16 @@ test("continuation preserves engine state and parent results, and the full seque
       () =>
         page.evaluate(async () => {
           const path = "/atomify/src/store/index.ts";
-          const s = (await import(path)).default.getState();
-          const meta = s.projects.active?.runs.find(
-            (r: { runId: string }) => r.runId === "run-003",
-          )?.meta;
+          const { default: store, engine } = await import(path);
+          const meta = store
+            .getState()
+            .projects.active?.runs.find(
+              (r: { runId: string }) => r.runId === "run-003",
+            )?.meta;
           return {
             status: meta?.status,
             step: meta?.stats?.timesteps,
-            x: s.render.particles?.positions[0],
+            x: engine.particles?.positions[0],
           };
         }),
       { timeout: 60_000 },
@@ -113,8 +111,7 @@ test("continuation preserves engine state and parent results, and the full seque
   expect(
     await page.evaluate(async () => {
       const path = "/atomify/src/store/index.ts";
-      return (await import(path)).default.getState().render.particles
-        .positions[0];
+      return (await import(path)).engine.particles.positions[0];
     }),
   ).toBeCloseTo(1.3, 5);
 });

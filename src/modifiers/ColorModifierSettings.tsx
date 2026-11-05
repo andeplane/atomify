@@ -8,10 +8,9 @@ import {
   Button,
   Space,
 } from "antd";
-import { useStoreState, useStoreActions } from "../hooks";
+import { useEngine, useStoreState, useStoreActions } from "../hooks";
 import { useCallback, useState } from "react";
 import { track } from "../utils/metrics";
-import ColorModifier from "./colormodifier";
 const { Option, OptGroup } = Select;
 
 const ColorModifierSettings = ({
@@ -22,15 +21,10 @@ const ColorModifierSettings = ({
   onClose: () => void;
 }) => {
   const computes = useStoreState((state) => state.simulationStatus.computes);
-  const postTimestepModifiers = useStoreState(
-    (state) => state.processing.postTimestepModifiers,
-  );
   const setParticleStylesUpdated = useStoreActions(
     (actions) => actions.render.setParticleStylesUpdated,
   );
-  const colorModifier = postTimestepModifiers.find(
-    (modifier): modifier is ColorModifier => modifier instanceof ColorModifier,
-  );
+  const colorModifier = useEngine().colorModifier;
   const [selectedValue, setSelectedValue] = useState(
     colorModifier?.computeName ?? "type",
   );

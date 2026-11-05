@@ -94,6 +94,7 @@ describe("saveRenderSettingsToStorage", () => {
       showSimulationBox: true,
       showWalls: true,
       orthographic: false,
+      showScaleBar: false,
     };
 
     saveRenderSettingsToStorage(settings);
@@ -118,6 +119,7 @@ describe("saveRenderSettingsToStorage", () => {
       showSimulationBox: true,
       showWalls: true,
       orthographic: false,
+      showScaleBar: false,
     };
 
     expect(() => saveRenderSettingsToStorage(settings)).not.toThrow();

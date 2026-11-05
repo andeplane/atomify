@@ -1,22 +1,22 @@
 /**
  * Editor sub-screen of the Files tab (ADR-003 §5): Monaco with the LAMMPS
  * language, write-through debounced autosave with a visible saving/saved/
- * error indicator, and Save & run. Run outputs (paths under runs/) open
+ * error indicator, and a Save button (Cmd/Ctrl+S). Running lives in the
+ * project header's "Save & run simulation". Run outputs (paths under runs/) open
  * read-only with a "snapshot of run #NNN" banner.
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Editor, { loader } from "@monaco-editor/react";
 import { useStoreActions, useStoreState } from "../hooks";
 import { isScriptFile } from "../store/projects";
 import { registerLammpsLanguage } from "../utils/lammpsLanguage";
-import { useShellUI } from "./ShellContext";
 import { runNumber } from "./format";
-import { BackIcon, CheckIcon, PlayIcon } from "./icons";
-import { Chip, MONO, PrimaryButton } from "./ui";
+import { BackIcon, CheckIcon } from "./icons";
+import { Chip, GhostButton, MONO } from "./ui";
 
 // Same Monaco + LAMMPS language setup as the legacy Edit container.
-loader.init().then((monaco) => {
+void loader.init().then((monaco) => {
   registerLammpsLanguage(monaco);
 });
 
@@ -34,15 +34,13 @@ const EditorScreen = ({ filePath }: { filePath: string }) => {
     (actions) => actions.projects.flushPendingSaves,
   );
   const setScreen = useStoreActions((actions) => actions.projects.setScreen);
-  const ui = useShellUI();
 
   const [content, setContent] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   const readOnly = filePath.startsWith("runs/");
   const snapshotRun = readOnly ? filePath.split("/")[1] : undefined;
-  const fileName = filePath.slice(filePath.lastIndexOf("/") + 1);
-  const isScript = isScriptFile(fileName);
+  const isScript = isScriptFile(filePath, active?.meta.inputScript);
 
   useEffect(() => {
     let mounted = true;
@@ -74,6 +72,13 @@ const EditorScreen = ({ filePath }: { filePath: string }) => {
     },
     [filePath, readOnly, saveFileDebounced],
   );
+
+  const save = useCallback(() => {
+    void flushPendingSaves();
+  }, [flushPendingSaves]);
+  // Monaco's command closure is registered once; route it through a ref.
+  const saveRef = useRef(save);
+  saveRef.current = save;
 
   if (!active) {
     return null;
@@ -187,22 +192,15 @@ const EditorScreen = ({ filePath }: { filePath: string }) => {
             {saveIndicator}
           </span>
         )}
-        {!readOnly && isScript && (
-          <PrimaryButton
-            data-testid="editor-save-and-run"
-            disabled={!ui.engineReady}
-            title={ui.engineReady ? undefined : "Engine loading…"}
-            style={{ padding: "7px 14px", borderRadius: 9, fontSize: 12.5 }}
-            onClick={() => {
-              void (async () => {
-                await flushPendingSaves();
-                await ui.runProject();
-              })();
-            }}
+        {!readOnly && (
+          <GhostButton
+            data-testid="editor-save"
+            title="Save (Ctrl/Cmd+S). Edits also save automatically."
+            style={{ padding: "6px 14px", borderRadius: 9, fontSize: 12.5 }}
+            onClick={save}
           >
-            <PlayIcon size={12} />
-            Save & run
-          </PrimaryButton>
+            Save
+          </GhostButton>
         )}
       </div>
 
@@ -239,6 +237,12 @@ const EditorScreen = ({ filePath }: { filePath: string }) => {
             value={content}
             options={{ selectOnLineNumbers: true, readOnly }}
             onChange={onChange}
+            onMount={(editor, monaco) => {
+              editor.addCommand(
+                monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+                () => saveRef.current(),
+              );
+            }}
           />
         )}
       </div>

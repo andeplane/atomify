@@ -39,9 +39,9 @@ const ExampleLibraryCard = ({ example }: { example: Example }) => {
               left: 10,
               padding: "3px 8px",
               borderRadius: 6,
-              background: "rgba(8,10,14,0.7)",
+              background: "var(--media-badge)",
               backdropFilter: "blur(6px)",
-              color: "#fff",
+              color: "var(--on-accent)",
               fontSize: 10.5,
               fontWeight: 600,
             }}
@@ -142,7 +142,10 @@ const ExamplesScreen = () => {
             color: "var(--text)",
           }}
         >
-          Example library
+          {/* A custom library (?examplesUrl=) names itself in its title. */}
+          {ui.examples.title && ui.examples.title !== "Examples"
+            ? ui.examples.title
+            : "Example library"}
         </h1>
         <p
           style={{

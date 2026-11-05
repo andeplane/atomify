@@ -4,7 +4,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { StoreProvider } from "easy-peasy";
-import store from "./store";
+import store, { engine } from "./store";
+import { EngineContext } from "./engine/EngineContext";
 import mixpanel from "mixpanel-browser";
 import { track } from "./utils/metrics";
 
@@ -28,11 +29,13 @@ if (!swResetting) {
   const root = createRoot(container);
   // Wait for the persisted settings slice to rehydrate before mounting:
   // easy-peasy replays persisted state asynchronously, silently reverting any
-  // dispatch made before it settles (e.g. setLammps from the engine bootstrap).
+  // dispatch made before it settles (e.g. the engine bootstrap's setStatus).
   const mount = () =>
     root.render(
       <StoreProvider store={store}>
-        <App />
+        <EngineContext.Provider value={engine}>
+          <App />
+        </EngineContext.Provider>
       </StoreProvider>,
     );
   void store.persist.resolveRehydration().then(mount, (error) => {

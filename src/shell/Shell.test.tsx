@@ -22,6 +22,8 @@ vi.mock(import("../utils/metrics"), () => ({
 import Shell from "./Shell";
 import { storeModel, type StoreModel } from "../store/model";
 import type { StoreInjections } from "../store/projects";
+import { EngineRegistry } from "../engine/EngineRegistry";
+import { EngineContext } from "../engine/EngineContext";
 import { createMemoryProjectStorage, type ProjectStorage } from "../storage";
 
 const EXAMPLES_JSON = {
@@ -49,13 +51,18 @@ const EXAMPLES_JSON = {
 describe("Shell", () => {
   let store: Store<StoreModel>;
   let libraryStorage: ProjectStorage;
+  // No engine is registered: the Simulation component that loads it is
+  // stubbed, so the shell stays in its "engine loading" state.
+  let engine: EngineRegistry;
 
   beforeEach(() => {
     window.history.replaceState(null, "", "/");
     libraryStorage = createMemoryProjectStorage();
+    engine = new EngineRegistry();
     const injections: StoreInjections = {
       libraryStorage,
       scratchStorage: createMemoryProjectStorage(),
+      engine,
     };
     store = createStore(storeModel, { injections });
 
@@ -83,7 +90,9 @@ describe("Shell", () => {
   const renderShell = () =>
     render(
       <StoreProvider store={store}>
-        <Shell />
+        <EngineContext.Provider value={engine}>
+          <Shell />
+        </EngineContext.Provider>
       </StoreProvider>,
     );
 
@@ -108,6 +117,46 @@ describe("Shell", () => {
       expect(document.documentElement.getAttribute("data-theme")).toBe("light"),
     );
     expect(localStorage.getItem("atomify_theme")).toBe("light");
+  });
+
+  it("shows the author credit and an About dialog with source, author and help links", async () => {
+    renderShell();
+    const credit = await screen.findByTestId("sidebar-credit");
+    expect(credit).toHaveTextContent("Made by Anders Hafreager");
+    expect(credit).toHaveAttribute("href", "https://andeplane.github.io");
+
+    await userEvent.click(screen.getByTestId("sidebar-about"));
+    expect(await screen.findByTestId("about-modal")).toBeInTheDocument();
+    expect(screen.getByTestId("about-source")).toHaveAttribute(
+      "href",
+      "https://github.com/andeplane/atomify",
+    );
+    expect(screen.getByTestId("about-author")).toHaveAttribute(
+      "href",
+      "https://andeplane.github.io",
+    );
+    expect(screen.getByTestId("about-issues")).toHaveAttribute(
+      "href",
+      "https://github.com/andeplane/atomify/issues",
+    );
+    expect(screen.getByTestId("about-email")).toHaveAttribute(
+      "href",
+      "mailto:andershaf@gmail.com",
+    );
+    expect(screen.getByTestId("about-docs")).toHaveAttribute(
+      "href",
+      `${import.meta.env.BASE_URL}help/`,
+    );
+  });
+
+  it("has a Help link that opens the documentation in a new tab", () => {
+    renderShell();
+    const help = screen.getByTestId("sidebar-help");
+    expect(help).toHaveTextContent("Help");
+    expect(help.tagName).toBe("A");
+    expect(help).toHaveAttribute("href", `${import.meta.env.BASE_URL}help/`);
+    expect(help).toHaveAttribute("target", "_blank");
+    expect(help).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("collapses the sidebar to an icon rail and persists the choice", async () => {
@@ -183,6 +232,37 @@ describe("Shell", () => {
     );
   });
 
+  it("keeps the notebook iframe alive across tab switches", async () => {
+    await store.getActions().projects.createProject({
+      displayName: "Notebook keep",
+      files: [{ fileName: "in.demo", content: "units lj\n" }],
+    });
+    renderShell();
+    await userEvent.click(
+      await screen.findByTestId("sidebar-project-notebook-keep"),
+    );
+
+    await userEvent.click(await screen.findByTestId("tab-notebook"));
+    const iframe = await screen.findByTestId("notebook-iframe");
+    expect(iframe.getAttribute("src")).toMatch(
+      /jupyter\/lab\/index\.html\?path=notebook-keep%2F/,
+    );
+    expect(screen.getByTestId("notebook-tab")).toBeVisible();
+
+    // Leaving the tab hides the iframe but keeps the same element mounted.
+    await userEvent.click(screen.getByTestId("tab-files"));
+    await waitFor(() =>
+      expect(screen.getByTestId("notebook-tab")).not.toBeVisible(),
+    );
+    expect(screen.getByTestId("notebook-iframe")).toBe(iframe);
+
+    await userEvent.click(screen.getByTestId("tab-notebook"));
+    await waitFor(() =>
+      expect(screen.getByTestId("notebook-tab")).toBeVisible(),
+    );
+    expect(screen.getByTestId("notebook-iframe")).toBe(iframe);
+  });
+
   it("restores a project from a deep link", async () => {
     // Seed the library through a first store session.
     await store.getActions().projects.createProject({
@@ -191,16 +271,20 @@ describe("Shell", () => {
     });
 
     // Fresh session (new store over the same storage) restoring from the URL.
+    const secondEngine = new EngineRegistry();
     const secondStore = createStore(storeModel, {
       injections: {
         libraryStorage,
         scratchStorage: createMemoryProjectStorage(),
+        engine: secondEngine,
       },
     });
     window.history.replaceState(null, "", "/?project=demo&tab=files");
     render(
       <StoreProvider store={secondStore}>
-        <Shell />
+        <EngineContext.Provider value={secondEngine}>
+          <Shell />
+        </EngineContext.Provider>
       </StoreProvider>,
     );
 

@@ -2,8 +2,19 @@ import { syncParticleAttributes } from "../rendering/particleAttributes";
 import Modifier, { ModifierProps } from "./modifier";
 import { ModifierInput, ModifierOutput } from "./types";
 import { Particles } from "omovi";
+import type { EngineFrame } from "../wasm/engineFrame";
+import {
+  clampImageCounts,
+  ImageCounts,
+  imageShifts,
+  replicatePositions,
+  replicateValues,
+} from "./periodicImages";
 
 class SyncParticlesModifier extends Modifier {
+  /** Periodic images per axis (visual only); 1×1×1 draws the box once. */
+  public periodicImages: ImageCounts = [1, 1, 1];
+
   constructor({ name, active }: ModifierProps) {
     super({ name, active });
   }
@@ -11,7 +22,7 @@ class SyncParticlesModifier extends Modifier {
   run = (
     input: ModifierInput,
     output: ModifierOutput,
-    everything: boolean = false,
+    _everything: boolean = false,
   ) => {
     if (!this.active) {
       if (output.particles) {
@@ -23,12 +34,17 @@ class SyncParticlesModifier extends Modifier {
       return;
     }
 
-    const numParticles = input.lammps.computeParticles();
+    const frame = input.frame;
+    const numParticles = frame.count;
+    const shifts = this.currentImageShifts(frame, numParticles);
+    output.imageShifts = shifts;
+    const numImages = shifts.length / 3;
+    const numRendered = numParticles * numImages;
     let newParticles = output.particles;
-    if (!newParticles || newParticles.capacity < numParticles) {
-      let newCapacity = numParticles;
+    if (!newParticles || newParticles.capacity < numRendered) {
+      let newCapacity = numRendered;
       if (newParticles) {
-        newCapacity = Math.max(numParticles, 2 * newParticles.capacity);
+        newCapacity = Math.max(numRendered, 2 * newParticles.capacity);
         newParticles.dispose();
       }
 
@@ -36,38 +52,31 @@ class SyncParticlesModifier extends Modifier {
       output.particles = newParticles;
       output.colorsDirty = true;
     } else {
-      if (numParticles !== newParticles.count) {
+      if (numRendered !== newParticles.count) {
         // Need to update colors and radius
         output.colorsDirty = true;
       }
     }
 
-    const positionsPtr = input.lammps.getPositionsPointer() / 4;
-    const typePtr = input.lammps.getTypePointer() / 4;
-    const idPtr = input.lammps.getIdPointer() / 4;
-    const positionsSubarray = input.wasm.HEAPF32.subarray(
-      positionsPtr,
-      positionsPtr + 3 * numParticles,
-    ) as Float32Array;
-    const typeSubarray = input.wasm.HEAP32.subarray(
-      typePtr,
-      typePtr + numParticles,
-    ) as Int32Array;
-    const idSubarray = input.wasm.HEAP32.subarray(
-      idPtr,
-      idPtr + numParticles,
-    ) as Int32Array;
-
-    newParticles.positions.set(positionsSubarray);
-    newParticles.types.set(typeSubarray);
-    newParticles.indices.set(idSubarray);
-    if (newParticles.count !== numParticles) {
+    // ids are persistent LAMMPS atom tags, paired index-by-index with
+    // positions/types (the engine may reorder atoms between steps).
+    const ids = frame.ids.subarray(0, numParticles);
+    newParticles.positions.set(frame.positions.subarray(0, 3 * numParticles));
+    newParticles.types.set(frame.types.subarray(0, numParticles));
+    newParticles.indices.set(ids);
+    if (numImages > 1) {
+      // Images share their atom's ID, so styles set per ID apply to all.
+      replicatePositions(newParticles.positions, numParticles, shifts);
+      replicateValues(newParticles.types, numParticles, numImages);
+      replicateValues(newParticles.indices, numParticles, numImages);
+    }
+    if (newParticles.count !== numRendered) {
       output.colorsDirty = true;
     }
-    newParticles.count = numParticles;
+    newParticles.count = numRendered;
 
     if (newParticles.mesh) {
-      newParticles.mesh.count = numParticles;
+      newParticles.mesh.count = numRendered;
     }
 
     syncParticleAttributes(input.renderState?.visualizer, newParticles);
@@ -78,15 +87,24 @@ class SyncParticlesModifier extends Modifier {
       geometry.getAttribute("particlePosition").needsUpdate = true;
       geometry.getAttribute("particleIndex").needsUpdate = true;
     }
-    const radii = input.lammps.getParticleRadii?.();
+    const radii = frame.radii;
     if (radii && input.renderState.visualizer) {
       for (let i = 0; i < numParticles; i++) {
         input.renderState.visualizer.setRadius(
-          idSubarray[i],
+          ids[i],
           radii[i] * input.renderState.particleRadius,
         );
       }
     }
+  };
+
+  private currentImageShifts = (frame: EngineFrame, numParticles: number) => {
+    const counts = clampImageCounts(this.periodicImages, numParticles);
+    if (counts[0] * counts[1] * counts[2] === 1) {
+      return [0, 0, 0];
+    }
+    // The frame's row-major cell matrix, whose rows are the box vectors a, b, c.
+    return imageShifts(frame.boxMatrix, counts);
   };
 }
 

@@ -11,14 +11,16 @@ import { gotoApp, RUN_TIMEOUT, waitForEngine } from "./helpers";
 const EXAMPLE_ID = "2D-lj-fluid";
 const EXAMPLE_TITLE = "2D Lennard Jones fluid";
 
-test("quick run an example, then save it as a project", async ({ page }) => {
+test("quick run an example, then save it as a project @smoke", async ({
+  page,
+}) => {
   await test.step("quick run from the example library", async () => {
     await gotoApp(page);
     await page.getByTestId("nav-examples").click();
     await expect(page.getByTestId("examples-screen")).toBeVisible();
-    await expect(
-      page.getByTestId(`library-example-${EXAMPLE_ID}`),
-    ).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId(`library-example-${EXAMPLE_ID}`)).toBeVisible(
+      { timeout: 30_000 },
+    );
     await waitForEngine(page); // Quick run is disabled until the engine is up
     await page.getByTestId(`library-quick-${EXAMPLE_ID}`).click();
   });

@@ -13,15 +13,18 @@ export interface SimulationFile {
 }
 
 export interface AppModel {
-  selectedMenu: string;
+  /**
+   * True while the shell shows the live run-detail screen (the 3D viewport of
+   * the running simulation). New Particles/Bonds are only registered for the
+   * renderer (EngineRegistry), and viewport keyboard shortcuts only fire,
+   * while this is set.
+   * Driven by Shell.tsx (ADR-003).
+   */
+  liveViewportVisible: boolean;
   status?: Status;
   engineError?: string;
   setEngineError: Action<AppModel, string | undefined>;
-  preferredView?: string;
-  selectedFile?: SimulationFile;
-  setSelectedMenu: Action<AppModel, string>;
-  setPreferredView: Action<AppModel, string | undefined>;
-  setSelectedFile: Action<AppModel, SimulationFile | undefined>;
+  setLiveViewportVisible: Action<AppModel, boolean>;
   setStatus: Action<AppModel, Status | undefined>;
 }
 
@@ -29,17 +32,9 @@ export const appModel: AppModel = {
   setEngineError: action((state, error) => {
     state.engineError = error;
   }),
-  // The shell drives this legacy gate ("view" streams particles into the
-  // renderer); embedded mode and its menu are gone.
-  selectedMenu: "examples",
-  setSelectedMenu: action((state, selectedMenu: string) => {
-    state.selectedMenu = selectedMenu;
-  }),
-  setPreferredView: action((state, preferredView?: string) => {
-    state.preferredView = preferredView;
-  }),
-  setSelectedFile: action((state, selectedFile?: SimulationFile) => {
-    state.selectedFile = selectedFile;
+  liveViewportVisible: false,
+  setLiveViewportVisible: action((state, visible: boolean) => {
+    state.liveViewportVisible = visible;
   }),
   setStatus: action((state, status?: Status) => {
     state.status = status;

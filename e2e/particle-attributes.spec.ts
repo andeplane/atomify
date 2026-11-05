@@ -29,9 +29,9 @@ test("instance radius controls both drawing and off-center GPU picking", async (
       () =>
         page.evaluate(async () => {
           const path = "/atomify/src/store/index.ts";
-          const s = (await import(path)).default.getState();
+          const { engine } = await import(path);
           return (
-            s.render.particles?.geometry?.getAttribute("atomRadius")?.count ?? 0
+            engine.particles?.geometry?.getAttribute("atomRadius")?.count ?? 0
           );
         }),
       { timeout: 60_000 },
@@ -40,12 +40,11 @@ test("instance radius controls both drawing and off-center GPU picking", async (
   const point = await page.evaluate(async () => {
     const path = "/atomify/src/store/index.ts";
     const threePath = "/atomify/node_modules/three/build/three.module.js";
-    const store = (await import(path)).default;
+    const { default: store, engine } = await import(path);
     const THREE = await import(threePath);
     store.getActions().simulation.setPaused(true);
-    const s = store.getState(),
-      v = s.render.visualizer,
-      p = s.render.particles;
+    const v = engine.visualizer,
+      p = engine.particles;
     v.setRadius(42, 1.23456);
     v.setColor(42, { r: 255, g: 0, b: 0 });
     const radius = p.geometry.getAttribute("atomRadius").getX(0);
@@ -98,7 +97,7 @@ test("instance radius controls both drawing and off-center GPU picking", async (
     .poll(() =>
       page.evaluate(async () => {
         const path = "/atomify/src/store/index.ts";
-        const v = (await import(path)).default.getState().render.visualizer;
+        const v = (await import(path)).engine.visualizer;
         return v.selectionTexture.getRGBA(42).r;
       }),
     )

@@ -21,9 +21,9 @@ test("SSAO quality is applied to the real pass and survives saved settings", asy
   const passConfig = () =>
     page.evaluate(async () => {
       const path = "/atomify/src/store/index.ts";
-      const s = (await import(path)).default.getState();
+      const { engine } = await import(path);
       const c =
-        s.render.visualizer?.renderer.postProcessingManager?.n8aoPass
+        engine.visualizer?.renderer.postProcessingManager?.n8aoPass
           .configuration;
       return (
         c && {
@@ -38,9 +38,9 @@ test("SSAO quality is applied to the real pass and survives saved settings", asy
   const usePixelRadius = () =>
     page.evaluate(async () => {
       const path = "/atomify/src/store/index.ts";
-      const store = (await import(path)).default;
+      const { default: store, engine } = await import(path);
       store.getActions().simulation.setPaused(true);
-      const v = store.getState().render.visualizer;
+      const v = engine.visualizer;
       v.renderer.postProcessingManager.n8aoPass.configuration.screenSpaceRadius = true;
       v.forceRender = true;
     });

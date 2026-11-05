@@ -16,17 +16,13 @@ class SyncFixesModifier extends Modifier {
       return;
     }
 
-    input.lammps.syncFixes();
-    const fixNames = input.lammps.getFixNames();
-
-    for (let i = 0; i < fixNames.size(); i++) {
-      const name = fixNames.get(i);
+    for (const name of input.lammps.getFixNames()) {
       let fix = input.fixes[name];
       if (fix == null) {
         fix = createModifierEntry(input.lammps.getFix(name), "lmpFix");
       }
 
-      syncModifierEntry(fix, "lmpFix", input.wasm, everything);
+      syncModifierEntry(fix, "lmpFix", everything);
       output.fixes[name] = fix;
     }
   };

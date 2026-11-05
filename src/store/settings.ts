@@ -1,5 +1,4 @@
 import { action, Action } from "easy-peasy";
-import { setSyncFrequency } from "../wasm/wasmInstance";
 
 export interface RenderSettings {
   ssao: boolean;
@@ -12,6 +11,8 @@ export interface RenderSettings {
   showSimulationBox: boolean;
   showWalls: boolean;
   orthographic: boolean;
+  /** Only drawn with the orthographic camera, where a length scale is exact. */
+  showScaleBar: boolean;
 }
 
 const RENDER_SETTINGS_STORAGE_KEY = "atomify_render_settings";
@@ -94,6 +95,7 @@ const defaultRenderSettings: RenderSettings = {
   showSimulationBox: true,
   showWalls: true,
   orthographic: false,
+  showScaleBar: false,
 };
 
 // Load settings from localStorage on initialization
@@ -116,7 +118,6 @@ export const settingsModel: SettingsModel = {
   }),
   setSimulation: action((state, simulation: SimulationSettings) => {
     state.simulation = simulation;
-    setSyncFrequency(simulation.speed);
   }),
   setTheme: action((state, theme: ThemeName) => {
     state.theme = theme;

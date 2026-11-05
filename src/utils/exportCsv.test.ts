@@ -144,17 +144,25 @@ describe("exportPlotDataToCsv", () => {
     };
 
     // Mock document.createElement
-    createElementSpy = vi.spyOn(document, "createElement").mockReturnValue(
-      mockLink as unknown as HTMLElement,
-    );
+    createElementSpy = vi
+      .spyOn(document, "createElement")
+      .mockReturnValue(mockLink as unknown as HTMLElement);
 
     // Mock URL.createObjectURL and URL.revokeObjectURL
-    createObjectURLSpy = vi.spyOn(URL, "createObjectURL").mockReturnValue("mock-url");
-    revokeObjectURLSpy = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
+    createObjectURLSpy = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("mock-url");
+    revokeObjectURLSpy = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => {});
 
     // Mock document.body methods
-    vi.spyOn(document.body, "appendChild").mockImplementation(() => mockLink as unknown as Node);
-    vi.spyOn(document.body, "removeChild").mockImplementation(() => mockLink as unknown as Node);
+    vi.spyOn(document.body, "appendChild").mockImplementation(
+      () => mockLink as unknown as Node,
+    );
+    vi.spyOn(document.body, "removeChild").mockImplementation(
+      () => mockLink as unknown as Node,
+    );
   });
 
   afterEach(() => {
@@ -178,7 +186,10 @@ describe("exportPlotDataToCsv", () => {
     expect(createElementSpy).toHaveBeenCalledWith("a");
     expect(createObjectURLSpy).toHaveBeenCalled();
     expect(mockLink.setAttribute).toHaveBeenCalledWith("href", "mock-url");
-    expect(mockLink.setAttribute).toHaveBeenCalledWith("download", "plot-data.csv");
+    expect(mockLink.setAttribute).toHaveBeenCalledWith(
+      "download",
+      "plot-data.csv",
+    );
     expect(mockLink.click).toHaveBeenCalled();
     expect(revokeObjectURLSpy).toHaveBeenCalledWith("mock-url");
   });
@@ -195,7 +206,10 @@ describe("exportPlotDataToCsv", () => {
     exportPlotDataToCsv(data1D, customFilename);
 
     // Assert
-    expect(mockLink.setAttribute).toHaveBeenCalledWith("download", customFilename);
+    expect(mockLink.setAttribute).toHaveBeenCalledWith(
+      "download",
+      customFilename,
+    );
   });
 
   it("should create blob with correct CSV content", () => {
@@ -214,10 +228,9 @@ describe("exportPlotDataToCsv", () => {
     exportPlotDataToCsv(data1D);
 
     // Assert
-    expect(blobSpy).toHaveBeenCalledWith(
-      ["time,value\n0,1\n1,2"],
-      { type: "text/csv;charset=utf-8;" },
-    );
+    expect(blobSpy).toHaveBeenCalledWith(["time,value\n0,1\n1,2"], {
+      type: "text/csv;charset=utf-8;",
+    });
   });
 
   it("should set link visibility to hidden", () => {

@@ -1,22 +1,20 @@
 import { LammpsWeb } from "../types";
 import { Particles, Bonds } from "omovi";
 import { Compute, Fix, Variable } from "../types";
-import { AtomifyWasmModule } from "../wasm/types";
-import { RenderModel } from "../store/render";
+import type { EngineFrame } from "../wasm/engineFrame";
+import type { RenderModel } from "../store/render";
+import type { EngineObjects } from "../engine/EngineRegistry";
 
+/** The store's render settings plus the registry's live render objects. */
 type RenderState = Pick<
   RenderModel,
-  | "particleStyles"
-  | "particleStylesUpdated"
-  | "bondRadius"
-  | "visualizer"
-  | "particleRadius"
-  | "particles"
-  | "bonds"
->;
+  "particleStyles" | "particleStylesUpdated" | "bondRadius" | "particleRadius"
+> &
+  Pick<EngineObjects, "visualizer" | "particles" | "bonds">;
 
 export type ModifierInput = {
-  wasm: AtomifyWasmModule;
+  /** The engine's latest streamed step; modifiers read its arrays in place. */
+  frame: EngineFrame;
   lammps: LammpsWeb;
   renderState: RenderState;
   hasSynchronized: boolean;
@@ -28,6 +26,9 @@ export type ModifierInput = {
 export type ModifierOutput = {
   particles?: Particles;
   bonds?: Bonds;
+  // Periodic image translations (xyz triples, zero shift first) applied by
+  // SyncParticlesModifier; later modifiers replicate or skip images with it.
+  imageShifts?: number[];
   colorsDirty: boolean;
   computes: { [key: string]: Compute };
   fixes: { [key: string]: Fix };

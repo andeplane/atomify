@@ -47,7 +47,7 @@ jobs:
                 console.log(`❌ Could not update PR #${pr.number}: ${error.message}`);
               }
             }
-            
+
             if (updatedCount === 0) {
               console.log('No PRs with auto-merge label found to update');
             } else {

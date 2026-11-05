@@ -26,7 +26,7 @@ export interface Simulation {
 Its problems, in order of user pain:
 
 1. **Nothing persists.** The New Simulation modal literally warns
-   *"these files are not stored across Atomify sessions yet"*
+   _"these files are not stored across Atomify sessions yet"_
    (`src/containers/NewSimulation.tsx`). Closing the tab loses all edits.
 2. **There is no history.** Every run overwrites the previous one's outputs.
    Comparing runs — the single most common workflow in MD work — requires
@@ -46,7 +46,7 @@ Its problems, in order of user pain:
 
 The goal is a product-grade story: a **library of projects** that persists
 across sessions, where each project accumulates **runs** with full
-provenance, and where the Jupyter notebook operates on the *same files* the
+provenance, and where the Jupyter notebook operates on the _same files_ the
 app does (ADR-002). The user-facing noun is **project** (per the design,
 ADR-003); "simulation" describes what a run executes.
 
@@ -54,7 +54,7 @@ ADR-003); "simulation" describes what a run executes.
 
 ### 1. Domain model: Project = working tree + runs
 
-A **project** is a named directory containing the user's *source files*
+A **project** is a named directory containing the user's _source files_
 (input scripts, data files, notebooks) — the working tree — plus a `runs/`
 directory that accumulates immutable **run records**.
 
@@ -101,12 +101,12 @@ diffusion/                        # project directory (dirName = identity)
 ```jsonc
 {
   "schemaVersion": 1,
-  "displayName": "Diffusion coefficients",   // free-form, renameable
+  "displayName": "Diffusion coefficients", // free-form, renameable
   "description": "LJ binary diffusion",
   "createdAt": "2026-07-11T09:00:00Z",
-  "inputScript": "in.diffusion",             // designated script; may be absent
-  "color": "#3F6EFF",                        // library identity dot (ADR-003)
-  "source": { "type": "example", "exampleId": "diffusion" }
+  "inputScript": "in.diffusion", // designated script; may be absent
+  "color": "#3F6EFF", // library identity dot (ADR-003)
+  "source": { "type": "example", "exampleId": "diffusion" },
   // source.type: "blank" | "upload" | "example" | "shared"
 }
 ```
@@ -118,14 +118,14 @@ diffusion/                        # project directory (dirName = identity)
   "schemaVersion": 1,
   "id": "run-002",
   "inputScript": "in.diffusion",
-  "vars": { "T": 3.0 },                      // LAMMPS variables injected (§7)
-  "sweepId": "sweep-yj2k",                   // present when part of a sweep (§7)
-  "status": "completed",                     // running | completed | failed | canceled | interrupted
+  "vars": { "T": 3.0 }, // LAMMPS variables injected (§7)
+  "sweepId": "sweep-yj2k", // present when part of a sweep (§7)
+  "status": "completed", // running | completed | failed | canceled | interrupted
   "startedAt": "2026-07-11T09:05:00Z",
   "finishedAt": "2026-07-11T09:06:31Z",
   "stats": { "timesteps": 5000, "numAtoms": 6750, "wallSeconds": 91.2 },
-  "error": null,                             // LAMMPS error message when failed
-  "origin": "app"                            // app | sweep | notebook (ADR-002)
+  "error": null, // LAMMPS error message when failed
+  "origin": "app", // app | sweep | notebook (ADR-002)
 }
 ```
 
@@ -220,27 +220,34 @@ touches localforage/IndexedDB.
 export type FileFormat = "text" | "json" | "base64";
 
 export interface FileStat {
-  path: string;              // project-relative
+  path: string; // project-relative
   type: "file" | "notebook" | "directory";
   format: FileFormat;
   mimetype: string;
-  lastModified: string;      // ISO 8601
+  lastModified: string; // ISO 8601
   size: number;
 }
 
 export interface ProjectStorage {
   // Projects
   listProjects(): Promise<ProjectMeta[]>;
-  createProject(meta: NewProjectMeta): Promise<ProjectMeta>;   // allocates dirName
-  updateProjectMeta(dirName: string, patch: Partial<ProjectMeta>): Promise<ProjectMeta>;
-  deleteProject(dirName: string): Promise<void>;               // recursive, incl. checkpoints
+  createProject(meta: NewProjectMeta): Promise<ProjectMeta>; // allocates dirName
+  updateProjectMeta(
+    dirName: string,
+    patch: Partial<ProjectMeta>,
+  ): Promise<ProjectMeta>;
+  deleteProject(dirName: string): Promise<void>; // recursive, incl. checkpoints
 
   // Files (project-relative paths; parents auto-created on write)
   list(dirName: string, subdir?: string): Promise<FileStat[]>; // key-scan, no body reads
   read(dirName: string, path: string): Promise<string | Uint8Array>; // Uint8Array iff base64
-  write(dirName: string, path: string, content: string | Uint8Array): Promise<FileStat>;
-  rename(dirName: string, from: string, to: string): Promise<void>;  // incl. checkpoints
-  remove(dirName: string, path: string): Promise<void>;              // incl. checkpoints
+  write(
+    dirName: string,
+    path: string,
+    content: string | Uint8Array,
+  ): Promise<FileStat>;
+  rename(dirName: string, from: string, to: string): Promise<void>; // incl. checkpoints
+  remove(dirName: string, path: string): Promise<void>; // incl. checkpoints
   stat(dirName: string, path: string): Promise<FileStat | null>;
 }
 ```
@@ -313,12 +320,12 @@ side), the run is canceled and its output copies stop.
 
 ### 6. Product rules: where files come from
 
-| Entry point | Behavior |
-| --- | --- |
-| **New project** | Modal: name + start blank / from example / drop files. Creates a persisted project. |
-| **Example → "Use as project"** | Instantiates a project from the example's files. |
-| **Example → "Quick run"** | Runs immediately in a **scratch project on `MemoryProjectStorage`** — nothing persisted, banner offers **"Save as project"**, which materializes the working tree *and completed runs* into the library. Closing the tab discards it. This keeps tire-kicking from littering the library (review finding) while "everything in the library persists" stays absolutely true. |
-| **Share link** | ~~Normal mode: opens as a quick run (same banner/save flow). Embedded mode: `MemoryProjectStorage`, no save affordance, Notebook hidden (ADR-002 §1).~~ Removed — see the 2026-07-11 amendment below. |
+| Entry point                    | Behavior                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **New project**                | Modal: name + start blank / from example / drop files. Creates a persisted project.                                                                                                                                                                                                                                                                                         |
+| **Example → "Use as project"** | Instantiates a project from the example's files.                                                                                                                                                                                                                                                                                                                            |
+| **Example → "Quick run"**      | Runs immediately in a **scratch project on `MemoryProjectStorage`** — nothing persisted, banner offers **"Save as project"**, which materializes the working tree _and completed runs_ into the library. Closing the tab discards it. This keeps tire-kicking from littering the library (review finding) while "everything in the library persists" stays absolutely true. |
+| **Share link**                 | ~~Normal mode: opens as a quick run (same banner/save flow). Embedded mode: `MemoryProjectStorage`, no save affordance, Notebook hidden (ADR-002 §1).~~ Removed — see the 2026-07-11 amendment below.                                                                                                                                                                       |
 
 ### 7. Parameter sweeps
 
@@ -353,7 +360,7 @@ Store state and Monaco buffers are **caches** of the project filesystem:
 
 - Editor changes dispatch a store action (fixing the in-place mutation) and
   persist via debounced (~500 ms) `storage.write`. The editor shows
-  three save states: *saving / saved / couldn't save (retry)* — a saved
+  three save states: _saving / saved / couldn't save (retry)_ — a saved
   indicator that can silently lie is worse than none (review finding).
 - Debounce is **flushed** on run start (§5), on `visibilitychange: hidden`,
   and on pane switches.
@@ -398,7 +405,7 @@ instantiation (taking precedence over the generated template, ADR-002 §2).
 ## Consequences
 
 - (+) Projects survive sessions; runs are comparable, reproducible history
-  with explicit provenance (including what was *not* snapshotted).
+  with explicit provenance (including what was _not_ snapshotted).
 - (+) Notebook integration is structural (ADR-002 builds on §3).
 - (+) Storage backend swap is one class per backend, as requested.
 - (−) IndexedDB quota is finite and JupyterLite browsing cost scales with

@@ -3,6 +3,7 @@ export {
   ContentsProjectStorage,
   createIndexedDbProjectStorage,
   createMemoryProjectStorage,
+  PROJECT_COLORS,
   PROJECT_META_PATH,
 } from "./contentsProjectStorage";
 export {
@@ -24,3 +25,4 @@ export {
   validateRelativePath,
 } from "./contentsSchema";
 export { slugify, uniqueSlug } from "./slug";
+export { isQuotaExceededError, StorageFullError } from "./kv";
