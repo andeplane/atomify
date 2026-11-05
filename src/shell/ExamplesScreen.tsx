@@ -142,7 +142,10 @@ const ExamplesScreen = () => {
             color: "var(--text)",
           }}
         >
-          Example library
+          {/* A custom library (?examplesUrl=) names itself in its title. */}
+          {ui.examples.title && ui.examples.title !== "Examples"
+            ? ui.examples.title
+            : "Example library"}
         </h1>
         <p
           style={{

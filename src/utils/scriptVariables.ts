@@ -4,9 +4,13 @@
  * A variable is a run parameter when it is defined with a plain numeric
  * literal: `variable T equal 3.0`. Derived expressions
  * (`variable Lhalf equal $(0.5*v_L)`) recompute from the overrides and are
- * not editable themselves. Overrides work because LAMMPS ignores a
- * `variable` command whose name is already defined — the documented pattern
- * for command-line/-var-style defaults — so injected definitions win.
+ * not editable themselves.
+ *
+ * Overrides are applied by rewriting the definition line in the engine's
+ * copy of the script (see applyVariableOverrides). Prepending a definition
+ * would not work: LAMMPS lets a later `variable ... equal` redefine an
+ * equal-style variable (only index/loop-style ones are skipped when already
+ * defined), so the script's own line would win.
  */
 
 export interface ScriptVariable {
@@ -31,7 +35,7 @@ export function parseScriptVariables(script: string): ScriptVariable[] {
       return;
     }
     const [, name, literal, comment] = match;
-    // Only the first definition is overridable — LAMMPS ignores later ones.
+    // Only the first definition is listed as the parameter's default.
     if (seen.has(name)) {
       return;
     }
@@ -44,6 +48,36 @@ export function parseScriptVariables(script: string): ScriptVariable[] {
     });
   });
   return variables;
+}
+
+/**
+ * Returns `script` with each overridden variable's first plain-number
+ * definition (the one parseScriptVariables lists) rewritten to the override
+ * value; a trailing `# comment` is kept. Later redefinitions are left alone,
+ * since they are deliberate changes inside the script (e.g. a second stage).
+ * A variable with no such definition in the script is prepended instead.
+ */
+export function applyVariableOverrides(
+  script: string,
+  vars: Record<string, number>,
+): string {
+  const found = new Set<string>();
+  const lines = script.split("\n").map((text) => {
+    const match = VARIABLE_LINE.exec(text);
+    if (!match || !Object.hasOwn(vars, match[1]) || found.has(match[1])) {
+      return text;
+    }
+    const [, name, , comment] = match;
+    found.add(name);
+    const indent = /^\s*/.exec(text)![0];
+    const suffix = comment !== undefined ? ` # ${comment.trim()}` : "";
+    return `${indent}variable ${name} equal ${vars[name]}${suffix}`;
+  });
+  const missing = Object.entries(vars)
+    .filter(([name]) => !found.has(name))
+    .map(([name, value]) => `variable ${name} equal ${value}\n`)
+    .join("");
+  return missing + lines.join("\n");
 }
 
 /** Evenly spaced values from `from` to `to` inclusive (design's sweep rows). */
