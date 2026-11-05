@@ -5,10 +5,16 @@
 import type { ProjectMeta, ProjectStorage } from "../../storage";
 import type { StoreInjections } from "./types";
 
-const SCRIPT_FILE = /(^|\/)in\.[^/]*$|\.in$/;
+// LAMMPS input scripts: "in.*" (LAMMPS examples), "*.in", and "*.in.*"
+// (moltemplate's convention, e.g. "run.in.npt" or "system.in.settings").
+const SCRIPT_FILE = /(^|\/)in\.[^/]*$|\.in$|\.in\.[^/]*$/;
 
-export function isScriptFile(fileName: string): boolean {
-  return SCRIPT_FILE.test(fileName);
+/**
+ * Whether a file is a LAMMPS input script. The project's designated input
+ * script always counts, whatever it is named.
+ */
+export function isScriptFile(path: string, inputScript?: string): boolean {
+  return path === inputScript || SCRIPT_FILE.test(path);
 }
 
 const COPY_DIR_NAME = /-copy(-\d+)?$/;

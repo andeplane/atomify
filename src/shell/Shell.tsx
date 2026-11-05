@@ -29,12 +29,15 @@ import Sidebar from "./Sidebar";
 import HomeScreen from "./HomeScreen";
 import ExamplesScreen from "./ExamplesScreen";
 import ProjectWorkspace from "./ProjectWorkspace";
+import NotebookTab from "./NotebookTab";
 import NewRunModal from "./modals/NewRunModal";
 import NewProjectModal from "./modals/NewProjectModal";
 import SettingsModal from "./modals/SettingsModal";
 import RenameModal from "./modals/RenameModal";
 import DeleteProjectModal from "./modals/DeleteProjectModal";
 import { exampleProjectFiles } from "./modals/NewProjectModal";
+import TourController from "./tour/TourController";
+import { markTourSeen, shouldAutoStartTour } from "./tour/tourStorage";
 import "./tokens.css";
 
 /** Model notices that the rich run-finished toast already covers. */
@@ -93,6 +96,7 @@ const Shell = () => {
     null,
   );
   const [linkResolved, setLinkResolved] = useState(false);
+  const [tourOn, setTourOn] = useState(false);
 
   // --- Theme -> document root -------------------------------------------------
   useEffect(() => {
@@ -149,6 +153,30 @@ const Shell = () => {
       window.history.replaceState(null, "", next);
     }
   }, [screen, linkResolved]);
+
+  // --- Onboarding tour ----------------------------------------------------------
+  const startTour = useCallback(() => {
+    markTourSeen();
+    setScreen({ name: "home" });
+    setTourOn(true);
+  }, [setScreen]);
+
+  // First visit: a brand-new user (no projects, landed on Home) gets the tour.
+  const autoTourCheckedRef = useRef(false);
+  useEffect(() => {
+    if (!linkResolved || autoTourCheckedRef.current) {
+      return;
+    }
+    autoTourCheckedRef.current = true;
+    const state = store.getState().projects;
+    if (
+      state.screen.name === "home" &&
+      state.projects.length === 0 &&
+      shouldAutoStartTour()
+    ) {
+      startTour();
+    }
+  }, [linkResolved, store, startTour]);
 
   // --- Remember the last opened project for the Home continue card -------------
   useEffect(() => {
@@ -281,12 +309,16 @@ const Shell = () => {
   );
 
   const runProject = useCallback(async () => {
+    // "Save & run": persist editor changes before the run snapshots the tree.
+    await flushPendingSaves();
     const current = store.getState().projects.active;
     if (!current) {
       return;
     }
     const scripts = current.files.filter(
-      (file) => file.type !== "directory" && isScriptFile(file.path),
+      (file) =>
+        file.type !== "directory" &&
+        isScriptFile(file.path, current.meta.inputScript),
     );
     let input = current.meta.inputScript;
     if (input && !scripts.some((script) => script.path === input)) {
@@ -303,7 +335,7 @@ const Shell = () => {
       }
     }
     await launch(input, {});
-  }, [store, setInputScript, launch]);
+  }, [store, setInputScript, launch, flushPendingSaves]);
 
   const quickRunExample = useCallback(
     (example: Example) => {
@@ -346,8 +378,10 @@ const Shell = () => {
       stopRun: () => lammps?.cancel(),
       engineReady: lammps !== undefined && !engineError,
       examples,
+      startTour,
     }),
     [
+      startTour,
       notify,
       quickRunExample,
       runProject,
@@ -388,9 +422,12 @@ const Shell = () => {
             {screen.name === "home" && <HomeScreen />}
             {screen.name === "examples" && <ExamplesScreen />}
             {screen.name === "project" && <ProjectWorkspace screen={screen} />}
+            {/* Kept mounted across tabs/screens so JupyterLite never reloads. */}
+            <NotebookTab />
           </main>
         </div>
 
+        {tourOn && <TourController onEnd={() => setTourOn(false)} />}
         <NewRunModal
           open={runModal !== null}
           choosingInput={runModal?.choosingInput ?? false}
