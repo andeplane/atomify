@@ -5,7 +5,8 @@ import react from "@vitejs/plugin-react";
 import basicSsl from "@vitejs/plugin-basic-ssl";
 
 /**
- * Dev-only: serve the ~43 MB lammps-atomify.js emscripten module RAW.
+ * Dev-only: serve the ~43 MB lammps-atomify.js emscripten module (and its
+ * serial sibling lammps-atomify-serial.js) RAW.
  * The worker loads it via `?url` + fetch-as-blob (see lammps.worker.ts) —
  * it is never bundled — but Vite's dev transform would otherwise rewrite it
  * and append an inline sourcemap, inflating the download to ~460 MB (which
@@ -21,12 +22,23 @@ function serveLammpsModuleRaw(): Plugin {
       const require = createRequire(import.meta.url);
       // Resolve via the package's exports map (the raw dist path is not an
       // exported subpath).
-      const filePath = require.resolve("lammps.js/wasm-atomify");
+      const modules = [
+        {
+          name: "lammps-atomify-serial.js",
+          path: require.resolve("lammps.js/wasm-atomify-serial"),
+        },
+        {
+          name: "lammps-atomify.js",
+          path: require.resolve("lammps.js/wasm-atomify"),
+        },
+      ];
       server.middlewares.use((req, res, next) => {
         const url = req.url ?? "";
-        if (!url.includes("lammps-atomify.js") || url.includes("?")) {
+        const match = modules.find((module) => url.includes(module.name));
+        if (!match || url.includes("?")) {
           return next();
         }
+        const filePath = match.path;
         res.setHeader("Content-Type", "text/javascript");
         res.setHeader("Content-Length", statSync(filePath).size);
         createReadStream(filePath).pipe(res);

@@ -154,6 +154,18 @@ describe("prepareEngineInputs", () => {
     ).toBe("pair_style hybrid lj/cut 2.5\n");
   });
 
+  it("runs scripts as written on the serial (non-KOKKOS) engine", () => {
+    const prepared = prepareEngineInputs(inputs, "in.lmp", true, false)!;
+    // No opt-in injected and no serial-style rewriting: the engine starts
+    // without `-sf kk`, so there is nothing to undo.
+    expect(prepared.script).toBe(inputs[0].content);
+    expect(prepared.runScript).not.toContain("suffix");
+    expect(prepared.runScript).toMatch(/^atom_style full\n/);
+    expect(
+      prepared.files.find((file) => file.fileName === "include.lmp")?.content,
+    ).toBe("pair_style hybrid lj/cut 2.5\n");
+  });
+
   it("returns null when the input script is missing or not text", () => {
     expect(prepareEngineInputs(inputs, "in.other", false)).toBeNull();
     expect(prepareEngineInputs(inputs, "restart.bin", false)).toBeNull();

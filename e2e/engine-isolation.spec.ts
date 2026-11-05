@@ -5,7 +5,7 @@ test("supported browsers isolate a fresh visit and run the engine", async ({
   page,
   browserName,
 }) => {
-  test.skip(browserName === "webkit", "Safari is explicitly unsupported");
+  test.skip(browserName === "webkit", "Safari cannot be cross-origin isolated");
   await gotoApp(page);
   await expect
     .poll(() => page.evaluate(() => window.crossOriginIsolated))
@@ -22,44 +22,43 @@ test("supported browsers isolate a fresh visit and run the engine", async ({
   expect(await page.evaluate(() => window.crossOriginIsolated)).toBe(true);
 });
 
-test("unavailable isolation shows an error instead of an endless loading chip", async ({
+test("without isolation the serial engine loads and runs", async ({
   browser,
   browserName,
 }) => {
-  test.skip(
-    browserName === "webkit",
-    "Safari has a dedicated unsupported message",
-  );
+  // Blocking service workers keeps the page from being cross-origin
+  // isolated, the situation Safari is always in (no COEP credentialless).
+  test.skip(browserName === "webkit", "covered by the Safari test below");
   const context = await browser.newContext({ serviceWorkers: "block" });
   const page = await context.newPage();
-  await page.goto("http://localhost:5200/atomify/");
-  await expect(page.getByTestId("engine-error-chip")).toContainText(
-    "requires cross-origin isolation",
-  );
-  await expect(page.getByTestId("engine-loading-chip")).toHaveCount(0);
-  await context.close();
-});
-
-test("Safari shows an unsupported message without downloading the engine", async ({
-  page,
-  browserName,
-}) => {
-  test.skip(browserName !== "webkit", "Safari-specific behavior");
   const engineRequests: string[] = [];
   page.on("request", (request) => {
     if (request.url().includes("lammps-atomify"))
       engineRequests.push(request.url());
   });
+  await page.goto("http://localhost:5200/atomify/");
+  expect(await page.evaluate(() => window.crossOriginIsolated)).toBe(false);
+  await waitForEngine(page);
+  await expect(page.getByTestId("engine-error-chip")).toHaveCount(0);
+  await page.getByTestId("nav-examples").click();
+  await page.getByTestId("library-quick-2D-lj-fluid").click();
+  await waitRunCompleted(page);
+  expect(
+    engineRequests.some((url) => url.includes("lammps-atomify-serial")),
+  ).toBe(true);
+  await context.close();
+});
+
+test("Safari runs simulations on the serial engine", async ({
+  page,
+  browserName,
+}) => {
+  test.skip(browserName !== "webkit", "Safari-specific behavior");
   await gotoApp(page);
-  await expect(page.getByTestId("engine-error-chip")).toContainText(
-    "Safari is not supported",
-  );
-  await expect(page.getByTestId("engine-error-chip")).toContainText(
-    "Chrome or Firefox on a desktop computer",
-  );
-  await expect(page.getByTestId("engine-loading-chip")).toHaveCount(0);
+  await waitForEngine(page);
+  await expect(page.getByTestId("engine-error-chip")).toHaveCount(0);
   await page.getByTestId("nav-examples").click();
   await expect(page.getByTestId("library-example-2D-lj-fluid")).toBeVisible();
-  await expect(page.getByTestId("library-quick-2D-lj-fluid")).toBeDisabled();
-  expect(engineRequests).toEqual([]);
+  await page.getByTestId("library-quick-2D-lj-fluid").click();
+  await waitRunCompleted(page);
 });

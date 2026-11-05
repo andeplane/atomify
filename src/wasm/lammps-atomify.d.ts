@@ -7,3 +7,11 @@ declare module "lammps.js/wasm-atomify" {
   const createModule: (options?: ModuleOptions) => Promise<LammpsModule>;
   export default createModule;
 }
+
+// The serial (non-KOKKOS) sibling, "./wasm-atomify-serial", for pages that
+// cannot be cross-origin isolated (see engineVariant.ts).
+declare module "lammps.js/wasm-atomify-serial" {
+  import type { LammpsModule, ModuleOptions } from "lammps.js";
+  const createModule: (options?: ModuleOptions) => Promise<LammpsModule>;
+  export default createModule;
+}

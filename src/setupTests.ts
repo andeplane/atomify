@@ -28,6 +28,9 @@ Object.defineProperty(window, "matchMedia", {
 vi.mock("lammps.js/wasm-atomify", () => ({
   default: () => new Promise(() => {}),
 }));
+vi.mock("lammps.js/wasm-atomify-serial", () => ({
+  default: () => new Promise(() => {}),
+}));
 
 // Mock Monaco Editor loader to prevent it from trying to load in test environment
 vi.mock("@monaco-editor/react", () => ({

@@ -129,9 +129,18 @@ export class LammpsAdapter {
   private runFinishResolve: (() => void) | null = null;
   private runFinished = true;
 
-  constructor(module: LammpsModule, native: NativeLammps) {
+  // False for the serial (non-KOKKOS) build, which starts without Kokkos
+  // arguments (see engineVariant.ts).
+  private readonly multithreaded: boolean;
+
+  constructor(
+    module: LammpsModule,
+    native: NativeLammps,
+    options: { multithreaded?: boolean } = {},
+  ) {
     this.module = module;
     this.native = native;
+    this.multithreaded = options.multithreaded ?? true;
     this.installStepCallback();
   }
 
@@ -260,15 +269,13 @@ export class LammpsAdapter {
     // scripts (a `suffix kk` line) run fully accelerated as-is, and all other
     // scripts are preprocessed with `suffix off` + a kk-wrapped atom_style so
     // their styles run serially (measured: same speed as a true serial build).
-    // See src/utils/kokkos.ts.
-    this.native.startWithArgs([
-      "-k",
-      "on",
-      "t",
-      String(this.kokkosThreads),
-      "-sf",
-      "kk",
-    ]);
+    // See src/utils/kokkos.ts. The serial build has no KOKKOS package, so it
+    // starts plain (scripts are not preprocessed for it either).
+    this.native.startWithArgs(
+      this.multithreaded
+        ? ["-k", "on", "t", String(this.kokkosThreads), "-sf", "kk"]
+        : [],
+    );
     return true;
   }
 

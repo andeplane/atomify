@@ -96,23 +96,6 @@ test("capture Help screenshots", async ({ browser }) => {
     await page.context().close();
   });
 
-  await test.step("unsupported browser (Safari)", async () => {
-    const page = await newPage(browser, {
-      userAgent:
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
-    });
-    await gotoApp(page);
-    const chip = page.getByTestId("engine-error-chip");
-    await expect(chip).toBeVisible({ timeout: 60_000 });
-    await shot(
-      page,
-      "safari-unsupported",
-      [chip, page.getByTestId("sidebar-settings")],
-      { pad: 10, padTop: 2 },
-    );
-    await page.context().close();
-  });
-
   await test.step("home for a new user", async () => {
     const page = await newPage(browser);
     await gotoApp(page);

@@ -165,26 +165,6 @@ const SimulationComponent = () => {
     }
     loadStartedRef.current = true;
     setEngineError(undefined);
-    // Safari and other WebKit browsers (including iOS browsers) cannot run
-    // our credentialless / SharedArrayBuffer engine configuration.
-    const isWebKit =
-      /AppleWebKit/i.test(navigator.userAgent) &&
-      !/Chrome\/|Chromium\/|Edg\/|OPR\/|Android/i.test(navigator.userAgent);
-    if (isWebKit) {
-      setEngineError(
-        "Safari is not supported for simulations. Use Chrome or Firefox on a desktop computer.",
-      );
-      return;
-    }
-    if (
-      !window.crossOriginIsolated ||
-      typeof SharedArrayBuffer === "undefined"
-    ) {
-      setEngineError(
-        "The simulation engine requires cross-origin isolation. Reload the page; if this persists, check browser settings or try another browser.",
-      );
-      return;
-    }
     setStatus({
       title: "Downloading LAMMPS ...",
       text: "",
@@ -194,7 +174,10 @@ const SimulationComponent = () => {
     // The atomify wasm build is a multithreaded KOKKOS/pthreads + ASYNCIFY
     // module. A pthreads module cannot initialize on the browser main thread
     // (its thread-pool handshake blocks on Atomics.wait, forbidden off a
-    // Worker), so it runs inside a Web Worker. The proxy owns that worker and
+    // Worker), so it runs inside a Web Worker. Where the page is not
+    // cross-origin isolated (Safari has no COEP credentialless, so it never
+    // is), SharedArrayBuffer is missing and the proxy picks the serial
+    // (non-KOKKOS) build instead; see wasm/engineVariant.ts. The proxy owns that worker and
     // is the app's LammpsWeb: the modifier/render pipeline reads the typed
     // arrays of its latest streamed frame, and engine-FS writes are forwarded
     // to the worker as commands. The run pipeline (RunController) owns the

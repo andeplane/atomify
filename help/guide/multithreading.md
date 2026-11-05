@@ -25,6 +25,10 @@ Atomify then adds `suffix kk` to the start of the script it gives LAMMPS for thi
 
 Without `suffix kk`, Atomify runs the regular single-threaded styles.
 
+## Safari
+
+Safari can't run the multithreaded engine (see [Browser requirements](/getting-started/requirements)), so Atomify uses a single-threaded build there. The **Multithreading** switch reads "Not available in this browser", and scripts with `suffix kk` run on one thread.
+
 ## Related
 
 - [The LAMMPS engine](/reference/lammps-engine)

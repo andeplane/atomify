@@ -2,6 +2,7 @@ import { GROUP_LABEL_PREFIX } from "../utils/lammpsGroups";
 import { LammpsWeb, LMPModifier, ModifierType } from "../types";
 import type { ModifierCategory } from "lammps.js";
 import { emptyEngineFrame, type EngineFrame } from "./engineFrame";
+import { pickEngineVariant, type EngineVariant } from "./engineVariant";
 import {
   LAMMPS_JS_VERSION,
   WORKER_PROTOCOL_VERSION,
@@ -26,7 +27,8 @@ export interface WorkdirSnapshot {
 /**
  * Main-thread facade over the LAMMPS Web Worker.
  *
- * The worker owns the real (KOKKOS/pthreads) wasm module — it cannot run on the
+ * The worker owns the real wasm module (KOKKOS/pthreads, or the serial build
+ * where SharedArrayBuffer is unavailable) — the threaded one cannot run on the
  * main thread. This proxy never touches wasm: it keeps the latest
  * {@link EngineFrame} the worker streamed (typed arrays whose buffers were
  * transferred, so they are read in place) and exposes it through the
@@ -88,7 +90,11 @@ export class LammpsWorkerProxy implements LammpsWeb {
   private errorListener?: (message: string) => void;
   private crashListener?: (message: string) => void;
 
-  constructor() {
+  /** The wasm build the worker loads (see engineVariant.ts). */
+  readonly variant: EngineVariant;
+
+  constructor(variant: EngineVariant = pickEngineVariant()) {
+    this.variant = variant;
     this.worker = new Worker(new URL("./lammps.worker.ts", import.meta.url), {
       type: "module",
     });
@@ -147,6 +153,14 @@ export class LammpsWorkerProxy implements LammpsWeb {
   /** True once the worker has crashed; the proxy must be replaced (reload). */
   get crashed(): boolean {
     return this.crashError !== undefined;
+  }
+
+  /**
+   * False for the serial build: no KOKKOS, so scripts run as written and the
+   * Multithreading toggle is unavailable.
+   */
+  get multithreaded(): boolean {
+    return this.variant === "threaded";
   }
 
   /** lammps.js version of the loaded worker; undefined until it is ready. */
@@ -254,7 +268,7 @@ export class LammpsWorkerProxy implements LammpsWeb {
         // `error` event, or by handleCrash.
         this.resolveLoad = resolve;
         this.rejectLoad = reject;
-        this.send({ type: "load" });
+        this.send({ type: "load", variant: this.variant });
       });
     }
     return this.readyPromise;
