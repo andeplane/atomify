@@ -26,10 +26,9 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import createModule from "lammps.js/wasm-atomify";
-import type { LAMMPSWeb } from "lammps.js";
+import type { LAMMPSWeb, LammpsModule } from "lammps.js";
 
 import { LammpsAdapter } from "./wasm/lammpsAdapter";
-import type { AtomifyWasmModule } from "./wasm/types";
 import {
   prepareScriptForSerialStyles,
   scriptOptsIntoKokkos,
@@ -90,7 +89,7 @@ function prepareFile(
 }
 
 interface Engine {
-  module: AtomifyWasmModule;
+  module: LammpsModule;
   native: LAMMPSWeb;
   adapter: LammpsAdapter;
   output: string[];
@@ -101,33 +100,44 @@ interface Engine {
 async function loadEngine(): Promise<Engine> {
   const output: string[] = [];
   const stepErrors: string[] = [];
-  let engine: Engine | undefined;
+  // Set once the module exists; the print callback reads it.
+  const ref: { engine?: Engine } = {};
   const printLine = (...args: unknown[]) => {
     let text = args.join(" ");
     if (process.env.EXAMPLES_DEBUG) console.log("LMP>", text);
     const marker = splitGroupReady(text);
-    if (marker.ready && engine) {
-      const info = engine.module.FS.readFile(GROUP_INFO_FILE, {
+    if (marker.ready && ref.engine) {
+      const info = ref.engine.module.FS.readFile(GROUP_INFO_FILE, {
         encoding: "utf8",
       });
-      engine.module.FS.writeFile(
+      ref.engine.module.FS.writeFile(
         GROUP_VARIABLE_FILE,
-        engine.adapter.prepareGroupVariables(parseLammpsGroups(String(info))),
+        ref.engine.adapter.prepareGroupVariables(
+          parseLammpsGroups(String(info)),
+        ),
       );
       if (!marker.before) return;
       text = marker.before;
     }
-    engine?.adapter.observeOutput(text);
+    ref.engine?.adapter.observeOutput(text);
     output.push(text);
   };
   const module = (await createModule({
     print: printLine,
     printErr: printLine,
-  })) as unknown as AtomifyWasmModule;
+  })) as unknown as LammpsModule;
   const native = new module.LAMMPSWeb();
   const adapter = new LammpsAdapter(module, native);
   adapter.start();
-  engine = { module, native, adapter, output, stepErrors, hasRun: false };
+  const engine: Engine = {
+    module,
+    native,
+    adapter,
+    output,
+    stepErrors,
+    hasRun: false,
+  };
+  ref.engine = engine;
   const live = engine;
   // Mirrors the worker's streamStep: everything it reads per synced step.
   adapter.setStepListener(() => {
@@ -155,7 +165,7 @@ async function loadEngine(): Promise<Engine> {
   return engine;
 }
 
-function mkdirp(module: AtomifyWasmModule, path: string) {
+function mkdirp(module: LammpsModule, path: string) {
   let current = "";
   for (const part of path.split("/").filter(Boolean)) {
     current += `/${part}`;
