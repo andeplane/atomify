@@ -20,12 +20,16 @@
  *                         when the run is cut too short (micelle at 200).
  *   EXAMPLES_FILTER       only run examples whose id contains this string
  *   EXAMPLES_DEBUG        echo LAMMPS output live and keep all of it in errors
+ *   EXAMPLES_ENGINE       "serial" runs the atomify-serial build (no KOKKOS,
+ *                         the engine Safari gets) the way the app does there:
+ *                         plain startup args and no KOKKOS preprocessing
  */
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import createModule from "lammps.js/wasm-atomify";
+import createThreadedModule from "lammps.js/wasm-atomify";
+import createSerialModule from "lammps.js/wasm-atomify-serial";
 import type { LAMMPSWeb, LammpsModule } from "lammps.js";
 
 import { LammpsAdapter } from "./wasm/lammpsAdapter";
@@ -57,6 +61,8 @@ const EXAMPLES_DIR = join(process.cwd(), "public", "examples");
 const MAX_SECONDS = Number(process.env.EXAMPLES_MAX_SECONDS ?? 120);
 const MAX_RUN = Number(process.env.EXAMPLES_MAX_RUN ?? 1000);
 const FILTER = process.env.EXAMPLES_FILTER ?? "";
+const SERIAL = process.env.EXAMPLES_ENGINE === "serial";
+const createModule = SERIAL ? createSerialModule : createThreadedModule;
 // Beyond the budget the Stop path needs a synced step to act on; a script
 // stuck in one long command never reaches one, so give up on it eventually.
 const HARD_TIMEOUT_MS = (MAX_SECONDS + 90) * 1000;
@@ -82,9 +88,10 @@ function prepareFile(
   isMainScript: boolean,
   kokkosOptIn: boolean,
 ): string {
-  const styled = kokkosOptIn
-    ? content
-    : prepareScriptForSerialStyles(content, { isMainScript });
+  const styled =
+    kokkosOptIn || SERIAL
+      ? content
+      : prepareScriptForSerialStyles(content, { isMainScript });
   return prepareGroupInspection(capRunLengths(styled));
 }
 
@@ -127,7 +134,9 @@ async function loadEngine(): Promise<Engine> {
     printErr: printLine,
   })) as unknown as LammpsModule;
   const native = new module.LAMMPSWeb();
-  const adapter = new LammpsAdapter(module, native);
+  const adapter = new LammpsAdapter(module, native, {
+    multithreaded: !SERIAL,
+  });
   adapter.start();
   const engine: Engine = {
     module,
