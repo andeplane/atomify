@@ -2,10 +2,12 @@
  * Typed message protocol between the main thread (LammpsWorkerProxy) and the
  * LAMMPS Web Worker (lammps.worker.ts).
  *
- * The atomify wasm build is a KOKKOS/pthreads + ASYNCIFY emscripten module. It
- * CANNOT initialize on the browser main thread (its thread-pool handshake needs
- * Atomics.wait blocking, which is forbidden off a Worker), so the module lives
- * entirely inside the worker. omovi's WebGL objects live only on the main
+ * The threaded atomify wasm build is a KOKKOS/pthreads + ASYNCIFY emscripten
+ * module. It CANNOT initialize on the browser main thread (its thread-pool
+ * handshake needs Atomics.wait blocking, which is forbidden off a Worker), so
+ * the module lives entirely inside the worker. The serial build (no
+ * SharedArrayBuffer, for Safari) runs in the same worker, so both share one
+ * code path. omovi's WebGL objects live only on the main
  * thread, so the worker never touches them — it streams plain typed arrays,
  * copied out of the wasm heap inside the (asyncify-safe) step callback, and the
  * main thread renders them.
@@ -13,6 +15,7 @@
 
 import type { ModifierCategory } from "lammps.js";
 import type { EngineFrame } from "./engineFrame";
+import type { EngineVariant } from "./engineVariant";
 import { dependencies } from "../../package.json";
 
 /**
@@ -21,7 +24,7 @@ import { dependencies } from "../../package.json";
  * (e.g. a stale worker script cached from a different deploy). Bump it on
  * any incompatible change to WorkerCommand / WorkerEvent.
  */
-export const WORKER_PROTOCOL_VERSION = 2;
+export const WORKER_PROTOCOL_VERSION = 3;
 
 /**
  * The lammps.js release the app is built against (pinned exactly in
@@ -33,7 +36,8 @@ export const LAMMPS_JS_VERSION: string = dependencies["lammps.js"];
 
 /** Commands sent from the main thread to the worker. */
 export type WorkerCommand =
-  | { type: "load" }
+  // Load the given wasm build (see engineVariant.ts) and start LAMMPS.
+  | { type: "load"; variant: EngineVariant }
   // Worker-FS writes. Commands are delivered in order, so a file written
   // before runFile is in place when the run starts. mkdir is mkdir -p;
   // writeFile and chdir create missing directories too.

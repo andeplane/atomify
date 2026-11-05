@@ -4,13 +4,11 @@
 
 **"Engine loading…" never finishes.** The engine is a large download. On a slow connection give it a minute. If the percentage stops moving, reload the page.
 
-**"Safari is not supported for simulations."** Use Chrome, Firefox or Edge on a desktop computer. See [Browser requirements](/getting-started/requirements).
-
-**"The simulation engine requires cross-origin isolation."** The helper that enables isolation didn't take effect.
+**The Multithreading switch says "Not available in this browser".** The page isn't cross-origin isolated, so Atomify loaded its single-threaded engine. That's always the case in Safari. In Chrome, Firefox or Edge it means the helper that enables isolation didn't take effect:
 
 1. Reload the page.
 2. Open [andeplane.github.io/atomify/?sw-reset](https://andeplane.github.io/atomify/?sw-reset). This removes Atomify's service worker and cached files and reloads. Your projects are kept.
-3. Make sure you're not in a mode that blocks service workers (some privacy extensions or strict privacy settings do). Try a normal window or another browser.
+3. Make sure you're not in a mode that blocks service workers (some privacy extensions or strict privacy settings do). Try a normal window.
 
 **"Failed to load LAMMPS" or "Engine unavailable: …".** Reload. If it keeps happening, try `?sw-reset` as above, then [report it](/faq/getting-help) with the message.
 

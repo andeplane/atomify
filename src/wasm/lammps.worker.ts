@@ -8,8 +8,9 @@ import {
 /**
  * LAMMPS Web Worker entry.
  *
- * The atomify wasm build is a multithreaded KOKKOS/pthreads + ASYNCIFY module.
- * A pthreads module cannot initialize on the browser main thread (its
+ * The threaded atomify wasm build is a multithreaded KOKKOS/pthreads + ASYNCIFY
+ * module (the serial build, for contexts without SharedArrayBuffer, runs here
+ * too so both share one code path). A pthreads module cannot initialize on the browser main thread (its
  * thread-pool handshake blocks on Atomics.wait, forbidden off a Worker), so the
  * module is created and driven entirely here, inside a Worker, where pthreads
  * and SharedArrayBuffer work. This worker owns the wasm module and the
@@ -26,6 +27,7 @@ import {
   type WorkerCommand,
   type WorkerEvent,
 } from "./workerMessages";
+import type { EngineVariant } from "./engineVariant";
 import type {
   LAMMPSWeb as NativeLammps,
   LammpsModule,
@@ -262,7 +264,31 @@ function streamStep(force = false) {
   frames.offer(frame, force);
 }
 
-async function load() {
+/**
+ * Fetch a variant's emscripten glue (embedded wasm) once and import
+ * createModule from a blob URL of it. The `?url` imports are spelled out per
+ * variant so Vite can resolve each as a static asset; `@vite-ignore` keeps it
+ * from bundling/splitting the giant module itself.
+ */
+async function fetchModule(variant: EngineVariant) {
+  const moduleUrl: string = (
+    variant === "threaded"
+      ? ((await import("lammps.js/wasm-atomify?url")) as { default: string })
+      : ((await import("lammps.js/wasm-atomify-serial?url")) as {
+          default: string;
+        })
+  ).default;
+  const blob = await (await fetch(moduleUrl)).blob();
+  const blobUrl = URL.createObjectURL(blob);
+  const createModule = (
+    (await import(/* @vite-ignore */ blobUrl)) as {
+      default: typeof import("lammps.js/wasm-atomify").default;
+    }
+  ).default;
+  return { blob, createModule };
+}
+
+async function load(variant: EngineVariant) {
   if (module) {
     postReady();
     return;
@@ -283,25 +309,16 @@ async function load() {
     post({ type: "printed", text });
   };
 
-  // Fetch the atomify emscripten glue (embedded wasm, ~50 MB) once and keep it
-  // as a Blob. Load createModule from that same blob URL (?url + @vite-ignore
-  // keeps Vite from bundling/splitting the giant asset). Passing the Blob as
-  // `mainScriptUrlOrBlob` is essential for this KOKKOS/pthreads build: without
+  // Fetch the emscripten glue (embedded wasm, ~50 MB) once and keep it as a
+  // Blob (see fetchModule). Passing the Blob as `mainScriptUrlOrBlob` is
+  // essential for the threaded KOKKOS/pthreads build: without
   // it, emscripten spawns each of the 8 pthread workers via
   // `new Worker(new URL("lammps-atomify.js", import.meta.url))`, and 8
   // concurrent 50 MB fetches overflow Chromium's disk cache
   // (net::ERR_CACHE_WRITE_FAILURE), aborting the module. With the Blob, every
   // pthread instantiates from the in-memory blob URL — no per-worker fetch.
-  const moduleUrl: string = (
-    (await import("lammps.js/wasm-atomify?url")) as { default: string }
-  ).default;
-  const blob = await (await fetch(moduleUrl)).blob();
-  const blobUrl = URL.createObjectURL(blob);
-  const createModule = (
-    (await import(/* @vite-ignore */ blobUrl)) as {
-      default: typeof import("lammps.js/wasm-atomify").default;
-    }
-  ).default;
+  // The serial build spawns no pthreads and ignores it.
+  const { blob, createModule } = await fetchModule(variant);
 
   module = (await createModule({
     print: printLine,
@@ -309,9 +326,11 @@ async function load() {
     mainScriptUrlOrBlob: blob,
   })) as LammpsModule;
   native = new module.LAMMPSWeb();
-  adapter = new LammpsAdapter(module, native);
-  // Start the Kokkos runtime once, here in the worker where the pthread
-  // handshake can block. Startup args are constant for the module's life;
+  adapter = new LammpsAdapter(module, native, {
+    multithreaded: variant === "threaded",
+  });
+  // Start the Kokkos runtime (threaded build) once, here in the worker where
+  // the pthread handshake can block. Startup args are constant for the module's life;
   // per-simulation acceleration is decided by the script (see utils/kokkos.ts).
   adapter.start();
   adapter.setStepListener(streamStep);
@@ -323,7 +342,7 @@ ctx.onmessage = async (ev: MessageEvent<WorkerCommand>) => {
   try {
     switch (cmd.type) {
       case "load":
-        await load();
+        await load(cmd.variant);
         break;
       case "writeFile":
         if (module) {

@@ -175,6 +175,11 @@ export function prepareEngineInputs(
   inputs: RunInputFile[],
   inputScript: string,
   useKokkos: boolean,
+  /**
+   * False for the serial (non-KOKKOS) engine: it starts without `-sf kk`, so
+   * scripts need no serial-style rewriting and no opt-in is injected.
+   */
+  kokkosEngine = true,
 ): {
   files: RunInputFile[];
   /** The input script as the user wrote it (plus an injected opt-in). */
@@ -186,11 +191,12 @@ export function prepareEngineInputs(
   if (!main || typeof main.content !== "string") {
     return null;
   }
-  const script = useKokkos ? injectKokkosOptIn(main.content) : main.content;
+  const script =
+    useKokkos && kokkosEngine ? injectKokkosOptIn(main.content) : main.content;
   const kokkos = scriptOptsIntoKokkos(script);
   const engineText = (content: string, isMainScript: boolean) =>
     prepareGroupInspection(
-      kokkos
+      kokkos || !kokkosEngine
         ? content
         : prepareScriptForSerialStyles(content, { isMainScript }),
     );
@@ -447,6 +453,7 @@ export class RunController {
         inputs,
         plan.meta.inputScript,
         plan.useKokkos,
+        engine.multithreaded !== false,
       );
       if (!prepared) {
         // Guard before Simulation.Start/time_event fire: an aborted run must

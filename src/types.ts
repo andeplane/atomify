@@ -58,6 +58,12 @@ export type LammpsWeb = {
     skipped: { path: string; size: number }[];
   }>;
   getMemoryUsage: () => number;
+  /**
+   * False when the engine is the serial (non-KOKKOS) build, used where the
+   * page cannot be cross-origin isolated (Safari). Scripts then run as
+   * written, without KOKKOS preprocessing. Undefined means multithreaded.
+   */
+  readonly multithreaded?: boolean;
   getExceptionMessage: (address: number) => string;
 
   // Engine-FS writes, applied in order before any later runFile. Nothing is

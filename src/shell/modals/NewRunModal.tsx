@@ -125,6 +125,10 @@ const NewRunModal = ({
   }, [active?.runs]);
 
   const threads = defaultThreadCount();
+  // The serial engine (Safari, or any page without cross-origin isolation)
+  // has no KOKKOS, so the toggle is off and locked there.
+  const multithreadingAvailable = lammps?.multithreaded !== false;
+  const useKokkos = kokkos && multithreadingAvailable;
   const plan = useMemo(
     () => buildRunPlan(variables, drafts, nextRunNumber),
     [variables, drafts, nextRunNumber],
@@ -132,10 +136,10 @@ const NewRunModal = ({
   const command = useMemo(
     () =>
       buildCommandPreview(inputScript, variables, drafts, {
-        enabled: kokkos,
+        enabled: useKokkos,
         threads,
       }),
-    [inputScript, variables, drafts, kokkos, threads],
+    [inputScript, variables, drafts, useKokkos, threads],
   );
 
   if (!active) {
@@ -157,7 +161,7 @@ const NewRunModal = ({
       plan.runs.map((vars) => ({
         inputScript,
         vars,
-        useKokkos: kokkos,
+        useKokkos,
         threads,
       })),
     );
@@ -354,14 +358,19 @@ const NewRunModal = ({
                       marginTop: 2,
                     }}
                   >
-                    Runs LAMMPS with KOKKOS acceleration (×{threads} threads)
+                    {multithreadingAvailable
+                      ? `Runs LAMMPS with KOKKOS acceleration (×${threads} threads)`
+                      : "Not available in this browser. Simulations run on a single thread."}
                   </div>
                 </div>
-                <ToggleSwitch
-                  on={kokkos}
-                  onToggle={() => setKokkos((value) => !value)}
-                  data-testid="kokkos-toggle"
-                />
+                <div style={{ opacity: multithreadingAvailable ? 1 : 0.5 }}>
+                  <ToggleSwitch
+                    on={useKokkos}
+                    onToggle={() => setKokkos((value) => !value)}
+                    disabled={!multithreadingAvailable}
+                    data-testid="kokkos-toggle"
+                  />
+                </div>
               </div>
               {/* Deviation from the design mock: no per-run thread picker.
                   The engine's Kokkos thread pool is fixed at engine load

@@ -8,7 +8,7 @@ The first time you open Atomify, the browser downloads the engine (tens of megab
 
 ## Cross-origin isolation
 
-The engine uses several threads that share memory (`SharedArrayBuffer`). Browsers only allow that on pages that are **cross-origin isolated**. GitHub Pages can't send the headers that turn this on, so Atomify installs a small service worker that adds them, which is why the page reloads once on your first visit. If isolation fails, the engine reports **The simulation engine requires cross-origin isolation.** See [Troubleshooting](/faq/troubleshooting).
+The engine uses several threads that share memory (`SharedArrayBuffer`). Browsers only allow that on pages that are **cross-origin isolated**. GitHub Pages can't send the headers that turn this on, so Atomify installs a small service worker that adds them, which is why the page reloads once on your first visit. Where isolation isn't available (always in Safari, which lacks the header mode Atomify uses), Atomify loads a single-threaded build of the same engine instead, with the same LAMMPS packages but without KOKKOS. See [Troubleshooting](/faq/troubleshooting).
 
 ## What happens when you click run
 
@@ -25,7 +25,7 @@ After a run completes, its atoms stay loaded in the engine until the next run st
 
 ## Multithreading
 
-The engine is a KOKKOS build. Scripts that say `suffix kk` use 4 threads; others run on one. See [Multithreading](/guide/multithreading).
+The engine is a KOKKOS build. Scripts that say `suffix kk` use 4 threads; others run on one. In Safari everything runs on one thread. See [Multithreading](/guide/multithreading).
 
 ## If the engine crashes
 

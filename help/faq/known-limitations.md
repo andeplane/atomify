@@ -4,7 +4,7 @@ Things Atomify doesn't do (yet), so you can plan around them.
 
 ## Browsers and devices
 
-- **No Safari, iPhone or iPad.** Desktop Chrome, Firefox, Edge and other Chromium browsers only.
+- **Safari, iPhone and iPad run single-threaded.** [Multithreading](/guide/multithreading) needs desktop Chrome, Firefox, Edge or another Chromium browser.
 - **Projects live in one browser.** No sync between browsers or computers; use download and import.
 
 ## Simulations

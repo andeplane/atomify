@@ -160,11 +160,21 @@ const runFileId = () =>
 describe("LammpsWorkerProxy protocol handshake", () => {
   it("resolves load() for a worker of this build and records its engine version", async () => {
     const load = proxy.load();
-    expect(worker.posted).toEqual([{ type: "load" }]);
+    // jsdom is not cross-origin isolated, so the proxy picks the serial build.
+    expect(worker.posted).toEqual([{ type: "load", variant: "serial" }]);
+    expect(proxy.multithreaded).toBe(false);
     worker.emit(readyEvent());
     await expect(load).resolves.toBeUndefined();
     expect(proxy.engineVersion).toBe(LAMMPS_JS_VERSION);
     expect(proxy.crashed).toBe(false);
+  });
+
+  it("asks the worker for the threaded build when constructed for it", () => {
+    proxy = new LammpsWorkerProxy("threaded");
+    worker = FakeWorker.instances[1];
+    void proxy.load();
+    expect(proxy.multithreaded).toBe(true);
+    expect(worker.posted).toContainEqual({ type: "load", variant: "threaded" });
   });
 
   it.each([

@@ -2,19 +2,15 @@
 
 ## Supported browsers
 
-Use **Chrome**, **Firefox** or another Chromium-based browser (**Edge**, **Opera**, **Brave**) on a **desktop or laptop computer**.
+Use **Chrome**, **Firefox** or another Chromium-based browser (**Edge**, **Opera**, **Brave**) on a **desktop or laptop computer** for the best performance.
 
-::: danger Safari and iPhone/iPad are not supported
-Safari, and every browser on iPhone and iPad (they all use Safari's engine), cannot run the simulation engine. You can still browse the app, but running shows:
-
-> Safari is not supported for simulations. Use Chrome or Firefox on a desktop computer.
-> :::
-
-![The engine status in the sidebar on an unsupported browser](/screenshots/safari-unsupported.webp)
+::: tip Safari runs single-threaded
+Safari runs simulations, but on one thread only: it can't turn on the cross-origin isolation that [Multithreading](/guide/multithreading) needs, so Atomify loads a single-threaded engine there. Scripts with `suffix kk` still run, just without the speedup, and the **Multithreading** switch is unavailable. iPhone and iPad browsers all use Safari's engine and behave the same way, but they have far less memory, so keep systems small.
+:::
 
 ## The first visit reloads once
 
-The first time you open Atomify, the page reloads itself once. This is expected. Atomify installs a small helper (a service worker) that turns on _cross-origin isolation_, a browser security mode the multithreaded engine needs (it uses `SharedArrayBuffer`). After that first reload you will not see it again.
+The first time you open Atomify, the page reloads itself once. This is expected. Atomify installs a small helper (a service worker) that turns on _cross-origin isolation_, a browser security mode the multithreaded engine needs (it uses `SharedArrayBuffer`). After that first reload you will not see it again. (Safari can't use it, see above.)
 
 ## Waiting for the engine
 
