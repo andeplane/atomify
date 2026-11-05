@@ -13,6 +13,23 @@ export function prepareGroupInspection(content: string): string {
   );
 }
 
+/**
+ * Detect the GROUP_READY marker in one line of engine output. The marker can
+ * arrive glued to the end of the previous output when that output lacked a
+ * trailing newline, so match it as a suffix and hand back any text before it.
+ */
+export function splitGroupReady(text: string): {
+  ready: boolean;
+  before: string;
+} {
+  const trimmed = text.trimEnd();
+  if (!trimmed.endsWith(GROUP_READY)) return { ready: false, before: text };
+  return {
+    ready: true,
+    before: trimmed.slice(0, -GROUP_READY.length).trimEnd(),
+  };
+}
+
 /** Parse the engine's actual group registry, including variable-expanded IDs. */
 export function parseLammpsGroups(info: string): string[] {
   return (

@@ -2,8 +2,8 @@
 import {
   GROUP_INFO_FILE,
   GROUP_VARIABLE_FILE,
-  GROUP_READY,
   parseLammpsGroups,
+  splitGroupReady,
 } from "../utils/lammpsGroups";
 /**
  * LAMMPS Web Worker entry.
@@ -268,8 +268,9 @@ async function load() {
     return;
   }
   const printLine = (...args: unknown[]) => {
-    const text = args.join(" ");
-    if (text.trim() === GROUP_READY && module && adapter) {
+    let text = args.join(" ");
+    const marker = splitGroupReady(text);
+    if (marker.ready && module && adapter) {
       // Pure JS/MEMFS work inside the print callback; no nested native calls.
       // LAMMPS executes this generated include after print returns, before run.
       const info = module.FS.readFile(GROUP_INFO_FILE, { encoding: "utf8" });
@@ -277,7 +278,8 @@ async function load() {
         GROUP_VARIABLE_FILE,
         adapter.prepareGroupVariables(parseLammpsGroups(String(info))),
       );
-      return;
+      if (!marker.before) return;
+      text = marker.before;
     }
     adapter?.observeOutput(text);
     post({ type: "printed", text });

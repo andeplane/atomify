@@ -3,6 +3,7 @@ import {
   GROUP_READY,
   parseLammpsGroups,
   prepareGroupInspection,
+  splitGroupReady,
 } from "./lammpsGroups";
 
 it("reads static and dynamic names from the runtime registry", () => {
@@ -22,4 +23,23 @@ it("instruments direct, continued, and conditional runs without touching comment
   expect(prepareGroupInspection("Atoms # atomic\n1 1 2 3 4\n")).toBe(
     "Atoms # atomic\n1 1 2 3 4\n",
   );
+});
+
+it("finds the ready marker alone or glued to unterminated output", () => {
+  expect(splitGroupReady(`${GROUP_READY}\n`)).toEqual({
+    ready: true,
+    before: "",
+  });
+  expect(
+    splitGroupReady(
+      `WARNING: Changed valency_val to valency_boc for X${GROUP_READY}`,
+    ),
+  ).toEqual({
+    ready: true,
+    before: "WARNING: Changed valency_val to valency_boc for X",
+  });
+  expect(splitGroupReady("Step Temp")).toEqual({
+    ready: false,
+    before: "Step Temp",
+  });
 });
