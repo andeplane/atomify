@@ -16,6 +16,7 @@
     "@types/three": "^0.181.0",
     "antd": "^6.6.0",
     "colormap": "^2.3.2",
+    "driver.js": "^1.10.2",
     "dygraphs": "^2.1.0",
     "easy-peasy": "^6.1.1",
     "fflate": "^0.8.3",

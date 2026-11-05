@@ -35,6 +35,8 @@ export interface ShellUI {
   stopRun: () => void;
   engineReady: boolean;
   examples: ExamplesData;
+  /** Start (or restart) the guided onboarding tour from Home. */
+  startTour: () => void;
 }
 
 export const ShellUIContext = createContext<ShellUI | null>(null);
