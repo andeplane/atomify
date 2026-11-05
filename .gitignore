@@ -9,3 +9,8 @@ build/
 /.cache/
 /playwright-report/
 /test-results/
+
+# Help site (help/)
+help/node_modules
+help/.vitepress/cache
+help/test-results

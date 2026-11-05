@@ -539,8 +539,9 @@ const RunsTab = () => {
                   lineHeight: 1.5,
                 }}
               >
-                Press Run simulation to create run-001 — every run gets its own
-                directory under <span style={{ fontFamily: MONO }}>runs/</span>.
+                Press Save &amp; run simulation to create run-001 — every run
+                gets its own directory under{" "}
+                <span style={{ fontFamily: MONO }}>runs/</span>.
               </div>
             </div>
           )}
