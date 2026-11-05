@@ -289,7 +289,7 @@ async function runExample(
   return { error, stopped, steps: native.getCurrentStep(), seconds };
 }
 
-describe.sequential("example library", () => {
+describe("example library", () => {
   let engine: Engine;
   const failures: string[] = [];
 
