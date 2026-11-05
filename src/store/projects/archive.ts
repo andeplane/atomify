@@ -111,6 +111,7 @@ export const archiveThunks: Pick<
             `The zip contains an entry that cannot be imported ("${path}"): ${
               error instanceof Error ? error.message : String(error)
             }`,
+            { cause: error },
           );
         }
       }
@@ -159,6 +160,7 @@ export const archiveThunks: Pick<
             `Import failed at "${path}": ${
               error instanceof Error ? error.message : String(error)
             }`,
+            { cause: error },
           );
         }
       }

@@ -58,7 +58,7 @@
     ]
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.5",
+    "@eslint/js": "^10.0.1",
     "@jupyterlab/nbformat": "^4.6.3",
     "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -68,14 +68,14 @@
     "@vitejs/plugin-basic-ssl": "^2.3.0",
     "@vitejs/plugin-react": "^6.1.2",
     "@vitest/ui": "^4.1.10",
-    "eslint": "^9.39.5",
+    "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.13.0",
     "jsdom": "^29.0.1",
     "prettier": "3.9.6",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.71.2",
+    "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5",
     "vitest": "^4.1.11"
   },

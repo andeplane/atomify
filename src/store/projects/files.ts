@@ -236,7 +236,6 @@ export const fileThunks: Pick<
     const sizes: Record<string, { bytes: number; runs: number }> = {};
     for (const meta of getState().projects) {
       let bytes = 0;
-      let runs = 0;
       const walk = async (subdir?: string): Promise<void> => {
         const entries = await storage
           .list(meta.dirName, subdir)
@@ -253,7 +252,7 @@ export const fileThunks: Pick<
       const runDirs = await storage
         .list(meta.dirName, RUNS_DIR)
         .catch(() => []);
-      runs = runDirs.filter((entry) => entry.type === "directory").length;
+      const runs = runDirs.filter((entry) => entry.type === "directory").length;
       sizes[meta.dirName] = { bytes, runs };
     }
     return sizes;
