@@ -29,7 +29,7 @@
     "react-dom": "^19.2.7",
     "three": "^0.181.2",
     "uuid": "^14.0.0",
-    "web-vitals": "^5.1.0"
+    "web-vitals": "^6.2.3"
   },
   "scripts": {
     "start": "vite",
@@ -39,6 +39,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
+    "test:examples": "vitest run --config vitest.examples.config.mts",
     "e2e": "playwright test",
     "e2e:headed": "playwright test --headed",
     "e2e:smoke": "playwright test -c playwright.smoke.config.ts",
@@ -58,7 +59,7 @@
     ]
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.5",
+    "@eslint/js": "^10.0.1",
     "@jupyterlab/nbformat": "^4.6.3",
     "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -66,18 +67,18 @@
     "@types/node": "^26.2.0",
     "@types/uuid": "^11.0.0",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
-    "@vitejs/plugin-react": "^6.0.5",
-    "@vitest/ui": "^4.1.10",
-    "eslint": "^9.39.5",
+    "@vitejs/plugin-react": "^6.1.2",
+    "@vitest/ui": "^5.1.0",
+    "eslint": "^10.14.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "fake-indexeddb": "^6.2.5",
     "globals": "^17.13.0",
     "jsdom": "^29.0.1",
     "prettier": "3.9.6",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.71.2",
-    "vite": "^8.1.3",
-    "vitest": "^4.1.11"
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
   },
   "overrides": {
     "dompurify": "^3.4.17"

@@ -50,7 +50,7 @@ unfix fxnve
 
 print "---------------------------------------------------------------------------"
 print "Optional: use short high pressure run to get rid of small bubbles."
-print "          (In case there are any.  I'm not certain there are."
+print "          (In case there are any.  I am not certain there are."
 print "           Later we will restore ordinary pressure.)"
 print "---------------------------------------------------------------------------"
 fix fxlan all langevin  298.0 298.0  5000  123456  # temp: 298 K
