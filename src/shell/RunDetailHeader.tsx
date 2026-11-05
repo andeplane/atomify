@@ -116,12 +116,17 @@ const RunDetailHeader = ({
       </span>
       <div style={{ flex: 1 }} />
       {(live || viewStructure) && (
-        <GhostButton data-testid="color-atoms" onClick={onColorAtoms}>
-          Color atoms
-        </GhostButton>
+        <div
+          data-tour="view-controls"
+          style={{ display: "flex", alignItems: "center", gap: 10 }}
+        >
+          <GhostButton data-testid="color-atoms" onClick={onColorAtoms}>
+            Color atoms
+          </GhostButton>
+          <PeriodicImagesControl live={live} />
+          <SliceControls />
+        </div>
       )}
-      {(live || viewStructure) && <PeriodicImagesControl live={live} />}
-      {(live || viewStructure) && <SliceControls />}
       {meta?.continuationOf && (
         <Chip>Continued from #{runNumber(meta.continuationOf)}</Chip>
       )}

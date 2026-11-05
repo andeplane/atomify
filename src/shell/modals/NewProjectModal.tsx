@@ -23,11 +23,17 @@ export function exampleProjectFiles(example: Example): NewProjectFile[] {
     content: file.content,
     url: file.url,
   }));
-  if (example.analysisScript) {
-    const name = example.analysisScript.slice(
-      example.analysisScript.lastIndexOf("/") + 1,
+  // A notebook named in `files` is already included; only fetch the
+  // analysis script separately when it points somewhere else.
+  const script = example.analysisScript;
+  if (script && !files.some((file) => file.fileName === script)) {
+    const name = decodeURIComponent(
+      new URL(script, "https://example.invalid/").pathname.split("/").pop() ??
+        "",
     );
-    files.push({ fileName: name, url: example.analysisScript });
+    if (name && !files.some((file) => file.fileName === name)) {
+      files.push({ fileName: name, url: script });
+    }
   }
   return files;
 }

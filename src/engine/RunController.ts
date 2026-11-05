@@ -39,6 +39,7 @@ import {
   type RunMeta,
 } from "../storage";
 import { continuationScript } from "../utils/continuation";
+import { applyVariableOverrides } from "../utils/scriptVariables";
 import {
   injectKokkosOptIn,
   prepareScriptForSerialStyles,
@@ -205,9 +206,10 @@ export function prepareEngineInputs(
 }
 
 /**
- * Builds a LAMMPS variable-injection script from a vars map, writes both the
- * vars file and the wrapper file into the engine workdir, and returns the
- * name of the script to execute (the input script itself without vars).
+ * Applies a run's variable overrides by writing a copy of the input script
+ * with the definition lines rewritten (applyVariableOverrides) into the
+ * engine workdir, and returns the name of the script to execute (the input
+ * script itself without vars). The project's script never changes.
  */
 export function prepareVarsScript(
   run: {
@@ -222,17 +224,11 @@ export function prepareVarsScript(
     return run.inputScript;
   }
 
-  const varsScript =
-    Object.entries(run.vars)
-      .map(([name, value]) => `variable ${name} equal ${value}`)
-      .join("\n") + "\n\n";
-
-  const varsFileName = `_vars_${run.inputScript}`;
-  engine.writeFile(`/${run.workdirId}/${varsFileName}`, varsScript);
-
-  const wrapperScript = varsScript + inputScriptContent;
   const wrapperFileName = `_wrapper_${run.inputScript}`;
-  engine.writeFile(`/${run.workdirId}/${wrapperFileName}`, wrapperScript);
+  engine.writeFile(
+    `/${run.workdirId}/${wrapperFileName}`,
+    applyVariableOverrides(inputScriptContent, run.vars),
+  );
 
   return wrapperFileName;
 }
